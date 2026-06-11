@@ -23,7 +23,9 @@ export const SCHOOL_COLORS: Record<string, number> = {
   shadow: 0x9a5df0,
   holy: 0xffe9a0,
   nature: 0x86e86a,
-  physical: 0xfff2d8,
+  // warm steel-spark — near-white crossed the bloom threshold colorlessly and
+  // melee hits read as faint white noise
+  physical: 0xffd28a,
 };
 
 interface Projectile {
@@ -212,7 +214,8 @@ export class Vfx {
   meleeSpark(targetId: number, crit: boolean): void {
     const at = this.anchor(targetId, 0.55);
     if (!at) return;
-    this.burst(at, 'physical', crit ? 14 : 6, crit ? 1.1 : 0.55);
+    // big enough to actually read mid-fight at 1600x900
+    this.burst(at, 'physical', crit ? 22 : 10, crit ? 1.4 : 0.85);
   }
 
   levelUpPillar(targetId: number): void {
@@ -280,15 +283,16 @@ export class Vfx {
       const dist = dir.length();
       const step = pr.speed * dt;
       if (dist <= Math.max(0.7, step)) {
-        // impact
+        // impact: school-tinted flash + burst that survives a 30fps frame
         this.tmpColor.copy(pr.color).multiplyScalar(hdr(1.6));
-        for (let k = 0; k < 16; k++) {
+        this.spawn(target.x, target.y, target.z, 0, 0.5, 0, this.tmpColor, 0.8, 0.22);
+        for (let k = 0; k < 22; k++) {
           const a = Math.random() * Math.PI * 2;
           const sp = 2.5 + Math.random() * 4;
           this.spawn(
             target.x, target.y, target.z,
             Math.sin(a) * sp, Math.random() * 3, Math.cos(a) * sp,
-            this.tmpColor, 0.36, 0.4, 7,
+            this.tmpColor, 0.44, 0.55, 7,
           );
         }
         this.projectiles.splice(i, 1);
@@ -297,11 +301,11 @@ export class Vfx {
       dir.multiplyScalar(step / dist);
       pr.pos.add(dir);
       // bright HDR core (blooms into a comet) + sparkling trail
-      this.spawn(pr.pos.x, pr.pos.y, pr.pos.z, 0, 0, 0, pr.coreColor, 0.85, 0.09);
+      this.spawn(pr.pos.x, pr.pos.y, pr.pos.z, 0, 0, 0, pr.coreColor, 1.0, 0.12);
       this.spawn(
         pr.pos.x + (Math.random() - 0.5) * 0.25, pr.pos.y + (Math.random() - 0.5) * 0.25, pr.pos.z + (Math.random() - 0.5) * 0.25,
         (Math.random() - 0.5) * 0.8, 0.4, (Math.random() - 0.5) * 0.8,
-        pr.trailColor, 0.3, 0.45, 1.5,
+        pr.trailColor, 0.32, 0.6, 1.5,
       );
     }
 

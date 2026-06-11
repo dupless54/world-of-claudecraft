@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { WORLD_MAX_Z, WORLD_MIN_Z, WORLD_SIZE, ZONES } from '../sim/data';
 import { terrainHeight, WATER_LEVEL } from '../sim/world';
-import { GFX, sharedUniforms } from './gfx';
+import { GFX, sharedUniforms, SUN_DIR } from './gfx';
 import { waterNormalish, waterNormalMaps } from './textures';
 
 // Water for the whole zone strip.
@@ -57,26 +57,37 @@ const WATER_FRAG = /* glsl */ `
   #include <common>
   #include <fog_pars_fragment>
   void main() {
+    float camDist = length(cameraPosition - vWPos);
     vec3 n1 = texture2D(uNorm1, vWPos.xz * 0.06 + uTime * vec2(0.013, 0.019)).xyz * 2.0 - 1.0;
     vec3 n2 = texture2D(uNorm2, vWPos.xz * 0.13 - uTime * vec2(0.021, 0.011)).xyz * 2.0 - 1.0;
-    vec3 N = normalize(vec3(n1.xy * 1.5 + n2.xy, 2.0).xzy);
+    // broad slow swell that survives at range, where the detail maps average
+    // out to a mirror — keeps big water surfaces alive from above
+    vec3 n3 = texture2D(uNorm1, vWPos.xz * 0.014 + uTime * vec2(0.005, -0.004)).xyz * 2.0 - 1.0;
+    float farW = smoothstep(26.0, 130.0, camDist);
+    vec2 nm = mix(n1.xy * 1.1 + n2.xy * 0.8, n3.xy * 2.4, farW * 0.7);
+    vec3 N = normalize(vec3(nm, 2.4).xzy);
     vec3 V = normalize(cameraPosition - vWPos);
-    float fresnel = 0.06 + 0.94 * pow(1.0 - max(dot(N, V), 0.0), 4.0);
-    float depth = clamp(vShoreDepth / 4.5, 0.0, 1.0);
+    float fresnel = 0.05 + 0.95 * pow(1.0 - max(dot(N, V), 0.0), 4.0);
+    float depth = clamp(vShoreDepth / 6.0, 0.0, 1.0);
     vec3 col = mix(uShallow, uDeep, depth);
-    // dappled shimmer: the scrolling normals modulate brightness so the
-    // surface reads as moving water from every angle
-    col *= 0.88 + 0.45 * max(n1.x * 0.7 + n2.y * 0.55, 0.0);
-    col = mix(col, uSkyColor, fresnel * 0.5);                        // cheap sky reflection
+    // dappled shimmer — fades with distance so it never reads as speckle
+    float shimmer = max(n1.x * 0.7 + n2.y * 0.55, 0.0) * exp(-camDist * 0.022);
+    col *= 0.92 + 0.4 * shimmer;
+    // reflection tracks the live fog/horizon color so each biome's water
+    // belongs to its sky instead of a constant pasted-on tint
+    vec3 skyRef = mix(uSkyColor, fogColor, 0.5);
+    col = mix(col, skyRef, min(fresnel * 0.6, 0.35));
     float sunAlign = max(dot(reflect(-uSunDir, N), V), 0.0);
-    col += uSunColor * pow(sunAlign, 90.0) * 2.6;                    // sun glints (>1 -> bloom)
-    col += uSunColor * pow(sunAlign, 16.0) * 0.14;                   // broad warm sheen sunward
-    // shoreline foam: wobbly, animated band hugging the waterline
-    float foamBand = smoothstep(1.5, 0.0, vShoreDepth + n1.x * 0.5);
+    col += uSunColor * pow(sunAlign, 90.0) * 2.6;                    // sparkle glints (>1 -> bloom)
+    col += uSunColor * pow(sunAlign, 24.0) * 0.30;                   // wider lobe: survives steep cameras
+    col += uSunColor * pow(sunAlign, 6.0) * 0.05;                    // faint warm sheen sunward
+    // shoreline foam: wide animated band hugging the waterline (the shore
+    // attribute is per-vertex at ~2u, so the band must span several units)
+    float foamBand = smoothstep(3.2, 0.1, vShoreDepth + n1.x * 0.7);
     foamBand *= foamBand;
-    float foamWave = 0.65 + 0.35 * sin(uTime * 1.8 + vWPos.x * 1.4 + vWPos.z * 1.1 + n2.y * 5.0);
+    float foamWave = 0.62 + 0.38 * sin(uTime * 1.7 + vWPos.x * 1.2 + vWPos.z * 0.95 + n2.y * 6.0);
     float foam = foamBand * foamWave;
-    col = mix(col, vec3(1.04), clamp(foam, 0.0, 0.95));
+    col = mix(col, vec3(1.05), clamp(foam, 0.0, 0.9));
     float alpha = max(mix(0.82, 0.95, depth), foam * 0.95);
     gl_FragColor = vec4(col, alpha);
     #include <tonemapping_fragment>
@@ -92,7 +103,7 @@ function buildShaderWater(seed: number): WaterView {
       ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog),
       uNorm1: { value: norm1 },
       uNorm2: { value: norm2 },
-      uSunDir: { value: new THREE.Vector3(90, 140, 50).normalize() },
+      uSunDir: { value: SUN_DIR.clone() }, // the one shared sun (gfx.ts)
       uSunColor: { value: SUN_COLOR },
       uSkyColor: { value: SKY_TINT },
       uDeep: { value: DEEP_COLOR },

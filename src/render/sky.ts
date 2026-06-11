@@ -23,10 +23,11 @@ interface SkyPalette {
 
 // per-biome sky colors (hex are display-ish sRGB; THREE.Color converts to
 // the linear working space)
+// zeniths sit bright enough that midday doesn't tonemap to storm-slate
 const BIOME_SKY: Record<BiomeId, SkyPalette> = {
-  vale: { zenith: 0x3d71b8, horizon: 0xa8cae6, haze: 0xd2dee2 },
-  marsh: { zenith: 0x49708c, horizon: 0xaabd9e, haze: 0xc6ccab },
-  peaks: { zenith: 0x2d5ba8, horizon: 0x9cc0ea, haze: 0xcadcf2 },
+  vale: { zenith: 0x4f86d3, horizon: 0xa8cae6, haze: 0xd2dee2 },
+  marsh: { zenith: 0x537d99, horizon: 0xaabd9e, haze: 0xc6ccab },
+  peaks: { zenith: 0x3f6fc6, horizon: 0x9cc0ea, haze: 0xcadcf2 },
 };
 
 export interface SkyView {
@@ -170,8 +171,8 @@ export function buildClouds(lowGfx: boolean): CloudLayer {
   if (lowGfx) {
     spawn(14, 95, 150, 0.85, 1.6, 60, 150);
   } else {
-    spawn(12, 95, 150, 0.85, 1.6, 85, 190);
-    spawn(6, 165, 195, 0.35, 0.55, 140, 240); // high slow cirrus layer
+    spawn(11, 95, 150, 0.85, 1.6, 85, 190);
+    spawn(5, 165, 195, 0.35, 0.55, 140, 240); // high slow cirrus layer
   }
   return { sprites };
 }

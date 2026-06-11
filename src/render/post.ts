@@ -44,7 +44,7 @@ const GradeShader = {
       float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
       c = mix(vec3(l), c, 1.12);                                  // saturation
       vec2 d = vUv - 0.5;
-      c *= 1.0 - 0.32 * smoothstep(0.45, 0.95, dot(d, d) * 2.2);  // vignette
+      c *= 1.0 - 0.20 * smoothstep(0.60, 0.95, dot(d, d) * 2.2);  // gentle vignette (0.32 crushed corners)
       c += (fract(sin(dot(vUv * 731.7 + uTime, vec2(12.9898, 78.233))) * 43758.5) - 0.5) * 0.012; // grain
       gl_FragColor = vec4(c, 1.0);
     }

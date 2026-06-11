@@ -9,9 +9,11 @@ import {
 import type { BiomeId } from '../sim/types';
 import { buildBear, buildFarRig, buildRigFor, buildSheep, Rig } from './models';
 import { buildProps } from './props';
-import { sparkleTexture, stoneMaps, SurfaceMaps } from './textures';
+import { radialGlowTexture, sparkleTexture, stoneMaps, SurfaceMaps } from './textures';
 import { Vfx } from './vfx';
-import { GFX, initGfxTier, sharedUniforms, surfaceMat, urlForcedTier } from './gfx';
+import {
+  GFX, initGfxTier, sharedUniforms, SUN_ANCHOR, SUN_DIR, surfaceMat, urlForcedTier,
+} from './gfx';
 import { buildComposer, PostPipeline } from './post';
 import { buildTerrain, TerrainView } from './terrain';
 import { buildWater, WaterView } from './water';
@@ -22,9 +24,16 @@ const NAMEPLATE_RANGE = 55;
 // Entities further than this from the player are hidden entirely: their rigs
 // are several draw calls each and read as sub-pixel specks long before this.
 const ENTITY_DRAW_RANGE = 80;
-// rigs further than this stop casting shadows (their shadows are sub-pixel;
-// the shadow pass is half the frame's draw calls otherwise)
-const ENTITY_SHADOW_RANGE_SQ = 30 * 30;
+// rigs further than this stop casting articulated shadows (~7 draws each) and
+// hand off to a single-draw static-pose shadow proxy (the merged far-LOD mesh
+// on the shadow-only layer) so mid-ground NPCs keep their grounding for ~1/7
+// the cost — the pose freeze is invisible in a shadow blob this far out
+const ENTITY_SHADOW_RANGE_SQ = 25 * 25;
+const ENTITY_PROXY_SHADOW_RANGE_SQ = 62 * 62;
+// layer rendered by the sun's shadow camera but not the main camera
+const SHADOW_ONLY_LAYER = 1;
+// loot sparkles further than this are hidden (sub-pixel, real draw cost)
+const SPARKLE_DRAW_RANGE_SQ = 40 * 40;
 // beyond this, the articulated rig swaps for its single-draw merged far LOD
 // (just inside the nameplate range; rigs out there are ~30px tall)
 const ENTITY_LOD_RANGE_SQ = 50 * 50;
@@ -42,9 +51,17 @@ const HEMI_INTENSITY = 0.45;
 const SUN_INTENSITY = 2.8;
 const ENV_INTENSITY = 0.5;
 // dungeon interiors: kill the daylight so torchlight carries the scene
+// (env at 0.15 still lit rigs sky-blue against the pitch-dark crypt)
 const DUNGEON_SUN_INTENSITY = 0.3;
-const DUNGEON_ENV_INTENSITY = 0.15;
+const DUNGEON_ENV_INTENSITY = 0.05;
 const DUNGEON_HEMI_INTENSITY = 0.14;
+// character rim glow scales up underground so silhouettes split from the murk
+const DUNGEON_RIM_BOOST = 2.4;
+// dungeon torch point lights: pumped + hung lower so warm pools break up the
+// floor (8.2u up at decay 2 left the ground a flat navy mass)
+const DUNGEON_LIGHT_Y = 6.4;
+const DUNGEON_LIGHT_INTENSITY = 46;
+const DUNGEON_LIGHT_DISTANCE = 34;
 
 interface EntityView {
   group: THREE.Group;
@@ -64,6 +81,7 @@ interface EntityView {
   casters: THREE.Object3D[]; // shadow-casting meshes, distance-gated in sync
   shadowOn: boolean;
   farMesh: THREE.Mesh | null; // single-draw merged LOD shown beyond 55u
+  shadowProxy: THREE.Mesh | null; // shadow-only static-pose caster, 25-70u
   isFar: boolean;
 }
 
@@ -94,6 +112,7 @@ export class Renderer {
   private skyView!: SkyView;
   private sunSprites: THREE.Sprite[] = [];
   private sunDir = new THREE.Vector3();
+  private sunAzimuth = new THREE.Vector3(SUN_DIR.x, 0, SUN_DIR.z).normalize();
   private clouds: THREE.Sprite[] = [];
   private waterView: WaterView;
   private terrainView: TerrainView;
@@ -130,7 +149,7 @@ export class Renderer {
     // sky dome — follows the camera so the world strip never outruns it.
     // High tier: shader gradient + sun glow with biome-aware horizon tints;
     // low keeps the legacy canvas-gradient dome.
-    this.skyView = buildSky(LOW_GFX, new THREE.Vector3(90, 140, 50));
+    this.skyView = buildSky(LOW_GFX, SUN_ANCHOR);
     this.sky = this.skyView.dome;
     this.scene.add(this.sky);
 
@@ -150,12 +169,14 @@ export class Renderer {
     this.scene.add(hemi);
     this.hemi = hemi;
     const sun = new THREE.DirectionalLight(LOW_GFX ? 0xfff0cd : 0xffedd0, LOW_GFX ? 2.2 : SUN_INTENSITY);
-    sun.position.set(90, 140, 50);
+    sun.position.copy(SUN_ANCHOR);
     sun.castShadow = !LOW_GFX;
     sun.shadow.mapSize.set(GFX.shadowMap, GFX.shadowMap);
     sun.shadow.camera.near = 30;
     sun.shadow.camera.far = 480;
-    const S = LOW_GFX ? 75 : 50; // tighter ortho = crisper shadows; follows the player
+    // 95u half-extent: the whole mid-ground shadows (a 50u box left every
+    // tree/house past it on uniformly lit grass); ~4.6cm texels at 4096
+    const S = LOW_GFX ? 75 : 95;
     sun.shadow.camera.left = -S;
     sun.shadow.camera.right = S;
     sun.shadow.camera.top = S;
@@ -163,10 +184,12 @@ export class Renderer {
     sun.shadow.bias = -0.0006;
     sun.shadow.normalBias = LOW_GFX ? 0.02 : 0.05;
     sun.shadow.radius = 4;
+    // the shadow camera also sees the shadow-only proxy layer
+    sun.shadow.camera.layers.enable(SHADOW_ONLY_LAYER);
     this.scene.add(sun);
     this.scene.add(sun.target);
     this.sun = sun;
-    this.sunDir.copy(sun.position).normalize();
+    this.sunDir.copy(SUN_DIR);
 
     // visible sun disc + bloom halo
     const sunCanvas = (core: boolean): THREE.CanvasTexture => {
@@ -409,6 +432,7 @@ export class Renderer {
     collectCasters(group, casters);
     // far LOD must be captured from the pristine pose, before any animation
     let farMesh: THREE.Mesh | null = null;
+    let shadowProxy: THREE.Mesh | null = null;
     if (e.kind !== 'object') {
       farMesh = buildFarRig(rig);
       if (farMesh) {
@@ -416,12 +440,22 @@ export class Renderer {
         farMesh.visible = false;
         farMesh.userData.entityId = e.id;
         group.add(farMesh);
+        if (!this.lowGfx) {
+          // shares the far-LOD geometry; lives on the shadow-only layer so the
+          // main camera never draws it while the sun shadow camera does
+          shadowProxy = new THREE.Mesh(farMesh.geometry, farMesh.material);
+          shadowProxy.scale.copy(rig.body.scale);
+          shadowProxy.castShadow = true;
+          shadowProxy.layers.set(SHADOW_ONLY_LAYER);
+          shadowProxy.visible = false;
+          group.add(shadowProxy);
+        }
       }
     }
     this.views.set(e.id, {
       group, rig, sheepRig: null, bearRig: null, walkPhase: 0, attackAnim: 0,
       nameplate: np, nameEl, hpBar, hpFill, markerEl: marker, sparkle, objectMesh, portal,
-      casters, shadowOn: true, farMesh, isFar: false,
+      casters, shadowOn: true, farMesh, shadowProxy, isFar: false,
     });
   }
 
@@ -445,6 +479,49 @@ export class Renderer {
     // one builder per DungeonDef.interior key
     if (interior === 'sanctum') this.buildSanctum(ox, oz);
     else this.buildCrypt(ox, oz);
+  }
+
+  // Additive light-pool decal under a dungeon torch: the point-light budget
+  // only keeps the nearest few lights live, so the floor pools are baked in.
+  private glowDecalGeo: THREE.BufferGeometry | null = null;
+  private glowDecalTex: THREE.Texture | null = null;
+  private glowDecalMats = new Map<number, THREE.MeshBasicMaterial>();
+
+  private addTorchGlow(g: THREE.Group, x: number, z: number, colorHex: number): void {
+    if (this.lowGfx) return;
+    if (!this.glowDecalGeo) this.glowDecalGeo = new THREE.CircleGeometry(6.6, 20).rotateX(-Math.PI / 2);
+    if (!this.glowDecalTex) this.glowDecalTex = radialGlowTexture();
+    let mat = this.glowDecalMats.get(colorHex);
+    if (!mat) {
+      mat = new THREE.MeshBasicMaterial({
+        map: this.glowDecalTex, color: colorHex, transparent: true, opacity: 0.46,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      this.glowDecalMats.set(colorHex, mat);
+    }
+    const glow = new THREE.Mesh(this.glowDecalGeo, mat);
+    glow.position.set(x, 0.07, z);
+    glow.renderOrder = 1; // after the floor it floats over
+    g.add(glow);
+  }
+
+  // Dungeon torch: animated flame cone + budgeted point light + floor pool.
+  private addDungeonTorch(g: THREE.Group, x: number, z: number, flameColor: number, flameEmissive: number, lightColor: number): void {
+    const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), new THREE.MeshLambertMaterial({
+      color: flameColor, emissive: flameEmissive, emissiveIntensity: this.lowGfx ? 1.6 : FLAME_EMISSIVE_HIGH,
+      transparent: true, opacity: 0.92,
+    }));
+    flame.position.set(x, 8.4, z);
+    g.add(flame);
+    this.flames.push(flame);
+    const light = new THREE.PointLight(lightColor, 10, this.lowGfx ? 22 : DUNGEON_LIGHT_DISTANCE, 2);
+    // with daylight no longer leaking underground the torches carry the
+    // scene — pump them and hang them low enough to pool on the floor
+    if (!this.lowGfx) light.userData.baseIntensity = DUNGEON_LIGHT_INTENSITY;
+    light.position.set(x, this.lowGfx ? 8.2 : DUNGEON_LIGHT_Y, z);
+    g.add(light);
+    this.fireLights.push(light);
+    this.addTorchGlow(g, x, z, lightColor);
   }
 
   // Interior masonry: normal-mapped stone blocks under the torch pools on the
@@ -496,20 +573,7 @@ export class Renderer {
         pillar.position.set(sx, 4, z);
         pillar.castShadow = true;
         g.add(pillar);
-        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), new THREE.MeshLambertMaterial({
-          color: 0x7fd4ff, emissive: 0x2288cc, emissiveIntensity: this.lowGfx ? 1.6 : FLAME_EMISSIVE_HIGH,
-          transparent: true, opacity: 0.92,
-        }));
-        flame.position.set(sx, 8.4, z);
-        g.add(flame);
-        this.flames.push(flame);
-        const light = new THREE.PointLight(0x66bbff, 10, this.lowGfx ? 22 : 30, 2);
-        // with daylight no longer leaking underground the torches carry the
-        // scene — pump them on the lit tiers
-        if (!this.lowGfx) light.userData.baseIntensity = 30;
-        light.position.set(sx, 8.2, z);
-        g.add(light);
-        this.fireLights.push(light);
+        this.addDungeonTorch(g, sx, z, 0x7fd4ff, 0x2288cc, 0x66bbff);
       }
     }
     // sarcophagi along the walls
@@ -578,18 +642,7 @@ export class Renderer {
         pillar.position.set(sx, 4, z);
         pillar.castShadow = true;
         g.add(pillar);
-        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), new THREE.MeshLambertMaterial({
-          color: 0xa6ffb8, emissive: 0x22cc55, emissiveIntensity: this.lowGfx ? 1.6 : FLAME_EMISSIVE_HIGH,
-          transparent: true, opacity: 0.92,
-        }));
-        flame.position.set(sx, 8.4, z);
-        g.add(flame);
-        this.flames.push(flame);
-        const light = new THREE.PointLight(0x55e08a, 10, this.lowGfx ? 22 : 30, 2);
-        if (!this.lowGfx) light.userData.baseIntensity = 30;
-        light.position.set(sx, 8.2, z);
-        g.add(light);
-        this.fireLights.push(light);
+        this.addDungeonTorch(g, sx, z, 0xa6ffb8, 0x22cc55, 0x55e08a);
       }
     }
     // bone piles strewn between the chambers (none inside the waist walls)
@@ -659,12 +712,14 @@ export class Renderer {
         fog.far = preset.far;
       }
       // interiors must not leak daylight: drop sun + sky ambient + IBL
-      // underground so the torch point lights own the scene; restore outside
+      // underground so the torch point lights own the scene; restore outside.
+      // The rim glow cranks up instead — silhouettes must split from the murk.
       if (!this.lowGfx) {
         const underground = desired === 'dungeon';
         this.sun.intensity = underground ? DUNGEON_SUN_INTENSITY : SUN_INTENSITY;
         this.hemi.intensity = underground ? DUNGEON_HEMI_INTENSITY : HEMI_INTENSITY;
         this.scene.environmentIntensity = underground ? DUNGEON_ENV_INTENSITY : ENV_INTENSITY;
+        sharedUniforms.uRimBoost.value = underground ? DUNGEON_RIM_BOOST : 1;
       }
       return;
     }
@@ -722,6 +777,8 @@ export class Renderer {
           for (const caster of v.casters) (caster as THREE.Mesh).castShadow = wantShadow;
         }
         v.isFar = d2 > ENTITY_LOD_RANGE_SQ;
+        // past the articulated gate the static-pose proxy carries the shadow
+        if (v.shadowProxy) v.shadowProxy.visible = !wantShadow && d2 < ENTITY_PROXY_SHADOW_RANGE_SQ;
       }
       const x = e.prevPos.x + (e.pos.x - e.prevPos.x) * alpha;
       const y = e.prevPos.y + (e.pos.y - e.prevPos.y) * alpha;
@@ -735,6 +792,9 @@ export class Renderer {
         const vis = e.lootable;
         v.group.visible = vis;
         if (v.sparkle && vis) {
+          // sub-pixel beyond ~45u but still a full transparent draw each
+          const sdx = e.pos.x - p.pos.x, sdz = e.pos.z - p.pos.z;
+          v.sparkle.visible = sdx * sdx + sdz * sdz < SPARKLE_DRAW_RANGE_SQ;
           const pulse = 0.75 + Math.sin(this.time * 3 + e.id) * 0.25;
           v.sparkle.scale.set(pulse, pulse, 1);
           v.sparkle.material.rotation = this.time * 0.8;
@@ -851,10 +911,15 @@ export class Renderer {
           else this.vfx.swimRipple(v.group.position, dt);
         }
       }
-      // the far LOD mirrors the body pose (death tip-over, sitting, swimming)
+      // the far LOD and shadow proxy mirror the body pose (death tip-over,
+      // sitting, swimming)
       if (v.farMesh && v.farMesh.visible) {
         v.farMesh.rotation.copy(activeRig.body.rotation);
         v.farMesh.position.copy(activeRig.body.position);
+      }
+      if (v.shadowProxy && v.shadowProxy.visible) {
+        v.shadowProxy.rotation.copy(activeRig.body.rotation);
+        v.shadowProxy.position.copy(activeRig.body.position);
       }
     }
 
@@ -891,10 +956,19 @@ export class Renderer {
     }
     this.budgetFireLights(p.pos.x, p.pos.z);
 
-    // clouds drift (the high cirrus layer crawls slower)
+    // clouds drift (the high cirrus layer crawls slower); on the lit tiers
+    // they tint warm sunward / cool anti-sun to anchor the key light's azimuth
     for (const cl of this.clouds) {
       cl.position.x += dt * ((cl.userData.drift as number | undefined) ?? 1.6);
       if (cl.position.x > 320) cl.position.x = -320;
+      if (!this.lowGfx) {
+        const along = ((cl.position.x - this.camera.position.x) * this.sunAzimuth.x
+          + (cl.position.z - this.camera.position.z) * this.sunAzimuth.z) / 320;
+        const t = Math.max(-1, Math.min(1, along)) * 0.5 + 0.5;
+        (cl.material as THREE.SpriteMaterial).color.setRGB(
+          0.86 + 0.14 * t, 0.90 + 0.05 * t, 1.0 - 0.13 * t,
+        );
+      }
     }
 
     // water shimmer (low-tier texture scroll; shader water rides uTime)
@@ -914,7 +988,7 @@ export class Renderer {
     const pv = this.views.get(p.id);
     if (pv) {
       const pp = pv.group.position;
-      this.sun.position.set(pp.x + 90, pp.y + 140, pp.z + 50);
+      this.sun.position.set(pp.x + SUN_ANCHOR.x, pp.y + SUN_ANCHOR.y, pp.z + SUN_ANCHOR.z);
       this.sun.target.position.set(pp.x, pp.y, pp.z);
     }
     // sky dome + sun disc ride along with the camera

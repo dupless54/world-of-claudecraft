@@ -47,7 +47,7 @@ const NORMAL_TEX_STRENGTH = 1.35;
 // heightfield's shape blend. This is the tint layer the splat albedo
 // multiplies into (splat textures are authored near mid-gray).
 const BIOME_PALETTE: Record<BiomeId, { grass: number; grassDark: number; grassYellow: number; dirt: number; sand: number }> = {
-  vale: { grass: 0x55913f, grassDark: 0x3f7230, grassYellow: 0x7a9a3d, dirt: 0x8a6f47, sand: 0xc2b283 },
+  vale: { grass: 0x548545, grassDark: 0x3e6635, grassYellow: 0x768c44, dirt: 0x8a6f47, sand: 0xc2b283 },
   marsh: { grass: 0x596d36, grassDark: 0x41522b, grassYellow: 0x71764a, dirt: 0x6e5a3e, sand: 0x8f7f5c },
   peaks: { grass: 0x687a55, grassDark: 0x4d5c45, grassYellow: 0x8d9168, dirt: 0x7d6a50, sand: 0xb0a486 },
 };
@@ -133,16 +133,19 @@ function sampleVertex(x: number, z: number, seed: number): VertexSample {
   cTmp.lerp(grassYellowC, v2 * 0.35);
   // the marsh reads muddier: patches of wet dirt across the lowland
   if (biome === 'marsh') lerpSplat(w, 1, 0.3 * v2 * clamp01((4 - h) / 6));
-  // shoreline sand
-  const shore = clamp01((WATER_LEVEL + 1.6 - h) / 0.9);
-  if (h < WATER_LEVEL + 1.6) cTmp.copy(sandC);
+  // shoreline sand — color and splat weight share one feathered falloff so
+  // the beach blends out instead of cutting a razor-hard grass/sand line
+  const shore = clamp01((WATER_LEVEL + 1.6 - h) / 1.6);
+  cTmp.lerp(sandC, shore);
   lerpSplat(w, 3, shore);
-  // packed dirt at each hub settlement
+  // packed dirt at each hub settlement (same feather as the splat weight —
+  // a constant lerp stamped a clean-edged brown disc on the grass)
   for (const zn of ZONES) {
     const dHub = Math.hypot(x - zn.hub.x, z - zn.hub.z);
     if (dHub < 14) {
-      cTmp.lerp(dirtDarkC, 0.7);
-      lerpSplat(w, 1, 0.75 * clamp01((14 - dHub) / 3));
+      const hubT = clamp01((14 - dHub) / 3);
+      cTmp.lerp(dirtDarkC, 0.7 * hubT);
+      lerpSplat(w, 1, 0.75 * hubT);
       break;
     }
   }
@@ -349,13 +352,16 @@ function buildSplatMaterial(seed: number): THREE.MeshStandardMaterial {
         uniform sampler2D uGrass, uDirt, uRock, uSand, uRockN, uMacro;`)
       .replace('#include <map_fragment>', `
         vec2 tuv = vWPos.xz * 0.22;
-        // grass blends two scales so it never reads as a flat wash or a tile
+        // grass blends three scales so it never reads as a flat wash or a tile
         vec3 grassAlb = mix(texture2D(uGrass, tuv).rgb, texture2D(uGrass, tuv * 0.27).rgb, 0.45);
+        grassAlb = mix(grassAlb, texture2D(uGrass, tuv * 0.53).rgb, 0.3);
         vec3 alb = grassAlb * vSplat.x
                  + texture2D(uDirt, tuv * 0.8).rgb * vSplat.y
                  + texture2D(uRock, tuv * 0.6).rgb * vSplat.z
                  + texture2D(uSand, tuv).rgb * vSplat.w;
-        float macro = mix(0.74, 1.26, texture2D(uMacro, vWPos.xz * 0.012).r);
+        // gentle macro swing — +/-26% read as blotchy stains on open fields;
+        // the third grass scale above recovers the tiling break-up instead
+        float macro = mix(0.89, 1.11, texture2D(uMacro, vWPos.xz * 0.012).r);
         // splat albedo is authored mid-gray; vertex color carries the hue
         diffuseColor.rgb *= alb * macro * 2.0;`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>

@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { terrainHeight } from '../sim/world';
 import { PROPS, WORLD_MIN_Z } from '../sim/data';
 import { GFX, surfaceMat } from './gfx';
-import { barkMaps, roofMaps, roofTexture, stoneMaps, stoneTexture, wallMaps, wallTexture } from './textures';
+import { barkMaps, canvasMaps, roofMaps, roofTexture, stoneMaps, stoneTexture, wallMaps, wallTexture } from './textures';
 
 // Static world props: buildings, tents, campfires, mines, ruins, docks, fences.
 // Placement comes from the per-zone content modules (merged into PROPS by
@@ -54,11 +54,18 @@ export function buildProps(seed: number): PropsResult {
     woodMat = new THREE.MeshLambertMaterial({ color: 0x6b4a2b });
     woodDarkMat = new THREE.MeshLambertMaterial({ color: 0x4a3320 });
   }
-  const canvasMat = surfaceMat({ color: 0xc9b48a, side: THREE.DoubleSide, roughness: 0.95 });
+  // tents/awnings: woven cloth maps on the lit tiers (bare flat color read as
+  // untextured cones next to the normal-mapped huts); low keeps flat colors
+  const cloth = usePbr ? canvasMaps() : null;
+  const canvasMat = cloth
+    ? surfaceMat({ map: cloth.map, normalMap: cloth.normalMap, side: THREE.DoubleSide, roughness: 0.95 })
+    : surfaceMat({ color: 0xc9b48a, side: THREE.DoubleSide, roughness: 0.95 });
   const windowMat = surfaceMat({
     color: 0x35506b, emissive: 0x1a2c40, emissiveIntensity: usePbr ? 1.2 : 0.7, roughness: 0.4,
   });
-  const awningMat = surfaceMat({ color: 0x1e8449, roughness: 0.9 });
+  const awningMat = cloth
+    ? surfaceMat({ map: cloth.map, normalMap: cloth.normalMap, color: 0x4ca06b, roughness: 0.9 })
+    : surfaceMat({ color: 0x1e8449, roughness: 0.9 });
   const breadMat = surfaceMat({ color: 0xc8954a, roughness: 0.9 });
   const jugMat = surfaceMat({ color: 0x7a9cc6, roughness: 0.55 });
   const holeMat = new THREE.MeshBasicMaterial({ color: 0x050505 });

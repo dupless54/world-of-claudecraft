@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { Entity, MobFamily } from '../sim/types';
 import { MOBS } from '../sim/data';
 import { addRimGlow, GFX, surfaceMat } from './gfx';
+import { clothNormalTexture } from './textures';
 
 // Procedural character rigs. Every build function returns a group plus the
 // animatable parts; the renderer drives walk/attack cycles.
@@ -62,15 +63,20 @@ function box(w: number, h: number, d: number, color: number, opts?: PlainOpts): 
 // Shared merged-rig materials: (flat | metal | side | tier) -> one material
 // for every rig in the world. Rim glow sells silhouettes on the lit tiers.
 const rigMatCache = new Map<string, THREE.Material>();
+let clothNormal: THREE.Texture | null = null;
 
 function rigMergedMat(flat: boolean, metal: boolean, side: THREE.Side): THREE.Material {
   const key = `${flat ? 1 : 0}:${metal ? 1 : 0}:${side}:${GFX.standardMaterials ? 1 : 0}`;
   const cached = rigMatCache.get(key);
   if (cached) return cached;
+  if (GFX.standardMaterials && !clothNormal) clothNormal = clothNormalTexture();
   const mat = GFX.standardMaterials
     ? new THREE.MeshStandardMaterial({
       vertexColors: true, flatShading: flat, side,
       roughness: metal ? 0.4 : 0.85, metalness: metal ? 0.6 : 0,
+      // faint weave normal on cloth/skin so flat boxes pick up light texture
+      normalMap: metal ? null : clothNormal,
+      normalScale: new THREE.Vector2(0.45, 0.45),
     })
     : new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: flat, side });
   if (GFX.standardMaterials) addRimGlow(mat);
@@ -88,13 +94,19 @@ function isMergeable(mesh: THREE.Mesh): boolean {
   return true;
 }
 
+// Bakes the part color into vertex colors with a cheap top-light AO: faces
+// looking down sit in their own shade, top faces catch the sky. Sells contact
+// and form on rigs without a real AO pass (GTAO is ultra-only).
 function bakeColor(geo: THREE.BufferGeometry, color: THREE.Color): void {
   const count = geo.attributes.position.count;
+  const normal = geo.attributes.normal as THREE.BufferAttribute | undefined;
   const arr = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
-    arr[i * 3] = color.r;
-    arr[i * 3 + 1] = color.g;
-    arr[i * 3 + 2] = color.b;
+    const ny = normal ? normal.getY(i) : 0;
+    const shade = ny >= 0 ? 1 + ny * 0.06 : 1 + ny * 0.2;
+    arr[i * 3] = color.r * shade;
+    arr[i * 3 + 1] = color.g * shade;
+    arr[i * 3 + 2] = color.b * shade;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
 }
@@ -198,7 +210,9 @@ export function buildFarRig(rig: Rig): THREE.Mesh | null {
   const merged = mergeGeometries(geoms, false);
   if (!merged) return null;
   const mesh = new THREE.Mesh(merged, rigMergedMat(false, false, THREE.FrontSide));
-  mesh.castShadow = false; // far rigs are outside the shadow gate anyway
+  // never casts itself — the renderer clones it onto a shadow-only layer as a
+  // single-draw proxy caster for everything past the articulated shadow gate
+  mesh.castShadow = false;
   return mesh;
 }
 

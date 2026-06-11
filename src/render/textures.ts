@@ -65,13 +65,15 @@ export function barkTexture(): THREE.CanvasTexture {
 
 export function foliageTexture(detail = false): THREE.CanvasTexture {
   return makeCanvas(128, (ctx, s) => {
-    ctx.fillStyle = '#2e5d2a';
+    // olive-forest base — the old lime palette read as neon under the grade
+    ctx.fillStyle = '#34512f';
     ctx.fillRect(0, 0, s, s);
     if (detail) {
-      // shadowed cavities first so leaves overlap them
-      for (let i = 0; i < 70; i++) {
-        const x = rnd() * s, y = rnd() * s, r = 5 + rnd() * 12;
-        ctx.fillStyle = `rgba(${6 + rnd() * 10},${24 + rnd() * 18},${10 + rnd() * 10},0.55)`;
+      // shadowed cavities first so leaves overlap them; kept small so the
+      // canopy UVs can't smear them into long diagonal streaks
+      for (let i = 0; i < 110; i++) {
+        const x = rnd() * s, y = rnd() * s, r = 3 + rnd() * 7;
+        ctx.fillStyle = `rgba(${10 + rnd() * 12},${28 + rnd() * 16},${14 + rnd() * 10},0.5)`;
         ctx.beginPath();
         ctx.ellipse(x, y, r, r * 0.75, rnd() * Math.PI, 0, Math.PI * 2);
         ctx.fill();
@@ -79,18 +81,18 @@ export function foliageTexture(detail = false): THREE.CanvasTexture {
     }
     const leaves = detail ? 1500 : 900;
     for (let i = 0; i < leaves; i++) {
-      const g = detail ? 55 + Math.floor(rnd() * 95) : 70 + Math.floor(rnd() * 60);
-      ctx.fillStyle = `rgba(${20 + rnd() * 30},${g},${25 + rnd() * 20},${detail ? 0.6 : 0.5})`;
+      const g = detail ? 60 + Math.floor(rnd() * 75) : 70 + Math.floor(rnd() * 60);
+      ctx.fillStyle = `rgba(${30 + rnd() * 30},${g},${30 + rnd() * 18},${detail ? 0.6 : 0.5})`;
       const x = rnd() * s, y = rnd() * s;
       ctx.beginPath();
       ctx.ellipse(x, y, 1 + rnd() * 3, 3 + rnd() * 5, rnd() * Math.PI, 0, Math.PI * 2);
       ctx.fill();
     }
     if (detail) {
-      // sun-catching highlight leaves
-      for (let i = 0; i < 220; i++) {
+      // sun-catching highlight leaves — warm olive, not lime
+      for (let i = 0; i < 200; i++) {
         const x = rnd() * s, y = rnd() * s;
-        ctx.fillStyle = `rgba(${90 + rnd() * 50},${165 + rnd() * 60},${70 + rnd() * 35},0.5)`;
+        ctx.fillStyle = `rgba(${95 + rnd() * 40},${145 + rnd() * 40},${70 + rnd() * 28},0.45)`;
         ctx.beginPath();
         ctx.ellipse(x, y, 1 + rnd() * 2, 2.5 + rnd() * 4, rnd() * Math.PI, 0, Math.PI * 2);
         ctx.fill();
@@ -250,8 +252,13 @@ export function grassTuftTexture(blades = 18): THREE.CanvasTexture {
     const x = 8 + rnd() * 48;
     const sway = (rnd() - 0.5) * 14;
     const h = 26 + rnd() * 30;
-    const g = 110 + Math.floor(rnd() * 70);
-    ctx.strokeStyle = `rgba(${30 + rnd() * 30},${g},${30 + rnd() * 25},0.9)`;
+    // olive blades, darker at the root — the old neon green detached from the
+    // ground and glowed in shadow/night scenes
+    const g = 95 + Math.floor(rnd() * 55);
+    const grad = ctx.createLinearGradient(x, 64, x + sway, 64 - h);
+    grad.addColorStop(0, `rgba(${34 + rnd() * 18},${g - 38},${30 + rnd() * 14},0.9)`);
+    grad.addColorStop(1, `rgba(${52 + rnd() * 30},${g},${44 + rnd() * 20},0.9)`);
+    ctx.strokeStyle = grad;
     ctx.lineWidth = 1.5 + rnd();
     ctx.beginPath();
     ctx.moveTo(x, 64);
@@ -359,36 +366,66 @@ export function barkMaps(): SurfaceMaps {
   return { map, normalMap: heightToNormal(height, 2.6) };
 }
 
-// Masonry blocks with recessed mortar grooves (matching albedo + height).
+// Masonry: running-bond courses of varied heights and block widths (matching
+// albedo + height). 256px with per-block value/warmth jitter so big cliff and
+// crypt walls don't read as a uniform wallpaper grid.
 export function stoneMaps(): SurfaceMaps {
-  const blocks: { x: number; y: number; w: number; h: number; v: number }[] = [];
-  for (let i = 0; i < 30; i++) {
-    blocks.push({ x: rnd() * 128, y: rnd() * 128, w: 16 + rnd() * 26, h: 10 + rnd() * 16, v: 115 + rnd() * 50 });
+  const S = 256;
+  interface Block { x: number; y: number; w: number; h: number; v: number; warm: number }
+  const blocks: Block[] = [];
+  let y = 0;
+  let row = 0;
+  while (y < S) {
+    // last course stretches to close the tile exactly
+    let h = 16 + Math.floor(rnd() * 16);
+    if (y + h > S - 12) h = S - y;
+    let x = -Math.floor(rnd() * 30) - row * 17;
+    while (x < S) {
+      const w = 22 + Math.floor(rnd() * 34);
+      blocks.push({ x, y, w, h, v: 100 + rnd() * 62, warm: rnd() * 14 - 4 });
+      x += w;
+    }
+    y += h;
+    row++;
   }
-  const map = makeCanvas(128, (ctx, s) => {
-    ctx.fillStyle = '#76766e';
+  const map = makeCanvas(S, (ctx, s) => {
+    ctx.fillStyle = '#6f6f67';
     ctx.fillRect(0, 0, s, s);
     for (const b of blocks) {
-      drawWrapped(ctx, s, (ox, oy) => {
-        ctx.fillStyle = `rgb(${b.v},${b.v},${b.v - 6})`;
-        ctx.fillRect(b.x + ox, b.y + oy, b.w, b.h);
-        ctx.strokeStyle = 'rgba(40,40,38,0.6)';
-        ctx.strokeRect(b.x + ox, b.y + oy, b.w, b.h);
-      });
+      for (const ox of [0, s]) { // blocks only overhang in x; rows tile exactly
+        const v = b.v;
+        ctx.fillStyle = `rgb(${v + b.warm},${v},${v - 8})`;
+        ctx.fillRect(b.x + ox, b.y + 1, b.w - 2, b.h - 2);
+        // weathered face: speckle + a lighter catch along the top edge
+        ctx.fillStyle = 'rgba(255,255,250,0.10)';
+        ctx.fillRect(b.x + ox + 1, b.y + 1, b.w - 4, 2);
+        ctx.fillStyle = 'rgba(20,20,18,0.18)';
+        ctx.fillRect(b.x + ox + 1, b.y + b.h - 4, b.w - 4, 3);
+        for (let i = 0; i < b.w * b.h * 0.02; i++) {
+          const sv = 60 + rnd() * 140;
+          ctx.fillStyle = `rgba(${sv},${sv},${sv - 6},0.18)`;
+          ctx.fillRect(b.x + ox + 1 + rnd() * (b.w - 4), b.y + 2 + rnd() * (b.h - 5), 1.5, 1.5);
+        }
+        ctx.strokeStyle = 'rgba(38,38,36,0.65)';
+        ctx.strokeRect(b.x + ox + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
+      }
     }
   });
-  const height = makeRawCanvas(128, (ctx, s) => {
-    ctx.fillStyle = '#3c3c3c'; // mortar sits low
+  const height = makeRawCanvas(S, (ctx, s) => {
+    ctx.fillStyle = '#383838'; // mortar sits low
     ctx.fillRect(0, 0, s, s);
     for (const b of blocks) {
-      drawWrapped(ctx, s, (ox, oy) => {
-        const v = 140 + (b.v - 115) * 1.4;
-        ctx.fillStyle = `rgb(${v},${v},${v})`;
-        ctx.fillRect(b.x + ox + 1.5, b.y + oy + 1.5, b.w - 3, b.h - 3);
-      });
+      for (const ox of [0, s]) {
+        const v = 130 + (b.v - 100) * 1.5;
+        const g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+        g.addColorStop(0, `rgb(${Math.min(255, v + 24)},${Math.min(255, v + 24)},${Math.min(255, v + 24)})`);
+        g.addColorStop(1, `rgb(${Math.max(0, v - 22)},${Math.max(0, v - 22)},${Math.max(0, v - 22)})`);
+        ctx.fillStyle = g;
+        ctx.fillRect(b.x + ox + 2, b.y + 2, b.w - 5, b.h - 4);
+      }
     }
   });
-  return { map, normalMap: heightToNormal(height, 2.2) };
+  return { map, normalMap: heightToNormal(height, 2.4) };
 }
 
 // Timber-framed plaster (the wallTexture pattern) with raised beams.
@@ -413,6 +450,18 @@ export function wallMaps(): SurfaceMaps {
       ctx.fillStyle = `rgba(${v},${v - 15},${v - 45},0.3)`;
       ctx.fillRect(rnd() * s, rnd() * s, 2, 2);
     }
+    // baked under-eave shadow + ground splashback so fog-side walls keep some
+    // form instead of reading as flat paper cutouts (canvas y=0 = top of wall)
+    const eave = ctx.createLinearGradient(0, 0, 0, 30);
+    eave.addColorStop(0, 'rgba(58,44,26,0.42)');
+    eave.addColorStop(1, 'rgba(58,44,26,0)');
+    ctx.fillStyle = eave;
+    ctx.fillRect(0, 0, s, 30);
+    const splash = ctx.createLinearGradient(0, s - 18, 0, s);
+    splash.addColorStop(0, 'rgba(70,58,38,0)');
+    splash.addColorStop(1, 'rgba(70,58,38,0.32)');
+    ctx.fillStyle = splash;
+    ctx.fillRect(0, s - 18, s, 18);
     drawFrame(ctx, s, '#5a4226');
   });
   const height = makeRawCanvas(128, (ctx, s) => {
@@ -650,6 +699,99 @@ export function groundSplatMaps(): GroundSplat {
   };
 }
 
+// Woven cloth for tents/awnings: warp/weft weave with patch seams and stains.
+export function canvasMaps(): SurfaceMaps {
+  const map = makeCanvas(128, (ctx, s) => {
+    ctx.fillStyle = '#c9b48a';
+    ctx.fillRect(0, 0, s, s);
+    // weave: alternating warp/weft strips
+    for (let yy = 0; yy < s; yy += 3) {
+      const v = 185 + Math.floor(rnd() * 26);
+      ctx.fillStyle = `rgba(${v},${v - 18},${v - 52},0.30)`;
+      ctx.fillRect(0, yy, s, 1.5);
+    }
+    for (let xx = 0; xx < s; xx += 3) {
+      const v = 165 + Math.floor(rnd() * 26);
+      ctx.fillStyle = `rgba(${v},${v - 16},${v - 48},0.22)`;
+      ctx.fillRect(xx, 0, 1.5, s);
+    }
+    // weather stains
+    for (let i = 0; i < 26; i++) {
+      const x = rnd() * s, y = rnd() * s, r = 6 + rnd() * 16;
+      drawWrapped(ctx, s, (ox, oy) => {
+        const g = ctx.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r);
+        g.addColorStop(0, 'rgba(120,100,64,0.16)');
+        g.addColorStop(1, 'rgba(120,100,64,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x + ox, y + oy, r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    // stitched seams
+    ctx.strokeStyle = 'rgba(96,78,48,0.55)';
+    ctx.lineWidth = 1.5;
+    for (const yy of [34, 92]) {
+      ctx.beginPath();
+      ctx.moveTo(0, yy);
+      ctx.lineTo(s, yy);
+      ctx.stroke();
+    }
+  });
+  const height = makeRawCanvas(128, (ctx, s) => {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, s, s);
+    for (let yy = 0; yy < s; yy += 3) {
+      const v = 105 + rnd() * 60;
+      ctx.fillStyle = `rgb(${v},${v},${v})`;
+      ctx.fillRect(0, yy, s, 1.5);
+    }
+    for (const yy of [34, 92]) {
+      ctx.fillStyle = '#4a4a4a';
+      ctx.fillRect(0, yy - 1, s, 2);
+    }
+  });
+  return { map, normalMap: heightToNormal(height, 1.3) };
+}
+
+// Soft radial gradient disc — additive light-pool decals under dungeon
+// torches (the point-light budget can't keep every pool lit at once).
+export function radialGlowTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, 128, 128);
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,0.85)');
+  g.addColorStop(0.4, 'rgba(255,255,255,0.34)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Subtle cloth-weave normal noise for merged rig materials — breaks the
+// dead-flat plastic read on character boxes without any albedo change.
+export function clothNormalTexture(): THREE.CanvasTexture {
+  const height = makeRawCanvas(64, (ctx, s) => {
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, s, s);
+    for (let i = 0; i < 900; i++) {
+      const v = 90 + rnd() * 76;
+      ctx.fillStyle = `rgba(${v},${v},${v},0.5)`;
+      ctx.fillRect(rnd() * s, rnd() * s, 1.5, 1.5);
+    }
+    for (let yy = 0; yy < s; yy += 2) {
+      const v = 112 + rnd() * 32;
+      ctx.fillStyle = `rgba(${v},${v},${v},0.35)`;
+      ctx.fillRect(0, yy, s, 1);
+    }
+  });
+  return heightToNormal(height, 0.9);
+}
+
 // Two differently-scaled blobby normal maps for the water shader (scrolled
 // against each other). Real normal-encoded, replaces waterNormalish.
 export function waterNormalMaps(): [THREE.CanvasTexture, THREE.CanvasTexture] {
@@ -671,7 +813,9 @@ export function waterNormalMaps(): [THREE.CanvasTexture, THREE.CanvasTexture] {
         });
       }
     });
-  return [heightToNormal(blobby(220, 10, 34), 4.6), heightToNormal(blobby(420, 5, 16), 5.2)];
+  // 3.0/3.4: strong enough to break the mirror, soft enough that the lake
+  // doesn't read as TV-static speckle (the shimmer term amplifies these)
+  return [heightToNormal(blobby(220, 10, 34), 3.0), heightToNormal(blobby(420, 5, 16), 3.4)];
 }
 
 // Alpha leaf-cluster card for tree silhouettes (crossed quads, alphaTest).

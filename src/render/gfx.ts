@@ -84,8 +84,19 @@ export function initGfxTier(webgl: THREE.WebGLRenderer): GfxTier {
 }
 
 // One clock uniform shared by every onBeforeCompile shader (wind, water,
-// grade grain). The renderer ticks it once per frame in sync().
-export const sharedUniforms = { uTime: { value: 0 } };
+// grade grain). The renderer ticks it once per frame in sync(). uRimBoost
+// scales the character rim glow (raised inside dungeons so silhouettes
+// separate from the murk).
+export const sharedUniforms = {
+  uTime: { value: 0 },
+  uRimBoost: { value: 1 },
+};
+
+// The one sun. Everything that needs the sun's position/direction (key light,
+// shadow frustum offset, sky glow lobe, water glints, god rays) reads these —
+// editing one consumer used to silently desync the others.
+export const SUN_ANCHOR = new THREE.Vector3(90, 140, 50);
+export const SUN_DIR = SUN_ANCHOR.clone().normalize();
 
 export interface SurfaceMatOpts {
   color?: number;
@@ -102,15 +113,20 @@ export interface SurfaceMatOpts {
 }
 
 // Shared fresnel rim emissive for character rigs (high/ultra only; Lambert on
-// low has no per-fragment view vector worth paying for).
+// low has no per-fragment view vector worth paying for). uRimBoost lets the
+// renderer crank the rim inside dungeons.
 export function addRimGlow(mat: THREE.Material): void {
   mat.onBeforeCompile = (sh) => {
-    sh.fragmentShader = sh.fragmentShader.replace(
-      '#include <emissivemap_fragment>',
-      `#include <emissivemap_fragment>
-      totalEmissiveRadiance += vec3(0.5, 0.6, 0.8) * 0.12 *
+    sh.uniforms.uRimBoost = sharedUniforms.uRimBoost;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+      uniform float uRimBoost;`)
+      .replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.5, 0.6, 0.8) * 0.12 * uRimBoost *
         pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 3.0);`,
-    );
+      );
   };
 }
 
