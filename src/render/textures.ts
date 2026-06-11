@@ -63,17 +63,38 @@ export function barkTexture(): THREE.CanvasTexture {
   });
 }
 
-export function foliageTexture(): THREE.CanvasTexture {
+export function foliageTexture(detail = false): THREE.CanvasTexture {
   return makeCanvas(128, (ctx, s) => {
     ctx.fillStyle = '#2e5d2a';
     ctx.fillRect(0, 0, s, s);
-    for (let i = 0; i < 900; i++) {
-      const g = 70 + Math.floor(rnd() * 60);
-      ctx.fillStyle = `rgba(${20 + rnd() * 30},${g},${25 + rnd() * 20},0.5)`;
+    if (detail) {
+      // shadowed cavities first so leaves overlap them
+      for (let i = 0; i < 70; i++) {
+        const x = rnd() * s, y = rnd() * s, r = 5 + rnd() * 12;
+        ctx.fillStyle = `rgba(${6 + rnd() * 10},${24 + rnd() * 18},${10 + rnd() * 10},0.55)`;
+        ctx.beginPath();
+        ctx.ellipse(x, y, r, r * 0.75, rnd() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    const leaves = detail ? 1500 : 900;
+    for (let i = 0; i < leaves; i++) {
+      const g = detail ? 55 + Math.floor(rnd() * 95) : 70 + Math.floor(rnd() * 60);
+      ctx.fillStyle = `rgba(${20 + rnd() * 30},${g},${25 + rnd() * 20},${detail ? 0.6 : 0.5})`;
       const x = rnd() * s, y = rnd() * s;
       ctx.beginPath();
       ctx.ellipse(x, y, 1 + rnd() * 3, 3 + rnd() * 5, rnd() * Math.PI, 0, Math.PI * 2);
       ctx.fill();
+    }
+    if (detail) {
+      // sun-catching highlight leaves
+      for (let i = 0; i < 220; i++) {
+        const x = rnd() * s, y = rnd() * s;
+        ctx.fillStyle = `rgba(${90 + rnd() * 50},${165 + rnd() * 60},${70 + rnd() * 35},0.5)`;
+        ctx.beginPath();
+        ctx.ellipse(x, y, 1 + rnd() * 2, 2.5 + rnd() * 4, rnd() * Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
   });
 }
@@ -219,13 +240,13 @@ export function skyTexture(): THREE.CanvasTexture {
   return tex;
 }
 
-export function grassTuftTexture(): THREE.CanvasTexture {
+export function grassTuftTexture(blades = 18): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = 64;
   c.height = 64;
   const ctx = c.getContext('2d')!;
   ctx.clearRect(0, 0, 64, 64);
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < blades; i++) {
     const x = 8 + rnd() * 48;
     const sway = (rnd() - 0.5) * 14;
     const h = 26 + rnd() * 30;
@@ -366,6 +387,50 @@ export function stoneMaps(): SurfaceMaps {
         ctx.fillRect(b.x + ox + 1.5, b.y + oy + 1.5, b.w - 3, b.h - 3);
       });
     }
+  });
+  return { map, normalMap: heightToNormal(height, 2.2) };
+}
+
+// Timber-framed plaster (the wallTexture pattern) with raised beams.
+export function wallMaps(): SurfaceMaps {
+  const drawFrame = (ctx: CanvasRenderingContext2D, s: number, beam: string): void => {
+    ctx.fillStyle = beam;
+    ctx.fillRect(0, 0, s, 8);
+    ctx.fillRect(0, s - 8, s, 8);
+    ctx.fillRect(0, 0, 8, s);
+    ctx.fillRect(s - 8, 0, 8, s);
+    ctx.save();
+    ctx.translate(s / 2, s / 2);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-s, -4, s * 2, 8);
+    ctx.restore();
+  };
+  const map = makeCanvas(128, (ctx, s) => {
+    ctx.fillStyle = '#d6c4a0';
+    ctx.fillRect(0, 0, s, s);
+    for (let i = 0; i < 1200; i++) {
+      const v = 190 + Math.floor(rnd() * 40);
+      ctx.fillStyle = `rgba(${v},${v - 15},${v - 45},0.3)`;
+      ctx.fillRect(rnd() * s, rnd() * s, 2, 2);
+    }
+    drawFrame(ctx, s, '#5a4226');
+  });
+  const height = makeRawCanvas(128, (ctx, s) => {
+    // plaster sits mid with a daubed unevenness; timber beams ride proud
+    ctx.fillStyle = '#6e6e6e';
+    ctx.fillRect(0, 0, s, s);
+    for (let i = 0; i < 320; i++) {
+      const x = rnd() * s, y = rnd() * s, r = 3 + rnd() * 9;
+      const v = 85 + rnd() * 70;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${v},${v},${v},0.5)`);
+      g.addColorStop(1, `rgba(${v},${v},${v},0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    drawFrame(ctx, s, '#c8c8c8');
   });
   return { map, normalMap: heightToNormal(height, 2.2) };
 }

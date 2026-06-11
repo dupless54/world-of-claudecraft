@@ -187,11 +187,11 @@ function sampleVertex(x: number, z: number, seed: number): VertexSample {
 // vertices sit on the chunk border but 0.3u lower, hiding LOD cracks.
 // ---------------------------------------------------------------------------
 
-function buildChunkGeometry(x0: number, z0: number, spacing: number, seed: number, withSplat: boolean): THREE.BufferGeometry {
-  const nx = Math.max(4, Math.round(CHUNK_SIZE / spacing));
+function buildChunkGeometry(x0: number, z0: number, size: number, spacing: number, seed: number, withSplat: boolean): THREE.BufferGeometry {
+  const nx = Math.max(4, Math.round(size / spacing));
   const nz = nx;
-  const stepX = CHUNK_SIZE / nx;
-  const stepZ = CHUNK_SIZE / nz;
+  const stepX = size / nx;
+  const stepZ = size / nz;
   const gw = nx + 3; // grid width including the skirt ring
   const gh = nz + 3;
   const count = gw * gh;
@@ -377,7 +377,13 @@ function buildLambertMaterial(): THREE.MeshLambertMaterial {
 // Entry point
 // ---------------------------------------------------------------------------
 
-export function buildTerrain(seed: number): THREE.Group {
+export interface TerrainView {
+  group: THREE.Group;
+  /** hides chunks that sit entirely past the fog far plane */
+  update(camX: number, camZ: number, fogFar: number): void;
+}
+
+export function buildTerrain(seed: number): TerrainView {
   const lowGfx = !GFX.terrainSplat;
   const mat = lowGfx ? buildLambertMaterial() : buildSplatMaterial(seed);
   const bands = lowGfx ? LOD_BANDS.low : LOD_BANDS.high;
@@ -386,22 +392,59 @@ export function buildTerrain(seed: number): THREE.Group {
   const worldDepth = WORLD_MAX_Z - WORLD_MIN_Z;
   const chunksX = Math.ceil((WORLD_MAX_X * 2) / CHUNK_SIZE);
   const chunksZ = Math.ceil(worldDepth / CHUNK_SIZE);
+  const chunks: { mesh: THREE.Mesh; x: number; z: number; radius: number }[] = [];
+
+  const bandIndexAt = (cx: number, cz: number): number => {
+    const centerX = -WORLD_MAX_X + cx * CHUNK_SIZE + CHUNK_SIZE / 2;
+    const centerZ = WORLD_MIN_Z + cz * CHUNK_SIZE + CHUNK_SIZE / 2;
+    let hubDist = Infinity;
+    for (const zn of ZONES) {
+      hubDist = Math.min(hubDist, Math.hypot(centerX - zn.hub.x, centerZ - zn.hub.z));
+    }
+    const idx = bands.findIndex((b) => hubDist <= b.maxHubDist);
+    return idx === -1 ? bands.length - 1 : idx;
+  };
+
+  const addChunk = (x0: number, z0: number, size: number, spacing: number): void => {
+    const geo = buildChunkGeometry(x0, z0, size, spacing, seed, !lowGfx);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    chunks.push({
+      mesh, x: x0 + size / 2, z: z0 + size / 2,
+      radius: geo.boundingSphere?.radius ?? size,
+    });
+  };
+
+  // far-LOD cells merge 2x2 into super-chunks: the far field is where draw
+  // count hurts and culling granularity matters least
+  const farBand = bands.length - 1;
+  const built = new Set<number>();
   for (let cz = 0; cz < chunksZ; cz++) {
     for (let cx = 0; cx < chunksX; cx++) {
-      const x0 = -WORLD_MAX_X + cx * CHUNK_SIZE;
-      const z0 = WORLD_MIN_Z + cz * CHUNK_SIZE;
-      const centerX = x0 + CHUNK_SIZE / 2;
-      const centerZ = z0 + CHUNK_SIZE / 2;
-      let hubDist = Infinity;
-      for (const zn of ZONES) {
-        hubDist = Math.min(hubDist, Math.hypot(centerX - zn.hub.x, centerZ - zn.hub.z));
+      if (built.has(cz * chunksX + cx)) continue;
+      const superOk = cx % 2 === 0 && cz % 2 === 0 && cx + 1 < chunksX && cz + 1 < chunksZ
+        && bandIndexAt(cx, cz) === farBand && bandIndexAt(cx + 1, cz) === farBand
+        && bandIndexAt(cx, cz + 1) === farBand && bandIndexAt(cx + 1, cz + 1) === farBand;
+      if (superOk) {
+        for (const [dx, dz] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+          built.add((cz + dz) * chunksX + (cx + dx));
+        }
+        addChunk(-WORLD_MAX_X + cx * CHUNK_SIZE, WORLD_MIN_Z + cz * CHUNK_SIZE, CHUNK_SIZE * 2, bands[farBand].spacing);
+      } else {
+        built.add(cz * chunksX + cx);
+        const band = bands[bandIndexAt(cx, cz)];
+        addChunk(-WORLD_MAX_X + cx * CHUNK_SIZE, WORLD_MIN_Z + cz * CHUNK_SIZE, CHUNK_SIZE, band.spacing);
       }
-      const band = bands.find((b) => hubDist <= b.maxHubDist) ?? bands[bands.length - 1];
-      const geo = buildChunkGeometry(x0, z0, band.spacing, seed, !lowGfx);
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.receiveShadow = true;
-      group.add(mesh);
     }
   }
-  return group;
+  return {
+    group,
+    update(camX: number, camZ: number, fogFar: number): void {
+      // fully-fogged chunks are pure overdraw; drop them before the frustum
+      for (const chunk of chunks) {
+        chunk.mesh.visible = Math.hypot(chunk.x - camX, chunk.z - camZ) - chunk.radius < fogFar;
+      }
+    },
+  };
 }

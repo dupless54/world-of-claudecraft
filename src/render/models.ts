@@ -1,9 +1,19 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Entity, MobFamily } from '../sim/types';
 import { MOBS } from '../sim/data';
+import { addRimGlow, GFX, surfaceMat } from './gfx';
 
 // Procedural character rigs. Every build function returns a group plus the
 // animatable parts; the renderer drives walk/attack cycles.
+//
+// Builders assemble parts from throwaway flat-color Lambert meshes; a final
+// merge pass (finalizeRig) bakes those colors into vertex colors and collapses
+// everything under each animation pivot into one or two meshes sharing a
+// handful of global materials (Standard + fresnel rim on the lit tiers,
+// Lambert on low). A 20-draw humanoid becomes ~8 draws and every rig in the
+// world shares the same few shader programs. Emissive details (eyes, orbs,
+// flames) stay separate meshes via surfaceMat.
 
 export interface RigParts {
   leftArm?: THREE.Object3D;
@@ -23,13 +33,173 @@ export interface Rig {
   height: number;
 }
 
-function box(w: number, h: number, d: number, color: number, opts?: { flat?: boolean }): THREE.Mesh {
-  const m = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    new THREE.MeshLambertMaterial({ color, flatShading: opts?.flat }),
-  );
+interface PlainOpts {
+  flat?: boolean;
+  /** sword blades / mace heads: metalness 0.6, roughness 0.4 after the merge */
+  metal?: boolean;
+  side?: THREE.Side;
+}
+
+// Throwaway flat-color part; finalizeRig() bakes the color into vertex colors
+// and merges it away. userData.metal survives into the merge bucket.
+function plain(geo: THREE.BufferGeometry, color: number, opts?: PlainOpts): THREE.Mesh {
+  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({
+    color, flatShading: opts?.flat === true, side: opts?.side ?? THREE.FrontSide,
+  }));
+  if (opts?.metal) m.userData.metal = true;
   m.castShadow = true;
   return m;
+}
+
+function box(w: number, h: number, d: number, color: number, opts?: PlainOpts): THREE.Mesh {
+  return plain(new THREE.BoxGeometry(w, h, d), color, opts);
+}
+
+// ---------------------------------------------------------------------------
+// Rig merge pass
+// ---------------------------------------------------------------------------
+
+// Shared merged-rig materials: (flat | metal | side | tier) -> one material
+// for every rig in the world. Rim glow sells silhouettes on the lit tiers.
+const rigMatCache = new Map<string, THREE.Material>();
+
+function rigMergedMat(flat: boolean, metal: boolean, side: THREE.Side): THREE.Material {
+  const key = `${flat ? 1 : 0}:${metal ? 1 : 0}:${side}:${GFX.standardMaterials ? 1 : 0}`;
+  const cached = rigMatCache.get(key);
+  if (cached) return cached;
+  const mat = GFX.standardMaterials
+    ? new THREE.MeshStandardMaterial({
+      vertexColors: true, flatShading: flat, side,
+      roughness: metal ? 0.4 : 0.85, metalness: metal ? 0.6 : 0,
+    })
+    : new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: flat, side });
+  if (GFX.standardMaterials) addRimGlow(mat);
+  rigMatCache.set(key, mat);
+  return mat;
+}
+
+// plain Lambert color-only meshes can merge; emissive/textured ones cannot
+function isMergeable(mesh: THREE.Mesh): boolean {
+  if (Array.isArray(mesh.material)) return false;
+  const mat = mesh.material;
+  if (!(mat instanceof THREE.MeshLambertMaterial)) return false;
+  if (mat.map || mat.transparent || mat.opacity < 1 || mat.vertexColors) return false;
+  if (mat.emissive.r > 0 || mat.emissive.g > 0 || mat.emissive.b > 0) return false;
+  return true;
+}
+
+function bakeColor(geo: THREE.BufferGeometry, color: THREE.Color): void {
+  const count = geo.attributes.position.count;
+  const arr = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    arr[i * 3] = color.r;
+    arr[i * 3 + 1] = color.g;
+    arr[i * 3 + 2] = color.b;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+}
+
+// Collapse every plain mesh under each animation pivot (body root, arms,
+// legs, head, tail) into one merged vertex-colored mesh per material class.
+// Pivot transforms, RigParts and animations are untouched.
+function finalizeRig(rig: Rig): Rig {
+  const roots = new Set<THREE.Object3D>([rig.body]);
+  const p = rig.parts;
+  for (const node of [p.leftArm, p.rightArm, p.leftLeg, p.rightLeg, p.head, p.tail, p.flame]) {
+    if (node) roots.add(node);
+  }
+  for (const leg of p.legs ?? []) roots.add(leg);
+
+  interface Bucket {
+    flat: boolean; metal: boolean; side: THREE.Side; castShadow: boolean;
+    geoms: THREE.BufferGeometry[];
+  }
+  const byRoot = new Map<THREE.Object3D, Map<string, Bucket>>();
+  const toRemove: THREE.Mesh[] = [];
+  const rel = new THREE.Matrix4();
+
+  rig.body.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || !isMergeable(mesh)) return;
+    const mat = mesh.material as THREE.MeshLambertMaterial;
+    const flat = mat.flatShading === true;
+    const metal = mesh.userData.metal === true;
+    if (roots.has(mesh) || mesh.children.length > 0) {
+      // pivots (quadruped legs, tails) and meshes carrying children stay put;
+      // just upgrade them onto the shared vertex-colored material
+      bakeColor(mesh.geometry, mat.color);
+      mesh.material = rigMergedMat(flat, metal, mat.side);
+      return;
+    }
+    // bake the transform relative to the nearest animation pivot
+    rel.identity();
+    let node: THREE.Object3D | null = mesh;
+    while (node && !roots.has(node)) {
+      node.updateMatrix();
+      rel.premultiply(node.matrix);
+      node = node.parent;
+    }
+    if (!node) return; // not parented under the rig (defensive)
+    const key = `${flat ? 1 : 0}:${metal ? 1 : 0}:${mat.side}:${mesh.castShadow ? 1 : 0}`;
+    let buckets = byRoot.get(node);
+    if (!buckets) {
+      buckets = new Map();
+      byRoot.set(node, buckets);
+    }
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = { flat, metal, side: mat.side, castShadow: mesh.castShadow, geoms: [] };
+      buckets.set(key, bucket);
+    }
+    const geo = mesh.geometry.clone().applyMatrix4(rel);
+    bakeColor(geo, mat.color);
+    bucket.geoms.push(geo);
+    toRemove.push(mesh);
+  });
+
+  for (const mesh of toRemove) mesh.removeFromParent();
+  for (const [root, buckets] of byRoot) {
+    for (const bucket of buckets.values()) {
+      const merged = mergeGeometries(bucket.geoms, false);
+      if (!merged) continue;
+      const mesh = new THREE.Mesh(merged, rigMergedMat(bucket.flat, bucket.metal, bucket.side));
+      mesh.castShadow = bucket.castShadow;
+      root.add(mesh);
+    }
+  }
+  return rig;
+}
+
+// Single-draw far LOD: the whole rig in its pristine pose merged into one
+// static vertex-colored mesh. Beyond ~55u the articulated rig (and its 7+
+// draws) swaps for this; emissive details are dropped (sub-pixel out there).
+// Must be built BEFORE any animation runs so the pose is neutral.
+export function buildFarRig(rig: Rig): THREE.Mesh | null {
+  const geoms: THREE.BufferGeometry[] = [];
+  const rel = new THREE.Matrix4();
+  rig.body.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const mat = mesh.material as THREE.Material;
+    // only the shared vertex-colored merge materials participate
+    if (Array.isArray(mat) || !(mat as THREE.MeshStandardMaterial).vertexColors) return;
+    if (!mesh.geometry.attributes.color) return;
+    rel.identity();
+    let node: THREE.Object3D | null = mesh;
+    while (node && node !== rig.body) {
+      node.updateMatrix();
+      rel.premultiply(node.matrix);
+      node = node.parent;
+    }
+    if (!node) return;
+    geoms.push(mesh.geometry.clone().applyMatrix4(rel));
+  });
+  if (geoms.length === 0) return null;
+  const merged = mergeGeometries(geoms, false);
+  if (!merged) return null;
+  const mesh = new THREE.Mesh(merged, rigMergedMat(false, false, THREE.FrontSide));
+  mesh.castShadow = false; // far rigs are outside the shadow gate anyway
+  return mesh;
 }
 
 // Multiply each RGB channel of a hex color (f < 1 darkens, f > 1 lightens).
@@ -47,22 +217,36 @@ export function buildHumanoid(e: Entity, opts: {
   shirt: number; pants: number; skin?: number; hair?: number;
   weapon?: 'sword' | 'staff' | 'dagger' | 'pick' | 'mace' | 'bow' | 'none';
   shoulders?: boolean; hood?: boolean; robe?: boolean;
+  /** class color: faint emissive glint on belt + shoulder pads */
+  accent?: number;
 }): Rig {
   const body = new THREE.Group();
   const parts: RigParts = {};
   const skin = opts.skin ?? SKIN;
   const hair = opts.hair ?? 0x4a3320;
+  const accentMat = (color: number): THREE.Material => surfaceMat({
+    color, emissive: opts.accent, emissiveIntensity: 0.25, roughness: 0.85, rim: true,
+  });
 
-  const torso = box(0.82, 0.92, 0.46, opts.shirt);
+  // rounded torso (capsule squashed to the old box bounds — pivots unchanged)
+  const torsoGeo = new THREE.CapsuleGeometry(0.42, 0.5, 3, 10);
+  torsoGeo.scale(0.98, 0.69, 0.55);
+  const torso = plain(torsoGeo, opts.shirt);
   torso.position.y = 1.46;
   body.add(torso);
   // belt
-  const belt = box(0.86, 0.12, 0.5, 0x3b2a16);
+  const belt = opts.accent !== undefined
+    ? new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.12, 0.5), accentMat(0x3b2a16))
+    : box(0.86, 0.12, 0.5, 0x3b2a16);
+  belt.castShadow = true;
   belt.position.y = 1.02;
   body.add(belt);
 
   const head = new THREE.Group();
-  const skull = box(0.46, 0.46, 0.46, skin);
+  // flattened sphere skull reads human; hair caps stay boxy on purpose
+  const skullGeo = new THREE.SphereGeometry(0.27, 10, 8);
+  skullGeo.scale(0.88, 0.82, 0.88);
+  const skull = plain(skullGeo, skin);
   head.add(skull);
   if (opts.hood) {
     const hood = box(0.54, 0.5, 0.52, opts.shirt);
@@ -83,7 +267,10 @@ export function buildHumanoid(e: Entity, opts: {
 
   if (opts.shoulders) {
     for (const sx of [-1, 1]) {
-      const pad = box(0.32, 0.2, 0.4, 0x4d3a20);
+      const pad = opts.accent !== undefined
+        ? new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.2, 0.4), accentMat(0x4d3a20))
+        : box(0.32, 0.2, 0.4, 0x4d3a20);
+      pad.castShadow = true;
       pad.position.set(sx * 0.56, 1.95, 0);
       body.add(pad);
     }
@@ -123,8 +310,9 @@ export function buildHumanoid(e: Entity, opts: {
       const g = new THREE.Group();
       const shaft = box(0.1, 1.7, 0.1, 0x7a5230);
       g.add(shaft);
-      const orb = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 6), new THREE.MeshLambertMaterial({
-        color: 0x69ccf0, emissive: 0x1b4f72, emissiveIntensity: 0.6,
+      const orb = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 6), surfaceMat({
+        color: 0x69ccf0, emissive: 0x1b4f72,
+        emissiveIntensity: GFX.standardMaterials ? 1.5 : 0.6, roughness: 0.4,
       }));
       orb.position.y = 0.92;
       g.add(orb);
@@ -132,7 +320,7 @@ export function buildHumanoid(e: Entity, opts: {
       w = g;
     } else if (weapon === 'dagger') {
       const g = new THREE.Group();
-      const blade = box(0.06, 0.5, 0.12, 0xc8ccd2);
+      const blade = box(0.06, 0.5, 0.12, 0xc8ccd2, { metal: true });
       blade.position.y = -0.3;
       const hilt = box(0.16, 0.06, 0.1, 0x6b5a2a);
       const grip = box(0.07, 0.16, 0.08, 0x3b2a16);
@@ -143,7 +331,7 @@ export function buildHumanoid(e: Entity, opts: {
     } else if (weapon === 'pick') {
       const g = new THREE.Group();
       const handle = box(0.07, 0.9, 0.07, 0x7a5230);
-      const headBar = box(0.5, 0.09, 0.09, 0x8d8d85);
+      const headBar = box(0.5, 0.09, 0.09, 0x8d8d85, { metal: true });
       headBar.position.y = 0.42;
       g.add(handle, headBar);
       g.position.set(0, -0.75, 0.1);
@@ -151,7 +339,7 @@ export function buildHumanoid(e: Entity, opts: {
     } else if (weapon === 'mace') {
       const g = new THREE.Group();
       const handle = box(0.08, 0.8, 0.08, 0x6b4a2b);
-      const head = box(0.26, 0.26, 0.26, 0x8d8d85);
+      const head = box(0.26, 0.26, 0.26, 0x8d8d85, { metal: true });
       head.position.y = 0.42;
       g.add(handle, head);
       g.position.set(0, -0.8, 0.1);
@@ -172,9 +360,9 @@ export function buildHumanoid(e: Entity, opts: {
       w = g;
     } else {
       const g = new THREE.Group();
-      const blade = box(0.09, 0.85, 0.16, 0xc8ccd2);
+      const blade = box(0.09, 0.85, 0.16, 0xc8ccd2, { metal: true });
       blade.position.y = -0.5;
-      const guard = box(0.3, 0.07, 0.12, 0x8a6d2c);
+      const guard = box(0.3, 0.07, 0.12, 0x8a6d2c, { metal: true });
       const grip = box(0.08, 0.2, 0.09, 0x3b2a16);
       grip.position.y = 0.13;
       g.add(blade, guard, grip);
@@ -208,9 +396,8 @@ export function buildWolf(e: Entity): Rig {
   nose.position.set(0, -0.04, 0.62);
   head.add(skull, snout, nose);
   for (const sx of [-0.15, 0.15]) {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.26, 4), new THREE.MeshLambertMaterial({ color: furDark }));
+    const ear = plain(new THREE.ConeGeometry(0.1, 0.26, 4), furDark);
     ear.position.set(sx, 0.32, 0);
-    ear.castShadow = true;
     head.add(ear);
   }
   head.position.set(0, 1.18, 0.95);
@@ -275,26 +462,25 @@ export function buildSpider(e: Entity): Rig {
   const body = new THREE.Group();
   const parts: RigParts = {};
   const chitin = e.color;
-  const abdomen = new THREE.Mesh(new THREE.SphereGeometry(0.62, 8, 6), new THREE.MeshLambertMaterial({ color: chitin, flatShading: true }));
+  const abdomen = plain(new THREE.SphereGeometry(0.62, 8, 6), chitin, { flat: true });
   abdomen.scale.set(1, 0.85, 1.25);
   abdomen.position.set(0, 0.92, -0.5);
-  abdomen.castShadow = true;
   body.add(abdomen);
-  const thorax = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), new THREE.MeshLambertMaterial({ color: 0x2e1437, flatShading: true }));
+  const thorax = plain(new THREE.SphereGeometry(0.4, 8, 6), 0x2e1437, { flat: true });
   thorax.position.set(0, 0.82, 0.32);
-  thorax.castShadow = true;
   body.add(thorax);
   // eyes
   for (const sx of [-0.12, 0.12]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshLambertMaterial({
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 4), surfaceMat({
       color: 0xff3333, emissive: 0x661111,
+      emissiveIntensity: GFX.standardMaterials ? 1.4 : 1,
     }));
     eye.position.set(sx, 0.92, 0.66);
     body.add(eye);
   }
   // fangs
   for (const sx of [-0.1, 0.1]) {
-    const fang = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.18, 4), new THREE.MeshLambertMaterial({ color: 0xd5d8dc }));
+    const fang = plain(new THREE.ConeGeometry(0.05, 0.18, 4), 0xd5d8dc);
     fang.position.set(sx, 0.66, 0.62);
     fang.rotation.x = Math.PI;
     body.add(fang);
@@ -334,15 +520,14 @@ export function buildMurloc(e: Entity): Rig {
   body.add(bellyPlate);
 
   const head = new THREE.Group();
-  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.36, 8, 6), new THREE.MeshLambertMaterial({ color: skin, flatShading: true }));
+  const skull = plain(new THREE.SphereGeometry(0.36, 8, 6), skin, { flat: true });
   skull.scale.set(1.15, 0.9, 1);
-  skull.castShadow = true;
   head.add(skull);
   for (const sx of [-0.16, 0.16]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 4), new THREE.MeshLambertMaterial({ color: 0xfff2b0 }));
+    const eye = plain(new THREE.SphereGeometry(0.09, 6, 4), 0xfff2b0);
     eye.position.set(sx, 0.12, 0.26);
     head.add(eye);
-    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.04, 4, 4), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+    const pupil = plain(new THREE.SphereGeometry(0.04, 4, 4), 0x111111);
     pupil.position.set(sx, 0.12, 0.34);
     head.add(pupil);
   }
@@ -350,7 +535,7 @@ export function buildMurloc(e: Entity): Rig {
   mouth.position.set(0, -0.12, 0.26);
   head.add(mouth);
   // head fin
-  const fin = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.4, 4), new THREE.MeshLambertMaterial({ color: 0xe67e22, side: THREE.DoubleSide }));
+  const fin = plain(new THREE.ConeGeometry(0.22, 0.4, 4), 0xe67e22, { side: THREE.DoubleSide });
   fin.scale.z = 0.3;
   fin.position.set(0, 0.34, -0.05);
   head.add(fin);
@@ -393,8 +578,9 @@ export function buildKobold(e: Entity): Rig {
   const candle = box(0.12, 0.22, 0.12, 0xf5eee0);
   candle.position.set(0, 0.4, 0);
   rig.parts.head!.add(candle);
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.18, 5), new THREE.MeshLambertMaterial({
-    color: 0xffc04d, emissive: 0xff8800, emissiveIntensity: 1.2,
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.18, 5), surfaceMat({
+    color: 0xffc04d, emissive: 0xff8800,
+    emissiveIntensity: GFX.standardMaterials ? 2.0 : 1.2,
   }));
   flame.position.set(0, 0.6, 0);
   rig.parts.head!.add(flame);
@@ -616,7 +802,7 @@ export function buildElemental(e: Entity): Rig {
   const parts: RigParts = {};
   const core = new THREE.Mesh(
     new THREE.SphereGeometry(0.42, 10, 8),
-    new THREE.MeshLambertMaterial({ color: e.color, emissive: e.color, emissiveIntensity: 0.9 }),
+    surfaceMat({ color: e.color, emissive: e.color, emissiveIntensity: GFX.standardMaterials ? 1.5 : 0.9 }),
   );
   core.position.y = 1.25;
   body.add(core);
@@ -626,13 +812,9 @@ export function buildElemental(e: Entity): Rig {
     [-0.45, 0.85, 0.5, 0.34], [0.5, 1.6, 0.55, 0.2],
   ];
   for (const [x, y, z, r] of chunks) {
-    const chunk = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(r, 0),
-      new THREE.MeshLambertMaterial({ color: rock, flatShading: true }),
-    );
+    const chunk = plain(new THREE.DodecahedronGeometry(r, 0), rock, { flat: true });
     chunk.position.set(x, y, z);
     chunk.rotation.set(x * 3, y * 3, z * 3); // varied tumble per chunk
-    chunk.castShadow = true;
     body.add(chunk);
   }
   return { body, parts, kind: 'elemental', height: 2.2 };
@@ -657,9 +839,8 @@ export function buildDragonkin(e: Entity): Rig {
   body.add(bellyPlate);
   // dorsal ridge
   for (let i = 0; i < 4; i++) {
-    const ridge = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.3, 4), new THREE.MeshLambertMaterial({ color: plate, flatShading: true }));
+    const ridge = plain(new THREE.ConeGeometry(0.13, 0.3, 4), plate, { flat: true });
     ridge.position.set(0, 1.56, 0.7 - i * 0.45);
-    ridge.castShadow = true;
     body.add(ridge);
   }
 
@@ -681,13 +862,13 @@ export function buildDragonkin(e: Entity): Rig {
   jaw.position.set(0, -0.22, 0.5);
   head.add(jaw);
   for (const sx of [-0.16, 0.16]) {
-    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.42, 5), new THREE.MeshLambertMaterial({ color: 0xd8cfb8 }));
+    const horn = plain(new THREE.ConeGeometry(0.08, 0.42, 5), 0xd8cfb8);
     horn.position.set(sx, 0.24, -0.18);
     horn.rotation.x = -0.8;
-    horn.castShadow = true;
     head.add(horn);
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 4), new THREE.MeshLambertMaterial({
-      color: 0xffc24d, emissive: 0xff8a00, emissiveIntensity: 1.4,
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 6, 4), surfaceMat({
+      color: 0xffc24d, emissive: 0xff8a00,
+      emissiveIntensity: GFX.standardMaterials ? 2.0 : 1.4,
     }));
     eye.position.set(sx, 0.06, 0.42);
     head.add(eye);
@@ -699,13 +880,9 @@ export function buildDragonkin(e: Entity): Rig {
   // flat bone-plane wings, raised and swept back
   for (const sx of [-1, 1]) {
     const wing = new THREE.Group();
-    const membrane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.45, 0.95),
-      new THREE.MeshLambertMaterial({ color: plate, side: THREE.DoubleSide }),
-    );
+    const membrane = plain(new THREE.PlaneGeometry(1.45, 0.95), plate, { side: THREE.DoubleSide });
     membrane.rotation.x = -Math.PI / 2;
     membrane.position.set(sx * 0.78, 0, -0.1);
-    membrane.castShadow = true;
     wing.add(membrane);
     const spar = box(1.5, 0.05, 0.08, shade(scales, 0.45));
     spar.position.set(sx * 0.75, 0.03, 0.32);
@@ -736,10 +913,9 @@ export function buildDragonkin(e: Entity): Rig {
   seg1.position.z = -0.35;
   const seg2 = box(0.28, 0.24, 0.7, scales);
   seg2.position.z = -0.95;
-  const tailSpike = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.38, 4), new THREE.MeshLambertMaterial({ color: plate, flatShading: true }));
+  const tailSpike = plain(new THREE.ConeGeometry(0.1, 0.38, 4), plate, { flat: true });
   tailSpike.position.set(0, 0.02, -1.4);
   tailSpike.rotation.x = -Math.PI / 2;
-  tailSpike.castShadow = true;
   tail.add(seg1, seg2, tailSpike);
   tailPivot.add(tail);
   parts.tail = tail;
@@ -778,17 +954,16 @@ export function buildBear(): Rig {
     parts.legs.push(leg);
     body.add(leg);
   }
-  return { body, parts, kind: 'wolf', height: 1.9 };
+  return finalizeRig({ body, parts, kind: 'wolf', height: 1.9 });
 }
 
 // Polymorph form
 export function buildSheep(): Rig {
   const body = new THREE.Group();
   const parts: RigParts = {};
-  const wool = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), new THREE.MeshLambertMaterial({ color: 0xf2f0e6, flatShading: true }));
+  const wool = plain(new THREE.SphereGeometry(0.5, 8, 6), 0xf2f0e6, { flat: true });
   wool.scale.set(1, 0.85, 1.3);
   wool.position.y = 0.72;
-  wool.castShadow = true;
   body.add(wool);
   const head = new THREE.Group();
   const skull = box(0.3, 0.3, 0.34, 0x2c2c2c);
@@ -809,7 +984,7 @@ export function buildSheep(): Rig {
     parts.legs.push(leg);
     body.add(leg);
   }
-  return { body, parts, kind: 'sheep', height: 1.2 };
+  return finalizeRig({ body, parts, kind: 'sheep', height: 1.2 });
 }
 
 // Generic armed humanoid — the family default for 'humanoid' mobs and the
@@ -849,7 +1024,7 @@ const MOB_OVERRIDES: Record<string, (e: Entity) => Rig> = {
     const rig = buildHumanoid(e, { shirt: e.color, pants: 0x2c1a33, weapon: 'sword', shoulders: true });
     // boss spikes
     for (const sx of [-1, 1]) {
-      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.45, 5), new THREE.MeshLambertMaterial({ color: 0x2c2c34 }));
+      const spike = plain(new THREE.ConeGeometry(0.16, 0.45, 5), 0x2c2c34);
       spike.position.set(sx * 0.56, 2.15, 0);
       rig.body.add(spike);
     }
@@ -861,10 +1036,10 @@ const MOB_OVERRIDES: Record<string, (e: Entity) => Rig> = {
 export function buildRigFor(e: Entity): Rig {
   if (e.kind === 'mob') {
     const override = MOB_OVERRIDES[e.templateId];
-    if (override) return override(e);
+    if (override) return finalizeRig(override(e));
     const family = MOBS[e.templateId]?.family;
     const builder = family ? FAMILY_BUILDERS[family] : undefined;
-    return (builder ?? buildGenericHumanoid)(e);
+    return finalizeRig((builder ?? buildGenericHumanoid)(e));
   }
   if (e.kind === 'player') {
     const cls = e.templateId;
@@ -875,14 +1050,15 @@ export function buildRigFor(e: Entity): Rig {
           : cls === 'paladin' || cls === 'shaman' ? 'mace'
             : robed || cls === 'druid' ? 'staff'
               : 'sword';
-    return buildHumanoid(e, {
+    return finalizeRig(buildHumanoid(e, {
       shirt: e.color,
       pants: robed ? e.color : 0x33302b,
       weapon,
       shoulders: cls === 'warrior' || cls === 'paladin' || cls === 'shaman',
       robe: robed,
       hair: 0x6b4423,
-    });
+      accent: e.color,
+    }));
   }
   // npcs
   const npcWeapons: Record<string, 'sword' | 'staff' | 'none' | 'pick' | 'mace' | 'bow'> = {
@@ -893,12 +1069,12 @@ export function buildRigFor(e: Entity): Rig {
     captain_thessaly: 'sword', scout_maren_highwatch: 'bow', armorer_hode: 'mace',
     loremaster_caddis: 'staff', brother_aldric_highwatch: 'staff',
   };
-  return buildHumanoid(e, {
+  return finalizeRig(buildHumanoid(e, {
     shirt: e.color,
     pants: 0x4a4138,
     weapon: npcWeapons[e.templateId] ?? 'none',
     // Brother Aldric recurs in every zone hub under new ids; keep him robed
     robe: e.templateId.startsWith('brother_aldric'),
     hair: 0x7a6a50,
-  });
+  }));
 }

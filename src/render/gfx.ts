@@ -96,6 +96,22 @@ export interface SurfaceMatOpts {
   flatShading?: boolean;
   emissive?: number;
   emissiveIntensity?: number;
+  side?: THREE.Side;
+  /** subtle cool fresnel rim glow — sells silhouettes against dark ground */
+  rim?: boolean;
+}
+
+// Shared fresnel rim emissive for character rigs (high/ultra only; Lambert on
+// low has no per-fragment view vector worth paying for).
+export function addRimGlow(mat: THREE.Material): void {
+  mat.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace(
+      '#include <emissivemap_fragment>',
+      `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.5, 0.6, 0.8) * 0.12 *
+        pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 3.0);`,
+    );
+  };
 }
 
 // Material factory: dedupes by (color|maps|flags) so hundreds of small box
@@ -122,6 +138,7 @@ export function surfaceMat(opts: SurfaceMatOpts): THREE.Material {
       flatShading: opts.flatShading ?? false,
       emissive: opts.emissive ?? 0x000000,
       emissiveIntensity: opts.emissiveIntensity ?? 1,
+      side: opts.side ?? THREE.FrontSide,
     })
     : new THREE.MeshLambertMaterial({
       color: opts.color ?? 0xffffff,
@@ -129,7 +146,9 @@ export function surfaceMat(opts: SurfaceMatOpts): THREE.Material {
       flatShading: opts.flatShading ?? false,
       emissive: opts.emissive ?? 0x000000,
       emissiveIntensity: opts.emissiveIntensity ?? 1,
+      side: opts.side ?? THREE.FrontSide,
     });
+  if (opts.rim && GFX.standardMaterials) addRimGlow(mat);
   matCache.set(key, mat);
   return mat;
 }

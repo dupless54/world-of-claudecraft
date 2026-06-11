@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { terrainHeight } from '../sim/world';
 import { PROPS, WORLD_MIN_Z } from '../sim/data';
-import { roofTexture, wallTexture, stoneTexture } from './textures';
+import { GFX, surfaceMat } from './gfx';
+import { barkMaps, roofMaps, roofTexture, stoneMaps, stoneTexture, wallMaps, wallTexture } from './textures';
 
 // Static world props: buildings, tents, campfires, mines, ruins, docks, fences.
 // Placement comes from the per-zone content modules (merged into PROPS by
@@ -18,6 +19,8 @@ export interface PropsResult {
   group: THREE.Group;
   flames: THREE.Mesh[]; // animated campfire flames
   fireLights: THREE.PointLight[];
+  /** hides merged prop bands that sit entirely past the fog far plane */
+  update(camX: number, camZ: number, fogFar: number): void;
 }
 
 const MERGE_BAND_DEPTH = 180;
@@ -27,22 +30,40 @@ export function buildProps(seed: number): PropsResult {
   const flames: THREE.Mesh[] = [];
   const fireLights: THREE.PointLight[] = [];
 
-  const roofTex = roofTexture();
-  const wallTex = wallTexture();
-  const stoneTex = stoneTexture();
-  const wallMat = new THREE.MeshLambertMaterial({ map: wallTex });
-  const roofMat = new THREE.MeshLambertMaterial({ map: roofTex });
-  const stoneMat = new THREE.MeshLambertMaterial({ map: stoneTex });
-  const woodMat = new THREE.MeshLambertMaterial({ color: 0x6b4a2b });
-  const woodDarkMat = new THREE.MeshLambertMaterial({ color: 0x4a3320 });
-  const canvasMat = new THREE.MeshLambertMaterial({ color: 0xc9b48a, side: THREE.DoubleSide });
-  const windowMat = new THREE.MeshLambertMaterial({ color: 0x35506b, emissive: 0x1a2c40, emissiveIntensity: 0.7 });
-  const awningMat = new THREE.MeshLambertMaterial({ color: 0x1e8449 });
-  const breadMat = new THREE.MeshLambertMaterial({ color: 0xc8954a });
-  const jugMat = new THREE.MeshLambertMaterial({ color: 0x7a9cc6 });
+  // High tier: normal-mapped Standard pairs (walls/roofs/stone/bark) with
+  // roughness; low keeps the legacy flat Lambert set byte-identical. All mats
+  // are hoisted + shared (surfaceMat dedupes) so the static merge below stays
+  // a handful of draws.
+  const usePbr = GFX.standardMaterials;
+  let wallMat: THREE.Material, roofMat: THREE.Material, stoneMat: THREE.Material;
+  let woodMat: THREE.Material, woodDarkMat: THREE.Material;
+  if (usePbr) {
+    const wall = wallMaps();
+    const roof = roofMaps();
+    const stone = stoneMaps();
+    const bark = barkMaps();
+    wallMat = surfaceMat({ map: wall.map, normalMap: wall.normalMap, roughness: 0.9 });
+    roofMat = surfaceMat({ map: roof.map, normalMap: roof.normalMap, roughness: 0.8 });
+    stoneMat = surfaceMat({ map: stone.map, normalMap: stone.normalMap, color: 0xb8b8b2, roughness: 0.95 });
+    woodMat = surfaceMat({ map: bark.map, normalMap: bark.normalMap, roughness: 0.9 });
+    woodDarkMat = surfaceMat({ map: bark.map, normalMap: bark.normalMap, color: 0xb0a08e, roughness: 0.9 });
+  } else {
+    wallMat = new THREE.MeshLambertMaterial({ map: wallTexture() });
+    roofMat = new THREE.MeshLambertMaterial({ map: roofTexture() });
+    stoneMat = new THREE.MeshLambertMaterial({ map: stoneTexture() });
+    woodMat = new THREE.MeshLambertMaterial({ color: 0x6b4a2b });
+    woodDarkMat = new THREE.MeshLambertMaterial({ color: 0x4a3320 });
+  }
+  const canvasMat = surfaceMat({ color: 0xc9b48a, side: THREE.DoubleSide, roughness: 0.95 });
+  const windowMat = surfaceMat({
+    color: 0x35506b, emissive: 0x1a2c40, emissiveIntensity: usePbr ? 1.2 : 0.7, roughness: 0.4,
+  });
+  const awningMat = surfaceMat({ color: 0x1e8449, roughness: 0.9 });
+  const breadMat = surfaceMat({ color: 0xc8954a, roughness: 0.9 });
+  const jugMat = surfaceMat({ color: 0x7a9cc6, roughness: 0.55 });
   const holeMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
-  const oreMat = new THREE.MeshLambertMaterial({ color: 0xb87333 });
-  const mudMat = new THREE.MeshLambertMaterial({ color: 0x6e7f4e, flatShading: true });
+  const oreMat = surfaceMat({ color: 0xb87333, roughness: 0.5, metalness: usePbr ? 0.45 : 0 });
+  const mudMat = surfaceMat({ color: 0x6e7f4e, flatShading: true, roughness: 1 });
 
   const ground = (x: number, z: number) => terrainHeight(x, z, seed);
 
@@ -222,7 +243,8 @@ export function buildProps(seed: number): PropsResult {
     stoneRing.position.y = 0.08;
     g.add(stoneRing);
     const flame = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.9, 6), new THREE.MeshLambertMaterial({
-      color: 0xffaa33, emissive: 0xff6600, emissiveIntensity: 1.4, transparent: true, opacity: 0.92,
+      color: 0xffaa33, emissive: 0xff6600, emissiveIntensity: usePbr ? 2.2 : 1.4,
+      transparent: true, opacity: 0.92,
     }));
     flame.position.y = 0.55;
     g.add(flame);
@@ -360,15 +382,26 @@ export function buildProps(seed: number): PropsResult {
     group.add(shadowed(hut));
   }
 
-  mergeStaticMeshes(group, new Set(flames));
-  return { group, flames, fireLights };
+  const staticMeshes = mergeStaticMeshes(group, new Set(flames));
+  return {
+    group,
+    flames,
+    fireLights,
+    update(camX: number, camZ: number, fogFar: number): void {
+      for (const sm of staticMeshes) {
+        const sphere = sm.geometry.boundingSphere;
+        if (!sphere) continue;
+        sm.visible = Math.hypot(sphere.center.x - camX, sphere.center.z - camZ) - sphere.radius < fogFar;
+      }
+    },
+  };
 }
 
 // Bake every static prop mesh into world space and merge per
 // (material, castShadow, z-band). Flames (animated) survive untouched, as do
 // the PointLights (not meshes). The merged meshes replace the originals on
 // the same group; emptied sub-groups are left in place (they carry lights).
-function mergeStaticMeshes(group: THREE.Group, keep: Set<THREE.Object3D>): void {
+function mergeStaticMeshes(group: THREE.Group, keep: Set<THREE.Object3D>): THREE.Mesh[] {
   group.updateMatrixWorld(true);
   interface Bucket { material: THREE.Material; castShadow: boolean; geoms: THREE.BufferGeometry[] }
   const buckets = new Map<string, Bucket>();
@@ -392,6 +425,7 @@ function mergeStaticMeshes(group: THREE.Group, keep: Set<THREE.Object3D>): void 
     mesh.removeFromParent();
     mesh.geometry.dispose(); // never uploaded — merge runs before first render
   }
+  const out: THREE.Mesh[] = [];
   for (const bucket of buckets.values()) {
     const geo = mergeGeometries(bucket.geoms, false);
     if (!geo) continue;
@@ -401,5 +435,7 @@ function mergeStaticMeshes(group: THREE.Group, keep: Set<THREE.Object3D>): void 
     mesh.castShadow = bucket.castShadow;
     mesh.receiveShadow = true;
     group.add(mesh);
+    out.push(mesh);
   }
+  return out;
 }

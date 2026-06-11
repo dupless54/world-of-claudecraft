@@ -1,27 +1,42 @@
 import * as THREE from 'three';
 import { Entity, SimEvent } from '../sim/types';
 import type { IWorld } from '../world_api';
-import { terrainHeight, groundHeight, generateDecorations, roadDistance, WATER_LEVEL, zoneBiomeAt } from '../sim/world';
+import { groundHeight, WATER_LEVEL, zoneBiomeAt } from '../sim/world';
 import {
   MOBS, ABILITIES, DUNGEON_X_THRESHOLD, DUNGEON_LIST,
-  instanceOrigin, INSTANCE_SLOT_COUNT, ZONES,
-  WORLD_MAX_X, WORLD_MAX_Z, WORLD_MIN_Z,
+  instanceOrigin, INSTANCE_SLOT_COUNT,
 } from '../sim/data';
 import type { BiomeId } from '../sim/types';
-import { buildBear, buildRigFor, buildSheep, Rig } from './models';
+import { buildBear, buildFarRig, buildRigFor, buildSheep, Rig } from './models';
 import { buildProps } from './props';
-import { barkTexture, foliageTexture, grassTuftTexture, sparkleTexture } from './textures';
+import { sparkleTexture, stoneMaps, SurfaceMaps } from './textures';
 import { Vfx } from './vfx';
-import { GFX, initGfxTier, sharedUniforms, urlForcedTier } from './gfx';
+import { GFX, initGfxTier, sharedUniforms, surfaceMat, urlForcedTier } from './gfx';
 import { buildComposer, PostPipeline } from './post';
-import { buildTerrain } from './terrain';
+import { buildTerrain, TerrainView } from './terrain';
 import { buildWater, WaterView } from './water';
 import { buildClouds, buildSky, SkyView } from './sky';
+import { buildFoliage, FoliageView } from './foliage';
 
 const NAMEPLATE_RANGE = 55;
 // Entities further than this from the player are hidden entirely: their rigs
-// are a dozen draw calls each and read as sub-pixel specks long before this.
-const ENTITY_DRAW_RANGE = 110;
+// are several draw calls each and read as sub-pixel specks long before this.
+const ENTITY_DRAW_RANGE = 80;
+// rigs further than this stop casting shadows (their shadows are sub-pixel;
+// the shadow pass is half the frame's draw calls otherwise)
+const ENTITY_SHADOW_RANGE_SQ = 30 * 30;
+// beyond this, the articulated rig swaps for its single-draw merged far LOD
+// (just inside the nameplate range; rigs out there are ~30px tall)
+const ENTITY_LOD_RANGE_SQ = 50 * 50;
+// fire/torch point lights beyond this never shine (their falloff range is
+// shorter anyway); the nearest GFX.maxPointLights within it win the budget
+const LIGHT_BUDGET_RANGE_SQ = 55 * 55;
+// HDR boosts so the bloom pass picks these out (composer tiers only)
+const SELECTION_RING_BOOST = 1.5;
+const SPARKLE_BOOST = 1.5;
+const PORTAL_BOOST = 2;
+const FLAME_EMISSIVE_HIGH = 2.2;
+const SUN_HALO_OPACITY = 0.35; // bloom now supplies most of the halo
 // lighting rig (high/ultra) — IBL supplies ambient, sun carries the key
 const HEMI_INTENSITY = 0.45;
 const SUN_INTENSITY = 2.8;
@@ -46,6 +61,16 @@ interface EntityView {
   sparkle?: THREE.Sprite; // ground objects
   objectMesh?: THREE.Object3D;
   portal?: THREE.Mesh; // dungeon door swirl
+  casters: THREE.Object3D[]; // shadow-casting meshes, distance-gated in sync
+  shadowOn: boolean;
+  farMesh: THREE.Mesh | null; // single-draw merged LOD shown beyond 55u
+  isFar: boolean;
+}
+
+function collectCasters(root: THREE.Object3D, into: THREE.Object3D[]): void {
+  root.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh && (o as THREE.Mesh).castShadow) into.push(o);
+  });
 }
 
 export class Renderer {
@@ -71,9 +96,14 @@ export class Renderer {
   private sunDir = new THREE.Vector3();
   private clouds: THREE.Sprite[] = [];
   private waterView: WaterView;
+  private terrainView: TerrainView;
+  private foliage: FoliageView;
   private fogScratch = new THREE.Color();
   private flames: THREE.Mesh[];
   private fireLights: THREE.PointLight[];
+  private propsView!: { update(camX: number, camZ: number, fogFar: number): void };
+  private lightRank: { light: THREE.PointLight; d2: number }[] = [];
+  private stoneMapsCache: SurfaceMaps | null = null;
   private time = 0;
   vfx: Vfx;
 
@@ -160,6 +190,9 @@ export class Renderer {
       const sp = new THREE.Sprite(new THREE.SpriteMaterial({
         map: tex, transparent: true, fog: false, depthWrite: false, depthTest: false,
         blending: THREE.AdditiveBlending,
+        // bloom supplies the big halo on the composer path; the painted one
+        // would double up and wash out the sky
+        opacity: scale === 190 && !LOW_GFX ? SUN_HALO_OPACITY : 1,
       }));
       sp.scale.set(scale, scale, 1);
       sp.renderOrder = -9;
@@ -209,16 +242,18 @@ export class Renderer {
       this.scene.add(cl);
     }
 
-    this.scene.add(buildTerrain(this.sim.cfg.seed));
+    this.terrainView = buildTerrain(this.sim.cfg.seed);
+    this.scene.add(this.terrainView.group);
     this.waterView = buildWater(this.sim.cfg.seed);
     for (const mesh of this.waterView.meshes) this.scene.add(mesh);
 
-    this.buildDecorations();
-    this.buildGrass();
+    this.foliage = buildFoliage(this.sim.cfg.seed);
+    this.scene.add(this.foliage.group);
     const props = buildProps(this.sim.cfg.seed);
     this.scene.add(props.group);
     this.flames = props.flames;
     this.fireLights = props.fireLights;
+    this.propsView = props;
 
     // selection ring
     const ringGeo = new THREE.RingGeometry(0.9, 1.15, 32);
@@ -285,131 +320,6 @@ export class Renderer {
   }
 
   // -------------------------------------------------------------------------
-  // World building
-  // -------------------------------------------------------------------------
-
-  private buildDecorations(): void {
-    const decos = generateDecorations(this.sim.cfg.seed);
-    const pines = decos.filter((d) => d.kind === 'tree');
-    const oaks = decos.filter((d) => d.kind === 'tree2');
-    const rocks = decos.filter((d) => d.kind === 'rock');
-    const seed = this.sim.cfg.seed;
-
-    const bark = barkTexture();
-    const foliage = foliageTexture();
-    const trunkMat = new THREE.MeshLambertMaterial({ map: bark });
-    const pineMat = new THREE.MeshLambertMaterial({ map: foliage, color: 0xa8c898 });
-    const pineMat2 = new THREE.MeshLambertMaterial({ map: foliage, color: 0xc2d8a8 });
-    const oakMat = new THREE.MeshLambertMaterial({ map: foliage, color: 0xb8cc8e });
-
-    const m = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const up = new THREE.Vector3(0, 1, 0);
-
-    // pines: trunk + 3 stacked cones
-    const pTrunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.22, 0.42, 2.6, 6), trunkMat, pines.length);
-    const pC1 = new THREE.InstancedMesh(new THREE.ConeGeometry(2.4, 3.2, 7), pineMat, pines.length);
-    const pC2 = new THREE.InstancedMesh(new THREE.ConeGeometry(1.85, 2.7, 7), pineMat2, pines.length);
-    const pC3 = new THREE.InstancedMesh(new THREE.ConeGeometry(1.25, 2.2, 7), pineMat, pines.length);
-    pines.forEach((t, i) => {
-      const y = terrainHeight(t.x, t.z, seed);
-      const s = t.scale * 1.5;
-      q.setFromAxisAngle(up, t.variant * 2.1);
-      const sv = new THREE.Vector3(s, s, s);
-      m.compose(new THREE.Vector3(t.x, y + 1.3 * s, t.z), q, sv);
-      pTrunk.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(t.x, y + 3.6 * s, t.z), q, sv);
-      pC1.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(t.x, y + 5.3 * s, t.z), q, sv);
-      pC2.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(t.x, y + 6.8 * s, t.z), q, sv);
-      pC3.setMatrixAt(i, m);
-    });
-    for (const im of [pTrunk, pC1, pC2, pC3]) {
-      im.castShadow = true;
-      this.scene.add(im);
-    }
-
-    // oaks: trunk + blobby foliage
-    const oTrunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.28, 0.5, 2.8, 6), trunkMat, oaks.length);
-    const oFol = new THREE.InstancedMesh(new THREE.SphereGeometry(2.2, 7, 5), oakMat, oaks.length);
-    const oFol2 = new THREE.InstancedMesh(new THREE.SphereGeometry(1.5, 6, 5), oakMat, oaks.length);
-    oaks.forEach((t, i) => {
-      const y = terrainHeight(t.x, t.z, seed);
-      const s = t.scale * 1.3;
-      q.setFromAxisAngle(up, t.variant * 2.1);
-      m.compose(new THREE.Vector3(t.x, y + 1.4 * s, t.z), q, new THREE.Vector3(s, s, s));
-      oTrunk.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(t.x, y + 3.6 * s, t.z), q, new THREE.Vector3(s, s * 0.8, s));
-      oFol.setMatrixAt(i, m);
-      m.compose(new THREE.Vector3(t.x + 1.1 * s, y + 2.9 * s, t.z + 0.4 * s), q, new THREE.Vector3(s, s * 0.7, s));
-      oFol2.setMatrixAt(i, m);
-    });
-    for (const im of [oTrunk, oFol, oFol2]) {
-      im.castShadow = true;
-      this.scene.add(im);
-    }
-
-    const rockMesh = new THREE.InstancedMesh(
-      new THREE.DodecahedronGeometry(0.9, 0),
-      new THREE.MeshLambertMaterial({ color: 0x8d8d85, flatShading: true }),
-      rocks.length,
-    );
-    rocks.forEach((r, i) => {
-      const y = terrainHeight(r.x, r.z, seed);
-      q.setFromAxisAngle(up, r.variant * 1.7);
-      m.compose(new THREE.Vector3(r.x, y + 0.3 * r.scale, r.z), q, new THREE.Vector3(r.scale, r.scale * 0.7, r.scale));
-      rockMesh.setMatrixAt(i, m);
-    });
-    rockMesh.castShadow = true;
-    this.scene.add(rockMesh);
-  }
-
-  private buildGrass(): void {
-    const seed = this.sim.cfg.seed;
-    const positions: { x: number; z: number; s: number; r: number }[] = [];
-    const step = this.lowGfx ? 4.5 : 3.4;
-    const xHalf = WORLD_MAX_X - 16;
-    let h1 = 0;
-    for (let gx = -xHalf; gx < xHalf; gx += step) {
-      for (let gz = WORLD_MIN_Z + 16; gz < WORLD_MAX_Z - 16; gz += step) {
-        h1 = (Math.sin(gx * 12.9898 + gz * 78.233) * 43758.5453) % 1;
-        const r = Math.abs(h1);
-        if (r > 0.5) continue;
-        const x = gx + (r - 0.25) * 8;
-        const z = gz + ((r * 7) % 1 - 0.5) * 8;
-        const h = terrainHeight(x, z, seed);
-        if (h < WATER_LEVEL + 1.6) continue;
-        let nearHub = false;
-        for (const zn of ZONES) {
-          if (Math.hypot(x - zn.hub.x, z - zn.hub.z) < 15) { nearHub = true; break; }
-        }
-        if (nearHub) continue;
-        if (roadDistance(x, z) < 3.2) continue;
-        positions.push({ x, z, s: 0.45 + r * 0.5, r: r * 6 });
-      }
-    }
-    // crossed-quad geometry
-    const quad = new THREE.PlaneGeometry(1.1, 0.7);
-    quad.translate(0, 0.35, 0);
-    const quad2 = quad.clone().rotateY(Math.PI / 2);
-    const merged = mergeGeoms([quad, quad2]);
-    const mat = new THREE.MeshLambertMaterial({
-      map: grassTuftTexture(), transparent: true, alphaTest: 0.35, side: THREE.DoubleSide,
-    });
-    const im = new THREE.InstancedMesh(merged, mat, positions.length);
-    const m = new THREE.Matrix4();
-    const q = new THREE.Quaternion();
-    const up = new THREE.Vector3(0, 1, 0);
-    positions.forEach((p, i) => {
-      q.setFromAxisAngle(up, p.r);
-      m.compose(new THREE.Vector3(p.x, terrainHeight(p.x, p.z, seed), p.z), q, new THREE.Vector3(p.s, p.s, p.s));
-      im.setMatrixAt(i, m);
-    });
-    this.scene.add(im);
-  }
-
-  // -------------------------------------------------------------------------
   // Entity views
   // -------------------------------------------------------------------------
 
@@ -436,13 +346,12 @@ export class Renderer {
       lintel.position.y = 4.55;
       lintel.castShadow = true;
       rig.body.add(lintel);
-      portal = new THREE.Mesh(
-        new THREE.CircleGeometry(1.55, 24),
-        new THREE.MeshBasicMaterial({
-          color: tint, transparent: true, opacity: 0.55, side: THREE.DoubleSide,
-          blending: THREE.AdditiveBlending, depthWrite: false,
-        }),
-      );
+      const portalMat = new THREE.MeshBasicMaterial({
+        color: tint, transparent: true, opacity: 0.55, side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      if (!this.lowGfx) portalMat.color.multiplyScalar(PORTAL_BOOST); // HDR swirl -> bloom
+      portal = new THREE.Mesh(new THREE.CircleGeometry(1.55, 24), portalMat);
       portal.position.y = 2.15;
       portal.scale.set(1, 1.35, 1);
       rig.body.add(portal);
@@ -463,6 +372,7 @@ export class Renderer {
       rig.body.add(crate, lid);
       objectMesh = rig.body;
       const sMat = new THREE.SpriteMaterial({ map: sparkleTexture(), transparent: true, depthWrite: false });
+      if (!this.lowGfx) sMat.color.setScalar(SPARKLE_BOOST); // gold glint via bloom
       sparkle = new THREE.Sprite(sMat);
       sparkle.scale.set(0.9, 0.9, 1);
       sparkle.position.y = 1.35;
@@ -495,9 +405,23 @@ export class Renderer {
     np.append(marker, nameEl, hpBar);
     this.nameplateLayer.appendChild(np);
 
+    const casters: THREE.Object3D[] = [];
+    collectCasters(group, casters);
+    // far LOD must be captured from the pristine pose, before any animation
+    let farMesh: THREE.Mesh | null = null;
+    if (e.kind !== 'object') {
+      farMesh = buildFarRig(rig);
+      if (farMesh) {
+        farMesh.scale.copy(rig.body.scale);
+        farMesh.visible = false;
+        farMesh.userData.entityId = e.id;
+        group.add(farMesh);
+      }
+    }
     this.views.set(e.id, {
       group, rig, sheepRig: null, bearRig: null, walkPhase: 0, attackAnim: 0,
       nameplate: np, nameEl, hpBar, hpFill, markerEl: marker, sparkle, objectMesh, portal,
+      casters, shadowOn: true, farMesh, isFar: false,
     });
   }
 
@@ -523,37 +447,58 @@ export class Renderer {
     else this.buildCrypt(ox, oz);
   }
 
+  // Interior masonry: normal-mapped stone blocks under the torch pools on the
+  // lit tiers (tint over the mid-gray stone maps lands on the legacy hues);
+  // low keeps the flat Lambert look.
+  private interiorStone(tintLight: number, tintDark: number, legacyLight: number, legacyDark: number): {
+    stone: THREE.Material; stoneDark: THREE.Material; bone: THREE.Material;
+  } {
+    if (this.lowGfx) {
+      return {
+        stone: new THREE.MeshLambertMaterial({ color: legacyLight }),
+        stoneDark: new THREE.MeshLambertMaterial({ color: legacyDark }),
+        bone: new THREE.MeshLambertMaterial({ color: 0xd8d4c0, flatShading: true }),
+      };
+    }
+    if (!this.stoneMapsCache) this.stoneMapsCache = stoneMaps();
+    const maps = this.stoneMapsCache;
+    return {
+      stone: surfaceMat({ map: maps.map, normalMap: maps.normalMap, color: tintLight, roughness: 0.95 }),
+      stoneDark: surfaceMat({ map: maps.map, normalMap: maps.normalMap, color: tintDark, roughness: 0.95 }),
+      bone: surfaceMat({ color: 0xd8d4c0, flatShading: true, roughness: 0.9 }),
+    };
+  }
+
   private buildCrypt(ox: number, oz: number): void {
     const g = new THREE.Group();
-    const stone = new THREE.MeshLambertMaterial({ color: 0x6a6a72 });
-    const stoneDark = new THREE.MeshLambertMaterial({ color: 0x4a4a52 });
-    const bone = new THREE.MeshLambertMaterial({ color: 0xd8d4c0, flatShading: true });
+    const { stone, stoneDark, bone } = this.interiorStone(0xc6c6d4, 0x8c8c9c, 0x6a6a72, 0x4a4a52);
 
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(46, 0.5, 122), stoneDark);
+    const floor = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(46, 0.5, 122), 10, 26), stoneDark);
     floor.position.set(0, -0.25, 52);
     floor.receiveShadow = true;
     g.add(floor);
     // walls
     for (const sx of [-23, 23]) {
-      const wall = new THREE.Mesh(new THREE.BoxGeometry(2, 9, 122), stone);
+      const wall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(2, 9, 122), 26, 2), stone);
       wall.position.set(sx, 4.5, 52);
       g.add(wall);
     }
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(48, 9, 2), stone);
+    const backWall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(48, 9, 2), 10, 2), stone);
     backWall.position.set(0, 4.5, 112);
     g.add(backWall);
-    const frontWall = new THREE.Mesh(new THREE.BoxGeometry(48, 9, 2), stone);
+    const frontWall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(48, 9, 2), 10, 2), stone);
     frontWall.position.set(0, 4.5, -9);
     g.add(frontWall);
     // pillars + torches
     for (let z = 10; z <= 100; z += 15) {
       for (const sx of [-14, 14]) {
-        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 8, 7), stone);
+        const pillar = new THREE.Mesh(scaleUv(new THREE.CylinderGeometry(0.9, 1.1, 8, 7), 1.5, 2), stone);
         pillar.position.set(sx, 4, z);
         pillar.castShadow = true;
         g.add(pillar);
         const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), new THREE.MeshLambertMaterial({
-          color: 0x7fd4ff, emissive: 0x2288cc, emissiveIntensity: 1.6, transparent: true, opacity: 0.92,
+          color: 0x7fd4ff, emissive: 0x2288cc, emissiveIntensity: this.lowGfx ? 1.6 : FLAME_EMISSIVE_HIGH,
+          transparent: true, opacity: 0.92,
         }));
         flame.position.set(sx, 8.4, z);
         g.add(flame);
@@ -584,7 +529,7 @@ export class Renderer {
       g.add(b);
     }
     // boss dais
-    const dais = new THREE.Mesh(new THREE.CylinderGeometry(9, 10, 1, 12), stone);
+    const dais = new THREE.Mesh(scaleUv(new THREE.CylinderGeometry(9, 10, 1, 12), 4, 1), stone);
     dais.position.set(0, 0.5, 96);
     dais.receiveShadow = true;
     g.add(dais);
@@ -599,44 +544,43 @@ export class Renderer {
   // with SANCTUM_COLLIDERS in sim/colliders.ts.
   private buildSanctum(ox: number, oz: number): void {
     const g = new THREE.Group();
-    const stone = new THREE.MeshLambertMaterial({ color: 0x5e5a66 });
-    const stoneDark = new THREE.MeshLambertMaterial({ color: 0x3f3b48 });
-    const bone = new THREE.MeshLambertMaterial({ color: 0xd8d4c0, flatShading: true });
+    const { stone, stoneDark, bone } = this.interiorStone(0xb0a8c0, 0x767088, 0x5e5a66, 0x3f3b48);
 
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(46, 0.5, 168), stoneDark);
+    const floor = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(46, 0.5, 168), 10, 36), stoneDark);
     floor.position.set(0, -0.25, 74.5);
     floor.receiveShadow = true;
     g.add(floor);
     // walls
     for (const sx of [-23, 23]) {
-      const wall = new THREE.Mesh(new THREE.BoxGeometry(2, 9, 168), stone);
+      const wall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(2, 9, 168), 36, 2), stone);
       wall.position.set(sx, 4.5, 74.5);
       g.add(wall);
     }
-    const backWall = new THREE.Mesh(new THREE.BoxGeometry(48, 9, 2), stone);
+    const backWall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(48, 9, 2), 10, 2), stone);
     backWall.position.set(0, 4.5, 158);
     g.add(backWall);
-    const frontWall = new THREE.Mesh(new THREE.BoxGeometry(48, 9, 2), stone);
+    const frontWall = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(48, 9, 2), 10, 2), stone);
     frontWall.position.set(0, 4.5, -9);
     g.add(frontWall);
     // chamber waists: wall stubs leaving a ~10yd centre passage
     for (const sx of [-14, 14]) {
-      const stub1 = new THREE.Mesh(new THREE.BoxGeometry(18, 9, 10), stone);
+      const stub1 = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(18, 9, 10), 4, 2), stone);
       stub1.position.set(sx, 4.5, 67); // Boneworks -> Korgath's Hall
       g.add(stub1);
-      const stub2 = new THREE.Mesh(new THREE.BoxGeometry(18, 9, 6), stone);
+      const stub2 = new THREE.Mesh(scaleUv(new THREE.BoxGeometry(18, 9, 6), 4, 2), stone);
       stub2.position.set(sx, 4.5, 115); // Ritual Vault -> Wyrm's Hollow
       g.add(stub2);
     }
     // pillars + green ritual torches (waist bands skipped)
     for (const z of [10, 25, 40, 55, 85, 100, 125, 140]) {
       for (const sx of [-14, 14]) {
-        const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 8, 7), stone);
+        const pillar = new THREE.Mesh(scaleUv(new THREE.CylinderGeometry(0.9, 1.1, 8, 7), 1.5, 2), stone);
         pillar.position.set(sx, 4, z);
         pillar.castShadow = true;
         g.add(pillar);
         const flame = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), new THREE.MeshLambertMaterial({
-          color: 0xa6ffb8, emissive: 0x22cc55, emissiveIntensity: 1.6, transparent: true, opacity: 0.92,
+          color: 0xa6ffb8, emissive: 0x22cc55, emissiveIntensity: this.lowGfx ? 1.6 : FLAME_EMISSIVE_HIGH,
+          transparent: true, opacity: 0.92,
         }));
         flame.position.set(sx, 8.4, z);
         g.add(flame);
@@ -658,7 +602,7 @@ export class Renderer {
       g.add(b);
     }
     // Korzul's great dais
-    const dais = new THREE.Mesh(new THREE.CylinderGeometry(11, 12, 1.2, 14), stone);
+    const dais = new THREE.Mesh(scaleUv(new THREE.CylinderGeometry(11, 12, 1.2, 14), 4, 1), stone);
     dais.position.set(0, 0.6, 146);
     dais.receiveShadow = true;
     g.add(dais);
@@ -765,11 +709,19 @@ export class Renderer {
       // distance cull: far rigs are invisible specks but cost real draw calls
       if (e.id !== p.id) {
         const cdx = e.pos.x - p.pos.x, cdz = e.pos.z - p.pos.z;
-        if (cdx * cdx + cdz * cdz > ENTITY_DRAW_RANGE * ENTITY_DRAW_RANGE) {
+        const d2 = cdx * cdx + cdz * cdz;
+        if (d2 > ENTITY_DRAW_RANGE * ENTITY_DRAW_RANGE) {
           v.group.visible = false;
           continue;
         }
         v.group.visible = true; // the object branch below may re-hide loot
+        // mid-distance rigs keep rendering but leave the shadow pass
+        const wantShadow = d2 < ENTITY_SHADOW_RANGE_SQ;
+        if (wantShadow !== v.shadowOn) {
+          v.shadowOn = wantShadow;
+          for (const caster of v.casters) (caster as THREE.Mesh).castShadow = wantShadow;
+        }
+        v.isFar = d2 > ENTITY_LOD_RANGE_SQ;
       }
       const x = e.prevPos.x + (e.pos.x - e.prevPos.x) * alpha;
       const y = e.prevPos.y + (e.pos.y - e.prevPos.y) * alpha;
@@ -806,15 +758,22 @@ export class Renderer {
         v.sheepRig = buildSheep();
         v.sheepRig.body.scale.multiplyScalar(e.scale);
         v.group.add(v.sheepRig.body);
+        collectCasters(v.sheepRig.body, v.casters);
+        if (!v.shadowOn) v.sheepRig.body.traverse((o) => { (o as THREE.Mesh).castShadow = false; });
       }
       if (bear && !v.bearRig) {
         v.bearRig = buildBear();
         v.bearRig.body.scale.multiplyScalar(e.scale);
         v.group.add(v.bearRig.body);
+        collectCasters(v.bearRig.body, v.casters);
+        if (!v.shadowOn) v.bearRig.body.traverse((o) => { (o as THREE.Mesh).castShadow = false; });
       }
       if (v.sheepRig) v.sheepRig.body.visible = polyed;
       if (v.bearRig) v.bearRig.body.visible = bear;
-      v.rig.body.visible = !polyed && !bear;
+      // distant rigs render as their single-draw merged LOD instead
+      const useFar = v.isFar && !polyed && !bear && v.farMesh !== null;
+      if (v.farMesh) v.farMesh.visible = useFar;
+      v.rig.body.visible = !polyed && !bear && !useFar;
       const activeRig = polyed && v.sheepRig ? v.sheepRig : bear && v.bearRig ? v.bearRig : v.rig;
       const parts = activeRig.parts;
 
@@ -892,6 +851,11 @@ export class Renderer {
           else this.vfx.swimRipple(v.group.position, dt);
         }
       }
+      // the far LOD mirrors the body pose (death tip-over, sitting, swimming)
+      if (v.farMesh && v.farMesh.visible) {
+        v.farMesh.rotation.copy(activeRig.body.rotation);
+        v.farMesh.position.copy(activeRig.body.position);
+      }
     }
 
     // selection ring
@@ -901,9 +865,9 @@ export class Renderer {
       this.selectionRing.position.copy(tv.group.position);
       this.selectionRing.position.y += 0.08;
       this.selectionRing.scale.setScalar(target.scale);
-      (this.selectionRing.material as THREE.MeshBasicMaterial).color.setHex(
-        target.hostile ? 0xcc2222 : 0xd4af37,
-      );
+      const ringMat = this.selectionRing.material as THREE.MeshBasicMaterial;
+      ringMat.color.setHex(target.hostile ? 0xcc2222 : 0xd4af37);
+      if (!this.lowGfx) ringMat.color.multiplyScalar(SELECTION_RING_BOOST); // subtle bloom edge
       this.selectionRing.visible = true;
     } else {
       this.selectionRing.visible = false;
@@ -925,6 +889,7 @@ export class Renderer {
       const base = (light.userData.baseIntensity as number | undefined) ?? 11;
       light.intensity = base + Math.sin(this.time * 11 + i * 1.7) * 2.5 * (base / 11);
     }
+    this.budgetFireLights(p.pos.x, p.pos.z);
 
     // clouds drift (the high cirrus layer crawls slower)
     for (const cl of this.clouds) {
@@ -934,6 +899,12 @@ export class Renderer {
 
     // water shimmer (low-tier texture scroll; shader water rides uTime)
     this.waterView.update(this.time);
+    // fully-fogged terrain chunks / tree buckets are dropped before the
+    // frustum; the grass ring follows the player
+    const fogFar = (this.scene.fog as THREE.Fog).far;
+    this.terrainView.update(this.camera.position.x, this.camera.position.z, fogFar);
+    this.propsView.update(this.camera.position.x, this.camera.position.z, fogFar);
+    this.foliage.update(p.pos.x, p.pos.z, this.camera.position.x, this.camera.position.z, fogFar);
 
     this.vfx.update(dt);
 
@@ -959,6 +930,22 @@ export class Renderer {
     this.updateNameplates();
     if (this.post) this.post.render();
     else this.webgl.render(this.scene, this.camera);
+  }
+
+  // Forward-renderer point-light budget: every campfire/torch light exists,
+  // but only the nearest GFX.maxPointLights within range shine each frame.
+  private budgetFireLights(px: number, pz: number): void {
+    const ranked = this.lightRank;
+    ranked.length = 0;
+    for (const light of this.fireLights) {
+      light.getWorldPosition(this.tmpV);
+      const dx = this.tmpV.x - px, dz = this.tmpV.z - pz;
+      ranked.push({ light, d2: dx * dx + dz * dz });
+    }
+    ranked.sort((a, b) => a.d2 - b.d2);
+    for (let i = 0; i < ranked.length; i++) {
+      ranked[i].light.visible = i < GFX.maxPointLights && ranked[i].d2 < LIGHT_BUDGET_RANGE_SQ;
+    }
   }
 
   // light shafts fade in as the camera turns toward the sun, outdoor only
@@ -1109,32 +1096,10 @@ function shortestAngle(from: number, to: number): number {
   return d;
 }
 
-// minimal geometry merge (positions/normals/uvs) to avoid pulling in examples/
-function mergeGeoms(geoms: THREE.BufferGeometry[]): THREE.BufferGeometry {
-  let totalVerts = 0, totalIdx = 0;
-  for (const g of geoms) {
-    totalVerts += g.attributes.position.count;
-    totalIdx += g.index ? g.index.count : 0;
-  }
-  const pos = new Float32Array(totalVerts * 3);
-  const norm = new Float32Array(totalVerts * 3);
-  const uv = new Float32Array(totalVerts * 2);
-  const idx = new Uint16Array(totalIdx);
-  let vOff = 0, iOff = 0;
-  for (const g of geoms) {
-    pos.set(g.attributes.position.array as Float32Array, vOff * 3);
-    norm.set(g.attributes.normal.array as Float32Array, vOff * 3);
-    uv.set(g.attributes.uv.array as Float32Array, vOff * 2);
-    if (g.index) {
-      for (let i = 0; i < g.index.count; i++) idx[iOff + i] = g.index.array[i] + vOff;
-      iOff += g.index.count;
-    }
-    vOff += g.attributes.position.count;
-  }
-  const out = new THREE.BufferGeometry();
-  out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  out.setAttribute('normal', new THREE.BufferAttribute(norm, 3));
-  out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
-  out.setIndex(new THREE.BufferAttribute(idx, 1));
-  return out;
+// Tile a geometry's 0..1 UVs so shared textures keep a sane world-space
+// density on big interior boxes/cylinders.
+function scaleUv(geo: THREE.BufferGeometry, su: number, sv: number): THREE.BufferGeometry {
+  const uv = geo.attributes.uv as THREE.BufferAttribute;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv);
+  return geo;
 }

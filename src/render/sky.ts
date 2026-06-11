@@ -170,8 +170,8 @@ export function buildClouds(lowGfx: boolean): CloudLayer {
   if (lowGfx) {
     spawn(14, 95, 150, 0.85, 1.6, 60, 150);
   } else {
-    spawn(30, 95, 150, 0.85, 1.6, 60, 150);
-    spawn(10, 165, 195, 0.35, 0.55, 130, 230); // high slow cirrus layer
+    spawn(12, 95, 150, 0.85, 1.6, 85, 190);
+    spawn(6, 165, 195, 0.35, 0.55, 140, 240); // high slow cirrus layer
   }
   return { sprites };
 }
