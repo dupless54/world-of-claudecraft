@@ -578,6 +578,11 @@ const classAbilityNamesEn = {
   entities: {
     abilities: abilityTranslations([
       [
+        'flamestrike',
+        'Flamestrike',
+        'Calls down a patch of flame at the target area, burning enemies for {damage} Fire damage.',
+      ],
+      [
         'heroic_strike',
         'Heroic Strike',
         'A strong attack that increases melee damage by {damage}. Activates on your next swing.',
@@ -1149,6 +1154,11 @@ export const classAbilityNames = {
   es: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'Llamarada',
+          'Invoca una zona de fuego en el área objetivo, quemando a los enemigos e infligiendo {damage} de daño de Fuego.',
+        ],
         [
           'heroic_strike',
           'Golpe heroico',
@@ -1779,6 +1789,11 @@ export const classAbilityNames = {
   fr_FR: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'Frappe enflammée',
+          'Fait pleuvoir des flammes sur la zone visée, brûlant les ennemis et infligeant {damage} points de dégâts de Feu.',
+        ],
         [
           'heroic_strike',
           'Frappe héroïque',
@@ -2465,6 +2480,11 @@ export const classAbilityNames = {
     entities: {
       abilities: abilityTranslations([
         [
+          'flamestrike',
+          'Ondata di Fiamme',
+          'Evoca fiamme sulla zona bersaglio, bruciando i nemici e infliggendo {damage} danni da Fuoco.',
+        ],
+        [
           'heroic_strike',
           'Colpo Eroico',
           'Un attacco potente che aumenta i danni in mischia di {damage}. Si attiva al tuo prossimo colpo.',
@@ -3069,6 +3089,11 @@ export const classAbilityNames = {
   de_DE: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'Flammenschlag',
+          'Lässt am Zielort eine Feuerfläche niedergehen, die Gegner verbrennt und {damage} Feuerschaden verursacht.',
+        ],
         [
           'heroic_strike',
           'Heldenhafter Stoß',
@@ -3683,6 +3708,11 @@ export const classAbilityNames = {
     entities: {
       abilities: abilityTranslations([
         [
+          'flamestrike',
+          '烈焰风暴',
+          '在目标区域召唤一片烈焰，灼烧其中的敌人，造成 {damage} 点火焰伤害。',
+        ],
+        [
           'heroic_strike',
           '英勇打击',
           '一次强力攻击，使近战伤害提高 {damage}。在你的下一次挥击时触发。',
@@ -4000,6 +4030,11 @@ export const classAbilityNames = {
     entities: {
       abilities: abilityTranslations([
         [
+          'flamestrike',
+          '烈焰風暴',
+          '在目標區域召喚一片烈焰，灼燒其中的敵人，造成 {damage} 點火焰傷害。',
+        ],
+        [
           'heroic_strike',
           '英勇打擊',
           '一次強力攻擊，使近戰傷害提高 {damage}。在你的下一次揮擊時觸發。',
@@ -4316,6 +4351,11 @@ export const classAbilityNames = {
   ko_KR: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          '화염 폭발',
+          '지정한 지역에 불길을 일으켜 그 안의 적에게 {damage}의 화염 피해를 입힙니다.',
+        ],
         [
           'heroic_strike',
           '영웅의 일격',
@@ -4825,6 +4865,11 @@ export const classAbilityNames = {
   ja_JP: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'フレイムストライク',
+          '対象地点に炎の地帯を呼び出し、中にいる敵に{damage}の火炎ダメージを与えます。',
+        ],
         [
           'heroic_strike',
           '英雄の一撃',
@@ -5370,6 +5415,11 @@ export const classAbilityNames = {
   pt_BR: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'Golpe Flamejante',
+          'Invoca uma área de chamas no local-alvo, queimando os inimigos e causando {damage} de dano de Fogo.',
+        ],
         [
           'heroic_strike',
           'Golpe Heroico',
@@ -5959,6 +6009,11 @@ export const classAbilityNames = {
   ru_RU: {
     entities: {
       abilities: abilityTranslations([
+        [
+          'flamestrike',
+          'Огненный удар',
+          'Обрушивает пламя на указанную область, сжигая врагов и нанося {damage} ед. урона от огня.',
+        ],
         [
           'heroic_strike',
           'Удар героя',

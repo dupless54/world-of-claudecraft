@@ -3586,6 +3586,17 @@ export class Hud {
     );
   }
 
+  // Where a ground-targeted ability should land: the current target's position if
+  // one is selected (the usual "cast on that pack" intent), else the caster's own
+  // spot for an open-ground cast. The sim clamps this to the ability's range.
+  private groundTargetAim(): { x: number; z: number } {
+    const me = this.sim.player;
+    const tid = me.targetId;
+    const t = tid !== null ? this.sim.entities.get(tid) : null;
+    if (t && !t.dead && t.id !== me.id) return { x: t.pos.x, z: t.pos.z };
+    return { x: me.pos.x, z: me.pos.z };
+  }
+
   // Shared entry point for hotbar clicks and the 1..0-= keybinds.
   castSlot(barSlot: number): void {
     if (barSlot === 0) {
@@ -3600,24 +3611,31 @@ export class Hud {
       // so the client-side slot remap never desyncs slot semantics
       const resolved = this.abilityForSlot(barSlot);
       if (resolved) {
-        this.sim.castAbility(action.id);
-        // Optional QoL: also engage auto-attack when the ability is an offensive
-        // attack, so white swings start without a separate Attack press. Gated on
-        // the player setting; abilityStartsAutoAttack skips heals/buffs and any
-        // damage-breakable CC (gouge/sap/sheep) the swing would shatter. We MUST also
-        // gate on hasAutoAttackTarget: many damaging abilities are requiresTarget:false
-        // AOEs (Arcane Explosion, Frost Nova, Thunder Clap, ...) cast with no hostile
-        // target, where startAutoAttack does NOT no-op but errors "Invalid attack
-        // target." (sim/combat/auto_attack.ts). The explicit Attack button keeps that
-        // error feedback; this convenience path must not trip it.
-        const tid = this.sim.player.targetId;
-        const target = tid !== null ? (this.sim.entities.get(tid) ?? null) : null;
-        if (
-          this.optionsHooks?.settings.get('startAttackOnAbilityUse') &&
-          abilityStartsAutoAttack(resolved.effects) &&
-          hasAutoAttackTarget(target)
-        ) {
-          this.sim.startAutoAttack();
+        if (resolved.def.targetMode === 'position') {
+          // Ground-targeted: aim at the current target's spot, or the caster's own
+          // position on open ground. The server clamps the point to the ability's
+          // range. (A free cursor reticle is the next increment.)
+          this.sim.castAbilityAt(action.id, this.groundTargetAim());
+        } else {
+          this.sim.castAbility(action.id);
+          // Optional QoL: also engage auto-attack when the ability is an offensive
+          // attack, so white swings start without a separate Attack press. Gated on
+          // the player setting; abilityStartsAutoAttack skips heals/buffs and any
+          // damage-breakable CC (gouge/sap/sheep) the swing would shatter. We MUST also
+          // gate on hasAutoAttackTarget: many damaging abilities are requiresTarget:false
+          // AOEs (Arcane Explosion, Frost Nova, Thunder Clap, ...) cast with no hostile
+          // target, where startAutoAttack does NOT no-op but errors "Invalid attack
+          // target." (sim/combat/auto_attack.ts). The explicit Attack button keeps that
+          // error feedback; this convenience path must not trip it.
+          const tid = this.sim.player.targetId;
+          const target = tid !== null ? (this.sim.entities.get(tid) ?? null) : null;
+          if (
+            this.optionsHooks?.settings.get('startAttackOnAbilityUse') &&
+            abilityStartsAutoAttack(resolved.effects) &&
+            hasAutoAttackTarget(target)
+          ) {
+            this.sim.startAutoAttack();
+          }
         }
         this.flashActionSlot(barSlot);
       }

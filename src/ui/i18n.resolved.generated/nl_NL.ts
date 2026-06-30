@@ -3692,6 +3692,10 @@ export const nl_NL: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Vlammenslag",
+        "description": "Roept een vuurzee op in het doelgebied en verbrandt vijanden voor {damage} Vuurschade."
+      },
       "heroic_strike": {
         "name": "Heroïsche Slag",
         "description": "Een sterke aanval die de slagschade met {damage} verhoogt. Activeert bij je volgende slag."

@@ -3692,6 +3692,10 @@ export const id_ID: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Hantaman Api",
+        "description": "Memanggil kobaran api di area sasaran, membakar musuh sebesar {damage} kerusakan Api."
+      },
       "heroic_strike": {
         "name": "Serangan Heroik",
         "description": "Serangan kuat yang meningkatkan kerusakan jarak dekat sebesar {damage}. Aktif pada ayunan berikutnya."

@@ -3692,6 +3692,10 @@ export const pl_PL: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Ognista nawała",
+        "description": "Sprowadza płomienie na wybrany obszar, paląc wrogów i zadając {damage} obrażeń od ognia."
+      },
       "heroic_strike": {
         "name": "Heroiczne uderzenie",
         "description": "Potężny atak, który zwiększa obrażenia w zwarciu o {damage}. Aktywuje się przy następnym uderzeniu."

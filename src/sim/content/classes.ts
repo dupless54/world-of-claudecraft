@@ -92,6 +92,7 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
       'scorch',
       'ice_barrier',
       'pyroblast',
+      'flamestrike',
     ],
     color: 0x69ccf0,
   },
@@ -981,6 +982,25 @@ export const ABILITIES: Record<string, AbilityDef> = {
     requiresTarget: false,
     effects: [{ type: 'aoeDamage', min: 26, max: 31, radius: 10 }],
     description: 'A burst of Arcane energy hits all nearby enemies for $d Arcane damage.',
+  },
+  // Ground-targeted (targetMode 'position'): the mage aims a patch of roaring flame
+  // at a chosen spot within range, which burns enemies standing in it. The first
+  // spell built on the ground-target cast primitive (docs/design/arpg-spell-mechanics.md).
+  flamestrike: {
+    id: 'flamestrike',
+    name: 'Flamestrike',
+    class: 'mage',
+    learnLevel: 20,
+    cost: 80,
+    castTime: 0,
+    cooldown: 12,
+    range: 30,
+    school: 'fire',
+    requiresTarget: false,
+    targetMode: 'position',
+    effects: [{ type: 'groundAoE', min: 18, max: 24, radius: 7, duration: 6, interval: 1.5 }],
+    description:
+      'Calls down a patch of flame at the target area, burning enemies for $d Fire damage.',
   },
   scorch: {
     id: 'scorch',

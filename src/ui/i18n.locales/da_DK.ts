@@ -561,6 +561,9 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Slynger en flammende kugle, der volder {damage} ildskade plus yderligere skade over tid.',
   'entities.abilities.fireball.name': 'Ildkugle',
+  'entities.abilities.flamestrike.name': 'Flammeslag',
+  'entities.abilities.flamestrike.description':
+    'Nedkalder et flammefelt på målområdet og brænder fjender for {damage} Ildskade.',
   'entities.abilities.flame_shock.description':
     'Svider målet med ild for 25 skade plus {damage} over 12 sek.',
   'entities.abilities.flame_shock.name': 'Flammechok',

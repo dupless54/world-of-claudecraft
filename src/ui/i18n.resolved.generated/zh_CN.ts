@@ -3692,6 +3692,10 @@ export const zh_CN: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "烈焰风暴",
+        "description": "在目标区域召唤一片烈焰，灼烧其中的敌人，造成 {damage} 点火焰伤害。"
+      },
       "heroic_strike": {
         "name": "英勇打击",
         "description": "一次强力攻击，使近战伤害提高 {damage}。在你的下一次挥击时触发。"

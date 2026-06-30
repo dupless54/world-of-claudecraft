@@ -2701,6 +2701,15 @@ export class Renderer {
         else if (ev.fx === 'tick') this.vfx.tick(ev.targetId, ev.school);
         else this.vfx.nova(ev.targetId, ev.school);
         break;
+      case 'spellfxAt': {
+        // Ground-targeted impact: burst draped onto the terrain where the spell
+        // was aimed (not on the caster), so an aimed blast reads at its landing
+        // spot. A 'nova' aim is the heavier detonation; 'burst' the lighter one.
+        const gy = groundHeight(ev.x, ev.z, this.sim.cfg.seed);
+        const at = new THREE.Vector3(ev.x, gy + 0.4, ev.z);
+        this.vfx.burst(at, ev.school, ev.fx === 'nova' ? 34 : 22, ev.fx === 'nova' ? 1.4 : 1);
+        break;
+      }
       case 'damage':
         // every melee/ranged swing animates the attacker for all to see
         if (ev.school === 'physical' && ev.sourceId !== -1) this.triggerAttack(ev.sourceId);

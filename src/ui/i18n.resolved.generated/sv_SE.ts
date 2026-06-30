@@ -3692,6 +3692,10 @@ export const sv_SE: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Flamslag",
+        "description": "Kallar ner ett eldfält på målområdet och bränner fiender för {damage} Eldskada."
+      },
       "heroic_strike": {
         "name": "Hjältehugg",
         "description": "Ett kraftfullt anfall som ökar närstridsskadan med {damage}. Aktiveras vid ditt nästa hugg."

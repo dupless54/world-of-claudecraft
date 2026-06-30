@@ -3692,6 +3692,10 @@ export const en_XA: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "[Ƒļáɱéšţŕíķé]",
+        "description": "[Çáļļš ðóŵñ á þáţçĥ óƒ ƒļáɱé áţ ţĥé ţáŕĝéţ áŕéá, ƀúŕñíñĝ éñéɱíéš ƒóŕ {damage} Ƒíŕé ðáɱáĝé.]"
+      },
       "heroic_strike": {
         "name": "[Ĥéŕóíç Šţŕíķé]",
         "description": "[Á šţŕóñĝ áţţáçķ ţĥáţ íñçŕéášéš ɱéļéé ðáɱáĝé ƀý {damage}. Áçţíʋáţéš óñ ýóúŕ ñéẋţ šŵíñĝ.]"

@@ -3692,6 +3692,10 @@ export const ja_JP: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "フレイムストライク",
+        "description": "対象地点に炎の地帯を呼び出し、中にいる敵に{damage}の火炎ダメージを与えます。"
+      },
       "heroic_strike": {
         "name": "英雄の一撃",
         "description": "強力な攻撃で近接ダメージが {damage} 増加します。次のスイングで発動します。"

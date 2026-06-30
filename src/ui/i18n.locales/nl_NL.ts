@@ -574,6 +574,9 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Werpt een vurige bal die {damage} Vuurschade toebrengt plus extra schade over tijd.',
   'entities.abilities.fireball.name': 'Vuurbal',
+  'entities.abilities.flamestrike.name': 'Vlammenslag',
+  'entities.abilities.flamestrike.description':
+    'Roept een vuurzee op in het doelgebied en verbrandt vijanden voor {damage} Vuurschade.',
   'entities.abilities.flame_shock.description':
     'Schroeit het doelwit met vuur voor 25 schade plus {damage} gedurende 12 sec.',
   'entities.abilities.flame_shock.name': 'Vlamschok',

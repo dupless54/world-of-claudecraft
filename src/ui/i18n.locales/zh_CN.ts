@@ -1594,6 +1594,9 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     '嘲讽目标：你的威胁值提高到其最仇恨敌人的水平，并强迫其攻击你 3 秒。',
   'entities.abilities.fireball.name': '火球术',
+  'entities.abilities.flamestrike.name': '烈焰风暴',
+  'entities.abilities.flamestrike.description':
+    '在目标区域召唤一片烈焰，灼烧其中的敌人，造成 {damage} 点火焰伤害。',
   'entities.abilities.fireball.description':
     '投掷一团火球，造成 {damage} 点火焰伤害，并附加持续伤害。',
   'entities.abilities.frost_armor.name': '霜甲术',

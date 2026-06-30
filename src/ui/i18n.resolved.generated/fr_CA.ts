@@ -3692,6 +3692,10 @@ export const fr_CA: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Frappe enflammée",
+        "description": "Fait pleuvoir des flammes sur la zone visée, brûlant les ennemis et infligeant {damage} points de dégâts de Feu."
+      },
       "heroic_strike": {
         "name": "Frappe héroïque",
         "description": "Une attaque puissante qui augmente les dégâts de mêlée de {damage}. S'active lors de votre prochaine frappe."

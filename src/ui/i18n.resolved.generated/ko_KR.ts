@@ -3692,6 +3692,10 @@ export const ko_KR: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "화염 폭발",
+        "description": "지정한 지역에 불길을 일으켜 그 안의 적에게 {damage}의 화염 피해를 입힙니다."
+      },
       "heroic_strike": {
         "name": "영웅의 일격",
         "description": "강력한 공격으로 근접 피해가 {damage}만큼 증가합니다. 다음 무기 공격 시 발동됩니다."

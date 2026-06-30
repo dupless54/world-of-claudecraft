@@ -32,7 +32,7 @@ import { scheduleProjectile } from '../projectile_travel';
 import type { PlayerMeta, ResolvedAbility } from '../sim';
 import type { SimContext } from '../sim_context';
 import { abilityScalingPower, channelTickBonus } from '../spell_scaling';
-import type { AbilityDef, Entity } from '../types';
+import type { AbilityDef, Entity, Vec3 } from '../types';
 import {
   angleTo,
   CAST_COMPLETE_EPS,
@@ -138,6 +138,9 @@ export function updateCasting(ctx: SimContext, p: Entity, meta: PlayerMeta): voi
     }
     const res = ctx.resolvedAbility(castId, p.id);
     if (res) applyAbility(ctx, p, meta, res);
+    // the aim point is consumed by the resolved area effects; drop it so a later
+    // non-aimed cast can't inherit a stale target point.
+    p.castAim = null;
   }
 }
 
@@ -145,6 +148,7 @@ export function cancelCast(ctx: SimContext, p: Entity): void {
   p.castingAbility = null;
   p.castRemaining = 0;
   p.channeling = false;
+  p.castAim = null;
   ctx.emit({ type: 'castStop', entityId: p.id, success: false });
 }
 
@@ -163,14 +167,24 @@ export function pushbackCast(p: Entity): void {
   }
 }
 
-export function castAbilityBySlot(ctx: SimContext, slot: number, pid?: number): void {
+export function castAbilityBySlot(
+  ctx: SimContext,
+  slot: number,
+  pid?: number,
+  aim?: { x: number; z: number },
+): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const known = r.meta.known[slot];
-  if (known) castAbility(ctx, known.def.id, pid);
+  if (known) castAbility(ctx, known.def.id, pid, aim);
 }
 
-export function castAbility(ctx: SimContext, abilityId: string, pid?: number): void {
+export function castAbility(
+  ctx: SimContext,
+  abilityId: string,
+  pid?: number,
+  aim?: { x: number; z: number },
+): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const { meta, e: p } = r;
@@ -344,10 +358,36 @@ export function castAbility(ctx: SimContext, abilityId: string, pid?: number): v
       }
     }
   }
+  // Ground-targeted abilities aim at a world point instead of an entity. The
+  // client proposes the point; the server clamps it to the ability's range from
+  // the caster (authoritative) and the cast's area effects center on it.
+  let aimPoint: Vec3 | null = null;
+  if (ability.targetMode === 'position') {
+    if (aim) {
+      const maxRange = ability.range > 0 ? ability.range : MELEE_RANGE;
+      const dx = aim.x - p.pos.x;
+      const dz = aim.z - p.pos.z;
+      const d = Math.hypot(dx, dz);
+      aimPoint =
+        d > maxRange
+          ? { x: p.pos.x + (dx / d) * maxRange, y: p.pos.y, z: p.pos.z + (dz / d) * maxRange }
+          : { x: aim.x, y: p.pos.y, z: aim.z };
+    } else {
+      // No point chosen (e.g. a keybind cast with nothing under the cursor): fall
+      // back to the caster's own position so the spell still resolves at the feet,
+      // exactly as a caster-centered cast would.
+      aimPoint = { x: p.pos.x, y: p.pos.y, z: p.pos.z };
+    }
+  }
+
   if (p.sitting) ctx.standUp(p);
   if (ability.id !== 'ghost_wolf' && p.auras.some((a) => a.id === 'ghost_wolf')) {
     ctx.breakGhostWolf(p);
   }
+  // Stash the (clamped) aim so the resolved area effects read it, both for an
+  // instant cast (resolved just below) and a cast-time spell (resolved on
+  // completion in updateCasting). Cleared there / on cancel.
+  p.castAim = aimPoint;
 
   // Heroic-strike style: queue on next swing, pay cost on the swing itself.
   if (ability.onNextSwing) {
@@ -390,6 +430,8 @@ export function castAbility(ctx: SimContext, abilityId: string, pid?: number): v
 
   if (!ability.offGcd) p.gcdRemaining = Math.max(p.gcdRemaining, gcd);
   applyAbility(ctx, p, meta, res);
+  // instant ground-targeted cast: its effects have consumed the aim point.
+  p.castAim = null;
 }
 
 export function spendResource(p: Entity, cost: number): void {

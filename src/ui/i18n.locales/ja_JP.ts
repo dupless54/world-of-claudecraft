@@ -1669,6 +1669,9 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     '対象を挑発します。あなたの脅威が対象の最も憎む敵と同じ値まで上がり、3秒間あなたを攻撃させます。',
   'entities.abilities.fireball.name': 'ファイアボール',
+  'entities.abilities.flamestrike.name': 'フレイムストライク',
+  'entities.abilities.flamestrike.description':
+    '対象地点に炎の地帯を呼び出し、中にいる敵に{damage}の火炎ダメージを与えます。',
   'entities.abilities.fireball.description':
     '炎の球を放ち、{damage} の火炎ダメージと追加の継続ダメージを与えます。',
   'entities.abilities.frost_armor.name': 'フロストアーマー',

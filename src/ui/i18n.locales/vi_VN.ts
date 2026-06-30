@@ -568,6 +568,9 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Ném ra một quả cầu lửa rực cháy gây {damage} sát thương Hỏa cùng sát thương cộng dồn theo thời gian.',
   'entities.abilities.fireball.name': 'Cầu Lửa',
+  'entities.abilities.flamestrike.name': 'Cú Đánh Lửa',
+  'entities.abilities.flamestrike.description':
+    'Gọi một vùng lửa xuống khu vực mục tiêu, thiêu đốt kẻ địch gây {damage} sát thương Lửa.',
   'entities.abilities.flame_shock.description':
     'Thiêu đốt mục tiêu bằng lửa gây 25 sát thương cộng thêm {damage} trong 12 giây.',
   'entities.abilities.flame_shock.name': 'Chấn Hỏa',

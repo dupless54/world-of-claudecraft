@@ -566,6 +566,9 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Ateşli bir top fırlatarak {damage} Ateş hasarı ve ek olarak zamana yayılı hasar verir.',
   'entities.abilities.fireball.name': 'Ateş Topu',
+  'entities.abilities.flamestrike.name': 'Alev Vuruşu',
+  'entities.abilities.flamestrike.description':
+    'Hedef alana alevler yağdırır ve düşmanları yakarak {damage} Ateş hasarı verir.',
   'entities.abilities.flame_shock.description':
     'Hedefi ateşle dağlar: 25 hasar artı 12 saniye boyunca {damage}.',
   'entities.abilities.flame_shock.name': 'Alev Şoku',

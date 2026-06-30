@@ -3692,6 +3692,10 @@ export const da_DK: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Flammeslag",
+        "description": "Nedkalder et flammefelt på målområdet og brænder fjender for {damage} Ildskade."
+      },
       "heroic_strike": {
         "name": "Heroisk Slag",
         "description": "Et stærkt angreb, der øger nærkampsskaden med {damage}. Aktiveres ved dit næste hug."

@@ -885,6 +885,10 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
       {
         "id": "pyroblast",
         "name": "Pyroblast"
+      },
+      {
+        "id": "flamestrike",
+        "name": "Flamestrike"
       }
     ],
     "model": "player_mage",

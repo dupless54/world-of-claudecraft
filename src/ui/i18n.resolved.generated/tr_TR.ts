@@ -3692,6 +3692,10 @@ export const tr_TR: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Alev Vuruşu",
+        "description": "Hedef alana alevler yağdırır ve düşmanları yakarak {damage} Ateş hasarı verir."
+      },
       "heroic_strike": {
         "name": "Kahramanca Vuruş",
         "description": "Yakın dövüş hasarını {damage} artıran güçlü bir saldırı. Bir sonraki vuruşunda etkinleşir."

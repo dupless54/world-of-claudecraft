@@ -1700,6 +1700,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Provoca al objetivo: tu amenaza sube hasta igualar la de su enemigo más odiado y queda obligado a atacarte durante 3 s.',
   'entities.abilities.fireball.name': 'Bola de Fuego',
+  'entities.abilities.flamestrike.name': 'Llamarada',
+  'entities.abilities.flamestrike.description':
+    'Invoca una zona de fuego en el área objetivo, quemando a los enemigos e infligiendo {damage} de daño de Fuego.',
   'entities.abilities.fireball.description':
     'Lanza una bola ígnea que causa {damage} de daño de Fuego y daño adicional en el tiempo.',
   'entities.abilities.frost_armor.name': 'Armadura de Escarcha',

@@ -565,6 +565,9 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Ciska ognistą kulą, która zadaje {damage} obrażeń od ognia oraz dodatkowe obrażenia w czasie.',
   'entities.abilities.fireball.name': 'Kula ognia',
+  'entities.abilities.flamestrike.name': 'Ognista nawała',
+  'entities.abilities.flamestrike.description':
+    'Sprowadza płomienie na wybrany obszar, paląc wrogów i zadając {damage} obrażeń od ognia.',
   'entities.abilities.flame_shock.description':
     'Spala cel ogniem, zadając 25 obrażeń oraz {damage} w ciągu 12 sek.',
   'entities.abilities.flame_shock.name': 'Płomienny wstrząs',

@@ -563,6 +563,9 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.fireball.description':
     'Slungar ett brinnande klot som vållar {damage} eldskada plus ytterligare skada över tid.',
   'entities.abilities.fireball.name': 'Eldklot',
+  'entities.abilities.flamestrike.name': 'Flamslag',
+  'entities.abilities.flamestrike.description':
+    'Kallar ner ett eldfält på målområdet och bränner fiender för {damage} Eldskada.',
   'entities.abilities.flame_shock.description':
     'Sveder målet med eld för 25 skada plus {damage} över 12 sek.',
   'entities.abilities.flame_shock.name': 'Flamchock',

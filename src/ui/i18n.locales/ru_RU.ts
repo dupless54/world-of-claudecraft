@@ -1688,6 +1688,9 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.taunt.description':
     'Провоцирует цель: ваша угроза повышается до уровня самого ненавистного ей врага, и она вынуждена атаковать вас 3 сек.',
   'entities.abilities.fireball.name': 'Огненный шар',
+  'entities.abilities.flamestrike.name': 'Огненный удар',
+  'entities.abilities.flamestrike.description':
+    'Обрушивает пламя на указанную область, сжигая врагов и нанося {damage} ед. урона от огня.',
   'entities.abilities.fireball.description':
     'Бросает огненный шар, наносящий {damage} ед. урона от огня и дополнительный периодический урон.',
   'entities.abilities.frost_armor.name': 'Морозный доспех',

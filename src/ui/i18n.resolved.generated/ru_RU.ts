@@ -3692,6 +3692,10 @@ export const ru_RU: EnTranslations = {
   },
   "entities": {
     "abilities": {
+      "flamestrike": {
+        "name": "Огненный удар",
+        "description": "Обрушивает пламя на указанную область, сжигая врагов и нанося {damage} ед. урона от огня."
+      },
       "heroic_strike": {
         "name": "Удар героя",
         "description": "Мощная атака, увеличивающая урон в ближнем бою на {damage}. Срабатывает при следующем взмахе оружием."
