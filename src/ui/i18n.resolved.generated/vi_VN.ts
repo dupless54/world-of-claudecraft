@@ -5312,6 +5312,9 @@ export const vi_VN: EnTranslations = {
       "deacon_voss": {
         "name": "Chấp Sự Voss"
       },
+      "training_dummy": {
+        "name": "Training Dummy"
+      },
       "ridge_stalker": {
         "name": "Kẻ Rình Sườn Núi"
       },

@@ -5312,6 +5312,9 @@ export const nl_NL: EnTranslations = {
       "deacon_voss": {
         "name": "Diaken Voss"
       },
+      "training_dummy": {
+        "name": "Training Dummy"
+      },
       "ridge_stalker": {
         "name": "Bergkam-Sluiper"
       },

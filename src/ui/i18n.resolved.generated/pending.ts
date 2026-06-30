@@ -10,24 +10,28 @@
 
 export const pending: Record<string, readonly string[]> = {
   "es": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
     "hudChrome.party.promoteLeader"
   ],
   "es_ES": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
     "hudChrome.party.promoteLeader"
   ],
   "fr_FR": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
     "hudChrome.party.promoteLeader"
   ],
   "fr_CA": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -35,12 +39,14 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "en_CA": [],
   "it_IT": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
     "hudChrome.party.promoteLeader"
   ],
   "de_DE": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -59,6 +65,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.keybinds.discord"
   ],
   "pt_BR": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -68,6 +75,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.keybinds.discord"
   ],
   "nl_NL": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -78,6 +86,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "pl_PL": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -88,6 +97,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "id_ID": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -98,6 +108,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "tr_TR": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -108,6 +119,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "sv_SE": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -118,6 +130,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "vi_VN": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
@@ -128,6 +141,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.plurals.playersMatching.other"
   ],
   "da_DK": [
+    "entities.mobs.training_dummy.name",
     "hudChrome.itemShare.linkHint",
     "hudChrome.keybinds.discord",
     "hudChrome.options.startAttackOnAbility",
