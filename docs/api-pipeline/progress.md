@@ -12,7 +12,7 @@ Mark a row's Status as "In progress" or "Done" and fill Started / Completed
 
 | Phase | Status | Started | Completed |
 |---|---|---|---|
-| Phase 01 | Not started |  |  |
+| Phase 01 | Done | 2026-06-30 | 2026-06-30 |
 | Phase 01 QA | Not started |  |  |
 | Phase 02 | Not started |  |  |
 | Phase 02 QA | Not started |  |  |
@@ -66,18 +66,21 @@ Mark a row's Status as "In progress" or "Done" and fill Started / Completed
 ## Phase 01: Importable spine + WS-auth extraction (the gate, zero behavior change)
 
 Deliverables:
-- [ ] Export startServer() and guard main.ts's module-load self-invoke (require.main/import.meta) so the module imports without binding a socket
-- [ ] Lift authenticateWebSocket/onConnection/upgrade out of main() into an importable ws_auth module (mirror the account.ts extraction, not a one-line export)
-- [ ] Expose the createServer prefix dispatcher as a pure function
-- [ ] A smoke test that imports the module without booting
+- [x] Export startServer() and guard main.ts's module-load self-invoke (require.main === module, NOT import.meta) so the module imports without binding a socket
+- [x] Lift authenticateWebSocket/onConnection/upgrade out of main() into an importable ws_auth module (createWsAuth(deps) factory mirroring the wallet_link/SocialService IO-pure split, not a one-line export)
+- [x] Expose the createServer prefix dispatcher as a pure function (routeHttpRequest)
+- [x] A smoke test that imports the module without booting
 
 QA:
-- [ ] Fixes applied
-- [ ] Tests added
-- [ ] Dead code removed
-- [ ] Reviews clean
+- [x] Fixes applied
+- [x] Tests added (tests/server/ws_auth.test.ts 17 + tests/server/importable_spine.test.ts 1 = 18, all green)
+- [x] Dead code removed (type WebSocket import narrowed out of main.ts)
+- [x] Reviews clean (privacy-security-review: no findings; cross-platform-sync: NO WIRE CHANGE; qa-checklist: READY)
 
 Notes:
+- New surface: server/ws_auth.ts (createWsAuth(deps) -> { authenticateWebSocket, onConnection, attachUpgrade(server, wss) }); server/main.ts exports startServer(): Promise<http.Server> and routeHttpRequest(req, res). NO server/http/ spine module created (that is Phase 4+).
+- Entrypoint guard: esbuild leaves import.meta EMPTY under format: 'cjs' (the bundle is the only launch path: npm run server / npm run realms both exec node dist-server/server.cjs), so the working guard is require.main === module, NOT the import.meta comparison drafted in the SPEC. Verified: build:server emits no import.meta warning; the bundled dist-server/server.cjs boots, serves GET /api/status -> 200, and stops cleanly on SIGTERM; a Vitest import() binds no socket and opens no DB connection.
+- Cleanliness pass (per user request): the WS handshake wire vocabulary (rejection strings, the 1008 close + reason, leave reasons, the 10000ms timeout, the /ws path) lives in named constants (WS_AUTH_ERROR, TOO_MANY_CONNECTIONS_CLOSE, LEAVE_REASON, AUTH_TIMEOUT_MS, WS_UPGRADE_PATH) with a single rejectHandshake(ws, error) helper, no scattered magic literals. Wire VALUES byte-identical (the 18 tests assert literal frames). The HTTP prefix ladder is intentionally left inline; Phase 4 turns it into a route table.
 
 ## Phase 02: Shared test scaffolding harness (the phase the SPEC is missing)
 
