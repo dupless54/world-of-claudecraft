@@ -29,12 +29,10 @@ export class FakeRateLimitStore implements RateLimitStore {
     // an attempt is allowed exactly while count <= maxPerMinute.
     const allowed = count <= maxPerMinute;
     const remaining = Math.max(0, maxPerMinute - count);
-    // Seconds until the oldest in-window entry ages out of the window. After the
-    // push the window always holds at least `now`, so oldest is defined; the
-    // empty-window branch (0) is defensive only.
-    const oldest = updated.length > 0 ? updated[0] : now;
-    const resetSeconds =
-      updated.length > 0 ? Math.max(0, Math.ceil((oldest + WINDOW_MS - now) / 1000)) : 0;
+    // Seconds until the oldest in-window entry ages out of the window. The push
+    // above always leaves at least `now` in the window, so updated[0] is defined.
+    const oldest = updated[0];
+    const resetSeconds = Math.max(0, Math.ceil((oldest + WINDOW_MS - now) / 1000));
 
     return { allowed, remaining, resetSeconds };
   }
