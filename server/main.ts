@@ -1575,8 +1575,9 @@ export async function startServer(): Promise<http.Server> {
   // Last-resort net: one player's request must never crash the process and
   // disconnect everyone. handleMessage already guards itself, but any future
   // uncaught throw in a timer or async path would otherwise be fatal. Log and
-  // keep serving — a live world staying up beats a clean crash-loop. Genuinely
-  // fatal startup errors are still handled by main().catch() below.
+  // keep serving: a live world staying up beats a clean crash-loop. Genuinely
+  // fatal startup errors are still handled by the entrypoint guard's
+  // startServer().catch() below.
   process.on('uncaughtException', (err) => {
     console.error('uncaughtException (kept alive):', err);
   });
