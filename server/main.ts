@@ -39,6 +39,7 @@ import {
   validUsernameShape,
   verifyPassword,
 } from './auth';
+import { configureAuthRuntime } from './auth_routes';
 import { BUG_DESCRIPTION_MAX, BugReportRateLimitError, createBugReport } from './bug_report_db';
 import { characterSheet, type SheetRank } from './character_sheet';
 import {
@@ -1429,6 +1430,16 @@ configureLeaderboardRuntime({
   releasesMaxLimit: RELEASES_SIZE,
   publicOrigin,
   toSheetRank,
+});
+
+// Inject the main.ts runtime the ported auth handlers (server/auth_routes.ts) need
+// but cannot import without a cycle: the live IP-block gate off the GameServer, the
+// one Turnstile / native-attestation decision, and the request-metadata stamp. Done
+// at module load, before any request, mirroring configureLeaderboardRuntime above.
+configureAuthRuntime({
+  isIpBlocked: (ip) => game.isIpBlocked(ip),
+  passesTurnstile,
+  requestMetadata,
 });
 
 // The in-house dispatcher that fronts the legacy handleApi ladder via a per-path

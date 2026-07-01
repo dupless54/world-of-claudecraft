@@ -22,6 +22,7 @@
 // interceptable by an earlier, non-owned catch-all that would skip its ownership
 // loader.
 
+import { routes as authRoutes } from '../auth_routes';
 import { routes as leaderboardRoutes } from '../leaderboard';
 import { type CompiledPattern, compilePattern } from './path_pattern';
 import { createRouter, type MatchResult } from './router';
@@ -51,9 +52,11 @@ export interface ApiRegistry {
  * (server/leaderboard.ts). Every un-migrated /api path is not in this list, so
  * the Phase 9 dispatcher delegates it to the legacy handleApi ladder unchanged.
  * A migrated route stays served by its legacy arm too (the flag-off rollback
- * path) until Phase 25 removes the ladder.
+ * path) until Phase 25 removes the ladder. Phase 10 added the public reads
+ * (server/leaderboard.ts); Phase 11 adds the auth credential surface
+ * (server/auth_routes.ts: register, login, native-attestation challenge).
  */
-export const apiRoutes: readonly RouteDef[] = [...leaderboardRoutes];
+export const apiRoutes: readonly RouteDef[] = [...leaderboardRoutes, ...authRoutes];
 
 /**
  * Build a registry from a route list (defaults to apiRoutes). Ordering happens
