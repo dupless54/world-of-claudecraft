@@ -55,3 +55,24 @@ describe('withRawBody: over-cap mid-stream', () => {
     expect((ctx.res as unknown as { shouldKeepAlive: boolean }).shouldKeepAlive).toBe(false);
   });
 });
+
+describe('withRawBody: non-numeric Content-Length', () => {
+  it('does not early-reject a non-digit Content-Length (mirrors the live strict /^d+$/ check)', async () => {
+    // Under a loose Number() parse '1e9' is a finite 1e9 (>cap) and would 413
+    // before reading; the strict-digit check (matching cardUploadContentLengthTooLarge)
+    // rejects only /^\d+$/ lengths, so a non-numeric length falls through and the
+    // small in-cap body reads normally.
+    const bytes = Buffer.from([1, 2, 3]);
+    const req = makeReq({ method: 'POST', headers: { 'content-length': '1e9' }, body: bytes });
+    const ctx = fakeCtx({ method: 'POST', req });
+    let nextRan = false;
+    await withRawBody(1000)(
+      ctx,
+      nextGuard(() => {
+        nextRan = true;
+      }),
+    );
+    expect(ctx.body as Buffer).toEqual(bytes);
+    expect(nextRan).toBe(true);
+  });
+});

@@ -9,9 +9,27 @@
 // so a client that ignored its own declared length cannot keep the socket.
 // Importable but UNMOUNTED here; Phase 9 places it in front of the card route.
 
+import type * as http from 'node:http';
 import { readBinaryBody } from '../../http_util';
 import { HttpError } from '../errors';
 import type { Middleware } from '../types';
+
+/**
+ * Whether the DECLARED Content-Length already exceeds the cap. Mirrors the live
+ * card route's cardUploadContentLengthTooLarge (server/player_card.ts) 1:1: only
+ * a strictly-numeric length (/^\d+$/ on the trimmed value) that is over the cap
+ * rejects before a byte is read. A missing, non-numeric, or in-cap length falls
+ * through to readBinaryBody, whose own mid-stream cap still bounds the body, so
+ * this pre-check is a cheap optimization, never the sole guard.
+ */
+function contentLengthOverCap(req: http.IncomingMessage, maxBytes: number): boolean {
+  const raw = req.headers['content-length'];
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return false;
+  return Number(trimmed) > maxBytes;
+}
 
 /**
  * Read the request body as a raw Buffer into ctx.body, capped at maxBytes,
@@ -23,8 +41,7 @@ import type { Middleware } from '../types';
  */
 export function withRawBody(maxBytes: number): Middleware {
   return async (ctx, next) => {
-    const len = Number(ctx.req.headers['content-length'] ?? '');
-    if (Number.isFinite(len) && len > maxBytes) {
+    if (contentLengthOverCap(ctx.req, maxBytes)) {
       ctx.res.shouldKeepAlive = false;
       throw new HttpError(413, 'body.too_large', { maxBytes }, { Connection: 'close' });
     }
