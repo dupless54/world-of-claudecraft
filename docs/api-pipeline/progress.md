@@ -480,7 +480,12 @@ result, hoisted CT_JSON/CT_HTML content-type constants, and narrowed DETAILS/OAU
 Deferred 5 forward-looking notes to their scoped phases: the 37 harvested "orphan" codes (reserved
 for P22 emit-wiring, AIP-193), normalizeSurface's export consumer (P8 withErrors), the redirect
 surface status collapse and instance=ctx.path echo (P8+/P12 route wiring), and defaultOnUnexpected's
-console.error (P23 redacting logger). Post-fix: 97 tests across the 3 files (was 91, +6);
+console.error (P23 redacting logger). A follow-up qa-checklist confirmation pass returned READY
+(0 BLOCKING / 0 SHOULD-FIX) and added one further forward-looking i18n note: the html and redirect
+serializers render server-side English (reasonFor/detailFor) with NO client-matcher boundary, unlike
+problem+json/oauth/admin which carry the machine `code` for Phase 22 re-localization; the phase that
+first points a PLAYER-FACING HTML error route at this surface must localize it (a server-rendered
+English page cannot pass through the Phase 22 client matcher). Post-fix: 97 tests across the 3 files (was 91, +6);
 tests/server/http 330 pass (was 324); full gate green (npm test 617 files / 6597 pass / 11 skip; tsc,
 build:env, build:server, build all exit 0; S3 27/3; ci:changed exit 0, changed files clean;
 ASCII-clean). Note (commit hygiene, not a Phase 7 defect): commit 03dc2632 swept a stray root-level
