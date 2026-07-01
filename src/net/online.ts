@@ -43,6 +43,7 @@ import {
   type DelveDailyInfo,
   type DelveRunInfo,
   type DelveShopOfferView,
+  type DevLeaderboardPage,
   type DuelInfo,
   type FriendInfo,
   type GuildLeaderboardPage,
@@ -565,6 +566,23 @@ export class Api {
   // 'password_required' otherwise. A normal account passes nothing.
   async unlinkDiscord(password?: string): Promise<void> {
     await this.delete('/api/discord', password ? { password } : {});
+  }
+
+  // ── GitHub link + developer-badge status ───────────────────────────────────
+  // Returns the github.com authorize URL the browser navigates to (link-only:
+  // attaches the verified GitHub identity to the current account).
+  async githubStart(): Promise<{ url: string }> {
+    return this.post('/api/auth/github/start', {});
+  }
+
+  // Current account's GitHub link status + landed-commit count + dev tier.
+  async githubStatus(): Promise<Record<string, unknown>> {
+    return this.get('/api/github');
+  }
+
+  // Unlink GitHub from the current account.
+  async unlinkGithub(): Promise<void> {
+    await this.delete('/api/github', {});
   }
 
   // ── Shareable player card + referrals ──────────────────────────────────────
@@ -1214,6 +1232,9 @@ export class ClientWorld implements IWorld {
         e.discordName = typeof w.dnm === 'string' ? w.dnm : undefined; // Discord handle/nickname
         e.discordJoined = typeof w.dj === 'number' ? w.dj : undefined; // Discord join epoch ms
         e.discordRole = typeof w.dr === 'string' ? w.dr : undefined; // top staff/special role key
+        e.devTier = w.dvt ?? 0; // developer-badge tier (cosmetic, server-set)
+        e.devMergedPrs = typeof w.dvc === 'number' ? w.dvc : undefined; // merged-PR count
+        e.githubLogin = typeof w.dgl === 'string' ? w.dgl : undefined; // GitHub login
         e.scale = w.sc ?? 1;
         e.color = w.c ?? 0xffffff;
         e.dungeonId = w.dgn ?? null;
@@ -2058,6 +2079,34 @@ export class ClientWorld implements IWorld {
     try {
       const res = await fetch(
         apiUrl(`/api/leaderboard?board=guilds&page=${page}&pageSize=${pageSize}`, this.base),
+      );
+      if (!res.ok) return empty;
+      const data = await res.json();
+      return {
+        leaders: data.leaders ?? [],
+        page: data.page ?? page,
+        pageCount: data.pageCount ?? 1,
+        total: data.total ?? data.leaders?.length ?? 0,
+        pageSize: data.pageSize ?? pageSize,
+      };
+    } catch {
+      return empty;
+    }
+  }
+  // Developer high-score board (REST GET, no wire command): ?board=devs ranks
+  // contributors by landed commits. The same data for every realm, paged exactly
+  // like the player + guild boards above.
+  async devLeaderboard(page = 0, pageSize = LEADERBOARD_PAGE_SIZE): Promise<DevLeaderboardPage> {
+    const empty: DevLeaderboardPage = {
+      leaders: [],
+      page: 0,
+      pageCount: 1,
+      total: 0,
+      pageSize,
+    };
+    try {
+      const res = await fetch(
+        apiUrl(`/api/leaderboard?board=devs&page=${page}&pageSize=${pageSize}`, this.base),
       );
       if (!res.ok) return empty;
       const data = await res.json();

@@ -134,9 +134,11 @@ import * as interaction from './interaction';
 import { meetsLevelRequirement } from './item_level_req';
 import * as items from './items';
 import {
+  type DevLeaderboardPage,
   type GuildLeaderboardPage,
   LEADERBOARD_PAGE_SIZE,
   type LeaderboardPage,
+  paginateDevLeaderboard,
   paginateGuildLeaderboard,
   paginateLeaderboard,
 } from './leaderboard_page';
@@ -1653,6 +1655,12 @@ export class Sim {
   // state. Online play overrides this with the cached, realm-scoped server query.
   guildLeaderboard(page = 0, pageSize = LEADERBOARD_PAGE_SIZE): Promise<GuildLeaderboardPage> {
     return Promise.resolve(paginateGuildLeaderboard([], page, pageSize));
+  }
+  // The developer board is sourced from GitHub's contributor stats, which the
+  // offline world cannot fetch, so it ranks none: an empty page through the same
+  // helper. Online play overrides this with the cached server query.
+  devLeaderboard(page = 0, pageSize = LEADERBOARD_PAGE_SIZE): Promise<DevLeaderboardPage> {
+    return Promise.resolve(paginateDevLeaderboard([], page, pageSize));
   }
   get known(): ResolvedAbility[] {
     return this.primary.known;

@@ -274,11 +274,16 @@ export const de_DE: EnTranslations = {
       "tabsLabel": "Bestenlisten",
       "tabPlayers": "Spieler",
       "tabGuilds": "Gilden",
+      "tabDevs": "Developers",
       "guildName": "Gilde",
       "members": "Mitglieder",
       "topLevel": "Top",
       "guildXp": "Gesamt-XP",
-      "guildEmpty": "Noch keine platzierten Gilden."
+      "guildEmpty": "Noch keine platzierten Gilden.",
+      "devName": "Contributor",
+      "devTierCol": "Badge",
+      "mergedPrs": "Merged PRs",
+      "devEmpty": "No ranked contributors yet."
     },
     "raidLockout": {
       "title": "Schlachtzug-Sperren",
@@ -331,6 +336,7 @@ export const de_DE: EnTranslations = {
       "keybindHelpLockCursorOnRotate": "Hält den Mauszeiger im Fenster, während Ihr zum Drehen der Kamera zieht, damit er nicht den Bildschirmrand erreicht oder auf einen anderen Monitor wandert. Schaltet dies aus, wenn Ihr einen freien Cursor bevorzugt.",
       "showWalletOnCharacterScreen": "Wallet auf dem Charakterbildschirm anzeigen",
       "showWalletOnPlayerCard": "Wallet auf der Spielerkarte anzeigen",
+      "showDevBadges": "Show Developer Badges",
       "uiScale": "UI-Skalierung",
       "highContrastBackground": "Hintergrund mit hohem Kontrast",
       "startAttackOnAbility": "Auto-Attack on Ability Use",
@@ -892,6 +898,34 @@ export const de_DE: EnTranslations = {
           "hint": "Bitte die Gemeinschaft um Hilfe"
         }
       }
+    },
+    "devBadge": {
+      "title": "Developer",
+      "tiers": {
+        "tinkerer": "Tinkerer",
+        "artificer": "Artificer",
+        "runesmith": "Runesmith",
+        "architect": "Architect",
+        "worldwright": "Worldwright"
+      },
+      "flavors": {
+        "tinkerer": "Your first pull request landed in the realm.",
+        "artificer": "Five pull requests in, and the world bends to your code.",
+        "runesmith": "Fifteen pull requests forged into the running game.",
+        "architect": "An architect of the realm: 30 pull requests merged.",
+        "worldwright": "A wright of worlds: 70 pull requests shape the game."
+      },
+      "badgeTitle": "Developer: {tier}",
+      "prsLanded": "{count} pull requests merged",
+      "contributor": "Open-source contributor",
+      "link": {
+        "cta": "Link GitHub",
+        "relink": "Relink GitHub",
+        "benefits": "Link your GitHub to earn a developer badge for the pull requests you have had merged into the open-source repo.",
+        "error": "Could not link GitHub. Please try again."
+      },
+      "linkedAs": "Linked as {login}",
+      "unlink": "Unlink GitHub"
     }
   },
   "guide": {

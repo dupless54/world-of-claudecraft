@@ -274,11 +274,16 @@ export const da_DK: EnTranslations = {
       "tabsLabel": "Pointtavler",
       "tabPlayers": "Spillere",
       "tabGuilds": "Guilds",
+      "tabDevs": "Developers",
       "guildName": "Guild",
       "members": "Medlemmer",
       "topLevel": "Top",
       "guildXp": "Samlet XP",
-      "guildEmpty": "Ingen rangerede guilds endnu."
+      "guildEmpty": "Ingen rangerede guilds endnu.",
+      "devName": "Contributor",
+      "devTierCol": "Badge",
+      "mergedPrs": "Merged PRs",
+      "devEmpty": "No ranked contributors yet."
     },
     "raidLockout": {
       "title": "Raidlåse",
@@ -331,6 +336,7 @@ export const da_DK: EnTranslations = {
       "keybindHelpLockCursorOnRotate": "Holder musemarkøren inde i vinduet, mens du trækker for at dreje kameraet, så den ikke kan nå skærmkanten eller flytte til en anden skærm. Slå fra, hvis du foretrækker en fri markør.",
       "showWalletOnCharacterScreen": "Vis pengepung på karakterskærm",
       "showWalletOnPlayerCard": "Vis pengepung på spillerkort",
+      "showDevBadges": "Show Developer Badges",
       "uiScale": "UI-skala",
       "highContrastBackground": "Baggrund med høj kontrast",
       "startAttackOnAbility": "Auto-Attack on Ability Use",
@@ -892,6 +898,34 @@ export const da_DK: EnTranslations = {
           "hint": "Bed fællesskabet om hjælp"
         }
       }
+    },
+    "devBadge": {
+      "title": "Developer",
+      "tiers": {
+        "tinkerer": "Tinkerer",
+        "artificer": "Artificer",
+        "runesmith": "Runesmith",
+        "architect": "Architect",
+        "worldwright": "Worldwright"
+      },
+      "flavors": {
+        "tinkerer": "Your first pull request landed in the realm.",
+        "artificer": "Five pull requests in, and the world bends to your code.",
+        "runesmith": "Fifteen pull requests forged into the running game.",
+        "architect": "An architect of the realm: 30 pull requests merged.",
+        "worldwright": "A wright of worlds: 70 pull requests shape the game."
+      },
+      "badgeTitle": "Developer: {tier}",
+      "prsLanded": "{count} pull requests merged",
+      "contributor": "Open-source contributor",
+      "link": {
+        "cta": "Link GitHub",
+        "relink": "Relink GitHub",
+        "benefits": "Link your GitHub to earn a developer badge for the pull requests you have had merged into the open-source repo.",
+        "error": "Could not link GitHub. Please try again."
+      },
+      "linkedAs": "Linked as {login}",
+      "unlink": "Unlink GitHub"
     }
   },
   "guide": {

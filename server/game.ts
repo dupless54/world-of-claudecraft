@@ -12,6 +12,7 @@ import {
   isDelvePos,
   zoneAt,
 } from '../src/sim/data';
+import { devTierIndexForMergedPrs } from '../src/sim/dev_tier';
 import { parseRelayCommand } from '../src/sim/discord_relay';
 import type { PickAction } from '../src/sim/lockpick';
 import { sanitizeMarketQuery } from '../src/sim/market_query';
@@ -61,6 +62,8 @@ import { enqueueActivity } from './discord_activity';
 import { discordFlairForAccount, grantRewardPoints } from './discord_db';
 import { enqueueRelay } from './discord_relay';
 import { formatDuration } from './duration';
+import { mergedPrsForLogin } from './github_contributors';
+import { githubForAccount } from './github_db';
 import { forEachGuarded, runGuarded } from './guarded_iter';
 import { IpBlockList } from './ip_block';
 import { loadActiveBlockedIps } from './ip_block_db';
@@ -520,6 +523,9 @@ function identityFields(e: Entity): Record<string, unknown> {
   if (e.discordName) out.dnm = e.discordName; // Discord handle / nickname (nameplate)
   if (e.discordJoined) out.dj = e.discordJoined; // Discord join epoch ms (member since)
   if (e.discordRole) out.dr = e.discordRole; // top staff/special role key (name color + tag)
+  if (e.devTier) out.dvt = e.devTier; // developer-badge tier (cosmetic)
+  if (e.devMergedPrs) out.dvc = e.devMergedPrs; // merged-PR count, for inspect/card
+  if (e.githubLogin) out.dgl = e.githubLogin; // GitHub login (inspect readout + profile link)
   if (e.guild) out.gd = e.guild;
   if (e.dungeonId) out.dgn = e.dungeonId;
   if (e.objectItemId) out.obj = e.objectItemId;
@@ -1172,6 +1178,39 @@ export class GameServer {
     }
   }
 
+  // Update one player's developer-badge flair from their linked GitHub login and
+  // the cached repo merged-PR stats. Best-effort and guarded against the player
+  // leaving mid-fetch. Only an actual contributor (tier > 0, so >= 1 merged PR)
+  // carries the flair on the wire; a linked non-contributor reads as no badge.
+  private async refreshDevBadge(session: ClientSession): Promise<void> {
+    const link = await githubForAccount(pool, session.accountId);
+    const login = link?.github_login ?? null;
+    const mergedPrs = login ? await mergedPrsForLogin(login) : 0;
+    const tier = devTierIndexForMergedPrs(mergedPrs);
+    // The player may have left during the await; only apply if still the live
+    // session for this pid.
+    if (this.clients.get(session.pid) !== session) return;
+    const e = this.sim.entities.get(session.pid);
+    if (!e) return;
+    const githubLogin = tier > 0 ? (login ?? undefined) : undefined;
+    const devMergedPrs = tier > 0 ? mergedPrs : undefined;
+    if (
+      (e.devTier ?? 0) !== tier ||
+      (e.devMergedPrs ?? 0) !== (devMergedPrs ?? 0) ||
+      e.githubLogin !== githubLogin
+    ) {
+      // identity diff re-broadcasts the developer-badge flair to nearby players
+      e.devTier = tier;
+      e.devMergedPrs = devMergedPrs;
+      e.githubLogin = githubLogin;
+      if (tier > 0) {
+        console.log(
+          `[dev] ${session.name} dev tier → ${tier} (${mergedPrs} merged PRs, @${login})`,
+        );
+      }
+    }
+  }
+
   private async refreshAllHolderTiers(): Promise<void> {
     if (this.holderTierRefreshing) return; // a slow cycle (RPC) must not pile up
     this.holderTierRefreshing = true;
@@ -1184,6 +1223,9 @@ export class GameServer {
             ),
             this.refreshDiscordFlair(session).catch((err) =>
               console.error('discord flair refresh failed:', err),
+            ),
+            this.refreshDevBadge(session).catch((err) =>
+              console.error('dev badge refresh failed:', err),
             ),
           ]),
         ),
@@ -1492,6 +1534,11 @@ export class GameServer {
     );
     void this.refreshDiscordFlair(session).catch((err) =>
       console.error('discord flair refresh failed:', err),
+    );
+    // Stamp the developer-badge flair from the linked GitHub login (best-effort:
+    // a contributor-stats read must never affect joining the world).
+    void this.refreshDevBadge(session).catch((err) =>
+      console.error('dev badge refresh failed:', err),
     );
     return session;
   }
