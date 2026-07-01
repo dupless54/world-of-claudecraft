@@ -10,6 +10,7 @@ import {
   cssEffectsTier,
   readBrowserEnv,
 } from './game/browser_env';
+import { isCameraDrivenFacingActive } from './game/camera_driven_facing';
 import { cameraFollowShouldSettle, updateFollowCameraYaw, wrapAngle } from './game/camera_follow';
 import {
   clickMoveShouldWalk,
@@ -1936,9 +1937,11 @@ async function startGame(
   // eases back to zero so the camera settles in behind the character.
   let lastInterpFacing: number | null = null;
   let wasClickMoving = false;
-  // Tracks classic right-mouse mouselook across frames so its falling edge can
-  // commit the final camera yaw to the player facing (see mouselook_release.ts).
-  let prevMouselook = false;
+  // Tracks camera-driven facing (classic right-mouse mouselook, or Mouse Camera
+  // mode while a movement key is held) across frames so its falling edge can
+  // commit the final camera yaw to the player facing (see mouselook_release.ts
+  // and camera_driven_facing.ts).
+  let prevCameraDrivenFacing = false;
   // The release yaw, latched until a sim tick actually commits it. Offline a tick
   // runs on only ~2/3 of frames (60Hz frames, 20Hz ticks), so committing only on
   // the release frame would drop the one-shot when release lands on a zero-tick
@@ -2107,10 +2110,14 @@ async function startGame(
   }
 
   function renderFacingOverride(): number | null {
-    if (input.isMouseCameraMode()) {
-      return cameraMoveActive() ? input.camYaw : null;
-    }
-    return input.isMouselookActive() && !world.player.dead ? input.camYaw : null;
+    return isCameraDrivenFacingActive(
+      input.isMouseCameraMode(),
+      cameraMoveActive(),
+      input.isMouselookActive(),
+      world.player.dead,
+    )
+      ? input.camYaw
+      : null;
   }
 
   function cameraMoveActive(): boolean {
@@ -2172,12 +2179,23 @@ async function startGame(
     const mouselook = input.isMouselookActive() && !world.player.dead;
     const controllerFacing = input.controllerFacingOverride();
     const renderFacing = renderFacingOverride();
-    // On the frame mouselook is released, latch the final camera yaw so the player
-    // facing ends exactly where the camera ended; otherwise the last slice of the
-    // turn is dropped and the character lags the camera. The render/controller
+    // On the frame the camera lets go of the player's heading (classic mouselook
+    // release, OR a Mouse Camera mode move key release), latch the final camera yaw
+    // so the facing ends exactly where the camera ended; otherwise the last slice of
+    // the turn is dropped and the character lags the camera. The render/controller
     // overrides take precedence and reclaim the heading, clearing any stale latch.
-    const edgeReleaseFacing = mouselookReleaseFacing(prevMouselook, mouselook, input.camYaw);
-    prevMouselook = mouselook;
+    const cameraDrivenFacing = isCameraDrivenFacingActive(
+      input.isMouseCameraMode(),
+      cameraMoveActive(),
+      input.isMouselookActive(),
+      world.player.dead,
+    );
+    const edgeReleaseFacing = mouselookReleaseFacing(
+      prevCameraDrivenFacing,
+      cameraDrivenFacing,
+      input.camYaw,
+    );
+    prevCameraDrivenFacing = cameraDrivenFacing;
     if (renderFacing !== null || controllerFacing !== null) {
       pendingReleaseFacing = null;
     } else if (edgeReleaseFacing !== null) {
