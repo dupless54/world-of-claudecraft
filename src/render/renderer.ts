@@ -57,6 +57,7 @@ import {
   type FoliagePerfStats,
   type FoliageView,
 } from './foliage';
+import { buildGatherNodes } from './gather_nodes';
 import {
   GFX,
   type GfxBucketBands,
@@ -1256,6 +1257,10 @@ export class Renderer {
       setRenderCategory(this.placedAssetsView.group, 'props');
       this.scene.add(this.placedAssetsView.group);
     }
+
+    const gatherNodes = buildGatherNodes(this.sim.cfg.seed);
+    setRenderCategory(gatherNodes.group, 'props');
+    this.scene.add(gatherNodes.group);
 
     // selection ring — a classic target reticle: a base ring plus four
     // inward-pointing ticks. The base ring is draped over the terrain each

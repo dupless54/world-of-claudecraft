@@ -10,6 +10,7 @@ import type {
   DelveDef,
   DelveModuleDef,
   DungeonDef,
+  GatherNodeDef,
   GroundObjectDef,
   ItemDef,
   MobTemplate,
@@ -41,6 +42,7 @@ import {
   SPIRIT_HEALER,
   SPIRIT_HEALER_NPC_ID,
 } from './content/graveyards';
+import { GATHER_NODES as GATHER_NODES_CONTENT } from './content/gather_nodes';
 import { GROUND_PICKUP_LINES } from './content/ground_pickup_lines';
 import {
   TEMPLE_CAMPS,
@@ -124,6 +126,7 @@ function mergeItems(...parts: Record<string, ItemDef>[]): Record<string, ItemDef
 
 export type { ClassDef } from './content/classes';
 export { ABILITIES, abilitiesKnownAt, CLASSES } from './content/classes';
+export { GATHER_NODE_TYPES } from './content/gather_nodes';
 // Re-export content shapes so existing `from './data'` imports keep working.
 export type {
   BiomeId,
@@ -131,6 +134,8 @@ export type {
   DelveDef,
   DungeonDef,
   DungeonSpawn,
+  GatherNodeDef,
+  GatherNodeType,
   GroundObjectDef,
   NpcDef,
   ZoneDef,
@@ -213,6 +218,8 @@ export const GROUND_OBJECTS: GroundObjectDef[] = [
   ...ZONE3_OBJECTS,
   ...TEMPLE_OBJECTS,
 ];
+
+export const GATHER_NODES: GatherNodeDef[] = [...GATHER_NODES_CONTENT];
 
 export const ROADS: { x: number; z: number }[][] = [...ZONE1_ROADS, ...ZONE2_ROADS, ...ZONE3_ROADS];
 
