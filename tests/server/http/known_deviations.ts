@@ -24,7 +24,6 @@ export const DEVIATION_ID = {
   perfReport200NotThrottle: 'perf-report-200-not-429-on-throttle',
   perfReportSitePresence405OkFalse: 'perf-report-and-site-presence-405-ok-false',
   registerLoginAntiEnumeration: 'register-login-anti-enumeration',
-  authRateLimitDashToComma: 'auth-rate-limit-dash-to-comma',
   authBodyValidationRemap: 'auth-body-validation-remap-login-challenge',
   authNullBodyCoercion: 'auth-null-body-coercion',
   bolaOwned404: 'bola-owned-404',
@@ -35,6 +34,8 @@ export const DEVIATION_ID = {
   newLimiterCharacterMutations: 'new-limiter-character-mutations',
   characterBodyValidationRemap: 'character-body-validation-remap',
   characterIdParamDecode: 'character-id-param-decode-422',
+  companionTokenMethodFan: 'companion-token-method-fan-405',
+  accountBodyValidationRemap: 'account-body-validation-remap',
   newLimiterReportsCreate: 'new-limiter-reports-create',
   newLimiterDiscord: 'new-limiter-discord',
   discordCallbackHtmlNotRedirect: 'discord-callback-html-not-redirect',
@@ -156,29 +157,14 @@ export const KNOWN_DEVIATIONS: readonly KnownDeviation[] = [
   },
 
   // --- Phase-scheduled deviations (introducedInPhase names the change) ---------
-  {
-    id: DEVIATION_ID.authRateLimitDashToComma,
-    routes: ['/api/register', '/api/login'],
-    currentBehavior:
-      'The legacy handleApi rate-limit and IP-block 429 on register/login answers ' +
-      '{ error: "too many attempts" + an em dash (U+2014) + " wait a minute and try ' +
-      'again" }, and the login brute-force throttle answers the same shape with "too ' +
-      'many failed attempts" + the em dash + " wait a few minutes and try again".',
-    intendedBehavior:
-      'Phase 11 serves register/login through the new pipeline with the same { error } ' +
-      'body shape but a COMMA in place of the em dash, because the no-em-dash code ' +
-      'invariant forbids a U+2014 literal in the new module. The client prose-matcher ' +
-      '(src/main.ts userFacingApiError) keys on the "too many attempts" / "too many ' +
-      'failed attempts" prefix, BEFORE the punctuation, so the localized message is ' +
-      'unchanged. Phase 13 aligns the legacy ladder strings to the comma, retiring ' +
-      'this deviation.',
-    introducedInPhase: 11,
-    reason:
-      'Byte-for-byte parity would require re-emitting the legacy em dash, which the ' +
-      'no-em-dash invariant forbids in new code; the dash-to-comma swap is the minimal ' +
-      'matcher-safe divergence (the prose-matcher keys on the prefix, not the dash). ' +
-      'The legacy-string fix is Phase 13, so both messages read identically after it.',
-  },
+  // NOTE: authRateLimitDashToComma (introducedInPhase 11) was RETIRED in Phase 13.
+  // Phase 11 served register/login through the new pipeline with a COMMA where the
+  // legacy ladder used an em dash (the no-em-dash code invariant forbids a U+2014
+  // literal in new code), a matcher-safe divergence the client prose-matcher never
+  // saw (it keys on the "too many attempts" / "too many failed attempts" prefix,
+  // before the punctuation). Phase 13 swapped the four legacy handleApi rate-limit
+  // 429 strings in server/main.ts to the same comma, so the legacy and migrated
+  // bodies are now byte-identical and the divergence no longer exists.
   {
     id: DEVIATION_ID.authBodyValidationRemap,
     routes: ['/api/login', '/api/native-attestation/challenge'],
@@ -407,6 +393,81 @@ export const KNOWN_DEVIATIONS: readonly KnownDeviation[] = [
       'in the numeric-only parity corpus, so documented here rather than harness-caught. ' +
       'Sibling to characterBodyValidationRemap (same phase and routes, same harness-invisible ' +
       'rationale).',
+  },
+  {
+    id: DEVIATION_ID.companionTokenMethodFan,
+    routes: ['/api/account/companion-token'],
+    currentBehavior:
+      'The legacy handleApi companion-token arm is a single method-agnostic ' +
+      '`url === "/api/account/companion-token"` block with NO top-level method guard: ' +
+      'it resolves bearerActiveAccount FIRST, then fans POST (create), GET (list), and ' +
+      'DELETE (revoke) inside. An UNsupported method (e.g. PUT) that presents a valid ' +
+      'full-session bearer passes the auth gate and then falls through all three inner ' +
+      'branches to the 404 unknown-endpoint arm; the same method WITHOUT a bearer answers ' +
+      '401 at the auth gate first.',
+    intendedBehavior:
+      'Phase 13 registers the companion-token path as THREE method-specific RouteDefs ' +
+      '(POST create, GET list, DELETE revoke). The Phase 4 table router answers a known ' +
+      'path plus an unsupported method with 405 (method not allowed) and an Allow header, ' +
+      'decided BEFORE the auth guard runs. The registry RESOLVES an unsupported method to ' +
+      'methodNotAllowed (405 + Allow) for this path, but the Phase 9 dispatcher DELEGATES a ' +
+      'non-matched resolve to the legacy handleApi ladder, so TODAY a wrong-method companion ' +
+      'request still gets the legacy 404 (authenticated) / 401 (unauthenticated); the 405 + ' +
+      'Allow becomes the served behavior only at the Phase 25 ladder deletion (when the ' +
+      'dispatcher serves methodNotAllowed itself). Same framing as planned405BeforeAuth.',
+    introducedInPhase: 13,
+    reason:
+      'The companion-token block fans methods after auth with no top-level method guard; ' +
+      'the migrated three-RouteDef form inherits the systemic planned-405-before-auth ' +
+      'behavior (a known path plus an unsupported method is 405 + Allow, decided before ' +
+      'auth). Sibling to planned405BeforeAuth for a specific method-fan arm. Not exercised ' +
+      'by the parity corpus (no wrong-method companion-token fixture), so documented here ' +
+      'rather than harness-caught; the divergence becomes the real behavior at the Phase 25 ' +
+      'flag flip / ladder deletion.',
+  },
+  {
+    id: DEVIATION_ID.accountBodyValidationRemap,
+    routes: [
+      '/api/account/password',
+      '/api/account/deactivate',
+      '/api/account/companion-token',
+      '/api/account/email/change',
+      '/api/account/marketing',
+      '/api/account/2fa/setup',
+      '/api/account/2fa/enable',
+      '/api/account/2fa/disable',
+    ],
+    currentBehavior:
+      'The account-portal handlers self-read their request body with readBody INSIDE the ' +
+      'migrated handler (the shared handleAccount* domain function for password / deactivate ' +
+      '/ email-change / marketing / 2fa, or the companion create/revoke route handler ' +
+      'directly). On the legacy handleApi ladder, a malformed ' +
+      'JSON body or an over-cap body makes readBody reject, and the reject falls to ' +
+      'handleApi\'s outer catch, which answers 500 { error: "internal error" } ' +
+      '(application/json); a literal JSON null body (valid JSON) is dereferenced ' +
+      '(null.username / null.optIn / ...), throwing a TypeError that falls to the same ' +
+      'generic 500.',
+    intendedBehavior:
+      'Phase 13 serves these routes through the new pipeline. The migrated handlers call ' +
+      'the SAME domain functions UNCHANGED (they self-read the body, so NO withBody ' +
+      'middleware is composed and there is NO 400/413 status remap: a malformed or over-cap ' +
+      'body still answers 500, and a null body still throws to 500). The ONLY divergence is ' +
+      'the 500 BODY SHAPE: the throw propagates to the Phase 8 withErrors boundary and ' +
+      'serializes as 500 application/problem+json (internal.error) instead of the legacy ' +
+      '500 { error: "internal error" }. Leak-free (the 500 detail is a static sentence; the ' +
+      'original error goes only to the logger). The client code-matcher for the problem+json ' +
+      'body is Phase 22; the divergence becomes the real behavior at the Phase 25 flag flip.',
+    introducedInPhase: 13,
+    reason:
+      'The migrated account write handlers surface an unexpected throw (malformed / over-cap ' +
+      '/ null body) through the shared Phase 7/8 error-model boundary as 500 problem+json ' +
+      'instead of the legacy outer-catch 500 { error }. Same 500 STATUS, different body ' +
+      'shape; there is no status remap because these handlers self-read without withBody. ' +
+      'These framework-error paths are NOT exercised by the db-free parity corpus (which ' +
+      'replays valid bodies only), so the divergence is documented here rather than ' +
+      'harness-caught. Sibling to authBodyValidationRemap / characterBodyValidationRemap ' +
+      '(same systemic boundary; those add a 400/413 remap because they use withBody, this ' +
+      'one does not).',
   },
   {
     id: DEVIATION_ID.newLimiterReportsCreate,

@@ -168,14 +168,17 @@ describe('registry completeness: the legacy /api ladder is fully covered', () =>
   });
 });
 
-describe('registry completeness: migrated baseline (Phase 10 public reads + Phase 11 auth + Phase 12 characters)', () => {
+describe('registry completeness: migrated baseline (Phase 10 public reads + Phase 11 auth + Phase 12 characters + Phase 13 account)', () => {
   // The exact routes migrated onto RouteDefs so far: Phase 10 moved the public
   // reads (GET, server/leaderboard.ts), Phase 11 the auth credential surface (POST,
-  // server/auth_routes.ts), and Phase 12 the owner-gated character surface
+  // server/auth_routes.ts), Phase 12 the owner-gated character surface
   // (server/characters.ts: the list pair, create, and the account-owned :id
-  // subroutes behind requireOwnedCharacter). The router owns each under flag 'new';
-  // their legacy arms stay for rollback. Method-aware, because a route resolves per
-  // method (a POST to a GET-only path resolves methodNotAllowed, not matched).
+  // subroutes behind requireOwnedCharacter), and Phase 13 the account-portal surface
+  // (server/account.ts: the /api/account/* family, the companion-token method trio,
+  // and /api/email/unsubscribe). The router owns each under flag 'new'; their legacy
+  // arms stay for rollback. Method-aware, because a route resolves per method (a POST
+  // to a GET-only path resolves methodNotAllowed, not matched), and the companion-
+  // token path appears three times (POST create, GET list, DELETE revoke).
   const MIGRATED_ROUTES: readonly LadderRoute[] = [
     { method: 'GET', path: '/api/leaderboard' },
     { method: 'GET', path: '/api/arena/leaderboard' },
@@ -197,6 +200,23 @@ describe('registry completeness: migrated baseline (Phase 10 public reads + Phas
     { method: 'POST', path: '/api/characters/:id/rename' },
     { method: 'POST', path: '/api/characters/:id/takeover' },
     { method: 'DELETE', path: '/api/characters/:id' },
+    // Phase 13: the account portal (server/account.ts).
+    { method: 'GET', path: '/api/account' },
+    { method: 'POST', path: '/api/account/password' },
+    { method: 'POST', path: '/api/account/logout' },
+    { method: 'POST', path: '/api/account/email' },
+    { method: 'POST', path: '/api/account/deactivate' },
+    { method: 'POST', path: '/api/account/companion-token' },
+    { method: 'GET', path: '/api/account/companion-token' },
+    { method: 'DELETE', path: '/api/account/companion-token' },
+    { method: 'POST', path: '/api/account/email/change' },
+    { method: 'GET', path: '/api/account/email/verify' },
+    { method: 'POST', path: '/api/account/export' },
+    { method: 'POST', path: '/api/account/marketing' },
+    { method: 'POST', path: '/api/account/2fa/setup' },
+    { method: 'POST', path: '/api/account/2fa/enable' },
+    { method: 'POST', path: '/api/account/2fa/disable' },
+    { method: 'GET', path: '/api/email/unsubscribe' },
   ];
   const MIGRATED_PATHS = MIGRATED_ROUTES.map((r) => r.path);
 
