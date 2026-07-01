@@ -9,24 +9,52 @@
 // Reproducibility is checked by tests/i18n_resolved_equivalence.test.ts.
 
 export const pending: Record<string, readonly string[]> = {
-  "es": [],
-  "es_ES": [],
-  "fr_FR": [],
-  "fr_CA": [],
+  "es": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "es_ES": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "fr_FR": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "fr_CA": [
+    "hudChrome.options.walkByAutoloot"
+  ],
   "en_CA": [],
-  "it_IT": [],
-  "de_DE": [],
+  "it_IT": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "de_DE": [
+    "hudChrome.options.walkByAutoloot"
+  ],
   "zh_CN": [],
   "zh_TW": [],
   "ko_KR": [],
   "ja_JP": [],
-  "pt_BR": [],
+  "pt_BR": [
+    "hudChrome.options.walkByAutoloot"
+  ],
   "ru_RU": [],
-  "nl_NL": [],
-  "pl_PL": [],
-  "id_ID": [],
-  "tr_TR": [],
-  "sv_SE": [],
-  "vi_VN": [],
-  "da_DK": []
+  "nl_NL": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "pl_PL": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "id_ID": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "tr_TR": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "sv_SE": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "vi_VN": [
+    "hudChrome.options.walkByAutoloot"
+  ],
+  "da_DK": [
+    "hudChrome.options.walkByAutoloot"
+  ]
 };

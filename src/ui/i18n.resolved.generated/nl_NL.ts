@@ -340,6 +340,7 @@ export const nl_NL: EnTranslations = {
       "uiScale": "UI-schaal",
       "highContrastBackground": "Hoog-contrastachtergrond",
       "startAttackOnAbility": "Auto-aanval bij gebruik van vaardigheid",
+      "walkByAutoloot": "Walk-by Autoloot",
       "showItemLevel": "Itemniveau tonen",
       "itemLevelLine": "Itemniveau {level}",
       "itemScoreLine": "Score {score}",

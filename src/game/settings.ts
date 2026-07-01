@@ -145,6 +145,11 @@ export const BOOL_SETTINGS = {
   // startAutoAttack still no-ops unless a valid hostile target is in range, and
   // heals / buffs / damage-breakable CC (gouge, sap, sheep) never trigger it.
   startAttackOnAbilityUse: { def: true },
+  // off by default: walk-by proximity autoloot (loot corpses just by walking
+  // past them). Auto-grabbing loot can feel jarring, so it is opt-in and classic
+  // deliberate looting stays the default. Gates the client AutoLoot pass in
+  // main.ts; the sim's authoritative gate and the raid-instance gate are separate.
+  walkByAutoloot: { def: false },
 
   // --- Interface & Comfort pack (booleans). ---
   // off by default: drop every HUD cross-fade / panel animation, for players

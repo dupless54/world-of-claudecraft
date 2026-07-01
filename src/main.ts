@@ -4,6 +4,7 @@
 import './styles/index.css';
 import { syncAppViewport as syncAppViewportShared } from './game/app_viewport';
 import { audio } from './game/audio';
+import { AutoLoot } from './game/autoloot';
 import {
   BROWSER_BODY_CLASSES,
   browserBodyClasses,
@@ -920,6 +921,7 @@ async function startGame(
   uiEffectsApplier.applyNow();
   let renderer!: Renderer;
   let hud!: Hud;
+  const autoLoot = new AutoLoot();
   const perf = createPerfMonitor(null);
   try {
     renderer = new Renderer(world, canvas, nameplates);
@@ -2240,6 +2242,7 @@ async function startGame(
       );
       perf.trace('ui.clickMoveMarker', () => updateClickMoveMarker());
       perf.markInputVisible(performance.now());
+      if (settings.get('walkByAutoloot')) autoLoot.run(world, now);
       perf.time('hud', () => perf.trace('hud.update', () => hud.update(), { mode: 'offline' }));
       perf.tick(now);
       return;
@@ -2344,6 +2347,7 @@ async function startGame(
     perf.trace('ui.clickMoveMarker', () => updateClickMoveMarker());
     maybeShowImmobileNote(now);
     perf.markInputVisible(performance.now());
+    if (settings.get('walkByAutoloot')) autoLoot.run(world, now);
     perf.time('hud', () => perf.trace('hud.update', () => hud.update(), { mode: 'online' }));
     perf.tick(now);
   }

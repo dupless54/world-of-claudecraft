@@ -4397,6 +4397,14 @@ export class Sim {
     interaction.lootCorpse(this.ctx, mobId, pid);
   }
 
+  // Walk-by autoloot: the passive counterpart to lootCorpse, called every
+  // frame as the trigger nears a corpse. Silent on ineligibility (see
+  // interaction.ts); the widened `pid?` overload lets tests drive a
+  // non-primary party member the same way lootCorpse does.
+  autoLoot(mobId: number, pid?: number): void {
+    interaction.autoLootForParty(this.ctx, mobId, pid ?? this.primaryId);
+  }
+
   pickUpObject(objId: number, pid?: number): void {
     interaction.pickUpObject(this.ctx, objId, pid);
   }

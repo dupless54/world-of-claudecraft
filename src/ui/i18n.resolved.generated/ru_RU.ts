@@ -340,6 +340,7 @@ export const ru_RU: EnTranslations = {
       "uiScale": "Масштаб интерфейса",
       "highContrastBackground": "Фон высокой контрастности",
       "startAttackOnAbility": "Автоатака при использовании способности",
+      "walkByAutoloot": "Автосбор добычи при проходе",
       "showItemLevel": "Показывать уровень предмета",
       "itemLevelLine": "Уровень предмета {level}",
       "itemScoreLine": "Оценка {score}",

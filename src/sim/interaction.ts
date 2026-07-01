@@ -29,6 +29,7 @@ import {
   interactObjectForQuests,
   tryStartNythraxisWardChannel,
 } from './encounters/nythraxis';
+import { isInRaidInstance } from './instances/dungeons';
 import { hasSharedLootRights as computeSharedLootRights, lootHasGoneFfa } from './loot/loot_ffa';
 import {
   awardSharedLootItem,
@@ -85,6 +86,36 @@ export function lootCorpse(ctx: SimContext, mobId: number, pid?: number): void {
   }
   pruneCorpseLoot(ctx, mob);
   if (p.targetId === mobId) p.targetId = null;
+}
+
+// Walk-by autoloot: a silent tap-rights pre-check, then a delegate to the
+// existing per-slot `lootCorpse` distribution. Unlike `lootCorpse`, a failed
+// eligibility check here must NOT emit a "no permission" / "too far" error:
+// this fires passively every frame as the trigger walks near a corpse, so it
+// mirrors `lootCorpse`'s own eligibility computation (down to the FFA-unlock
+// timer) and only delegates once that same check would actually succeed.
+export function autoLootForParty(ctx: SimContext, mobId: number, triggerPid: number): void {
+  const r = ctx.resolve(triggerPid);
+  if (!r || r.e.dead) return;
+  const { meta, e: trigger } = r;
+  if (isInRaidInstance(ctx, trigger.pos)) return; // silent: no error toast on a passive walk-by
+  const mob = ctx.entities.get(mobId);
+  if (!mob?.lootable || !mob.loot) return;
+  if (dist2d(trigger.pos, mob.pos) > INTERACT_RANGE) return;
+
+  const tapperParty = mob.tappedById !== null ? ctx.partyOf(mob.tappedById) : null;
+  const ffaUnlocked = lootHasGoneFfa(mob.lootFfaTimer);
+  const hasSharedLootRights = computeSharedLootRights(
+    meta.entityId,
+    mob.tappedById,
+    tapperParty?.members ?? null,
+    ffaUnlocked,
+  );
+  const hasPersonalLoot = mob.loot.items.some((s) => s.personalFor?.includes(meta.entityId));
+  const hasOpenLoot = mob.loot.items.some((s) => s.openToAll && s.count > 0);
+  if (!hasSharedLootRights && !hasPersonalLoot && !hasOpenLoot) return;
+
+  lootCorpse(ctx, mobId, meta.entityId); // existing per-slot distribution does the rest
 }
 
 export function pickUpObject(ctx: SimContext, objId: number, pid?: number): void {

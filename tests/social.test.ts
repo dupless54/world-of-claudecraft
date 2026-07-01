@@ -4,13 +4,21 @@ import {
   CLASSES,
   CRYPT_SPAWNS,
   DUNGEON_X_THRESHOLD,
+  DUNGEONS,
   dungeonAt,
   instanceOrigin,
   MOBS,
 } from '../src/sim/data';
 import { createMob } from '../src/sim/entity';
 import { type Party, Sim } from '../src/sim/sim';
-import { ALL_CLASSES, dist2d, type Entity, type LootSlot, MAX_LEVEL } from '../src/sim/types';
+import {
+  ALL_CLASSES,
+  dist2d,
+  type Entity,
+  INTERACT_RANGE,
+  type LootSlot,
+  MAX_LEVEL,
+} from '../src/sim/types';
 import { groundHeight } from '../src/sim/world';
 import type { PartyMemberInfo } from '../src/world_api';
 
@@ -351,6 +359,26 @@ describe('parties', () => {
     return { sim, a, b };
   }
 
+  // Direct corpse construction (mirroring tests/loot_roll.test.ts's `deadCorpse`)
+  // so the kill-time eligible set (`lootRecipientIds`) is controlled deterministically,
+  // independent of live positions at loot time. Shared by the round-robin and
+  // walk-by autoloot describe blocks below.
+  function deadCorpse(
+    sim: Sim,
+    tapper: number,
+    recipients: number[],
+    loot: { copper: number; items: LootSlot[] },
+  ): Entity {
+    const mob = createMob(sim.nextId++, MOBS.forest_wolf, 2, { x: 0, y: 0, z: 0 });
+    mob.dead = true;
+    mob.lootable = true;
+    mob.tappedById = tapper;
+    mob.lootRecipientIds = recipients;
+    mob.loot = loot;
+    sim.entities.set(mob.id, mob);
+    return mob;
+  }
+
   it('invite/accept forms a party; leave disbands at 1', () => {
     const { sim, a, b } = makeDuo();
     expect(sim.partyOf(a)?.members).toEqual([a, b]);
@@ -610,25 +638,6 @@ describe('parties', () => {
   });
 
   describe('round-robin common-item distribution', () => {
-    // Direct corpse construction (mirroring tests/loot_roll.test.ts's `deadCorpse`)
-    // so the kill-time eligible set (`lootRecipientIds`) is controlled deterministically,
-    // independent of live positions at loot time.
-    function deadCorpse(
-      sim: Sim,
-      tapper: number,
-      recipients: number[],
-      loot: { copper: number; items: LootSlot[] },
-    ): Entity {
-      const mob = createMob(sim.nextId++, MOBS.forest_wolf, 2, { x: 0, y: 0, z: 0 });
-      mob.dead = true;
-      mob.lootable = true;
-      mob.tappedById = tapper;
-      mob.lootRecipientIds = recipients;
-      mob.loot = loot;
-      sim.entities.set(mob.id, mob);
-      return mob;
-    }
-
     it('rotates a common drop over the kill-time eligible members, not just who is close enough to loot', () => {
       const { sim, a, b } = makeDuo();
       // A stays on the corpse and does the actual looting each time. B is well
@@ -704,6 +713,92 @@ describe('parties', () => {
       expect(sim.countItem('greyjaw_hide_boots', a)).toBe(0);
       expect(sim.countItem('greyjaw_hide_boots', b)).toBe(0);
       expect(sim.events.some((e) => e.type === 'lootRoll')).toBe(true);
+    });
+  });
+
+  describe('walk-by autoloot (autoLootForParty)', () => {
+    it('an eligible triggerer in range clears the corpse: fair-split copper plus round-robin common item', () => {
+      const { sim, a, b } = makeDuo();
+      teleport(sim, a, 0, 1);
+      const mob = deadCorpse(sim, a, [a, b], {
+        copper: 10,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      const aBefore = sim.meta(a)?.copper ?? 0;
+      const bBefore = sim.meta(b)?.copper ?? 0;
+      sim.autoLoot(mob.id, a);
+      const aGain = (sim.meta(a)?.copper ?? 0) - aBefore;
+      const bGain = (sim.meta(b)?.copper ?? 0) - bBefore;
+      // copper fair-splits across the two kill-time recipients, same as manual loot.
+      expect(aGain + bGain).toBe(10);
+      expect(Math.abs(aGain - bGain)).toBeLessThanOrEqual(1);
+      // the common item round-robins to exactly one recipient.
+      expect(sim.countItem('worn_sword', a) + sim.countItem('worn_sword', b)).toBe(1);
+      // the corpse is fully cleared by the delegated lootCorpse distribution.
+      expect(mob.lootable).toBe(false);
+      expect(mob.loot).toBeNull();
+      expect(sim.events.some((e) => e.type === 'error')).toBe(false);
+    });
+
+    it("a stranger's corpse yields no loot and the silent pass emits no error event", () => {
+      const { sim, a, b } = makeDuo();
+      const stranger = sim.addPlayer('rogue', 'Gimel');
+      teleport(sim, a, 0, 1);
+      teleport(sim, stranger, 0, 1);
+      const mob = deadCorpse(sim, a, [a, b], {
+        copper: 10,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      sim.autoLoot(mob.id, stranger);
+      expect(sim.meta(stranger)?.copper ?? 0).toBe(0);
+      expect(sim.countItem('worn_sword', stranger)).toBe(0);
+      expect(mob.lootable).toBe(true);
+      expect(mob.loot?.copper).toBe(10);
+      // the whole point of the walk-by pass: ineligibility never surfaces an error toast,
+      // unlike a manual lootCorpse attempt on the same corpse.
+      expect(sim.events.some((e) => e.type === 'error')).toBe(false);
+    });
+
+    it('an out-of-INTERACT_RANGE triggerer loots nothing, silently', () => {
+      const { sim, a, b } = makeDuo();
+      teleport(sim, a, 60, 60);
+      const mob = deadCorpse(sim, a, [a, b], {
+        copper: 10,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      expect(dist2d(mustEntity(sim, a).pos, mob.pos)).toBeGreaterThan(INTERACT_RANGE);
+      sim.autoLoot(mob.id, a);
+      expect(sim.meta(a)?.copper ?? 0).toBe(0);
+      expect(sim.countItem('worn_sword', a)).toBe(0);
+      expect(mob.lootable).toBe(true);
+      expect(sim.events.some((e) => e.type === 'error')).toBe(false);
+    });
+
+    it('a triggerer physically inside a raid instance loots nothing, silently; the same player back in the open world still loots as a control', () => {
+      const { sim, a, b } = makeDuo();
+      const origin = instanceOrigin(DUNGEONS.nythraxis_boss_arena.index, 0);
+      teleport(sim, a, origin.x, origin.z + 1);
+      const raidMob = deadCorpse(sim, a, [a, b], {
+        copper: 10,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      raidMob.pos = { x: origin.x, y: 0, z: origin.z };
+      sim.autoLoot(raidMob.id, a);
+      expect(sim.meta(a)?.copper ?? 0).toBe(0);
+      expect(sim.countItem('worn_sword', a)).toBe(0);
+      expect(raidMob.lootable).toBe(true);
+      expect(raidMob.loot?.copper).toBe(10);
+      expect(sim.events.some((e) => e.type === 'error')).toBe(false);
+
+      // control: same player, back in the open world, loots normally.
+      teleport(sim, a, 0, 1);
+      const openMob = deadCorpse(sim, a, [a, b], {
+        copper: 10,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      sim.autoLoot(openMob.id, a);
+      expect(sim.meta(a)?.copper ?? 0).toBeGreaterThan(0);
+      expect(openMob.lootable).toBe(false);
     });
   });
 });
