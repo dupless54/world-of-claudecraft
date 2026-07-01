@@ -8,8 +8,9 @@ import {
   instanceOrigin,
   MOBS,
 } from '../src/sim/data';
+import { createMob } from '../src/sim/entity';
 import { type Party, Sim } from '../src/sim/sim';
-import { ALL_CLASSES, dist2d, type Entity, MAX_LEVEL } from '../src/sim/types';
+import { ALL_CLASSES, dist2d, type Entity, type LootSlot, MAX_LEVEL } from '../src/sim/types';
 import { groundHeight } from '../src/sim/world';
 import type { PartyMemberInfo } from '../src/world_api';
 
@@ -606,6 +607,104 @@ describe('parties', () => {
     sim.lootCorpse(wolf.id, c);
     expect(sim.meta(c)?.copper).toBe(0);
     expect(wolf.lootable).toBe(true);
+  });
+
+  describe('round-robin common-item distribution', () => {
+    // Direct corpse construction (mirroring tests/loot_roll.test.ts's `deadCorpse`)
+    // so the kill-time eligible set (`lootRecipientIds`) is controlled deterministically,
+    // independent of live positions at loot time.
+    function deadCorpse(
+      sim: Sim,
+      tapper: number,
+      recipients: number[],
+      loot: { copper: number; items: LootSlot[] },
+    ): Entity {
+      const mob = createMob(sim.nextId++, MOBS.forest_wolf, 2, { x: 0, y: 0, z: 0 });
+      mob.dead = true;
+      mob.lootable = true;
+      mob.tappedById = tapper;
+      mob.lootRecipientIds = recipients;
+      mob.loot = loot;
+      sim.entities.set(mob.id, mob);
+      return mob;
+    }
+
+    it('rotates a common drop over the kill-time eligible members, not just who is close enough to loot', () => {
+      const { sim, a, b } = makeDuo();
+      // A stays on the corpse and does the actual looting each time. B is well
+      // outside INTERACT_RANGE, but was within PARTY_XP_RANGE at kill time, so B
+      // is still a kill-time loot recipient (`lootRecipientIds`). Round-robin must
+      // rotate over that kill-time set, not the loot-time in-range set: that is the
+      // whole fairness point.
+      teleport(sim, a, 0, 1);
+      teleport(sim, b, 60, 60);
+
+      const mob1 = deadCorpse(sim, a, [a, b], {
+        copper: 0,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      sim.lootCorpse(mob1.id, a);
+      expect(sim.countItem('worn_sword', a)).toBe(1);
+      expect(sim.countItem('worn_sword', b)).toBe(0);
+
+      const mob2 = deadCorpse(sim, a, [a, b], {
+        copper: 0,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      sim.lootCorpse(mob2.id, a);
+      // The second kill's drop rotates to B even though B never came near either
+      // corpse: across the two kills, both A's and B's bags gain the item.
+      expect(sim.countItem('worn_sword', a)).toBe(1);
+      expect(sim.countItem('worn_sword', b)).toBe(1);
+    });
+
+    it('spreads multiple common drops on one corpse across members (per-item cursor advance)', () => {
+      const { sim, a, b } = makeDuo();
+      teleport(sim, a, 0, 1);
+      const mob = deadCorpse(sim, a, [a, b], {
+        copper: 0,
+        items: [
+          { itemId: 'worn_sword', count: 1 },
+          { itemId: 'rusty_dagger', count: 1 },
+        ],
+      });
+      sim.lootCorpse(mob.id, a);
+      const aCount = sim.countItem('worn_sword', a) + sim.countItem('rusty_dagger', a);
+      const bCount = sim.countItem('worn_sword', b) + sim.countItem('rusty_dagger', b);
+      expect(aCount + bCount).toBe(2);
+      // Both drops must not land on the single looter: the cursor advances once
+      // per awarded item, so a single kill with two common drops still spreads.
+      expect(aCount).toBe(1);
+      expect(bCount).toBe(1);
+    });
+
+    it('declines round-robin with a single kill-time candidate; the looter gets the item', () => {
+      const { sim, a, b } = makeDuo();
+      teleport(sim, a, 0, 1);
+      // B was not a kill-time recipient (e.g. too far at the moment of the kill),
+      // so the eligible set for this corpse is just A.
+      const mob = deadCorpse(sim, a, [a], {
+        copper: 0,
+        items: [{ itemId: 'worn_sword', count: 1 }],
+      });
+      sim.lootCorpse(mob.id, a);
+      expect(sim.countItem('worn_sword', a)).toBe(1);
+      expect(sim.countItem('worn_sword', b)).toBe(0);
+    });
+
+    it('never round-robins a premium drop; it still opens a need/greed roll', () => {
+      const { sim, a, b } = makeDuo();
+      teleport(sim, a, 0, 1);
+      const mob = deadCorpse(sim, a, [a, b], {
+        copper: 0,
+        items: [{ itemId: 'greyjaw_hide_boots', count: 1 }],
+      });
+      sim.lootCorpse(mob.id, a);
+      // Not instantly awarded to anyone: it is a pending need/greed roll.
+      expect(sim.countItem('greyjaw_hide_boots', a)).toBe(0);
+      expect(sim.countItem('greyjaw_hide_boots', b)).toBe(0);
+      expect(sim.events.some((e) => e.type === 'lootRoll')).toBe(true);
+    });
   });
 });
 

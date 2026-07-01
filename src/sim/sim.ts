@@ -461,6 +461,7 @@ export interface Party {
   raid: boolean;
   raidGroups: Map<number, 1 | 2>; // pid -> raid subgroup
   lootStrategies: LootStrategies;
+  lootTurn: number; // round-robin common-item cursor; advances once per awarded item
 }
 
 export interface TradeSession {
