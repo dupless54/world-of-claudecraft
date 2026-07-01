@@ -229,15 +229,23 @@ export class MarketWindow {
     const positionFilterMenu = (menu: HTMLElement) => {
       const trigger = menu.querySelector<HTMLButtonElement>('.mkt-select-btn');
       const list = menu.querySelector<HTMLElement>('.mkt-select-menu');
-      const container = el.querySelector<HTMLElement>('#market-window') ?? el;
+      // `el` (deps.root()) already IS #market-window, so there is no separate
+      // container to look up: querySelector('#market-window') on the window
+      // itself never matches its own root and would always fall back to `el`.
       if (!trigger || !list) return;
       const t = trigger.getBoundingClientRect();
-      const c = container.getBoundingClientRect();
+      const c = el.getBoundingClientRect();
+      // #market-window clips at its padding box (overflow: hidden), which sits
+      // inset from the border box measured above by the panel's border width on
+      // each edge; subtract it so the clamp matches the real clip, not the
+      // border-inclusive box.
+      const borderTop = Number.parseFloat(getComputedStyle(el).borderTopWidth) || 0;
+      const borderBottom = Number.parseFloat(getComputedStyle(el).borderBottomWidth) || 0;
       const placement = computeDropdownPlacement({
         triggerTop: t.top,
         triggerBottom: t.bottom,
-        containerTop: c.top,
-        containerBottom: c.bottom,
+        containerTop: c.top + borderTop,
+        containerBottom: c.bottom - borderBottom,
         preferredMaxHeight: MKT_MENU_PREFERRED_HEIGHT,
         gap: MKT_MENU_GAP,
         minHeight: MKT_MENU_MIN_HEIGHT,
