@@ -29,8 +29,16 @@
     left: 50%;
     top: 10vh;
     transform: translateX(-50%);
-    max-width: calc(100vw - 16px);
-    max-height: min(calc(85vh - 24px), calc(100dvh - 16px));
+    /* Clamp against the JS-synced app viewport (--app-vw/--app-vh, the box
+       #game-canvas / #ui / #nameplates share), never raw viewport units: the two
+       can disagree (device emulation, pinch zoom, mobile browser chrome), and the
+       app box is the one the HUD actually occupies. Dividing by --ui-scale keeps
+       the clamp exact under the #ui zoom, mirroring how #ui sizes itself. */
+    max-width: calc(var(--app-vw, 100vw) / var(--ui-scale, 1) - 16px);
+    max-height: min(
+      calc(var(--app-vh, 100vh) * 0.85 / var(--ui-scale, 1) - 24px),
+      calc(var(--app-vh, 100vh) / var(--ui-scale, 1) - 16px)
+    );
     overflow-y: auto;
     overscroll-behavior: contain;
   }
