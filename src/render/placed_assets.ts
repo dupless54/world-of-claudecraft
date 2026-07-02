@@ -4,12 +4,15 @@
 // Loads are async (the initial batch is registered as preloads); models pop in
 // when ready, which is fine because placements never affect gameplay.
 //
-// The view is a small live instancer keyed by the editor's placement index:
-// addPlacement / updatePlacement / removePlacement mutate one entry, reSeat()
-// re-samples the ground for every entry after a sculpt, setSelected() drapes a
-// gold ring under one asset, and showFootprints() drapes the collideRadius
-// circle under every colliding placement. Everything editor-facing is opt-in;
-// the shipped game only ever runs the constructor build.
+// The view is a small live instancer keyed by the editor's DOCUMENT placement
+// index (an unresolvable id leaves its slot empty rather than shifting later
+// ones): addPlacement / updatePlacement / removePlacement mutate one entry,
+// removePlacementAt additionally reindexes the survivors after a single doc
+// removal, reSeat(region?) re-samples the ground after a sculpt (region-scoped
+// at stroke end, everything on load/undo), setSelected() drapes a gold ring
+// under one asset, and showFootprints() drapes the collideRadius circle under
+// every colliding placement. Everything editor-facing is opt-in; the shipped
+// game only ever runs the constructor build.
 
 import * as THREE from 'three';
 import type { PlacedAsset } from '../sim/types';
@@ -24,6 +27,57 @@ const RING_SEGMENTS = 40;
 const RING_LIFT = 0.08; // yards above the sampled ground, against z-fighting
 const SELECTION_COLOR = 0xd4af37; // the classic target-reticle gold
 const FOOTPRINT_COLOR = 0xe0503c;
+// Extra yards around a sculpt region whose placements still get re-seated: the
+// brush falloff softens past its nominal bounds, so seat a small margin too.
+const RESEAT_MARGIN = 2;
+
+/** World-space XZ bounds of a terrain edit (the sculpt stroke region). */
+export interface SeatRegion {
+  minX: number;
+  minZ: number;
+  maxX: number;
+  maxZ: number;
+}
+
+/** Whether a placement anchored at (x, z) needs re-seating after a sculpt over `region`. */
+export function needsReSeat(
+  x: number,
+  z: number,
+  region: SeatRegion,
+  margin = RESEAT_MARGIN,
+): boolean {
+  return (
+    x >= region.minX - margin &&
+    x <= region.maxX + margin &&
+    z >= region.minZ - margin &&
+    z <= region.maxZ + margin
+  );
+}
+
+/** Grow a running union of edit regions (null accumulator starts the union). */
+export function unionRegion(acc: SeatRegion | null, region: SeatRegion): SeatRegion {
+  if (!acc) return { ...region };
+  return {
+    minX: Math.min(acc.minX, region.minX),
+    minZ: Math.min(acc.minZ, region.minZ),
+    maxX: Math.max(acc.maxX, region.maxX),
+    maxZ: Math.max(acc.maxZ, region.maxZ),
+  };
+}
+
+/**
+ * After removing document index `removed` (the key itself must already be
+ * deleted), shift every Map key above it down by one so view slots stay in
+ * lockstep with document indices. Pure bookkeeping; exported for unit tests.
+ */
+export function reindexAfterRemoval<T>(entries: Map<number, T>, removed: number): void {
+  const above = [...entries.keys()].filter((k) => k > removed).sort((a, b) => a - b);
+  for (const k of above) {
+    const v = entries.get(k) as T;
+    entries.delete(k);
+    entries.set(k - 1, v);
+  }
+}
 
 // One template per GLB path: the cached scene (cloned per placement, per the
 // loader's cache-immutability rule) plus its source-unit bounds.
@@ -39,6 +93,9 @@ interface Entry {
   model: THREE.Object3D | null; // null until the GLB resolves (async pop-in)
   info: TemplateInfo | null;
   footprint: THREE.Mesh | null;
+  // Set by removePlacement so an in-flight GLB load drops its clone. Checked by
+  // IDENTITY (not slot) because removePlacementAt reindexes surviving entries.
+  removed: boolean;
 }
 
 export class PlacedAssetsView {
@@ -64,7 +121,7 @@ export class PlacedAssetsView {
     side: THREE.DoubleSide,
   });
 
-  constructor(placements: readonly PlacedAsset[], seed: number) {
+  constructor(placements: readonly (PlacedAsset | null)[], seed: number) {
     this.group = new THREE.Group();
     this.group.name = 'placed-assets';
     this.seed = seed;
@@ -79,13 +136,14 @@ export class PlacedAssetsView {
       model: null,
       info: null,
       footprint: null,
+      removed: false,
     };
     this.entries.set(index, entry);
     // The collide footprint only needs the record, not the GLB: show it now.
     this.refreshFootprint(entry);
     const task = this.template(entry.placement.path).then((info) => {
       // Removed or replaced while the GLB was in flight: drop the clone.
-      if (!info || this.entries.get(index) !== entry) return;
+      if (!info || entry.removed) return;
       const model = info.object.clone(true);
       model.traverse((o) => {
         const m = o as THREE.Mesh;
@@ -99,7 +157,10 @@ export class PlacedAssetsView {
       this.group.add(model);
       this.applyTransform(entry);
       this.refreshFootprint(entry);
-      if (this.selected === index) this.refreshSelection();
+      // By identity, not the captured slot: reindexing may have shifted it.
+      if (this.selected !== null && this.entries.get(this.selected) === entry) {
+        this.refreshSelection();
+      }
     });
     // Boot-time builds gate the loading screen; live editor adds do not.
     if (preload) registerPreload(task);
@@ -125,12 +186,28 @@ export class PlacedAssetsView {
   removePlacement(index: number): void {
     const entry = this.entries.get(index);
     if (!entry) return;
+    entry.removed = true;
     this.entries.delete(index);
     if (entry.model) this.group.remove(entry.model);
     // Clones share the loader-cached template geometry/materials: never dispose
     // them here. The draped rings are per-entry allocations, so those we do.
     this.dropFootprint(entry);
     if (this.selected === index) this.setSelected(null);
+  }
+
+  /**
+   * Surgical single removal at a DOCUMENT index: drop the entry (if the id ever
+   * resolved) and shift every entry above it down by one so view slots stay in
+   * lockstep with document indices, without re-cloning the untouched models.
+   * Bulk structural changes (load/paste/undo/mid-list insert) use rebuildAll.
+   */
+  removePlacementAt(index: number): void {
+    this.removePlacement(index);
+    reindexAfterRemoval(this.entries, index);
+    if (this.selected !== null && this.selected > index) {
+      this.selected--;
+      this.refreshSelection();
+    }
   }
 
   /** Drape a gold ring under one placement (null clears). */
@@ -146,21 +223,35 @@ export class PlacedAssetsView {
     for (const entry of this.entries.values()) this.refreshFootprint(entry);
   }
 
-  /** Re-seat every placement on the CURRENT terrainHeight (after a sculpt). */
-  reSeat(): void {
+  /**
+   * Re-seat placements on the CURRENT terrainHeight (after a sculpt). With a
+   * `region` (the stroke bounds), only placements anchored inside it (plus a
+   * small margin) re-sample the ground and re-drape their footprint; the rest
+   * are untouched, so a stroke-end never scans every placement on a big map.
+   * Without one, everything re-seats (map load / undo paths).
+   */
+  reSeat(region?: SeatRegion): void {
     for (const entry of this.entries.values()) {
+      const p = entry.placement;
+      if (region && !needsReSeat(p.x, p.z, region)) continue;
       this.applyTransform(entry);
       this.refreshFootprint(entry);
     }
     this.refreshSelection();
   }
 
-  /** Replace the whole placement set (map load / undo). */
-  rebuildAll(placements: readonly PlacedAsset[], preload = false): void {
+  /**
+   * Replace the whole placement set (map load / undo). The array is INDEX-
+   * ALIGNED with the editor document: a null hole (unresolvable asset id)
+   * renders nothing but still occupies its slot, so later document indices
+   * keep addressing the right meshes.
+   */
+  rebuildAll(placements: readonly (PlacedAsset | null)[], preload = false): void {
     for (const index of [...this.entries.keys()]) this.removePlacement(index);
     this.setSelected(null);
     for (let index = 0; index < placements.length; index++) {
-      this.addPlacement(index, placements[index], preload);
+      const placed = placements[index];
+      if (placed) this.addPlacement(index, placed, preload);
     }
   }
 
@@ -280,6 +371,9 @@ export class PlacedAssetsView {
  * PlacedAssetsView and hands back just its group. Initial GLB loads register
  * with the boot preload gate, matching the old behavior.
  */
-export function buildPlacedAssets(placements: readonly PlacedAsset[], seed: number): THREE.Group {
+export function buildPlacedAssets(
+  placements: readonly (PlacedAsset | null)[],
+  seed: number,
+): THREE.Group {
   return new PlacedAssetsView(placements, seed).group;
 }

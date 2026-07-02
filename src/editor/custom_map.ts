@@ -110,7 +110,7 @@ export function customMapToWorldContent(map: CustomMap): WorldContent {
     props: deepClone(BUILTIN_WORLD.props),
     playerStart: { x: start.x, z: start.z },
     terrainEdits: deepClone(map.terrainEdits),
-    placements: placementsToRenderAssets(map.placements),
+    placements: placementsToPlayAssets(map.placements),
     biomePaint: map.biomePaint ? deepClone(map.biomePaint) : undefined,
   };
   if (map.waterLevel !== undefined) world.waterLevel = map.waterLevel;
@@ -118,17 +118,27 @@ export function customMapToWorldContent(map: CustomMap): WorldContent {
 }
 
 // Resolve editor placements (catalogue id, or an uploaded 'user/<sha256>' id)
-// into render-ready PlacedAssets (GLB path). Placements with an unknown id are
-// skipped; colliding placements get a scale-proportional footprint radius (see
+// into render-ready PlacedAssets (GLB path). INDEX-ALIGNED with the document:
+// slot i always describes placement i, and a placement with an unknown id
+// becomes a null hole instead of being dropped, so the 3D view (which keys
+// meshes by DOCUMENT index) never drifts one slot after an unresolvable id.
+// Colliding placements get a scale-proportional footprint radius (see
 // src/sim/map_doc.ts collideRadiusFor).
-export function placementsToRenderAssets(placements: readonly AssetPlacement[]): PlacedAsset[] {
-  const out: PlacedAsset[] = [];
-  for (const p of placements) {
+export function placementsToRenderAssets(
+  placements: readonly AssetPlacement[],
+): (PlacedAsset | null)[] {
+  return placements.map((p) => {
     const path = userAssetPath(p.assetId) ?? assetById(p.assetId)?.path;
-    if (!path) continue;
+    if (!path) return null;
     const placed: PlacedAsset = { path, x: p.x, z: p.z, rotY: p.rotY, scale: p.scale };
     if (p.collide) placed.collideRadius = collideRadiusFor(p.scale);
-    out.push(placed);
-  }
-  return out;
+    return placed;
+  });
+}
+
+// The compact (hole-free) resolution, for consumers that do not key by document
+// index: the play-test WorldContent (sim colliders + the game renderer's
+// constructor build) only needs the resolvable placements.
+export function placementsToPlayAssets(placements: readonly AssetPlacement[]): PlacedAsset[] {
+  return placementsToRenderAssets(placements).filter((a): a is PlacedAsset => a !== null);
 }

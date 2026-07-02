@@ -13,6 +13,7 @@
 
 import * as THREE from 'three';
 import { assetsReady } from '../../render/assets/preload';
+import { type SeatRegion, unionRegion } from '../../render/placed_assets';
 import { Renderer } from '../../render/renderer';
 import { Sim } from '../../sim/sim';
 import type { WorldContent } from '../../sim/types';
@@ -46,6 +47,12 @@ export interface Editor3DHooks {
 const SPAWN_RING_COLOR = 0x3fd0ff;
 const SPAWN_RING_SEGMENTS = 40;
 const TAP_SLOP_PX = 5;
+// Analytic surface pick: march the pointer ray against the sim terrainHeight
+// (render terrain == sim height invariant) instead of raycasting every terrain
+// chunk per pointer-move. Coarse steps find the crossing; bisection refines it.
+const MARCH_MAX_T = 520; // yards along the ray (covers the 220yd max orbit dist)
+const MARCH_STEPS = 52;
+const MARCH_REFINE = 12;
 
 export class Editor3DViewport {
   private canvas!: HTMLCanvasElement;
@@ -58,6 +65,21 @@ export class Editor3DViewport {
   private disposed = false;
   private seed = 20061;
   private map: CustomMap;
+  // Bumped by start()/reload()/dispose(); an in-flight start() that awoke with a
+  // stale token abandons, so a reload during the assets await never leaves two
+  // engines (and two event attachments) running.
+  private generation = 0;
+  // Visibility gate: while hidden the render loop stops and the edit
+  // passthroughs coalesce into dirty flags, flushed on the next setVisible(true).
+  private visible = true;
+  private hiddenTerrainFull = false;
+  private hiddenTerrainRegion: SeatRegion | null = null;
+  private hiddenWater = false;
+  private hiddenPlacements = false;
+  private hiddenSpawn = false;
+  // The app's last-told selection, reapplied after a flushed structural rebuild
+  // (rebuildAll clears the view's selection).
+  private selectedIndex: number | null = null;
 
   private spawnRing: THREE.Mesh | null = null;
   private spawnPoint: { x: number; z: number } | null = null;
@@ -69,6 +91,7 @@ export class Editor3DViewport {
     side: THREE.DoubleSide,
   });
   private readonly picker = new THREE.Raycaster();
+  private readonly pickNdc = new THREE.Vector2(); // scratch, per pointer-move
 
   // Interaction state.
   private dragMode: 'none' | 'orbit' | 'pan' | 'edit' = 'none';
@@ -99,11 +122,15 @@ export class Editor3DViewport {
    * setActiveWorldContent with a content built from this.map).
    */
   async start(): Promise<void> {
+    // Generation token against the double-start race: a reload()/dispose() that
+    // lands while we await assets invalidates this run; the loser abandons
+    // before building anything (nothing is half-built before the await).
+    const gen = ++this.generation;
     if (!this.canvas.isConnected) this.createSurfaces();
     this.seed = this.map.meta.seed;
     const world = customMapToWorldContent(this.map);
     await assetsReady();
-    if (this.disposed) return;
+    if (this.disposed || gen !== this.generation) return;
     // The live PlacedAssetsView owns placements, so strip them from the Sim's
     // world or the Renderer ctor would build a second, frozen copy.
     this.sim = new Sim({
@@ -113,27 +140,74 @@ export class Editor3DViewport {
     });
     this.renderer = new Renderer(this.sim, this.canvas, this.nameplates);
     this.renderer.placedAssets.rebuildAll(placementsToRenderAssets(this.map.placements), true);
-    this.setSpawnMarker(this.map.playerStart ?? null);
+    // A fresh build reflects the whole document: drop any hidden-time debts
+    // (before the spawn ring below, which must build even while hidden).
+    this.clearHiddenWork();
+    const start = this.map.playerStart ?? null;
+    this.spawnPoint = start ? { x: start.x, z: start.z } : null;
+    this.refreshSpawnRing();
     // Frame the world hub to start.
     const hub = this.map.content.zones[0]?.hub ?? { x: 0, z: 0 };
     this.cam.target.set(hub.x, terrainHeight(hub.x, hub.z, this.seed), hub.z);
     this.attachEvents();
-    this.lastT = performance.now();
-    this.loop();
+    if (this.visible) {
+      this.lastT = performance.now();
+      this.loop();
+    }
   }
 
   get ready(): boolean {
     return this.renderer !== null;
   }
 
-  // The renderer's surface raycast for the current cursor (client coords).
+  // Terrain point under a cursor position (client coords). Analytic ray-march
+  // first (cheap, per pointer-move); the renderer's full terrain-mesh raycast
+  // only as a fallback when the march misses (horizon, camera under ground).
   // surfacePoint expects canvas-origin coordinates (the game canvas fills the
   // window; the editor canvas is offset by the top bar + tool rail), so convert.
   surfaceAt(clientX: number, clientY: number): { x: number; z: number } | null {
     if (!this.renderer) return null;
+    const marched = this.marchSurface(clientX, clientY);
+    if (marched) return marched;
     const r = this.canvas.getBoundingClientRect();
     const p = this.renderer.surfacePoint(clientX - r.left, clientY - r.top);
     return p ? { x: p.x, z: p.z } : null;
+  }
+
+  // March the pointer ray against terrainHeight (which the render mesh samples,
+  // so the two agree): coarse fixed steps to bracket the first crossing, then a
+  // bisection refine. Null when the ray never dips under the terrain in range.
+  private marchSurface(clientX: number, clientY: number): { x: number; z: number } | null {
+    if (!this.renderer) return null;
+    const rect = this.canvas.getBoundingClientRect();
+    this.pickNdc.set(
+      ((clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1,
+      -((clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1,
+    );
+    this.picker.setFromCamera(this.pickNdc, this.renderer.camera);
+    const o = this.picker.ray.origin;
+    const d = this.picker.ray.direction;
+    if (o.y - terrainHeight(o.x, o.z, this.seed) <= 0) return null; // under ground: fall back
+    let prevT = 0;
+    for (let i = 1; i <= MARCH_STEPS; i++) {
+      const t = (i / MARCH_STEPS) * MARCH_MAX_T;
+      const dy = o.y + d.y * t - terrainHeight(o.x + d.x * t, o.z + d.z * t, this.seed);
+      if (dy <= 0) {
+        let lo = prevT;
+        let hi = t;
+        for (let j = 0; j < MARCH_REFINE; j++) {
+          const mid = (lo + hi) / 2;
+          const below =
+            o.y + d.y * mid - terrainHeight(o.x + d.x * mid, o.z + d.z * mid, this.seed) <= 0;
+          if (below) hi = mid;
+          else lo = mid;
+        }
+        const ft = (lo + hi) / 2;
+        return { x: o.x + d.x * ft, z: o.z + d.z * ft };
+      }
+      prevT = t;
+    }
+    return null;
   }
 
   /** True while a pointer drag is navigating (fly keys are live), so the app
@@ -146,19 +220,32 @@ export class Editor3DViewport {
 
   /** Chunk-local terrain re-mesh over the edited region (cheap; per drag sample). */
   rebuildTerrainRegion(region: EditRegion): void {
+    if (!this.visible) {
+      this.hiddenTerrainRegion = unionRegion(this.hiddenTerrainRegion, region);
+      return;
+    }
     this.renderer?.rebuildTerrain(region);
   }
 
-  /** Stroke-end work: macro-normal rebake + re-seat placements and the spawn ring. */
+  /** Stroke-end work: macro-normal rebake + re-seat the region's placements and
+   *  the spawn ring (region-scoped so a stroke never rescans every placement). */
   finishTerrainStroke(region: EditRegion): void {
+    if (!this.visible) {
+      this.hiddenTerrainRegion = unionRegion(this.hiddenTerrainRegion, region);
+      return;
+    }
     if (!this.renderer) return;
     this.renderer.rebakeTerrainNormals(region);
-    this.renderer.placedAssets.reSeat();
+    this.renderer.placedAssets.reSeat(region);
     this.refreshSpawnRing();
   }
 
   /** Full terrain rebuild (map load / clear-all / undo of a large batch). */
   rebuildTerrainFull(): void {
+    if (!this.visible) {
+      this.hiddenTerrainFull = true;
+      return;
+    }
     if (!this.renderer) return;
     this.renderer.rebuildTerrain();
     this.renderer.rebuildWater();
@@ -168,6 +255,10 @@ export class Editor3DViewport {
 
   /** Re-seat the water surface at the ACTIVE waterLevel(). */
   rebuildWater(): void {
+    if (!this.visible) {
+      this.hiddenWater = true;
+      return;
+    }
     this.renderer?.rebuildWater();
   }
 
@@ -181,25 +272,52 @@ export class Editor3DViewport {
   }
 
   // Placement passthroughs, keyed by the document index (the app keeps document
-  // order and view slots in lockstep; structural changes use rebuildPlacements).
+  // order and view slots in lockstep; bulk structural changes use
+  // rebuildPlacements, a single doc removal uses the surgical placementRemoved).
   placementAdded(index: number): void {
-    const assets = placementsToRenderAssets([this.map.placements[index]]);
-    if (assets.length === 1) this.renderer?.placedAssets.addPlacement(index, assets[0]);
+    if (!this.visible) {
+      this.hiddenPlacements = true;
+      return;
+    }
+    const asset = placementsToRenderAssets([this.map.placements[index]])[0];
+    if (asset) this.renderer?.placedAssets.addPlacement(index, asset);
   }
 
   placementUpdated(
     index: number,
     change: { x?: number; z?: number; rotY?: number; scale?: number },
   ): void {
+    if (!this.visible) {
+      this.hiddenPlacements = true;
+      return;
+    }
     this.renderer?.placedAssets.updatePlacement(index, change);
   }
 
-  /** Full re-instance (removal / mid-list insert / paste / undo). */
+  /** Surgical single removal at a DOCUMENT index: the view drops that slot and
+   *  shifts the survivors down by one, without re-cloning every model. */
+  placementRemoved(index: number): void {
+    if (!this.visible) {
+      this.hiddenPlacements = true;
+      return;
+    }
+    this.renderer?.placedAssets.removePlacementAt(index);
+  }
+
+  /** Full re-instance (mid-list insert / paste / undo / bulk edits). */
   rebuildPlacements(): void {
+    if (!this.visible) {
+      this.hiddenPlacements = true;
+      return;
+    }
     this.renderer?.placedAssets.rebuildAll(placementsToRenderAssets(this.map.placements));
   }
 
   setSelectedPlacement(index: number | null): void {
+    this.selectedIndex = index;
+    // A pending hidden structural rebuild means the view's slots are stale:
+    // the flush reapplies this selection after its rebuildAll.
+    if (!this.visible && this.hiddenPlacements) return;
     this.renderer?.placedAssets.setSelected(index);
   }
 
@@ -215,11 +333,11 @@ export class Editor3DViewport {
   pickPlacement(clientX: number, clientY: number): number | null {
     if (!this.renderer) return null;
     const rect = this.canvas.getBoundingClientRect();
-    const ndc = new THREE.Vector2(
+    this.pickNdc.set(
       ((clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1,
       -((clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1,
     );
-    this.picker.setFromCamera(ndc, this.renderer.camera);
+    this.picker.setFromCamera(this.pickNdc, this.renderer.camera);
     const hits = this.picker.intersectObjects(this.renderer.placedAssets.group.children, true);
     let probe: { x: number; z: number } | null = null;
     let slack = 1.5;
@@ -251,6 +369,10 @@ export class Editor3DViewport {
 
   setSpawnMarker(point: { x: number; z: number } | null): void {
     this.spawnPoint = point ? { x: point.x, z: point.z } : null;
+    if (!this.visible) {
+      this.hiddenSpawn = true;
+      return;
+    }
     this.refreshSpawnRing();
   }
 
@@ -279,19 +401,85 @@ export class Editor3DViewport {
 
   // Swap to a different document (load/new/import) without leaking: rebuild the
   // Sim+Renderer since spawns come from the map (and the GL context is replaced).
+  // Bumping the generation first abandons any start() still awaiting assets, so
+  // a reload during boot can never leave two engines running.
   async reload(map: CustomMap): Promise<void> {
+    this.generation++;
     this.map = map;
     this.detachEvents();
     this.teardownEngine();
     await this.start();
   }
 
+  /**
+   * Show/hide the viewport. Hidden: the render loop stops (no rAF pending) and
+   * the edit passthroughs record dirty flags instead of doing GPU work. Shown:
+   * flush the coalesced work, then resume the loop.
+   */
   setVisible(v: boolean): void {
     this.parent.style.display = v ? '' : 'none';
+    if (v === this.visible) return;
+    this.visible = v;
+    if (!v) {
+      cancelAnimationFrame(this.raf);
+      this.raf = 0;
+      return;
+    }
+    this.flushHiddenWork();
+    if (this.renderer) {
+      this.lastT = performance.now();
+      this.loop();
+    }
+  }
+
+  /** Apply the edits coalesced while hidden (called on becoming visible). */
+  private flushHiddenWork(): void {
+    if (!this.renderer) {
+      // start() is still pending; it builds from the full document and clears
+      // these flags itself.
+      return;
+    }
+    if (this.hiddenTerrainFull) {
+      this.hiddenTerrainFull = false;
+      this.hiddenTerrainRegion = null;
+      this.hiddenWater = false;
+      this.hiddenSpawn = false;
+      this.rebuildTerrainFull(); // terrain + water + full reSeat + spawn ring
+    } else if (this.hiddenTerrainRegion) {
+      const region = this.hiddenTerrainRegion;
+      this.hiddenTerrainRegion = null;
+      this.hiddenSpawn = false;
+      this.renderer.rebuildTerrain(region);
+      this.renderer.rebakeTerrainNormals(region);
+      this.renderer.placedAssets.reSeat(region);
+      this.refreshSpawnRing();
+    }
+    if (this.hiddenWater) {
+      this.hiddenWater = false;
+      this.renderer.rebuildWater();
+    }
+    if (this.hiddenPlacements) {
+      this.hiddenPlacements = false;
+      this.renderer.placedAssets.rebuildAll(placementsToRenderAssets(this.map.placements));
+      this.renderer.placedAssets.setSelected(this.selectedIndex);
+    }
+    if (this.hiddenSpawn) {
+      this.hiddenSpawn = false;
+      this.refreshSpawnRing();
+    }
+  }
+
+  private clearHiddenWork(): void {
+    this.hiddenTerrainFull = false;
+    this.hiddenTerrainRegion = null;
+    this.hiddenWater = false;
+    this.hiddenPlacements = false;
+    this.hiddenSpawn = false;
   }
 
   dispose(): void {
     this.disposed = true;
+    this.generation++;
     cancelAnimationFrame(this.raf);
     this.detachEvents();
     this.teardownEngine();
@@ -301,6 +489,7 @@ export class Editor3DViewport {
   // later start() because forceContextLoss() permanently kills this context.
   private teardownEngine(): void {
     cancelAnimationFrame(this.raf);
+    this.raf = 0;
     if (this.renderer) {
       try {
         this.renderer.editorCam = null;
@@ -321,7 +510,8 @@ export class Editor3DViewport {
   // ---- loop ---------------------------------------------------------------
 
   private loop = (): void => {
-    if (this.disposed || !this.renderer || !this.sim) return;
+    this.raf = 0;
+    if (this.disposed || !this.visible || !this.renderer || !this.sim) return;
     const now = performance.now();
     const dt = Math.min(0.05, (now - this.lastT) / 1000);
     this.lastT = now;

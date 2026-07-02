@@ -21,19 +21,22 @@ export class EditorCamera {
   private readonly minDist = 6;
   private readonly maxDist = 220;
 
+  // Reused output for pose(): called once per frame, so no per-frame Vector3
+  // allocations. The renderer copies the vectors immediately (sync()).
+  private readonly poseOut = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
+
   // The camera pose to hand to Renderer.editorCam. Orbit math mirrors the game's
   // chase camera so the feel matches play-test.
   pose(): { pos: THREE.Vector3; target: THREE.Vector3 } {
     const cp = Math.cos(this.pitch);
     const sp = Math.sin(this.pitch);
-    const pos = new THREE.Vector3(
+    this.poseOut.pos.set(
       this.target.x - Math.sin(this.yaw) * cp * this.dist,
       this.target.y + sp * this.dist + 2,
       this.target.z - Math.cos(this.yaw) * cp * this.dist,
     );
-    const look = this.target.clone();
-    look.y += 0; // look at the ground point
-    return { pos, target: look };
+    this.poseOut.target.copy(this.target); // look at the ground point
+    return this.poseOut;
   }
 
   orbit(dxPx: number, dyPx: number): void {

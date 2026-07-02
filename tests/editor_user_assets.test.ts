@@ -63,11 +63,11 @@ describe('placementsToRenderAssets with user assets', () => {
       { assetId: userAssetIdFor(SHA), x: 1, z: 2, rotY: 0.5, scale: 2, collide: true },
     ]);
     expect(out).toHaveLength(1);
-    expect(out[0].path).toBe(`/api/assets/${SHA}.glb`);
-    expect(out[0].collideRadius).toBeGreaterThan(0);
+    expect(out[0]?.path).toBe(`/api/assets/${SHA}.glb`);
+    expect(out[0]?.collideRadius).toBeGreaterThan(0);
   });
 
-  it('still resolves catalogue ids and skips unknown ids', () => {
+  it('keeps unknown ids as index-aligned null holes', () => {
     const out = placementsToRenderAssets([
       { assetId: 'no/such-asset', x: 0, z: 0, rotY: 0, scale: 1, collide: false },
       {
@@ -79,6 +79,6 @@ describe('placementsToRenderAssets with user assets', () => {
         collide: false,
       },
     ]);
-    expect(out).toEqual([]);
+    expect(out).toEqual([null, null]);
   });
 });
