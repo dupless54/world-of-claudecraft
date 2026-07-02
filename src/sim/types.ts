@@ -494,6 +494,28 @@ export interface MobTemplate {
     school?: string;
     fx?: 'nova' | 'projectile';
   };
+  // Boss mechanic: a periodic telegraphed HARDCAST. Unlike the instant aoePulse,
+  // the mob shows a real cast bar (the entity casting fields carry castId) for
+  // `castTime` seconds, then the spell lands as an AoE nova on every living player
+  // within `radius`. The mob keeps meleeing while it casts (the bar is the
+  // telegraph healers react to, not a channel). `yell` is barked at cast start.
+  bigCast?: {
+    castId: string;
+    name: string;
+    castTime: number;
+    every: number;
+    radius: number;
+    min: number;
+    max: number;
+    school?: string;
+    yell?: string;
+  };
+  // Boss bark lines, broadcast as 'yell'-channel chat to every player within
+  // YELL_RANGE (mirroring the Nythraxis encounter yells; sim-emitted English by
+  // the variable-routed-chat precedent, see the S3 note in
+  // tests/localization_fixes.test.ts). engage fires once per pull on the first
+  // player aggro, summon on each add wave, enrage when the enrage turns on.
+  yells?: { engage?: string; summon?: string; enrage?: string };
   // Boss mechanic: spawn adds when hp first drops below each threshold (descending fractions).
   summonAdds?: { mobId: string; count: number; atHpPct: number[] };
   // Boss mechanic: damage multiplier (and optional swing-speed haste) once hp
@@ -1407,6 +1429,8 @@ export interface Entity {
   petPathCooldown: number; // seconds until this pet may recompute its heel path again
   pulseTimer: number; // boss aoe pulse countdown
   stompTimer: number; // boss War Stomp stun-pulse countdown
+  bigCastTimer: number; // boss telegraphed-hardcast (bigCast) cadence countdown
+  yelledEngage: boolean; // engage bark fired this pull (reset on evade/respawn)
   stoneskinTimer: number; // periodic self-absorb barrier countdown
   terrifyTimer: number; // Banshee's Wail fear-pulse countdown
   detonateTimer: number; // Death Throes fuse on a volatile corpse; Infinity = no pending detonation

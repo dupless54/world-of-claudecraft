@@ -769,6 +769,8 @@ function blankEntity(id: number): Entity {
     tappedById: null,
     pulseTimer: 0,
     stompTimer: 0,
+    bigCastTimer: 0,
+    yelledEngage: false,
     stoneskinTimer: 0,
     terrifyTimer: 0,
     detonateTimer: Infinity,

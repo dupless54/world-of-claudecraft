@@ -810,8 +810,11 @@ export const ZONE3_MOBS: Record<string, MobTemplate> = {
     // (Varkas and Bound Guardian scale the same way from ~2k / ~1.3k base).
     hpBase: 4000,
     hpPerLevel: 800,
-    dmgBase: 24,
-    dmgPerLevel: 5.0,
+    // Raid-tier melee: 260 per swing at level 20 over the 2.4s swing matches
+    // Nythraxis (282 over 2.6s, content/dungeons.ts) for the same tank-shredding
+    // dps, so the pull needs a healed tank exactly like the raid.
+    dmgBase: 54,
+    dmgPerLevel: 10.3,
     attackSpeed: 2.4,
     armorPerLevel: 46,
     moveSpeed: 5.8,
@@ -837,6 +840,25 @@ export const ZONE3_MOBS: Record<string, MobTemplate> = {
     summonAdds: { mobId: 'thunzharr_stormling', count: 2, atHpPct: [0.66, 0.33] },
     knockback: { chance: 0.3, distance: 7, name: 'Tectonic Heave' },
     stoneskin: { amount: 500, every: 18, duration: 9, name: 'Mountainhide', school: 'nature' },
+    // Stormcall: the telegraphed hardcast. A 3.5s cast bar the whole raid can see
+    // (and the yell announces), then a heavy nature nova on everyone within 30yd,
+    // roughly double a Thunderclap pulse on a much longer cadence.
+    bigCast: {
+      castId: 'thunzharr_stormcall',
+      name: 'Stormcall',
+      castTime: 3.5,
+      every: 25,
+      radius: 30,
+      min: 70,
+      max: 90,
+      school: 'nature',
+      yell: 'The storm answers my call!',
+    },
+    yells: {
+      engage: 'You wake the mountain? Then be buried by it!',
+      summon: 'Rise, stormlings! Tear them loose from my slopes!',
+      enrage: 'The peak breaks, and the sky falls with it!',
+    },
     enrage: { belowHpPct: 0.2, dmgMult: 1.5, hasteMult: 1.25 },
     // Personal loot table: rolled INDEPENDENTLY for every contributor (see
     // rollWorldBossLoot). A guaranteed storm trophy, plus one epic Tier-2 set glove

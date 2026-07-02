@@ -3468,7 +3468,8 @@ export const it_IT: EnTranslations = {
     },
     "cast": {
       "fishing": "Pesca",
-      "demonHeal": "Cura demoniaca"
+      "demonHeal": "Cura demoniaca",
+      "thunzharrStormcall": "Richiamo della tempesta"
     }
   },
   "questUi": {

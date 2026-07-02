@@ -1398,6 +1398,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'abilityUi.forms.bear': 'Bären',
   'abilityUi.forms.cat': 'Wolfs',
   'abilityUi.cast.fishing': 'Angeln',
+  'abilityUi.cast.thunzharrStormcall': 'Sturmruf',
   'abilityUi.cast.demonHeal': 'Dämonenheilung',
   'questUi.tracker.title': 'Quests',
   'questUi.tracker.complete': 'Abgeschlossen',

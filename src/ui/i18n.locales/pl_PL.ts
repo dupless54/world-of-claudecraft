@@ -89,6 +89,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Pole akcji {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Demoniczne leczenie',
   'abilityUi.cast.fishing': 'Wędkarstwo',
+  'abilityUi.cast.thunzharrStormcall': 'Zew burzy',
   'abilityUi.forms.bear': 'Niedźwiedź',
   'abilityUi.forms.cat': 'Wilk',
   'abilityUi.resources.energy': 'Energia',

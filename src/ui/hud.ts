@@ -401,6 +401,7 @@ const STAT_VIEW_DEPS: StatTooltipI18n = {
 const castDisplayName = (id: string): string => {
   if (id === FISHING_CAST_ID) return t('abilityUi.cast.fishing');
   if (id === 'demon_heal') return t('abilityUi.cast.demonHeal');
+  if (id === 'thunzharr_stormcall') return t('abilityUi.cast.thunzharrStormcall');
   const ability = ABILITIES[id];
   return ability ? abilityDisplayName(ability) : id;
 };

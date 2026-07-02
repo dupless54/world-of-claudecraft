@@ -93,6 +93,7 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Actiesleuf {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Demonengenezing',
   'abilityUi.cast.fishing': 'Vissen',
+  'abilityUi.cast.thunzharrStormcall': 'Stormroep',
   'abilityUi.forms.bear': 'Beer',
   'abilityUi.forms.cat': 'Wolf',
   'abilityUi.resources.energy': 'Energie',

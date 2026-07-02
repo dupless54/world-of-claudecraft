@@ -103,6 +103,113 @@ describe('world boss scheduler', () => {
   });
 });
 
+describe('world boss raid-tier combat (melee, Stormcall hardcast, yells)', () => {
+  // Park an effectively unkillable level-20 player in the boss's face so the
+  // fight can run for real sim seconds without the raid-tier melee ending it.
+  function engageBoss(sim: Sim, pid: number, boss: Entity): Entity {
+    const p = (sim as any).entities.get(pid) as Entity;
+    p.pos = { ...boss.pos };
+    p.pos.x += 2;
+    p.maxHp = 1_000_000;
+    p.hp = 1_000_000;
+    (sim as any).dealDamage(p, boss, 10, false, 'physical', 'Chip', 'hit', true);
+    return p;
+  }
+
+  const chatYells = (events: SimEvent[]) =>
+    events.filter((e) => e.type === 'chat' && (e as any).channel === 'yell');
+
+  it('swings raid-tier melee (Nythraxis-class per-swing damage)', () => {
+    const sim = makeSim();
+    const { boss } = spawnBossNow(sim);
+    // createMob: dmg = (dmgBase + dmgPerLevel * (level - 1)) * elite 1.5, weapon
+    // min/max at 0.8x / 1.25x. Recompute from the template so the test tracks it.
+    const dmg = (54 + 10.3 * 19) * 1.5;
+    expect(boss.weapon.min).toBe(Math.round(dmg * 0.8));
+    expect(boss.weapon.max).toBe(Math.round(dmg * 1.25));
+    expect(boss.weapon.max).toBeGreaterThan(400); // a tank must be healed through this
+  });
+
+  it('barks the engage yell exactly once per pull, to nearby players only', () => {
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ada');
+    const { boss } = spawnBossNow(sim);
+    engageBoss(sim, pid, boss);
+    let yells = chatYells(sim.tick()).filter((e) => /You wake the mountain/.test((e as any).text));
+    expect(yells).toHaveLength(1);
+    expect((yells[0] as any).pid).toBe(pid);
+    // Re-poking the already-engaged boss must not re-fire the bark.
+    const p = (sim as any).entities.get(pid) as Entity;
+    (sim as any).dealDamage(p, boss, 10, false, 'physical', 'Chip', 'hit', true);
+    yells = chatYells(sim.tick()).filter((e) => /You wake the mountain/.test((e as any).text));
+    expect(yells).toHaveLength(0);
+  });
+
+  it('hardcasts Stormcall on a visible cast bar, then novas players in range', () => {
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ada');
+    const { boss } = spawnBossNow(sim);
+    engageBoss(sim, pid, boss);
+    const p = (sim as any).entities.get(pid) as Entity;
+    // Stand-in tank: gm invulnerability (every damage path early-outs on it)
+    // survives the raid-tier melee that would otherwise kill an unhealed level-1
+    // dummy mid-tick and evade-reset the boss (which reseeds the cadence).
+    p.gm = true;
+    let sawCastBar = false;
+    let castYell = false;
+    let unleashed = false;
+    // 25s cadence + 3.5s cast, with slack for chase/knockback interruptions.
+    for (let t = 0; t < 20 * 45 && !unleashed; t++) {
+      // Step back into melee after every Tectonic Heave shove, and keep chipping
+      // so the threat table never empties.
+      p.pos.x = boss.pos.x + 2;
+      p.pos.z = boss.pos.z;
+      if (t % 20 === 0) {
+        (sim as any).dealDamage(p, boss, 1, false, 'physical', 'Chip', 'hit', true);
+      }
+      const events = sim.tick();
+      if (boss.castingAbility === 'thunzharr_stormcall') {
+        sawCastBar = true;
+        expect(boss.castTotal).toBeCloseTo(3.5, 5);
+      }
+      if (chatYells(events).some((e) => /The storm answers my call!/.test((e as any).text)))
+        castYell = true;
+      if (events.some((e) => e.type === 'log' && /unleashes Stormcall!$/.test((e as any).text)))
+        unleashed = true;
+    }
+    expect(sawCastBar).toBe(true);
+    expect(castYell).toBe(true);
+    expect(unleashed).toBe(true);
+    expect(boss.castingAbility).toBeNull(); // the bar cleared when the spell landed
+  });
+
+  it('barks the enrage yell when the last-fifth enrage turns on', () => {
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ada');
+    const { boss } = spawnBossNow(sim);
+    engageBoss(sim, pid, boss);
+    sim.tick();
+    boss.hp = Math.floor(boss.maxHp * 0.19);
+    const events = sim.tick();
+    expect(boss.enraged).toBe(true);
+    const yells = chatYells(events).filter((e) => /The peak breaks/.test((e as any).text));
+    expect(yells).toHaveLength(1);
+  });
+
+  it('barks the summon yell as each stormling wave rises', () => {
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ada');
+    const { boss } = spawnBossNow(sim);
+    engageBoss(sim, pid, boss);
+    sim.tick();
+    boss.hp = Math.floor(boss.maxHp * 0.6); // below the first 0.66 threshold
+    const events = sim.tick();
+    const yells = chatYells(events).filter((e) => /Rise, stormlings/.test((e as any).text));
+    expect(yells).toHaveLength(1);
+    expect(boss.summonedIds.length).toBeGreaterThan(0);
+  });
+});
+
 describe('world boss personal loot', () => {
   function killWith(sim: Sim, boss: Entity, pids: number[]) {
     // Register each contributor's threat with a chip, then have the first land the

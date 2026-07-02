@@ -94,6 +94,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Slot aksi {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Penyembuhan Iblis',
   'abilityUi.cast.fishing': 'Memancing',
+  'abilityUi.cast.thunzharrStormcall': 'Panggilan Badai',
   'abilityUi.forms.bear': 'Beruang',
   'abilityUi.forms.cat': 'Serigala',
   'abilityUi.resources.energy': 'Energi',

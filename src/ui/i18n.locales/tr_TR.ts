@@ -92,6 +92,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Eylem yuvası {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Şeytan İyileştirmesi',
   'abilityUi.cast.fishing': 'Balık Tutma',
+  'abilityUi.cast.thunzharrStormcall': 'Fırtına Çağrısı',
   'abilityUi.forms.bear': 'Ayı',
   'abilityUi.forms.cat': 'Kurt',
   'abilityUi.resources.energy': 'Enerji',

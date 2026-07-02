@@ -90,6 +90,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Handlingsplats {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Demonläkning',
   'abilityUi.cast.fishing': 'Fiske',
+  'abilityUi.cast.thunzharrStormcall': 'Stormrop',
   'abilityUi.forms.bear': 'Björn',
   'abilityUi.forms.cat': 'Varg',
   'abilityUi.resources.energy': 'Energi',

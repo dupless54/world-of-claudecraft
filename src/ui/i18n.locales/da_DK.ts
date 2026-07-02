@@ -91,6 +91,7 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Handlingsplads {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Dæmonhelbredelse',
   'abilityUi.cast.fishing': 'Fiskeri',
+  'abilityUi.cast.thunzharrStormcall': 'Stormkald',
   'abilityUi.forms.bear': 'Bjørn',
   'abilityUi.forms.cat': 'Ulv',
   'abilityUi.resources.energy': 'Energi',

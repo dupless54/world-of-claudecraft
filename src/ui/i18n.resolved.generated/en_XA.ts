@@ -3468,7 +3468,8 @@ export const en_XA: EnTranslations = {
     },
     "cast": {
       "fishing": "[Ƒíšĥíñĝ]",
-      "demonHeal": "[Ðéɱóñ Ĥéáļ]"
+      "demonHeal": "[Ðéɱóñ Ĥéáļ]",
+      "thunzharrStormcall": "[Šţóŕɱçáļļ]"
     }
   },
   "questUi": {

@@ -3468,7 +3468,8 @@ export const zh_CN: EnTranslations = {
     },
     "cast": {
       "fishing": "钓鱼",
-      "demonHeal": "恶魔治疗"
+      "demonHeal": "恶魔治疗",
+      "thunzharrStormcall": "风暴召唤"
     }
   },
   "questUi": {

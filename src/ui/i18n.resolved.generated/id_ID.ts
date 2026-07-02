@@ -3468,7 +3468,8 @@ export const id_ID: EnTranslations = {
     },
     "cast": {
       "fishing": "Memancing",
-      "demonHeal": "Penyembuhan Iblis"
+      "demonHeal": "Penyembuhan Iblis",
+      "thunzharrStormcall": "Panggilan Badai"
     }
   },
   "questUi": {

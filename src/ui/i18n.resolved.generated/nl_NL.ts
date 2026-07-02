@@ -3468,7 +3468,8 @@ export const nl_NL: EnTranslations = {
     },
     "cast": {
       "fishing": "Vissen",
-      "demonHeal": "Demonengenezing"
+      "demonHeal": "Demonengenezing",
+      "thunzharrStormcall": "Stormroep"
     }
   },
   "questUi": {

@@ -168,6 +168,7 @@ import {
   retargetMob as retargetMobFn,
   updateMobTarget as updateMobTargetFn,
 } from './mob/targeting';
+import { emitMobYell } from './mob/yells';
 import { combatProfileForMob, effectiveMobMeleeRange, type MobCombatProfile } from './mob_combat';
 import {
   findPlayerPath,
@@ -3772,6 +3773,13 @@ export class Sim {
       const run = this.delveRunForPlayer(target.id);
       if (run) this.maybeCompanionBark(run, target.id, 'boss_pull');
     }
+    // Boss engage bark: once per pull, on the first player aggro (yelledEngage
+    // resets with the other per-pull state on evade/respawn).
+    const engageYell = MOBS[mob.templateId]?.yells?.engage;
+    if (engageYell && target.kind === 'player' && !mob.yelledEngage) {
+      mob.yelledEngage = true;
+      emitMobYell(this.ctx, mob, engageYell);
+    }
     if (social) {
       const family = MOBS[mob.templateId]?.family;
       const pullRadius = (family && SOCIAL_PULL_RADIUS[family]) ?? DEFAULT_SOCIAL_PULL_RADIUS;
@@ -4023,6 +4031,7 @@ export class Sim {
       const thresholds = tmpl.summonAdds.atHpPct;
       while (mob.firedSummons < thresholds.length && hpFrac <= thresholds[mob.firedSummons]) {
         mob.firedSummons++;
+        if (tmpl.yells?.summon) emitMobYell(this.ctx, mob, tmpl.yells.summon);
         const run = this.delveRunForMob(mob.id);
         if (
           run &&
@@ -4040,6 +4049,7 @@ export class Sim {
     const enrageAllowed = !enrageRun || enrageRun.tierId === 'heroic';
     if (tmpl.enrage && enrageAllowed && !mob.enraged && hpFrac <= tmpl.enrage.belowHpPct) {
       mob.enraged = true;
+      if (tmpl.yells?.enrage) emitMobYell(this.ctx, mob, tmpl.yells.enrage);
       this.emit({ type: 'aura', targetId: mob.id, name: 'Enrage', gained: true });
       this.emit({
         type: 'log',

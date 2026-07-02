@@ -3468,7 +3468,8 @@ export const ru_RU: EnTranslations = {
     },
     "cast": {
       "fishing": "Рыбная ловля",
-      "demonHeal": "Исцеление демона"
+      "demonHeal": "Исцеление демона",
+      "thunzharrStormcall": "Зов бури"
     }
   },
   "questUi": {

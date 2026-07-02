@@ -1415,6 +1415,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'abilityUi.forms.bear': '熊',
   'abilityUi.forms.cat': '狼',
   'abilityUi.cast.fishing': '釣り',
+  'abilityUi.cast.thunzharrStormcall': '嵐の呼び声',
   'abilityUi.cast.demonHeal': '悪魔の治癒',
   'questUi.tracker.title': 'クエスト',
   'questUi.tracker.complete': '完了',

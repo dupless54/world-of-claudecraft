@@ -3468,7 +3468,8 @@ export const ko_KR: EnTranslations = {
     },
     "cast": {
       "fishing": "낚시",
-      "demonHeal": "악마 치유"
+      "demonHeal": "악마 치유",
+      "thunzharrStormcall": "폭풍의 부름"
     }
   },
   "questUi": {

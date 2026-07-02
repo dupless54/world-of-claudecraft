@@ -89,6 +89,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'abilityUi.actionBar.slotAria': 'Ô hành động {slot}: {ability}',
   'abilityUi.cast.demonHeal': 'Quỷ Trị Liệu',
   'abilityUi.cast.fishing': 'Câu Cá',
+  'abilityUi.cast.thunzharrStormcall': 'Tiếng Gọi Bão',
   'abilityUi.forms.bear': 'Gấu',
   'abilityUi.forms.cat': 'Sói',
   'abilityUi.resources.energy': 'Năng Lượng',

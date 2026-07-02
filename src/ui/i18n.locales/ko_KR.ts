@@ -1403,6 +1403,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'abilityUi.forms.bear': '곰',
   'abilityUi.forms.cat': '늑대',
   'abilityUi.cast.fishing': '낚시',
+  'abilityUi.cast.thunzharrStormcall': '폭풍의 부름',
   'abilityUi.cast.demonHeal': '악마 치유',
   'questUi.tracker.title': '퀘스트',
   'questUi.tracker.complete': '완료',
