@@ -1,8 +1,11 @@
 // Onion-order integration test for the Phase 8 middleware set. It composes the
-// real middlewares in the ONE canonical order Phase 9 will mount them in:
+// real middlewares in the ONE canonical order Phase 9 mounts them in (plus the
+// Phase 21 global hardening gates, which dispatch.ts inserts right after the
+// metric hook, ahead of every route-local frame):
 //
-//   withErrors -> metric hook -> requestId -> withCors -> rateLimit(ip)
-//     -> withBody -> requireAccount -> rateLimit(ip+account) -> handler
+//   withErrors -> metric hook -> originCheck -> contentType -> requestId
+//     -> withCors -> rateLimit(ip) -> withBody -> requireAccount
+//     -> rateLimit(ip+account) -> handler
 //
 // and pins both the sequence and the load-bearing ordering guarantees: the
 // IP-keyed limit rejects BEFORE the body is parsed or the account resolved
@@ -16,12 +19,20 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { compose } from '../../../server/http/compose';
 import { currentReqId } from '../../../server/http/context';
 import { withBody } from '../../../server/http/middleware/body';
+import {
+  type ContentTypeMismatch,
+  withContentType,
+} from '../../../server/http/middleware/content_type';
 import { withCors } from '../../../server/http/middleware/cors';
 import {
   type MetricEvent,
   type MetricSink,
   withMetrics,
 } from '../../../server/http/middleware/metric_sink';
+import {
+  type CrossSiteMismatch,
+  withOriginCheck,
+} from '../../../server/http/middleware/origin_check';
 import {
   CARD_UPLOAD_POLICY,
   PUBLIC_READ_POLICY,
@@ -31,7 +42,7 @@ import {
 import { withRequestId } from '../../../server/http/middleware/request_id';
 import { requireAccount } from '../../../server/http/middleware/require_account';
 import { withErrors } from '../../../server/http/middleware/with_errors';
-import type { Ctx, Middleware } from '../../../server/http/types';
+import type { Ctx, Middleware, RouteDef } from '../../../server/http/types';
 import {
   resetCardUploadRateLimits,
   resetPublicReadRateLimits,
@@ -44,6 +55,16 @@ import { type FakeRes, makeReq } from '../helpers/fake_http';
 const ROUTE = '/api/probe';
 const ORIGIN = 'https://example.test';
 const PINNED = 1_000_000;
+
+// The matched RouteDef the Phase 21 gates close over (dispatch.ts builds them
+// per matched route). Plain 'api' surface, no exemption metadata, so both gates
+// actively inspect the probe request.
+const GATE_ROUTE: RouteDef = {
+  method: 'POST',
+  path: ROUTE,
+  surface: 'api',
+  handler: async () => undefined,
+};
 
 /** A stub that resolves any bearer token to a full-scope account. */
 const okLookup = async () => ({ accountId: 1, scope: 'full' as const });
@@ -85,6 +106,8 @@ interface StackOpts {
   seq: string[];
   captured: Record<string, unknown>;
   onHandler: (ctx: Ctx) => void;
+  originRecords: CrossSiteMismatch[];
+  contentTypeRecords: ContentTypeMismatch[];
 }
 
 /**
@@ -105,6 +128,13 @@ function canonicalStack(opts: StackOpts): Middleware[] {
   return [
     withErrors({ surface: 'problem' }),
     withMetrics(opts.sink, ROUTE, opts.clock),
+    // The Phase 21 global gates, in dispatch.ts's mounted order (origin first,
+    // both ahead of every route-local frame). Log-only by default (env {}), so
+    // they record and pass through; the probes prove nothing downstream is lost.
+    withOriginCheck(GATE_ROUTE, { sink: (m) => opts.originRecords.push(m) }),
+    probe('origin'),
+    withContentType(GATE_ROUTE, { sink: (m) => opts.contentTypeRecords.push(m) }),
+    probe('content-type'),
     withRequestId(),
     probe('reqId', (ctx) => {
       captured.reqIdMatch = currentReqId() === ctx.reqId;
@@ -156,6 +186,8 @@ describe('onion order: successful request', () => {
     const clock = () => (clockCalls++ === 0 ? 1000 : 1050);
     const ctx = buildCtx();
     let handlerRan = false;
+    const originRecords: CrossSiteMismatch[] = [];
+    const contentTypeRecords: ContentTypeMismatch[] = [];
 
     const stack = canonicalStack({
       ipPolicy: PUBLIC_READ_POLICY,
@@ -168,13 +200,38 @@ describe('onion order: successful request', () => {
         c.res.writeHead(200, { 'Content-Type': 'application/json' });
         c.res.end('{"ok":true}');
       },
+      originRecords,
+      contentTypeRecords,
     });
     await compose(stack)(ctx);
 
     // Canonical sequence, outermost to innermost.
-    expect(seq).toEqual(['reqId', 'cors', 'ip-limit', 'body', 'auth', 'acct-limit', 'handler']);
+    expect(seq).toEqual([
+      'origin',
+      'content-type',
+      'reqId',
+      'cors',
+      'ip-limit',
+      'body',
+      'auth',
+      'acct-limit',
+      'handler',
+    ]);
     expect(handlerRan).toBe(true);
     expect(resOf(ctx).statusCode).toBe(200);
+
+    // The Phase 21 gates in LOG-ONLY mode: the probe Origin is neither
+    // same-origin (no Host on the fake req) nor allowlisted, so the origin gate
+    // RECORDED the mismatch yet every downstream stage still ran (the 200 above);
+    // the JSON Content-Type is a match, so the 415 gate recorded nothing.
+    expect(originRecords).toHaveLength(1);
+    expect(originRecords[0]).toMatchObject({
+      route: ROUTE,
+      method: 'POST',
+      origin: ORIGIN,
+      enforced: false,
+    });
+    expect(contentTypeRecords).toEqual([]);
 
     // State transitions prove each stage landed before the next.
     expect(captured.reqIdMatch).toBe(true); // requestId bound the ALS before downstream
@@ -219,11 +276,14 @@ describe('onion order: cheap-reject-first', () => {
         c.res.writeHead(200);
         c.res.end();
       },
+      originRecords: [],
+      contentTypeRecords: [],
     });
     await compose(stack)(ctx);
 
-    // Stopped at rateLimit(ip): the ip-limit probe, body, auth, and handler never ran.
-    expect(seq).toEqual(['reqId', 'cors']);
+    // Stopped at rateLimit(ip): the ip-limit probe, body, auth, and handler never
+    // ran. The log-only Phase 21 gates upstream passed the request through.
+    expect(seq).toEqual(['origin', 'content-type', 'reqId', 'cors']);
     expect(handlerRan).toBe(false);
     expect(ctx.body).toBeUndefined();
     expect(ctx.account).toBeUndefined();

@@ -20,7 +20,9 @@ import type * as http from 'node:http';
 import { runOnion } from './compose';
 import type { DispatchMode } from './config';
 import { buildContext } from './context';
+import { withContentType } from './middleware/content_type';
 import { type MetricSink, noopMetricSink, withMetrics } from './middleware/metric_sink';
+import { withOriginCheck } from './middleware/origin_check';
 import { withErrors } from './middleware/with_errors';
 import type { ApiRegistry } from './registry';
 import type { Ctx, Middleware, RouteDef } from './types';
@@ -85,6 +87,15 @@ export function createApiDispatcher(deps: ApiDispatcherDeps): ApiDispatcher {
       // path, to bound sink cardinality). The sink is a no-op until Phase 23; the
       // hook is wired here so the injection point is live.
       withMetrics(metricSink, route.path),
+      // The Phase 21 hardening gates, global frames ahead of the route-local
+      // middleware so an (enforce-mode) reject is cheap and still serializes
+      // through withErrors. Both self-scope to the 'api' surface and mutating
+      // methods, and both ship LOG-ONLY behind their named enforce flags, so
+      // today they pass every request through and only record mismatches. They
+      // exist only on this matched-route onion: a delegate-served path never
+      // sees them (the registered-surface carve-out).
+      withOriginCheck(route),
+      withContentType(route),
       // Route-local middleware (per-route rate limits, withBody, requireAccount)
       // composed after the global frames, exactly as each RouteDef declares them
       // when it migrates (Phase 10 onward). withRequestId is intentionally omitted:
