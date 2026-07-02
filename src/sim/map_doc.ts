@@ -27,6 +27,23 @@ export const MAX_NAME_LENGTH = 60;
 export const MAX_DESCRIPTION_LENGTH = 500;
 export const MIN_WATER_LEVEL = -40;
 export const MAX_WATER_LEVEL = 40;
+// Playtest-cost bounds for gameplay arrays: the Sim spawns camp.count mobs per
+// camp and one ground object per position, so both are hard-clamped here (the
+// built-in camps top out at count 14; see src/sim/content/zone*.ts).
+export const MAX_CAMP_COUNT = 20;
+export const MAX_CAMP_RADIUS = 100;
+export const MAX_OBJECT_POSITIONS = 100;
+export const MAX_ID_LENGTH = 64;
+// Generous world-coordinate bound (the built-in world spans ~360yd); camp, NPC,
+// and object coordinates are clamped into it so a hostile document cannot park
+// gameplay content at astronomical positions.
+export const MAX_WORLD_COORD = 10_000;
+// Zone sub-arrays feed terrainHeight per sampled vertex (lakes) and the
+// decoration generator loop bounds (zMin/zMax), so a stored map must not be
+// able to carry unbounded values a viewer's tab then pays for.
+export const MAX_ZONE_LAKES = 32;
+export const MAX_ZONE_POIS = 64;
+export const MAX_STR_ARRAY = 64;
 
 // A free-form GLB placement from the asset catalogue. `collide` opts the
 // placement into a sim circle collider at playtest (see collideRadiusFor).
@@ -90,6 +107,12 @@ const DEFAULT_SEED = 20061; // the game's fixed world seed (src/main.ts WORLD_SE
 function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
+// Every accepted number must pass this (never bare `typeof === 'number'`):
+// JSON.parse turns 1e999 into Infinity, which JSON.stringify then stores as
+// null in JSONB, making the stored document unloadable forever.
+function finiteNum(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
 function str(v: unknown, fallback: string): string {
   return typeof v === 'string' ? v : fallback;
 }
@@ -98,6 +121,18 @@ function arr(v: unknown): unknown[] {
 }
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
+}
+function coord(v: number): number {
+  return clamp(v, -MAX_WORLD_COORD, MAX_WORLD_COORD);
+}
+function idStr(v: unknown): string | null {
+  return typeof v === 'string' && v.length > 0 && v.length <= MAX_ID_LENGTH ? v : null;
+}
+function strArray(v: unknown): string[] {
+  return arr(v)
+    .filter((s): s is string => typeof s === 'string')
+    .slice(0, MAX_STR_ARRAY)
+    .map((s) => s.slice(0, MAX_ID_LENGTH));
 }
 
 function sanitizeStamp(v: unknown): HeightStamp | null {
@@ -167,18 +202,73 @@ function sanitizeMeta(v: unknown): MapDocMeta {
   };
 }
 
-// A zone must at least have a numeric z-band and a hub to shape terrain.
+// The Sim spawns camp.count mobs inside camp.radius, so every field is
+// validated and clamped; a malformed camp is dropped, never thrown on.
+function sanitizeCamp(v: unknown): CampDef | null {
+  if (!v || typeof v !== 'object') return null;
+  const c = v as Record<string, unknown>;
+  const mobId = idStr(c.mobId);
+  if (!mobId) return null;
+  const center = c.center as Record<string, unknown> | null | undefined;
+  if (!center || typeof center !== 'object') return null;
+  if (!finiteNum(center.x) || !finiteNum(center.z)) return null;
+  return {
+    mobId,
+    center: { x: coord(center.x), z: coord(center.z) },
+    radius: clamp(num(c.radius, 5), 0.5, MAX_CAMP_RADIUS),
+    count: clamp(Math.floor(num(c.count, 1)), 1, MAX_CAMP_COUNT),
+  };
+}
+
+// NPC ids are validated for shape only (the engine tolerates an unknown quest
+// or vendor item id; it just renders nothing for it).
+function sanitizeNpc(v: unknown): NpcDef | null {
+  if (!v || typeof v !== 'object') return null;
+  const n = v as Record<string, unknown>;
+  const id = idStr(n.id);
+  if (!id) return null;
+  const pos = n.pos as Record<string, unknown> | null | undefined;
+  if (!pos || typeof pos !== 'object') return null;
+  if (!finiteNum(pos.x) || !finiteNum(pos.z)) return null;
+  const npc: NpcDef = {
+    id,
+    name: str(n.name, 'Villager').slice(0, MAX_NAME_LENGTH),
+    title: str(n.title, '').slice(0, MAX_NAME_LENGTH),
+    pos: { x: coord(pos.x), z: coord(pos.z) },
+    facing: num(n.facing, 0),
+    color: Math.floor(clamp(num(n.color, 0xffffff), 0, 0xffffff)),
+    questIds: strArray(n.questIds),
+    greeting: str(n.greeting, '').slice(0, MAX_DESCRIPTION_LENGTH),
+  };
+  if (Array.isArray(n.vendorItems)) npc.vendorItems = strArray(n.vendorItems);
+  if (n.market === true) npc.market = true;
+  if (n.dynamic === true) npc.dynamic = true;
+  return npc;
+}
+
+// Each position spawns one ground-object entity, so the list is bounded and
+// every point must be a finite, in-bounds coordinate.
+function sanitizeGroundObject(v: unknown): GroundObjectDef | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  const itemId = idStr(o.itemId);
+  if (!itemId) return null;
+  const positions: { x: number; z: number }[] = [];
+  for (const p of arr(o.positions).slice(0, MAX_OBJECT_POSITIONS)) {
+    const pt = p as Record<string, unknown> | null;
+    if (pt && typeof pt === 'object' && finiteNum(pt.x) && finiteNum(pt.z)) {
+      positions.push({ x: coord(pt.x), z: coord(pt.z) });
+    }
+  }
+  return { itemId, name: str(o.name, '').slice(0, MAX_NAME_LENGTH), positions };
+}
+
+// A zone must at least have a finite z-band and a hub to shape terrain.
 function zoneIsUsable(v: unknown): boolean {
   if (!v || typeof v !== 'object') return false;
   const z = v as Record<string, unknown>;
   const hub = z.hub as Record<string, unknown> | undefined;
-  return (
-    typeof z.zMin === 'number' &&
-    typeof z.zMax === 'number' &&
-    !!hub &&
-    typeof hub.x === 'number' &&
-    typeof hub.z === 'number'
-  );
+  return finiteNum(z.zMin) && finiteNum(z.zMax) && !!hub && finiteNum(hub.x) && finiteNum(hub.z);
 }
 
 // Def-fill the nested zone sub-fields the terrain function and the editor
@@ -190,19 +280,64 @@ function fillZoneDefaults(v: unknown): ZoneDef {
   const z = v as Record<string, unknown>;
   if (typeof z.id !== 'string') z.id = 'zone';
   if (typeof z.name !== 'string') z.name = 'Zone';
-  if (!Array.isArray(z.lakes)) z.lakes = [];
-  if (!Array.isArray(z.pois)) z.pois = [];
+  // The z-band drives the decoration generator's loop bounds and the world
+  // extents: clamp its magnitude or a stored map can make a viewer's tab
+  // iterate an effectively unbounded grid.
+  z.zMin = coord(z.zMin as number);
+  z.zMax = coord(z.zMax as number);
+  // Lakes and POIs feed the terrain function and the editor overlay directly:
+  // drop any entry whose numbers are not finite, clamp the survivors, and cap
+  // the counts (lakes multiply per-vertex terrain cost).
+  z.lakes = arr(z.lakes)
+    .filter((l) => {
+      const lake = l as Record<string, unknown> | null;
+      return (
+        !!lake &&
+        typeof lake === 'object' &&
+        finiteNum(lake.x) &&
+        finiteNum(lake.z) &&
+        finiteNum(lake.radius)
+      );
+    })
+    .slice(0, MAX_ZONE_LAKES)
+    .map((l) => {
+      const lake = l as Record<string, unknown>;
+      lake.x = coord(lake.x as number);
+      lake.z = coord(lake.z as number);
+      lake.radius = clamp(lake.radius as number, 0.5, 200);
+      return lake;
+    });
+  z.pois = arr(z.pois)
+    .filter((p) => {
+      const poi = p as Record<string, unknown> | null;
+      return !!poi && typeof poi === 'object' && finiteNum(poi.x) && finiteNum(poi.z);
+    })
+    .slice(0, MAX_ZONE_POIS)
+    .map((p) => {
+      const poi = p as Record<string, unknown>;
+      poi.x = coord(poi.x as number);
+      poi.z = coord(poi.z as number);
+      return poi;
+    });
   if (typeof z.welcome !== 'string') z.welcome = '';
   if (typeof z.biome !== 'string' || !BIOME_BY_ID.includes(z.biome as ZoneDef['biome'])) {
     z.biome = 'vale';
   }
-  if (!Array.isArray(z.levelRange)) z.levelRange = [1, 10];
+  const lr = z.levelRange as unknown[] | undefined;
+  if (!Array.isArray(lr) || !finiteNum(lr[0]) || !finiteNum(lr[1])) z.levelRange = [1, 10];
+  else z.levelRange = [clamp(Math.floor(lr[0]), 1, 60), clamp(Math.floor(lr[1]), 1, 60)];
   const hub = z.hub as Record<string, unknown>;
-  if (typeof hub.radius !== 'number' || !Number.isFinite(hub.radius)) hub.radius = 20;
+  hub.x = coord(hub.x as number);
+  hub.z = coord(hub.z as number);
+  if (!finiteNum(hub.radius)) hub.radius = 20;
+  else hub.radius = clamp(hub.radius, 1, 200);
   if (typeof hub.name !== 'string') hub.name = '';
   const gy = z.graveyard as Record<string, unknown> | undefined;
-  if (!gy || typeof gy.x !== 'number' || typeof gy.z !== 'number') {
+  if (!gy || !finiteNum(gy.x) || !finiteNum(gy.z)) {
     z.graveyard = { x: hub.x, z: hub.z };
+  } else {
+    gy.x = coord(gy.x as number);
+    gy.z = coord(gy.z as number);
   }
   return z as unknown as ZoneDef;
 }
@@ -214,7 +349,7 @@ function sanitizeRoads(v: unknown): { x: number; z: number }[][] {
     const pts: { x: number; z: number }[] = [];
     for (const p of road.slice(0, MAX_ROAD_POINTS)) {
       const pt = p as Record<string, unknown> | null;
-      if (pt && typeof pt.x === 'number' && typeof pt.z === 'number') {
+      if (pt && finiteNum(pt.x) && finiteNum(pt.z)) {
         pts.push({ x: pt.x, z: pt.z });
       }
     }
@@ -244,17 +379,30 @@ export function sanitizeMapDoc(raw: unknown): MapDoc | null {
   const zones = arr(content.zones).filter(zoneIsUsable).slice(0, MAX_ZONES).map(fillZoneDefaults);
   if (zones.length === 0) return null; // nothing to render/play
   const npcsRaw = content.npcs && typeof content.npcs === 'object' ? (content.npcs as object) : {};
-  const npcs = Object.fromEntries(Object.entries(npcsRaw).slice(0, MAX_NPCS));
+  const npcs: Record<string, NpcDef> = {};
+  for (const [key, value] of Object.entries(npcsRaw).slice(0, MAX_NPCS)) {
+    const npc = sanitizeNpc(value);
+    if (npc) npcs[key.slice(0, MAX_ID_LENGTH)] = npc;
+  }
   const doc: MapDoc = {
-    version: num(o.version, MAP_DOC_VERSION),
+    // The sanitizer always produces v2 semantics, so the stored version is
+    // always 2 (never a client-supplied value round-tripped verbatim).
+    version: MAP_DOC_VERSION,
     meta: sanitizeMeta(o.meta),
     content: {
-      // Zones/camps/npcs/objects keep their full shape (the editor and engine
-      // read many fields); we only gate zones on the load-bearing ones above.
+      // Zones keep their full shape beyond the load-bearing fields gated
+      // above; camps/npcs/objects are rebuilt field by field (the Sim spawn
+      // loop trusts every number in them).
       zones,
-      camps: arr(content.camps).slice(0, MAX_CAMPS) as CampDef[],
-      npcs: npcs as Record<string, NpcDef>,
-      objects: arr(content.objects).slice(0, MAX_OBJECTS) as GroundObjectDef[],
+      camps: arr(content.camps)
+        .slice(0, MAX_CAMPS)
+        .map(sanitizeCamp)
+        .filter((c): c is CampDef => c !== null),
+      npcs,
+      objects: arr(content.objects)
+        .slice(0, MAX_OBJECTS)
+        .map(sanitizeGroundObject)
+        .filter((g): g is GroundObjectDef => g !== null),
       roads: sanitizeRoads(content.roads),
     },
     terrainEdits: arr(o.terrainEdits)
@@ -267,11 +415,11 @@ export function sanitizeMapDoc(raw: unknown): MapDoc | null {
       .filter((p): p is MapPlacement => p !== null),
     biomePaint: sanitizeBiomePaint(o.biomePaint),
   };
-  if (typeof o.waterLevel === 'number' && Number.isFinite(o.waterLevel)) {
+  if (finiteNum(o.waterLevel)) {
     doc.waterLevel = clamp(o.waterLevel, MIN_WATER_LEVEL, MAX_WATER_LEVEL);
   }
   const ps = o.playerStart as Record<string, unknown> | undefined;
-  if (ps && typeof ps === 'object' && typeof ps.x === 'number' && typeof ps.z === 'number') {
+  if (ps && typeof ps === 'object' && finiteNum(ps.x) && finiteNum(ps.z)) {
     doc.playerStart = { x: ps.x, z: ps.z };
   }
   return doc;
