@@ -120,6 +120,7 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.theme.knob.rage': '怒气',
   'hudChrome.theme.knob.energy': '能量',
   'hudChrome.options.interfaceMode': '界面模式',
+  'hudChrome.options.groundReticle': '地面瞄准指示圈',
   'hudChrome.options.interfaceModeAuto': '自动',
   'hudChrome.options.interfaceModeDesktop': '桌面',
   'hudChrome.options.interfaceModeTouch': '触控',

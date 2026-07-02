@@ -67,6 +67,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Beute-Einstellungen: Meisterbeute, Plündermeister {name}, Schwelle {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Beuteschwelle auf {threshold} gesetzt.',
   'hudChrome.options.showDevBadges': 'Entwicklerabzeichen anzeigen',
+  'hudChrome.options.groundReticle': 'Bodenziel-Fadenkreuz',
   'hudChrome.options.startAttackOnAbility': 'Auto-Angriff bei Fähigkeitseinsatz',
   'hudChrome.party.promoteLeader': 'Zum Anführer befördern',
   'hudChrome.statInfo.desc.spellPower':

@@ -34,6 +34,7 @@ import { attachAvatarFallback } from '../ui/avatar_fallback';
 import { tEntity } from '../ui/entity_i18n';
 import type { IWorld } from '../world_api';
 import { isVisuallyDead } from './anim_state';
+import { AOE_RING_LIFETIME, aoeRingAnim } from './aoe_ring';
 import type { SpatialAudioSink, Surface } from './audio_sink';
 import { type BirdsView, buildBirds } from './birds';
 import { type CameraOcclusionState, stepCameraOcclusion } from './camera_collision';
@@ -41,7 +42,6 @@ import { characterSoulRendActive } from './character_effects';
 import { type AnimState, type CharacterVisual, createCharacterVisual } from './characters';
 import { mechAssetsReady, preloadMechAssets } from './characters/assets';
 import { skinCount, visualKeyFor } from './characters/manifest';
-import { AOE_RING_LIFETIME, aoeRingAnim } from './aoe_ring';
 import { CLICK_MARKER_LIFETIME, clickMarkerAnim, clickMarkerColor } from './click_marker';
 import { trackWebGLContext } from './context_release';
 import { buildCritters, type CritterField } from './critters';
@@ -180,6 +180,7 @@ const LIGHT_BUDGET_RANGE_SQ = 55 * 55;
 const SELECTION_RING_BOOST = 1.5;
 const SELECTION_RING_SPIN = 0.6; // rad/s — slow classic target-reticle rotation
 const CLICK_MARKER_POOL = 4; // concurrent click-feedback markers before reuse
+const GROUND_AIM_RETICLE_PULSE_HZ = 2;
 const SPARKLE_BOOST = 1.5;
 const PORTAL_BOOST = 2;
 // Third-person camera collision (see updateCamera). Prop colliders marked
@@ -451,6 +452,13 @@ interface AoeRingSlot {
   mat: THREE.MeshBasicMaterial;
   radius: number; // blast radius in yards this flash represents
   elapsed: number; // seconds since spawn; >= AOE_RING_LIFETIME means free
+}
+
+interface GroundAimReticle {
+  ring: THREE.Mesh;
+  mat: THREE.MeshBasicMaterial;
+  elapsed: number;
+  dimmed: boolean;
 }
 
 function selfSnapshotAlpha(alpha: number, lead: number): number {
@@ -727,6 +735,7 @@ export class Renderer {
   // ground-targeted AoE impact rings (see aoe_ring.ts), pooled like click markers
   private aoeRings: AoeRingSlot[] = [];
   private aoeRingNext = 0;
+  private groundAimReticle: GroundAimReticle | null = null;
   raycaster = new THREE.Raycaster();
   clickTargets: THREE.Object3D[] = [];
   camYaw = Math.PI;
@@ -1297,6 +1306,22 @@ export class Renderer {
     // the terrain where a ground-targeted spell lands (see aoe_ring.ts).
     const aoeRingGeo = new THREE.RingGeometry(0.88, 1.0, 64);
     aoeRingGeo.rotateX(-Math.PI / 2);
+    const groundAimMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+    });
+    const groundAimRing = new THREE.Mesh(aoeRingGeo, groundAimMat);
+    groundAimRing.visible = false;
+    groundAimRing.renderOrder = 3;
+    setRenderCategory(groundAimRing, 'ui3d');
+    this.scene.add(groundAimRing);
+    this.groundAimReticle = {
+      ring: groundAimRing,
+      mat: groundAimMat,
+      elapsed: 0,
+      dimmed: false,
+    };
     for (let i = 0; i < CLICK_MARKER_POOL; i++) {
       const mat = new THREE.MeshBasicMaterial({
         transparent: true,
@@ -4226,6 +4251,7 @@ export class Renderer {
     }
     this.updateClickMarkers(dt);
     this.updateAoeRings(dt);
+    this.updateGroundAimReticle(dt);
     // dev-only Tab-target cone overlay: re-drape the front cone on the terrain
     // under the local player, oriented to the model's rendered facing.
     if (this.targetCone) {
@@ -4923,6 +4949,24 @@ export class Renderer {
     slot.ring.visible = true;
   }
 
+  setGroundAimReticle(
+    aim: { x: number; z: number; radius: number; school: string; dimmed: boolean } | null,
+  ): void {
+    const reticle = this.groundAimReticle;
+    if (!reticle) return;
+    if (!aim) {
+      reticle.ring.visible = false;
+      return;
+    }
+    const y = groundHeight(aim.x, aim.z, this.sim.cfg.seed) + 0.1;
+    reticle.ring.position.set(aim.x, y, aim.z);
+    reticle.ring.scale.setScalar(aim.radius);
+    reticle.mat.color.setHex(SCHOOL_COLORS[aim.school] ?? 0xffffff);
+    if (!this.lowGfx) reticle.mat.color.multiplyScalar(SELECTION_RING_BOOST);
+    reticle.dimmed = aim.dimmed;
+    reticle.ring.visible = true;
+  }
+
   private updateAoeRings(dt: number): void {
     for (const slot of this.aoeRings) {
       if (slot.elapsed >= AOE_RING_LIFETIME) continue;
@@ -4935,6 +4979,15 @@ export class Renderer {
       slot.ring.scale.setScalar(slot.radius * a.ringScale);
       slot.mat.opacity = a.ringAlpha;
     }
+  }
+
+  private updateGroundAimReticle(dt: number): void {
+    const reticle = this.groundAimReticle;
+    if (!reticle?.ring.visible) return;
+    reticle.elapsed += dt;
+    const pulse =
+      0.65 + 0.15 * Math.sin(reticle.elapsed * Math.PI * 2 * GROUND_AIM_RETICLE_PULSE_HZ);
+    reticle.mat.opacity = reticle.dimmed ? pulse * 0.5 : pulse;
   }
 
   worldToScreen(x: number, y: number, z: number): { x: number; y: number; behind: boolean } {

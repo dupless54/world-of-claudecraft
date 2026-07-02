@@ -54,6 +54,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
     'Cài Đặt Chiến Lợi Phẩm: Chia Chủ Trì, Người Chia {name}, ngưỡng {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Ngưỡng chiến lợi phẩm được đặt thành {threshold}.',
   'hudChrome.options.showDevBadges': 'Hiện Huy Hiệu Nhà Phát Triển',
+  'hudChrome.options.groundReticle': 'Vòng ngắm mục tiêu mặt đất',
   'hudChrome.options.startAttackOnAbility': 'Tự Đánh Khi Dùng Kỹ Năng',
   'hudChrome.party.promoteLeader': 'Thăng Làm Đội Trưởng',
   'hudChrome.plurals.playersMatching.few': 'Ai: {count} người chơi khớp "{query}" trên {realm}.',

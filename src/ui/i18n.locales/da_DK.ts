@@ -52,6 +52,7 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
     'Bytteindstillinger: Mesterbytte, bytteleder {name}, tærskel {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Byttetærskel sat til {threshold}.',
   'hudChrome.options.showDevBadges': 'Vis udviklermærker',
+  'hudChrome.options.groundReticle': 'Jordsigte-retikel',
   'hudChrome.options.startAttackOnAbility': 'Autoangreb ved brug af evne',
   'hudChrome.party.promoteLeader': 'Forfrem til leder',
   'hudChrome.plurals.playersMatching.few':

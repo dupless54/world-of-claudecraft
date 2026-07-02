@@ -65,6 +65,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
     'Configurações de Saque: Saque Mestre, Saqueador Mestre {name}, limite {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Limite de saque definido como {threshold}.',
   'hudChrome.options.showDevBadges': 'Exibir Insígnias de Desenvolvedor',
+  'hudChrome.options.groundReticle': 'Retícula de mira no chão',
   'hudChrome.options.startAttackOnAbility': 'Ataque Automático ao Usar Habilidade',
   'hudChrome.party.promoteLeader': 'Promover a Líder',
   'hudChrome.statInfo.desc.spellPower':

@@ -51,6 +51,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
     'Ustawienia łupów: Łup główny, główny zbieracz {name}, próg {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Próg łupów ustawiony na {threshold}.',
   'hudChrome.options.showDevBadges': 'Pokaż odznaki deweloperów',
+  'hudChrome.options.groundReticle': 'Celownik naziemny',
   'hudChrome.options.startAttackOnAbility': 'Automatyczny atak przy użyciu umiejętności',
   'hudChrome.party.promoteLeader': 'Mianuj przywódcą',
   'hudChrome.plurals.playersMatching.few':

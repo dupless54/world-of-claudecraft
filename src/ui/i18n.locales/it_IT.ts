@@ -64,6 +64,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
     'Impostazioni Bottino: Bottino Distribuito, Distributore del Bottino {name}, soglia {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Soglia del bottino impostata su {threshold}.',
   'hudChrome.options.showDevBadges': 'Mostra distintivi sviluppatore',
+  'hudChrome.options.groundReticle': 'Reticolo di puntamento a terra',
   'hudChrome.options.startAttackOnAbility': "Attacco automatico all'uso dell'abilita",
   'hudChrome.party.promoteLeader': 'Promuovi a Capo',
   'hudChrome.statInfo.desc.spellPower':

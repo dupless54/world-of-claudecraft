@@ -65,6 +65,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
     'Réglages de butin : Butin par maître, maître du butin {name}, seuil {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Seuil de butin réglé sur {threshold}.',
   'hudChrome.options.showDevBadges': 'Afficher les badges de développeur',
+  'hudChrome.options.groundReticle': 'Réticule de ciblage au sol',
   'hudChrome.options.startAttackOnAbility': "Attaque auto à l'utilisation d'une compétence",
   'hudChrome.party.promoteLeader': 'Promouvoir chef',
   'hudChrome.statInfo.desc.spellPower':

@@ -54,6 +54,7 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
     'Buitinstellingen: Buitmeester-buit, Buitmeester {name}, drempel {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Buitdrempel ingesteld op {threshold}.',
   'hudChrome.options.showDevBadges': 'Ontwikkelaarsinsignes tonen',
+  'hudChrome.options.groundReticle': 'Grondrichtkruis',
   'hudChrome.options.startAttackOnAbility': 'Auto-aanval bij gebruik van vaardigheid',
   'hudChrome.party.promoteLeader': 'Bevorderen tot leider',
   'hudChrome.plurals.playersMatching.few':

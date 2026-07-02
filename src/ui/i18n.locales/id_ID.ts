@@ -55,6 +55,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
     'Pengaturan Jarahan: Jarahan Utama, Penjarah Utama {name}, ambang {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Ambang jarahan diatur ke {threshold}.',
   'hudChrome.options.showDevBadges': 'Tampilkan Lencana Pengembang',
+  'hudChrome.options.groundReticle': 'Retikel bidik darat',
   'hudChrome.options.startAttackOnAbility': 'Serangan Otomatis Saat Memakai Kemampuan',
   'hudChrome.party.promoteLeader': 'Angkat jadi Pemimpin',
   'hudChrome.plurals.playersMatching.few':

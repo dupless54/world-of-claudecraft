@@ -65,6 +65,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
     'Ajustes de botín: botín maestro, repartidor {name}, umbral {threshold}.',
   'hudChrome.masterLoot.thresholdSet': 'Umbral de botín fijado en {threshold}.',
   'hudChrome.options.showDevBadges': 'Mostrar insignias de desarrollador',
+  'hudChrome.options.groundReticle': 'Retícula de objetivo terrestre',
   'hudChrome.options.startAttackOnAbility': 'Ataque automático al usar habilidad',
   'hudChrome.party.promoteLeader': 'Promover a líder',
   'hudChrome.statInfo.desc.spellPower':
