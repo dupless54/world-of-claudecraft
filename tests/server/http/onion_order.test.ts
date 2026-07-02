@@ -200,8 +200,12 @@ describe('onion order: cheap-reject-first', () => {
     const blockIp: RateLimitPolicy = {
       name: 'ip-block',
       keyClass: 'ip',
-      limited: () => true,
-      retryAfterSeconds: 60,
+      limit: 60,
+      windowSeconds: 60,
+      // tier-1 always rejects; tier2 'none' keeps this onion-order probe independent
+      // of the pg store (the reject is the point, not the backstop).
+      tier1: () => ({ allowed: false, remaining: 0, resetSeconds: 60 }),
+      tier2: 'none',
     };
 
     const stack = canonicalStack({

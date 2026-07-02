@@ -4,7 +4,13 @@
 // normalizeSurface (exercised through mapError), the onUnexpected sink, and 500 leak-freedom.
 
 import { describe, expect, it, vi } from 'vitest';
-import { escapeHtml, HttpError, mapError, toAppError } from '../../../server/http/errors';
+import {
+  escapeHtml,
+  HttpError,
+  mapError,
+  rateLimit429Headers,
+  toAppError,
+} from '../../../server/http/errors';
 import { fakeCtx } from '../helpers/fake_ctx';
 
 // The locked param value type cannot name an Issue[], so callers cast at the boundary.
@@ -94,6 +100,36 @@ describe('code-implied headers', () => {
   it('does NOT fabricate Retry-After when neither a header nor the param is present', () => {
     const app = toAppError(new HttpError(429, 'rate_limit.exceeded' as never));
     expect(app.headers?.['Retry-After']).toBeUndefined();
+  });
+});
+
+describe('rateLimit429Headers (draft-11 structured fields)', () => {
+  it('builds Retry-After + RateLimit + RateLimit-Policy from the policy and outcome', () => {
+    const headers = rateLimit429Headers(
+      { name: 'woc_balance', limit: 20, windowSeconds: 60 },
+      { remaining: 3, resetSeconds: 17 },
+    );
+    expect(headers).toEqual({
+      'Retry-After': '17',
+      RateLimit: '"woc_balance";r=3;t=17',
+      'RateLimit-Policy': '"woc_balance";q=20;w=60',
+    });
+    // The legacy X-RateLimit-* trio is deliberately never emitted.
+    expect(Object.keys(headers)).not.toContain('X-RateLimit-Limit');
+  });
+
+  it('when passed as HttpError headers, the 429 Retry-After no-ops applyImpliedHeaders (same value)', () => {
+    const outcome = { remaining: 0, resetSeconds: 42 };
+    const err = new HttpError(
+      429,
+      'rate_limit.exceeded' as never,
+      { retryAfterSeconds: outcome.resetSeconds },
+      rateLimit429Headers({ name: 'card_upload', limit: 10, windowSeconds: 60 }, outcome),
+    );
+    const app = toAppError(err);
+    expect(app.headers?.['Retry-After']).toBe('42');
+    expect(app.headers?.RateLimit).toBe('"card_upload";r=0;t=42');
+    expect(app.headers?.['RateLimit-Policy']).toBe('"card_upload";q=10;w=60');
   });
 });
 

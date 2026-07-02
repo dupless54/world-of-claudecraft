@@ -1,84 +1,177 @@
-// Rate-limit middleware adapter for the API pipeline onion (Phase 8 of
-// docs/api-pipeline/). A THIN wrapper over the existing boolean limiters
-// (server/ratelimit.ts): no new limiter behavior, no store, no schema (a keyed
-// sliding-window store is Phase 19's job). Importable but UNMOUNTED here;
-// Phase 9 places it in front of the routes that need it.
+// Two-tier rate-limit middleware for the API pipeline onion (Phase 19 of
+// docs/api-pipeline/). Each policy resolves in two ordered tiers:
+//   tier-1: the in-process sliding-window limiter (server/ratelimit.ts), the
+//           SAME per-realm memory buckets the legacy arms used, checked FIRST.
+//   tier-2: a pg-backed GLOBAL fixed-window counter (server/ratelimit_db.ts),
+//           shared across every realm process, checked ONLY when tier-1 allows.
+// On a rejection the adapter throws HttpError(429, 'rate_limit.exceeded', {
+// retryAfterSeconds }, <draft-11 headers>); the Phase 7/8 error boundary
+// serializes it. The effective tier-1 behavior of every policy is bit-identical
+// to Phase 8 (same limiter fn, same named limit, same window), so a single
+// process sees no change: tier-1 records first and the fixed window counts a
+// subset of the sliding window, so tier-2 can never reject when tier-1 allowed.
+//
+// DISCORD_POLICY and PUBLIC_READ_POLICY stay UNMOUNTED (no route attaches them);
+// they exist for a later phase / the client code-matcher wiring.
 
 import {
+  CARD_UPLOAD_MAX_PER_MINUTE,
+  CHARACTER_MUTATION_MAX_PER_MINUTE,
   type CharacterMutationAction,
   cardUploadRateLimited,
   characterMutationRateLimited,
+  DISCORD_MAX_PER_MINUTE,
   discordRateLimited,
+  PUBLIC_READ_MAX_PER_MINUTE,
   publicReadRateLimited,
+  REPORTS_CREATE_MAX_PER_MINUTE,
+  rateLimitTier2Store,
   reportsCreateRateLimited,
+  WALLET_LINK_MAX_PER_MINUTE,
   WINDOW_MS,
+  WOC_BALANCE_MAX_PER_MINUTE,
   walletLinkRateLimited,
   wocBalanceRateLimited,
 } from '../../ratelimit';
 import { ctxAccountId } from '../context';
-import { HttpError } from '../errors';
-import type { Ctx, Middleware, Next } from '../types';
+import { HttpError, rateLimit429Headers } from '../errors';
+import type { Ctx, Middleware, Next, RateLimitOutcome, RateLimitStore } from '../types';
 
 /** How a policy derives its rate-limit key: per client IP, or per (IP AND account). */
 export type RateLimitKeyClass = 'ip' | 'ip+account';
 
-/** A named rate-limit policy: which limiter to run and the Retry-After it reports. */
+/** Whether a policy is backed by the pg-global tier-2 store, or tier-1 only. */
+export type RateLimitTier2 = 'global' | 'none';
+
+/**
+ * A named rate-limit policy. `limit` and `windowSeconds` are the advertised quota
+ * (they MUST equal the limiter's own named constant and shared window, never a
+ * re-typed literal; the derivation guard test enforces this), and drive the
+ * draft-11 RateLimit-Policy header. `tier1` runs the in-process limiter and
+ * returns its RateLimitOutcome; `tier2` selects the pg-global backstop.
+ */
 export interface RateLimitPolicy {
   readonly name: string;
   readonly keyClass: RateLimitKeyClass;
-  readonly limited: (ctx: Ctx) => boolean;
-  readonly retryAfterSeconds: number;
+  readonly limit: number;
+  readonly windowSeconds: number;
+  readonly tier1: (ctx: Ctx) => RateLimitOutcome;
+  readonly tier2: RateLimitTier2;
+}
+
+// Every policy's window is the shared sliding-window size, in seconds. Single
+// source of truth so a policy never re-types 60.
+const WINDOW_SECONDS = WINDOW_MS / 1000;
+
+/** Build the 429 for a rejected attempt, carrying the accurate per-request numbers. */
+function rateLimit429(policy: RateLimitPolicy, outcome: RateLimitOutcome): HttpError {
+  return new HttpError(
+    429,
+    'rate_limit.exceeded',
+    { retryAfterSeconds: outcome.resetSeconds },
+    rateLimit429Headers(policy, outcome),
+  );
+}
+
+/** Merge two tier-2 bucket outcomes, mirroring tier-1's fused (IP AND account) rule. */
+function mergeTier2(a: RateLimitOutcome, b: RateLimitOutcome): RateLimitOutcome {
+  return {
+    allowed: a.allowed && b.allowed,
+    remaining: Math.min(a.remaining, b.remaining),
+    resetSeconds: Math.max(a.resetSeconds, b.resetSeconds),
+  };
 }
 
 /**
- * Build the rate-limit middleware for `policy`. Throws HttpError(429,
- * 'rate_limit.exceeded', { retryAfterSeconds }) when policy.limited(ctx) is
- * true, else calls next().
+ * Record the tier-2 attempt(s) for `policy` and return the merged outcome. The
+ * store key is `${policy.name}:ip:${ctx.ip}` for keyClass 'ip'; for 'ip+account'
+ * BOTH that and `${policy.name}:acct:${accountId}` are recorded and merged,
+ * mirroring tier-1's fused semantics. The store splits at the first ':' into its
+ * (policy, key) columns, so an IPv6 address in the remainder is safe.
+ */
+async function tier2Outcome(
+  store: RateLimitStore,
+  policy: RateLimitPolicy,
+  ctx: Ctx,
+): Promise<RateLimitOutcome> {
+  const ip = await store.hit(`${policy.name}:ip:${ctx.ip}`, policy.limit);
+  if (policy.keyClass === 'ip') return ip;
+  const account = await store.hit(`${policy.name}:acct:${ctxAccountId(ctx)}`, policy.limit);
+  return mergeTier2(ip, account);
+}
+
+/**
+ * Build the rate-limit middleware for `policy`. Runs tier-1 first; on a tier-1
+ * rejection it throws the 429 WITHOUT touching tier-2 (a flood must never reach
+ * pg, this ordering is an invariant). Otherwise, if the policy is tier-2 'global'
+ * and a store is wired, it records the global counter and throws the 429 with the
+ * tier-2 numbers on a global rejection. Tier-2 FAILS OPEN: any store error is
+ * logged and treated as allowed, so a pg outage degrades to tier-1-only limiting
+ * and never 500s the route or blocks traffic.
  */
 export function rateLimit(policy: RateLimitPolicy): Middleware {
   return async (ctx: Ctx, next: Next) => {
-    if (policy.limited(ctx)) {
-      throw new HttpError(429, 'rate_limit.exceeded', {
-        retryAfterSeconds: policy.retryAfterSeconds,
-      });
+    const t1 = policy.tier1(ctx);
+    if (!t1.allowed) throw rateLimit429(policy, t1);
+
+    if (policy.tier2 === 'global') {
+      const store = rateLimitTier2Store();
+      if (store) {
+        let merged: RateLimitOutcome | null = null;
+        try {
+          merged = await tier2Outcome(store, policy, ctx);
+        } catch (err) {
+          // Fail open: a tier-2 (pg) outage degrades to tier-1-only limiting.
+          console.error('[ratelimit] tier-2 store error, failing open', err);
+        }
+        // Throw OUTSIDE the try so a deliberate tier-2 429 is never swallowed by
+        // the fail-open catch.
+        if (merged && !merged.allowed) throw rateLimit429(policy, merged);
+      }
     }
+
     await next();
   };
 }
 
-// Every policy's Retry-After is the shared sliding-window size, in seconds.
-const RETRY_AFTER_SECONDS = WINDOW_MS / 1000;
-
 // An 'ip+account' policy reads the caller's account id via the shared ctxAccountId
-// (server/http/context.ts), which 500s when ctx.account is unset (the policy was
-// mounted ahead of the auth guard that populates it, a composition bug).
+// (server/http/context.ts) inside tier1, which 500s when ctx.account is unset (the
+// policy was mounted ahead of the auth guard that populates it, a composition bug).
 
 export const PUBLIC_READ_POLICY: RateLimitPolicy = {
   name: 'public_read',
   keyClass: 'ip',
-  limited: (ctx) => !publicReadRateLimited(ctx.req).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: PUBLIC_READ_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => publicReadRateLimited(ctx.req),
+  tier2: 'global',
 };
 
 export const WOC_BALANCE_POLICY: RateLimitPolicy = {
   name: 'woc_balance',
   keyClass: 'ip',
-  limited: (ctx) => !wocBalanceRateLimited(ctx.req).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: WOC_BALANCE_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => wocBalanceRateLimited(ctx.req),
+  tier2: 'global',
 };
 
 export const CARD_UPLOAD_POLICY: RateLimitPolicy = {
   name: 'card_upload',
   keyClass: 'ip+account',
-  limited: (ctx) => !cardUploadRateLimited(ctx.req, ctxAccountId(ctx)).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: CARD_UPLOAD_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => cardUploadRateLimited(ctx.req, ctxAccountId(ctx)),
+  tier2: 'global',
 };
 
 export const WALLET_LINK_POLICY: RateLimitPolicy = {
   name: 'wallet_link',
   keyClass: 'ip+account',
-  limited: (ctx) => !walletLinkRateLimited(ctx.req, ctxAccountId(ctx)).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: WALLET_LINK_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => walletLinkRateLimited(ctx.req, ctxAccountId(ctx)),
+  tier2: 'global',
 };
 
 // The character-mutation policies (Phase 12). Each is 'ip+account' (so it must be
@@ -87,15 +180,17 @@ export const WALLET_LINK_POLICY: RateLimitPolicy = {
 // share a window. These are NEW limiters (character mutations had none before): a 429
 // is now possible where none was, recorded as the newLimiterCharacterMutations known
 // deviation. They reuse the existing 'rate_limit.exceeded' code (no catalog append).
-// The four differ ONLY by name + action (same limiter fn, key class, and retry), so
-// one factory builds them; the other policies each call a distinct limiter fn and
-// stay longhand.
+// The four differ ONLY by name + action (same limiter fn, key class, limit, window,
+// tier2), so one factory builds them; the other policies each call a distinct limiter
+// fn and stay longhand.
 function characterMutationPolicy(name: string, action: CharacterMutationAction): RateLimitPolicy {
   return {
     name,
     keyClass: 'ip+account',
-    limited: (ctx) => !characterMutationRateLimited(ctx.req, ctxAccountId(ctx), action).allowed,
-    retryAfterSeconds: RETRY_AFTER_SECONDS,
+    limit: CHARACTER_MUTATION_MAX_PER_MINUTE,
+    windowSeconds: WINDOW_SECONDS,
+    tier1: (ctx) => characterMutationRateLimited(ctx.req, ctxAccountId(ctx), action),
+    tier2: 'global',
   };
 }
 
@@ -125,18 +220,23 @@ export const CHARACTER_TAKEOVER_POLICY: RateLimitPolicy = characterMutationPolic
 export const REPORTS_CREATE_POLICY: RateLimitPolicy = {
   name: 'reports_create',
   keyClass: 'ip+account',
-  limited: (ctx) => !reportsCreateRateLimited(ctx.req, ctxAccountId(ctx)).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: REPORTS_CREATE_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => reportsCreateRateLimited(ctx.req, ctxAccountId(ctx)),
+  tier2: 'global',
 };
 
 // AUTHENTICATED Discord legs only (link / status / reward). It requires
-// ctx.account (ctxAccountId 500s without it), so Phase 9 must mount it BEHIND
-// requireAccount. The UNAUTHENTICATED start/callback legs run the same underlying
-// limiter IP-only via discordRateLimited(req, 0) (ratelimit.ts keys on IP when
-// accountId is 0); they need a SEPARATE 'ip' policy in Phase 9, not this one.
+// ctx.account (ctxAccountId 500s without it), so it must mount BEHIND requireAccount.
+// UNMOUNTED today (the Discord family migrated parity-first with legacy prose
+// bodies; wiring the coded adapter waits on the client code-matcher). The
+// UNAUTHENTICATED start/callback legs run the same underlying limiter IP-only via
+// discordRateLimited(req, 0).
 export const DISCORD_POLICY: RateLimitPolicy = {
   name: 'discord',
   keyClass: 'ip+account',
-  limited: (ctx) => !discordRateLimited(ctx.req, ctxAccountId(ctx)).allowed,
-  retryAfterSeconds: RETRY_AFTER_SECONDS,
+  limit: DISCORD_MAX_PER_MINUTE,
+  windowSeconds: WINDOW_SECONDS,
+  tier1: (ctx) => discordRateLimited(ctx.req, ctxAccountId(ctx)),
+  tier2: 'global',
 };

@@ -55,6 +55,7 @@ export const DEVIATION_ID = {
   desktopLoginCreateFullScope: 'desktop-login-create-full-scope',
   dailyRewardsBodyValidationRemap: 'daily-rewards-body-validation-remap',
   dailyRewardsOpsBodyValidationRemap: 'daily-rewards-ops-body-validation-remap',
+  rateLimit429Draft11Headers: 'rate-limit-429-draft11-headers',
 } as const;
 export type DeviationId = (typeof DEVIATION_ID)[keyof typeof DEVIATION_ID];
 
@@ -1157,6 +1158,59 @@ export const KNOWN_DEVIATIONS: readonly KnownDeviation[] = [
       'is also a hang. The composite delegate ordering (daily-rewards tried first) ' +
       'is untouched and stays parity-pinned. Pinned with fakes in ' +
       'tests/server/daily_rewards_routes.test.ts.',
+  },
+  // --- Phase 19: the two-tier rate limiter + draft-11 429 headers --------------
+  {
+    id: DEVIATION_ID.rateLimit429Draft11Headers,
+    routes: [
+      '/api/wallet/link/challenge',
+      '/api/wallet/link',
+      '/api/woc/balance',
+      '/api/card',
+      '/api/characters',
+      '/api/characters/:id/rename',
+      '/api/characters/:id/takeover',
+      '/api/characters/:id',
+      '/api/reports',
+    ],
+    currentBehavior:
+      'Before Phase 19, a coded 429 from a rateLimit(policy) middleware (the migrated ' +
+      'wallet/woc/card, character-mutation, and reports.create limiters) is thrown as ' +
+      'HttpError(429, "rate_limit.exceeded", { retryAfterSeconds: 60 }) where 60 is the ' +
+      'static shared-window constant, and the ONLY response header is Retry-After: 60 ' +
+      '(applyImpliedHeaders derives it from params.retryAfterSeconds). No RateLimit or ' +
+      'RateLimit-Policy header is emitted, and the advertised retry is the constant 60 ' +
+      'regardless of how far into the sliding window the caller actually is.',
+    intendedBehavior:
+      'Phase 19 turns the Phase 8 adapter into a two-tier resolver (in-memory tier-1 ' +
+      'first, a pg-backed GLOBAL tier-2 second) and gives every coded 429 the accurate ' +
+      'per-request numbers plus the draft-11 headers. The thrown 429 now carries ' +
+      'retryAfterSeconds = the limiter outcome.resetSeconds (the true seconds-to-window-' +
+      'reset, which equals 60 only at the instant the window filled) in both the body and ' +
+      'Retry-After, plus RateLimit: "<name>";r=<remaining>;t=<resetSeconds> and ' +
+      'RateLimit-Policy: "<name>";q=<limit>;w=60 (fields per ' +
+      'draft-ietf-httpapi-ratelimit-headers-11, structured-field syntax per RFC 9651; the ' +
+      'legacy X-RateLimit-* trio is deliberately never emitted). Tier-2 records the same ' +
+      'named limit against a pg fixed-window counter AFTER tier-1 allows, so in a single ' +
+      'process it can never reject when tier-1 allowed (tier-1 records first and the fixed ' +
+      'window counts a subset of the sliding window): tier-2 adds NO new 429 today, only ' +
+      'the imminent multi-realm global cap. Tier-2 fails open (a pg outage degrades to ' +
+      'tier-1-only limiting, never a 500). The legacy handleApi arms are untouched (they ' +
+      'keep the prose { error: "rate limited" } body for the flag-off rollback until Phase ' +
+      '25); the client code-matcher for the coded body is Phase 22.',
+    introducedInPhase: 19,
+    reason:
+      'The draft-11 RateLimit / RateLimit-Policy header emission and the accurate ' +
+      'per-request Retry-After / body retryAfterSeconds (was the constant 60) are the ' +
+      'Phase 19 deliverable, additive over the Phase 14/15/12 coded 429 (same 429 status, ' +
+      'same stable code, same problem+json body shape; new headers + a more accurate ' +
+      'retry value). NOT exercised by the db-free parity corpus: runParity resets every ' +
+      'limiter bucket before each pass, so a bucket is never drained and no coded 429 ' +
+      'fires, and every route listed here is ALREADY path-masked in the parity filter by ' +
+      'rateLimitedBodyToCode (wallet/woc/card), newLimiterCharacterMutations (the four ' +
+      'character routes), or newLimiterReportsCreate (/api/reports), so this entry adds no ' +
+      'new masking and needs no new captureBothModes re-pin. Documented here and pinned ' +
+      'directly on the thrown HttpError in tests/server/http/rate_limit.test.ts.',
   },
 ];
 

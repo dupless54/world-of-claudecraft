@@ -171,6 +171,29 @@ function applyImpliedHeaders(
   return Object.keys(headers).length > 0 ? headers : undefined;
 }
 
+/**
+ * The draft-11 rate-limit response headers a coded 429 carries. Fields per
+ * draft-ietf-httpapi-ratelimit-headers-11 (a NON-FINAL Internet-Draft, pinned at
+ * draft 11 on purpose), structured-field syntax per RFC 9651:
+ *   q = quota (the policy limit), w = window seconds  -> RateLimit-Policy
+ *   r = remaining, t = seconds to reset               -> RateLimit
+ * The quoted policy name is the structured-field key of the group. The legacy
+ * X-RateLimit-* trio is deliberately never emitted here (draft 11 supersedes it).
+ * Retry-After is included explicitly so applyImpliedHeaders' if-absent guard
+ * no-ops: it would otherwise derive the same value from params.retryAfterSeconds,
+ * so the two paths agree. Phase 19 supplies these on every rateLimit(policy) 429.
+ */
+export function rateLimit429Headers(
+  policy: { name: string; limit: number; windowSeconds: number },
+  outcome: { remaining: number; resetSeconds: number },
+): Record<string, string> {
+  return {
+    'Retry-After': String(outcome.resetSeconds),
+    RateLimit: `"${policy.name}";r=${outcome.remaining};t=${outcome.resetSeconds}`,
+    'RateLimit-Policy': `"${policy.name}";q=${policy.limit};w=${policy.windowSeconds}`,
+  };
+}
+
 /** A thrown raw decode-failure from schema.ts: { ok: false, issues: Issue[] }. */
 function isDecodeFailure(err: unknown): err is { ok: false; issues: Issue[] } {
   return (

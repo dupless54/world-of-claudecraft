@@ -234,8 +234,10 @@ describe('GET /api/woc/balance (public, IP rate-limited)', () => {
     expect(limited.contentType).toBe('application/problem+json');
     const body = limited.body as Record<string, unknown>;
     expect(body.code).toBe('rate_limit.exceeded');
-    // WOC_BALANCE_POLICY.retryAfterSeconds is 60 (the shared sliding-window size), so
-    // the coded 429 advertises a Retry-After the client can honor.
+    // The coded 429's retryAfterSeconds is the limiter outcome's resetSeconds (Phase 19
+    // made it the accurate per-request value); at a freshly-drained window that is the
+    // full 60s (the shared sliding-window size), and the Retry-After header mirrors it,
+    // so the client can honor it.
     expect(body.retryAfterSeconds).toBe(60);
     expect(limited.retryAfter).toBe('60');
   });
