@@ -26,6 +26,7 @@ import { formatNumber } from './i18n';
 import {
   buildOverworldMapModel,
   type MapDetail,
+  type MapNpcMarker,
   type MapQuestAreaMarker,
   type MapViewRect,
   type OverworldMapModel,
@@ -114,6 +115,8 @@ export interface MapPaintResult {
   view: MapViewRect;
   cursor: 'grab' | 'default';
   questAreas: MapQuestAreaMarker[];
+  /** The quest-giver glyphs of this paint, for the hover tooltip's hit-test. */
+  npcs: MapNpcMarker[];
 }
 
 /**
@@ -156,7 +159,12 @@ export class MapWindowPainter {
     });
     const colors = this.resolveColors();
     this.draw(ctx, model, opts.bg, opts.canvasSize, colors);
-    return { view: model.view, cursor: model.cursor, questAreas: model.questAreas };
+    return {
+      view: model.view,
+      cursor: model.cursor,
+      questAreas: model.questAreas,
+      npcs: model.npcs,
+    };
   }
 
   private draw(

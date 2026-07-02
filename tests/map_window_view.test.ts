@@ -18,6 +18,7 @@ import {
   MAP_DETAIL_ZOOM,
   MAP_MAX_ZOOM,
   mapWindowMode,
+  npcMarkerAt,
   type OverworldMapInput,
   questAreaObjectivesAt,
 } from '../src/ui/map_window_view';
@@ -199,6 +200,17 @@ describe('buildOverworldMapModel (pure draw model)', () => {
     // the npc has an available quest from its own giver -> one '!' (not ready) glyph
     expect(model.npcs).toHaveLength(1);
     expect(model.npcs[0].ready).toBe(false);
+    // the glyph carries its quest identity for the hover tooltip
+    expect(model.npcs[0].quests).toEqual([{ questId: GIVER_QUEST.id, ready: false }]);
+  });
+
+  it('hit-tests the nearest glyph within the hover radius (and misses outside it)', () => {
+    const model = buildOverworldMapModel(input(makeOverworldWorld('sim'), 1));
+    const glyph = model.npcs[0];
+    expect(npcMarkerAt(model.npcs, glyph.mx, glyph.my)).toBe(glyph);
+    expect(npcMarkerAt(model.npcs, glyph.mx + 5, glyph.my - 5)).toBe(glyph); // slack
+    expect(npcMarkerAt(model.npcs, glyph.mx + 500, glyph.my)).toBeNull();
+    expect(npcMarkerAt([], glyph.mx, glyph.my)).toBeNull();
   });
 
   it("marks the glyph ready when a turn-in is ready (the '?' branch, not '!')", () => {

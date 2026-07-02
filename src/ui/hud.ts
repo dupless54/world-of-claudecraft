@@ -221,8 +221,10 @@ import { type MapRegion, mapCanvasHeight, paintTerrainRows } from './map_terrain
 import { MapWindowPainter } from './map_window_painter';
 import {
   MAP_MAX_ZOOM,
+  type MapNpcMarker,
   type MapQuestAreaMarker,
   mapWindowMode,
+  npcMarkerAt,
   questAreaObjectivesAt,
 } from './map_window_view';
 import { MarketWindow } from './market_window';
@@ -970,6 +972,9 @@ export class Hud {
   // The quest-objective areas of the last overworld map paint (canvas-pixel
   // space), kept for the hover tooltip's hit-test. Empty in delve mode.
   private mapQuestAreas: MapQuestAreaMarker[] = [];
+  // The quest-giver glyphs of the last overworld map paint, for the hover
+  // tooltip's hit-test (quest names + level requirements). Empty in delve mode.
+  private mapNpcMarkers: MapNpcMarker[] = [];
   // The map's quest side list: quests the player untracked (their blue areas
   // are hidden), lazily loaded per character; and the render-skip signature so
   // the 4Hz map cadence rebuilds the list DOM only when it actually changed.
@@ -1334,10 +1339,12 @@ export class Hud {
     };
     mapCanvas.addEventListener('pointerup', endDrag);
     mapCanvas.addEventListener('pointercancel', endDrag);
-    // Hovering a quest-objective area shows the objectives it stands for with
-    // their live tracker progress (mouse only: touch pans the map, no hover).
-    // The hit-test runs against the areas of the last paint (mapQuestAreas),
-    // scaled from CSS px to the canvas backing space the model projects into.
+    // Hovering the map shows context tooltips (mouse only: touch pans the map,
+    // no hover). Priority: a quest-giver glyph ('!'/'?', quest names + level
+    // requirements) sits ON TOP of the blobs, so it wins; otherwise a
+    // quest-objective area shows its objectives with live tracker progress.
+    // Both hit-tests run against the markers of the last paint, scaled from
+    // CSS px to the canvas backing space the model projects into.
     let mapAreaTipShown = false;
     const hideMapAreaTip = (): void => {
       if (!mapAreaTipShown) return;
@@ -1345,17 +1352,21 @@ export class Hud {
       this.hideTooltip();
     };
     mapCanvas.addEventListener('pointermove', (ev) => {
-      if (ev.pointerType !== 'mouse' || this.mapDrag || this.mapQuestAreas.length === 0) {
+      if (
+        ev.pointerType !== 'mouse' ||
+        this.mapDrag ||
+        (this.mapQuestAreas.length === 0 && this.mapNpcMarkers.length === 0)
+      ) {
         hideMapAreaTip();
         return;
       }
       const rect = mapCanvas.getBoundingClientRect();
-      const refs = questAreaObjectivesAt(
-        this.mapQuestAreas,
-        ((ev.clientX - rect.left) * mapCanvas.width) / rect.width,
-        ((ev.clientY - rect.top) * mapCanvas.height) / rect.height,
-      );
-      const html = this.questAreaTooltipHtml(refs);
+      const cx = ((ev.clientX - rect.left) * mapCanvas.width) / rect.width;
+      const cy = ((ev.clientY - rect.top) * mapCanvas.height) / rect.height;
+      const glyph = npcMarkerAt(this.mapNpcMarkers, cx, cy);
+      const html = glyph
+        ? this.questGiverTooltipHtml(glyph)
+        : this.questAreaTooltipHtml(questAreaObjectivesAt(this.mapQuestAreas, cx, cy));
       if (!html) {
         hideMapAreaTip();
         return;
@@ -6181,6 +6192,7 @@ export class Hud {
       // The delve painter owns the full world-map schematic render (the area
       // title is drawn on-canvas, since the world map has no DOM zone label).
       this.mapQuestAreas = [];
+      this.mapNpcMarkers = [];
       this.hideMapQuestList();
       this.delvePainter.paintWorldMapDelve(ctx, this.sim, S);
       const run = this.sim.delveRun;
@@ -6206,6 +6218,7 @@ export class Hud {
     });
     this.mapView = result.view;
     this.mapQuestAreas = result.questAreas;
+    this.mapNpcMarkers = result.npcs;
     if (!this.mapDrag) canvas.style.cursor = result.cursor;
     this.renderMapQuestList();
     this.setText(summaryEl, t('hud.core.mapSummary', { zone: zoneDisplayName(zone.id) }));
@@ -6285,6 +6298,28 @@ export class Hud {
     }
     listEl.innerHTML = html;
     listEl.classList.add('on');
+  }
+
+  // Tooltip body for a hovered quest-giver glyph on the world map: each quest
+  // behind the '!'/'?' shows its title (with the ready-to-turn-in tag on '?'
+  // quests) plus its level requirement when the quest declares one, all through
+  // existing questUi keys (no new i18n surface).
+  private questGiverTooltipHtml(marker: MapNpcMarker): string {
+    let html = '';
+    for (const ref of marker.quests) {
+      const quest = QUESTS[ref.questId];
+      if (!quest) continue;
+      const readyTag = ref.ready
+        ? ` <span class="quest-complete">(${esc(t('questUi.log.readyStatus'))})</span>`
+        : '';
+      html += `<div class="tt-title">${esc(questTitle(ref.questId))}${readyTag}</div>`;
+      if (quest.minLevel) {
+        html += `<div class="tt-quest-req">${esc(
+          t('questUi.detail.requiresLevel', { level: this.questNumber(quest.minLevel) }),
+        )}</div>`;
+      }
+    }
+    return html;
   }
 
   // Tooltip body for hovered quest-objective areas on the world map: per quest,

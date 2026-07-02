@@ -2430,6 +2430,12 @@
   #tooltip.mob-tooltip .tt-green {
     font-size: calc(14px * var(--tooltip-scale, 1));
   }
+  /* The map quest-giver glyph tooltip: the quest's level-requirement line,
+     dimmed under its gold title so the name stays the focus. */
+  #tooltip .tt-quest-req {
+    color: var(--color-text-muted);
+    font-size: 12px;
+  }
   /* Questie-style quest lines in the mob tooltip: quest title in green over
      its objective progress in gold, between level/family and the reaction. */
   #tooltip.mob-tooltip .tt-quest-name {

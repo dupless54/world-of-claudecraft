@@ -94,11 +94,46 @@ export interface MapPortalMarker {
   dungeonId: string;
 }
 
-/** A quest-giver glyph: '?' (turn-in ready) wins over '!' (available). */
+/** One quest carried by a map quest-giver glyph, for its hover tooltip. */
+export interface MapNpcQuestRef {
+  questId: string;
+  /** true = ready to turn in (the '?' state); false = available to pick up. */
+  ready: boolean;
+}
+
+/** A quest-giver glyph: '?' (turn-in ready) wins over '!' (available). Carries
+ *  the quest identities behind the glyph so the hover tooltip can resolve
+ *  their localized titles + level requirements (this core stays i18n-free). */
 export interface MapNpcMarker {
   mx: number;
   my: number;
   ready: boolean;
+  quests: MapNpcQuestRef[];
+}
+
+/** The glyph hit radius for the map hover tooltip, in canvas px: the '?'/'!'
+ *  glyphs draw at a ~15px font, and a touch of slack keeps the hover forgiving. */
+export const MAP_NPC_GLYPH_HIT_RADIUS = 10;
+
+/** The nearest quest-giver glyph within the hit radius of a canvas point, or
+ *  null. Nearest (not first) so two adjacent givers resolve intuitively. */
+export function npcMarkerAt(
+  npcs: readonly MapNpcMarker[],
+  mx: number,
+  my: number,
+): MapNpcMarker | null {
+  let best: MapNpcMarker | null = null;
+  let bestD2 = MAP_NPC_GLYPH_HIT_RADIUS * MAP_NPC_GLYPH_HIT_RADIUS;
+  for (const n of npcs) {
+    const dx = mx - n.mx;
+    const dy = my - n.my;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= bestD2) {
+      bestD2 = d2;
+      best = n;
+    }
+  }
+  return best;
 }
 
 /** A translucent active-quest objective area (the classic quest-POI blob):
@@ -328,15 +363,24 @@ export function buildOverworldMapModel(input: OverworldMapInput): OverworldMapMo
   for (const e of world.entities.values()) {
     if (e.kind !== 'npc') continue;
     if (e.pos.z < zone.zMin || e.pos.z >= zone.zMax) continue;
-    const hasAvail = e.questIds.some(
+    const avail = e.questIds.filter(
       (q) => QUESTS[q].giverNpcId === e.templateId && world.questState(q) === 'available',
     );
-    const hasReady = e.questIds.some(
+    const readyQuests = e.questIds.filter(
       (q) => isQuestTurnInNpc(QUESTS[q], e.templateId) && world.questState(q) === 'ready',
     );
-    if (hasAvail || hasReady) {
+    if (avail.length > 0 || readyQuests.length > 0) {
       const { mx, my } = toMap(e.pos.x, e.pos.z);
-      npcs.push({ mx, my, ready: hasReady });
+      npcs.push({
+        mx,
+        my,
+        ready: readyQuests.length > 0,
+        // turn-ins first: the '?' state wins the glyph, so its quests lead the tooltip
+        quests: [
+          ...readyQuests.map((questId) => ({ questId, ready: true })),
+          ...avail.map((questId) => ({ questId, ready: false })),
+        ],
+      });
     }
   }
 
