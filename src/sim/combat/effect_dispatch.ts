@@ -493,6 +493,7 @@ export function runEffects(
             z: zoneCenter.z,
             school: ability.school,
             fx: 'nova',
+            radius: eff.radius,
           });
         } else {
           ctx.emit({

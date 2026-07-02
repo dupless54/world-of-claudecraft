@@ -484,7 +484,15 @@ function applyChannelTick(ctx: SimContext, p: Entity, res: ResolvedAbility): voi
   if (res.def.targetMode === 'position') {
     const center = p.castAim ?? p.pos;
     const isSpell = res.def.school !== 'physical';
-    ctx.emit({ type: 'spellfxAt', x: center.x, z: center.z, school: res.def.school, fx: 'nova' });
+    const radius = res.effects.find((eff) => eff.type === 'aoeDamage')?.radius;
+    ctx.emit({
+      type: 'spellfxAt',
+      x: center.x,
+      z: center.z,
+      school: res.def.school,
+      fx: 'nova',
+      radius,
+    });
     const channelSp = channelTickBonus(abilityScalingPower(p, res.def), res.def);
     for (const eff of res.effects) {
       if (eff.type !== 'aoeDamage') continue;

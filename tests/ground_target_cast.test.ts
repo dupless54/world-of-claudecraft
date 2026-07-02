@@ -136,6 +136,24 @@ describe('ground-targeted casting (thematic per-class spells)', () => {
       expect(me?.castAim?.x).toBeCloseTo(range, 0);
       expect(me?.castAim?.z).toBeCloseTo(0, 1);
     });
+
+    it(`${c.spell} (${c.cls}) emits a radius-carrying aimed pulse on channel tick`, () => {
+      const sim = castGroundSpell(c.cls, c.spell, { x: 16, z: 0 });
+      const radius = sim.known
+        .find((k) => k.def.id === c.spell)
+        ?.def.effects.find((eff) => eff.type === 'aoeDamage')?.radius;
+      sim.drainEvents();
+
+      let fx: ReturnType<typeof aimedFx>;
+      for (let i = 0; i < 40 && !fx; i++) {
+        fx = sim.tick().find((e) => e.type === 'spellfxAt');
+      }
+
+      expect(fx).toBeDefined();
+      expect(fx?.x).toBeCloseTo(16, 1);
+      expect(fx?.z).toBeCloseTo(0, 1);
+      expect(fx?.radius).toBe(radius);
+    });
   }
 
   it('a channeled ground spell damages enemies in the aimed area over its ticks', () => {
@@ -162,6 +180,8 @@ describe('ground-targeted casting (thematic per-class spells)', () => {
 
   it('earthquake (shaman) drops a lingering nature zone at the aimed point', () => {
     const sim = castGroundSpell('shaman', 'earthquake', { x: 16, z: 0 });
+    const fx = aimedFx(sim);
+    expect(fx?.radius).toBe(8);
     const zone = (sim as unknown as { groundAoEs: GroundAoE[] }).groundAoEs.find(
       (z) => z.ability === 'Earthquake',
     );
