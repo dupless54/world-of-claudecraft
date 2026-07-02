@@ -863,6 +863,7 @@ export const tr_TR: EnTranslations = {
       "memberSinceDays": "Discord'da {days}g",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Admin",
         "devs": "Geliştirici",
         "mods": "Moderatör",
         "artists": "Sanatçı"

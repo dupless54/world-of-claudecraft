@@ -10033,6 +10033,8 @@ export class Hud {
       switch (key) {
         case 'levyst':
           return t('hudChrome.discord.roleTag.levyst');
+        case 'admin':
+          return t('hudChrome.discord.roleTag.admin');
         case 'devs':
           return t('hudChrome.discord.roleTag.devs');
         case 'mods':
@@ -10110,6 +10112,8 @@ export class Hud {
       switch (key) {
         case 'levyst':
           return t('hudChrome.discord.roleTag.levyst');
+        case 'admin':
+          return t('hudChrome.discord.roleTag.admin');
         case 'devs':
           return t('hudChrome.discord.roleTag.devs');
         case 'mods':

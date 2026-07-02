@@ -863,6 +863,7 @@ export const ru_RU: EnTranslations = {
       "memberSinceDays": "{days} дн. в Discord",
       "roleTag": {
         "levyst": "Levy St",
+        "admin": "Администратор",
         "devs": "Разработчик",
         "mods": "Модератор",
         "artists": "Художник"

@@ -950,6 +950,7 @@ export const hudChromeStrings = {
     memberSinceDays: '{days}d in the Discord',
     roleTag: {
       levyst: 'Levy St',
+      admin: 'Admin',
       devs: 'Dev',
       mods: 'Mod',
       artists: 'Artist',
