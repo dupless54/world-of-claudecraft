@@ -53,7 +53,12 @@ import {
   Settings,
 } from './game/settings';
 import { sfx } from './game/sfx';
-import { type SpawnCinematic, spawnCinematicFor, spawnCinematicPose } from './game/spawn_cinematic';
+import {
+  recordSkipTap,
+  type SpawnCinematic,
+  spawnCinematicFor,
+  spawnCinematicPose,
+} from './game/spawn_cinematic';
 import { resolveUiEffectsProfile } from './game/ui_effects_profile';
 import { currentUtcDay } from './game/utc_day';
 import { voice } from './game/voice';
@@ -2442,10 +2447,11 @@ async function startGame(
     },
   };
   // First-spawn intro cinematic: a newly created character's first entry opens
-  // with the camera high over the spawn, circling it once before settling into
-  // the gameplay pose; the HUD stays hidden until the camera lands, and any key
-  // or click skips straight to the end. Seen-state persists per character so it
-  // plays exactly once; reduce-motion players go straight to gameplay.
+  // far out across the field and glides in toward the character; the HUD stays
+  // hidden until the camera lands. Escape (or a rapid tap burst on touch, which
+  // has no Escape key) skips straight to the end; other input is swallowed
+  // while it runs. Seen-state persists per character so it plays exactly once;
+  // reduce-motion players go straight to gameplay.
   const INTRO_SEEN_KEY = `woc_spawn_intro_seen:${keybindScope}`;
   let introSeen = true;
   try {
@@ -2479,10 +2485,17 @@ async function startGame(
       // storage unavailable: worst case the intro replays next session
     }
   };
+  const introTaps: number[] = [];
   const skipIntro = (e: Event): void => {
+    // Swallow gameplay input while the intro runs; only the skip gestures act.
     e.stopPropagation();
-    if (e.type === 'keydown') e.preventDefault();
-    finishIntro(true);
+    if (e.type === 'keydown') {
+      if ((e as KeyboardEvent).key !== 'Escape') return;
+      e.preventDefault(); // skip only: the eaten Escape must not open the menu
+      finishIntro(true);
+      return;
+    }
+    if (recordSkipTap(introTaps, performance.now() / 1000)) finishIntro(true);
   };
   // Applied each frame between the follow-camera update and the renderer read,
   // so the cinematic pose wins over mouse/follow input while it runs.

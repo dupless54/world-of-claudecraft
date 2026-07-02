@@ -1,8 +1,9 @@
-// First-spawn camera cinematic, pure math (no DOM): the camera opens high and
-// far, one full turn behind the gameplay yaw, circles the spawn while it
-// descends, and lands exactly on the normal gameplay pose. main.ts feeds
-// elapsed seconds in and applies the returned pose to the input camera each
-// frame; tests/spawn_cinematic.test.ts locks the start/landing/continuity
+// First-spawn camera cinematic, pure math (no DOM): the camera opens far out
+// across the field, high above the world, and glides in one long continuous
+// approach toward the character, sweeping gently around (a fraction of a turn,
+// not an orbit) until it lands exactly on the normal gameplay pose. main.ts
+// feeds elapsed seconds in and applies the returned pose to the input camera
+// each frame; tests/spawn_cinematic.test.ts locks the start/landing/continuity
 // contract.
 
 export interface CameraPose {
@@ -13,36 +14,46 @@ export interface CameraPose {
 
 export interface SpawnCinematic {
   durationSec: number;
-  turns: number; // full camera turns around the spawn
-  startDist: number; // the orbit opens far ...
-  startPitch: number; // ... and high, looking down at the spawn
+  turns: number; // fraction of a turn swept during the approach
+  startDist: number; // the approach opens far out across the field ...
+  startPitch: number; // ... and high, looking down over the world
   end: CameraPose; // gameplay pose the cinematic lands on exactly
 }
 
-// startDist stays inside the wheel-zoom range input.ts allows (3..22) so the
-// whole path uses camera poses the player could reach themselves.
+// startDist is deliberately beyond the wheel-zoom range (3..22): the opening
+// is an establishing shot of the world around the spawn. The renderer clamps
+// the camera above terrain, so the long path can never dip underground.
 export function spawnCinematicFor(end: CameraPose): SpawnCinematic {
-  return { durationSec: 9, turns: 1, startDist: 22, startPitch: 0.55, end };
+  return { durationSec: 9, turns: 0.3, startDist: 55, startPitch: 1.0, end };
 }
-
-// The yaw eases over the whole run (gentle start, slow landing) while the
-// descent (dist + pitch) holds the high wide shot for the opening stretch and
-// only settles onto the character in the back stretch.
-const DESCENT_START = 0.45;
 
 export function spawnCinematicPose(
   elapsedSec: number,
   c: SpawnCinematic,
 ): CameraPose & { done: boolean } {
   const p = clamp01(elapsedSec / c.durationSec);
-  const orbit = easeInOutSine(p);
-  const descent = easeInOutCubic(clamp01((p - DESCENT_START) / (1 - DESCENT_START)));
+  // One shared ease for the whole approach: gentle start, long glide, slow
+  // landing, with yaw/pitch/dist arriving together so there is no snap.
+  const glide = easeInOutSine(p);
   return {
-    yaw: c.end.yaw - (1 - orbit) * c.turns * Math.PI * 2,
-    pitch: c.startPitch + (c.end.pitch - c.startPitch) * descent,
-    dist: c.startDist + (c.end.dist - c.startDist) * descent,
+    yaw: c.end.yaw - (1 - glide) * c.turns * Math.PI * 2,
+    pitch: c.startPitch + (c.end.pitch - c.startPitch) * glide,
+    dist: c.startDist + (c.end.dist - c.startDist) * glide,
     done: elapsedSec >= c.durationSec,
   };
+}
+
+// Skipping: desktop presses Escape; touch players have no Escape key, so a
+// rapid burst of taps skips instead (a lone stray tap must not).
+export const SKIP_TAP_COUNT = 4;
+export const SKIP_TAP_WINDOW_SEC = 1.5;
+
+// Records one tap at nowSec into `taps` (pruned in place to the sliding
+// window) and reports whether the burst threshold was reached.
+export function recordSkipTap(taps: number[], nowSec: number): boolean {
+  taps.push(nowSec);
+  while (taps.length > 0 && nowSec - taps[0] > SKIP_TAP_WINDOW_SEC) taps.shift();
+  return taps.length >= SKIP_TAP_COUNT;
 }
 
 function clamp01(x: number): number {
@@ -51,8 +62,4 @@ function clamp01(x: number): number {
 
 function easeInOutSine(x: number): number {
   return 0.5 - Math.cos(Math.PI * x) / 2;
-}
-
-function easeInOutCubic(x: number): number {
-  return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 }
