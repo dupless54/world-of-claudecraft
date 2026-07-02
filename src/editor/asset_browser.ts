@@ -1,11 +1,14 @@
 // The bottom asset-browser drawer (visible while the Place tool is active):
 // category tabs + search + a thumbnail grid, plus an Uploaded tab backed by the
-// server's user assets. Thumbnails are procedural canvas tiles (no GLB
-// rendering): a deterministic hue from the asset id, the label, and a category
-// tag, which keeps the grid instant and dependency-free.
+// server's user assets. Cells paint instantly with a procedural placeholder
+// tile (deterministic hue from the asset id, label glyph, category tag) and
+// then lazily swap in a real 3D GLB snapshot from asset_thumbs.ts once it
+// renders; ids whose GLB fails keep the placeholder.
 
 import { t } from '../ui/i18n';
 import { ASSET_CATALOG, ASSET_CATEGORIES } from './asset_catalog.generated';
+import { cachedAssetThumb, requestAssetThumb } from './asset_thumbs';
+import { hashHue } from './asset_thumbs_core';
 import { el } from './dom';
 import { deleteUserAsset, EditorApiError, listMyAssets, signedIn } from './net';
 import { editorErrorKey } from './server_errors_core';
@@ -45,15 +48,6 @@ interface Entry {
   /** Server row id for uploaded assets owned by this account (delete handle). */
   uploadId?: number;
   sha256?: string;
-}
-
-function hashHue(id: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < id.length; i++) {
-    h ^= id.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) % 360;
 }
 
 const CATEGORY_KEYS: Record<string, string> = {
@@ -115,6 +109,9 @@ export class AssetBrowser {
   private uploadedLoading = false;
   private searchTimer = 0;
   private readonly thumbCache = new Map<string, HTMLCanvasElement>();
+  // Ids the grid currently shows: the cheap stale-skip probe for queued 3D
+  // snapshots (rebuilt on every renderGrid, so search/tab churn drops work).
+  private gridIds: ReadonlySet<string> = new Set();
 
   constructor(
     parent: HTMLElement,
@@ -240,6 +237,7 @@ export class AssetBrowser {
   private renderGrid(): void {
     this.grid.innerHTML = '';
     this.note.style.display = 'none';
+    this.gridIds = new Set();
     if (this.category === UPLOADED_TAB) {
       if (!signedIn()) {
         this.note.textContent = t('editor.assets.uploadedSignIn');
@@ -256,6 +254,7 @@ export class AssetBrowser {
     const items = this.entries()
       .filter((a) => !q || a.label.toLowerCase().includes(q) || a.id.toLowerCase().includes(q))
       .slice(0, MAX_GRID_ITEMS);
+    this.gridIds = new Set(items.map((a) => a.id));
     if (items.length === 0) {
       this.note.textContent =
         this.category === UPLOADED_TAB && !q
@@ -286,7 +285,24 @@ export class AssetBrowser {
     b.classList.toggle('active', entry.id === this.selectedId);
     b.title = t('editor.assets.pick', { name: entry.label });
     b.setAttribute('aria-label', t('editor.assets.pick', { name: entry.label }));
-    b.appendChild(this.thumbFor(entry));
+    // Paint instantly: the cached 3D snapshot when one exists, else the
+    // procedural placeholder while the real preview renders in the background.
+    const snapshot = cachedAssetThumb(entry.id);
+    const thumb = snapshot ?? this.thumbFor(entry);
+    b.appendChild(thumb);
+    if (!snapshot) {
+      requestAssetThumb(
+        entry.id,
+        () => this.gridIds.has(entry.id),
+        (real) => {
+          // Swap only if this very cell still shows the id (the grid may have
+          // re-rendered for a search or tab change while the GLB loaded).
+          if (!thumb.isConnected || !this.gridIds.has(entry.id)) return;
+          thumb.replaceWith(real);
+          this.thumbCache.delete(entry.id); // the placeholder is obsolete now
+        },
+      );
+    }
     b.appendChild(el('span', 'ed-asset-label', entry.label));
     b.addEventListener('click', () => {
       this.selectedId = entry.id;
