@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "5652bec6",
+      "state": "e6a44c6e",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -39,11 +39,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -101,7 +103,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "e991b72d",
+      "state": "ebed2945",
       "events": "5f459d47",
       "rng": {
         "draws": 0,
@@ -124,6 +126,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 27600,
           "mailWelcomed": true,
           "questLog": [
@@ -141,7 +144,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -199,7 +203,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 401,
-      "state": "cdceaf03",
+      "state": "7f1818af",
       "events": "2fad2100",
       "rng": {
         "draws": 32,
@@ -226,6 +230,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 27600,
           "mailWelcomed": true,
           "questLog": [
@@ -243,7 +248,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -302,7 +308,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 401,
-      "state": "70d56238",
+      "state": "6bac4fe4",
       "events": "f846efa3",
       "rng": {
         "draws": 32,
@@ -332,6 +338,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 27850,
           "mailWelcomed": true,
           "questsDone": [
@@ -341,6 +348,7 @@
             "choices": {},
             "ranks": {}
           },
+          "worldBossDaily": {},
           "xp": 250
         }
       ],
@@ -400,7 +408,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 401,
-      "state": "f80c60fc",
+      "state": "4a4851f8",
       "events": "741638a5",
       "rng": {
         "draws": 32,
@@ -430,6 +438,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 27850,
           "mailWelcomed": true,
           "questsDone": [
@@ -439,6 +448,7 @@
             "choices": {},
             "ranks": {}
           },
+          "worldBossDaily": {},
           "xp": 250
         }
       ],

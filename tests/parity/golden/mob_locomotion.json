@@ -32,7 +32,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 394,
-      "state": "ab7a79c9",
+      "state": "8d4a0ee9",
       "events": "64ddd877",
       "rng": {
         "draws": 4,
@@ -56,11 +56,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -163,7 +165,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 395,
-      "state": "cc33a095",
+      "state": "00be9be5",
       "events": "060f70fb",
       "rng": {
         "draws": 8,
@@ -187,11 +189,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -348,7 +352,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 396,
-      "state": "e1d72cc0",
+      "state": "13e0ed5c",
       "events": "bad87ac1",
       "rng": {
         "draws": 13,
@@ -372,11 +376,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -588,7 +594,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 397,
-      "state": "5c72353b",
+      "state": "5c189d87",
       "events": "741638a5",
       "rng": {
         "draws": 15,
@@ -612,11 +618,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -875,7 +883,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 398,
-      "state": "74ae4918",
+      "state": "5db85314",
       "events": "741638a5",
       "rng": {
         "draws": 16,
@@ -899,11 +907,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1203,7 +1213,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 399,
-      "state": "8251e01c",
+      "state": "d7c292c8",
       "events": "ab4a6ea7",
       "rng": {
         "draws": 16,
@@ -1227,11 +1237,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1575,7 +1587,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 399,
-      "state": "912fd8cd",
+      "state": "00417efd",
       "events": "741638a5",
       "rng": {
         "draws": 16,
@@ -1599,11 +1611,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1948,7 +1962,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 399,
-      "state": "912fd8cd",
+      "state": "00417efd",
       "events": "741638a5",
       "rng": {
         "draws": 16,
@@ -1972,11 +1986,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

@@ -30,7 +30,7 @@
       "tick": 25,
       "time": 1.25,
       "nextId": 396,
-      "state": "948480a5",
+      "state": "964588a1",
       "events": "92b1b87b",
       "rng": {
         "draws": 0,
@@ -41,7 +41,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 396,
-      "state": "796eeabf",
+      "state": "f0c533f3",
       "events": "806089f9",
       "rng": {
         "draws": 36,
@@ -52,7 +52,7 @@
       "tick": 75,
       "time": 3.75,
       "nextId": 396,
-      "state": "4fb20c95",
+      "state": "cd67b751",
       "events": "fb6d18c1",
       "rng": {
         "draws": 120,
@@ -63,7 +63,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 396,
-      "state": "66e6d3e7",
+      "state": "d26108fb",
       "events": "f4715bd9",
       "rng": {
         "draws": 230,
@@ -74,7 +74,7 @@
       "tick": 125,
       "time": 6.25,
       "nextId": 396,
-      "state": "5a5a00af",
+      "state": "35726f6b",
       "events": "b2ee9b16",
       "rng": {
         "draws": 384,
@@ -85,7 +85,7 @@
       "tick": 150,
       "time": 7.5,
       "nextId": 396,
-      "state": "52626d6f",
+      "state": "3f64e12b",
       "events": "741638a5",
       "rng": {
         "draws": 543,
@@ -96,7 +96,7 @@
       "tick": 163,
       "time": 8.15,
       "nextId": 396,
-      "state": "572d701c",
+      "state": "3d50dc58",
       "events": "03b15cdc",
       "rng": {
         "draws": 608,
@@ -127,6 +127,7 @@
               "ranks": {}
             }
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
@@ -138,7 +139,8 @@
               "war_toughness": 3
             },
             "spec": "arms"
-          }
+          },
+          "worldBossDaily": {}
         },
         {
           "activeLoadout": -1,
@@ -161,6 +163,7 @@
               "ranks": {}
             }
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
@@ -172,7 +175,8 @@
               "mag_wand_specialization": 2
             },
             "spec": "arcane"
-          }
+          },
+          "worldBossDaily": {}
         },
         {
           "activeLoadout": -1,
@@ -200,6 +204,7 @@
               "ranks": {}
             }
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
@@ -211,7 +216,8 @@
               "rog_malice": 3
             },
             "spec": "assassination"
-          }
+          },
+          "worldBossDaily": {}
         },
         {
           "activeLoadout": -1,
@@ -234,6 +240,7 @@
               "ranks": {}
             }
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
@@ -245,7 +252,8 @@
               "hun_lethal_shots": 3
             },
             "spec": "beast_mastery"
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

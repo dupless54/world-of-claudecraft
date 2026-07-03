@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "202a8f05",
+      "state": "13012fd5",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,11 +38,13 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_hatchet"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -102,7 +104,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 396,
-      "state": "3276d041",
+      "state": "f15730b1",
       "events": "68605b77",
       "rng": {
         "draws": 6,
@@ -113,7 +115,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 396,
-      "state": "3479b00d",
+      "state": "474018ed",
       "events": "741638a5",
       "rng": {
         "draws": 6,
@@ -124,7 +126,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 396,
-      "state": "64045f73",
+      "state": "2af8042f",
       "events": "be1b642a",
       "rng": {
         "draws": 96,
@@ -135,7 +137,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 396,
-      "state": "98fd3e27",
+      "state": "3e255ec3",
       "events": "741638a5",
       "rng": {
         "draws": 195,
@@ -146,7 +148,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 396,
-      "state": "09bd10b1",
+      "state": "7dadd121",
       "events": "c2baa20f",
       "rng": {
         "draws": 294,
@@ -157,7 +159,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 396,
-      "state": "2ca2a689",
+      "state": "2a0d5c39",
       "events": "741638a5",
       "rng": {
         "draws": 398,
@@ -168,7 +170,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 396,
-      "state": "2ca2a689",
+      "state": "2a0d5c39",
       "events": "741638a5",
       "rng": {
         "draws": 398,
@@ -191,12 +193,14 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_hatchet"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 44000,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

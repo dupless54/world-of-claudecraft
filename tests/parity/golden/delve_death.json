@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "bc32646b",
+      "state": "893a57f7",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,11 +38,13 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -102,7 +104,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 402,
-      "state": "be49622a",
+      "state": "537858f2",
       "events": "7bea9fdc",
       "rng": {
         "draws": 1,
@@ -125,12 +127,14 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 11200,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -189,7 +193,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 402,
-      "state": "b021dfe7",
+      "state": "32590433",
       "events": "7f76a43e",
       "rng": {
         "draws": 1,
@@ -212,12 +216,14 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 11200,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -277,7 +283,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 402,
-      "state": "b021dfe7",
+      "state": "32590433",
       "events": "741638a5",
       "rng": {
         "draws": 1,
@@ -300,12 +306,14 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 11200,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

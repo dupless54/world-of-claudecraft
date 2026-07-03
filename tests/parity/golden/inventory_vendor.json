@@ -35,7 +35,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "da75e2c1",
+      "state": "2913a681",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -58,11 +58,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -120,7 +122,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "b09c7d73",
+      "state": "74e1e18f",
       "events": "fd3b6802",
       "rng": {
         "draws": 0,
@@ -143,6 +145,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -161,7 +164,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -219,7 +223,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "8cb35463",
+      "state": "b071756f",
       "events": "22b10b21",
       "rng": {
         "draws": 0,
@@ -243,6 +247,7 @@
             "helmet": "cryptbone_helm",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -265,7 +270,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -323,7 +329,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "d9bc20cb",
+      "state": "f8031427",
       "events": "facd6b85",
       "rng": {
         "draws": 0,
@@ -347,6 +353,7 @@
             "helmet": "roadwardens_helm",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -369,7 +376,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -427,7 +435,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "7104d619",
+      "state": "c8ca8891",
       "events": "e8f4bcd0",
       "rng": {
         "draws": 0,
@@ -450,6 +458,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 5,
@@ -476,7 +485,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -534,7 +544,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "c914ba62",
+      "state": "4c0059ea",
       "events": "121a8671",
       "rng": {
         "draws": 0,
@@ -557,6 +567,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -583,7 +594,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -654,7 +666,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "9bf7448f",
+      "state": "3112e60b",
       "events": "b9c16b70",
       "rng": {
         "draws": 0,
@@ -677,6 +689,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -699,7 +712,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -770,7 +784,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "4866464a",
+      "state": "9f8df4ca",
       "events": "d903c782",
       "rng": {
         "draws": 0,
@@ -793,6 +807,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -815,7 +830,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -898,7 +914,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "b357ea56",
+      "state": "5d631c7e",
       "events": "c40bb25c",
       "rng": {
         "draws": 0,
@@ -921,6 +937,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -947,7 +964,8 @@
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1030,7 +1048,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "2c724849",
+      "state": "f878d101",
       "events": "b1460df4",
       "rng": {
         "draws": 0,
@@ -1053,6 +1071,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -1085,7 +1104,8 @@
               "count": 1,
               "itemId": "wolf_fang"
             }
-          ]
+          ],
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1168,7 +1188,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "60f66b5a",
+      "state": "a812c792",
       "events": "b1502d29",
       "rng": {
         "draws": 0,
@@ -1191,6 +1211,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -1223,7 +1244,8 @@
               "count": 2,
               "itemId": "wolf_fang"
             }
-          ]
+          ],
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1306,7 +1328,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "63c00d3a",
+      "state": "4d660e7a",
       "events": "c16bba39",
       "rng": {
         "draws": 0,
@@ -1329,6 +1351,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -1365,7 +1388,8 @@
               "count": 1,
               "itemId": "wolf_fang"
             }
-          ]
+          ],
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -1448,7 +1472,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "63c00d3a",
+      "state": "4d660e7a",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -1471,6 +1495,7 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "inventory": [
             {
               "count": 4,
@@ -1507,7 +1532,8 @@
               "count": 1,
               "itemId": "wolf_fang"
             }
-          ]
+          ],
+          "worldBossDaily": {}
         }
       ],
       "entities": [

@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "bc32646b",
+      "state": "893a57f7",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -38,11 +38,13 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -102,7 +104,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 394,
-      "state": "e06d1c73",
+      "state": "94955def",
       "events": "5853da21",
       "rng": {
         "draws": 9,
@@ -113,7 +115,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 394,
-      "state": "2be04962",
+      "state": "e2cc8182",
       "events": "9247ebc2",
       "rng": {
         "draws": 15,
@@ -124,7 +126,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 394,
-      "state": "38240b5f",
+      "state": "72a80c2b",
       "events": "b00879de",
       "rng": {
         "draws": 90,
@@ -135,7 +137,7 @@
       "tick": 72,
       "time": 3.6,
       "nextId": 394,
-      "state": "8c4a552f",
+      "state": "7f96033b",
       "events": "741638a5",
       "rng": {
         "draws": 143,
@@ -161,12 +163,14 @@
             "chest": "footpad_jerkin",
             "mainhand": "rusty_dagger"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 27600,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [

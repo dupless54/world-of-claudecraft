@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 393,
-      "state": "5652bec6",
+      "state": "e6a44c6e",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -39,11 +39,13 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -101,7 +103,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 395,
-      "state": "273eb760",
+      "state": "e2409a6c",
       "events": "5df36a05",
       "rng": {
         "draws": 14,
@@ -112,7 +114,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 395,
-      "state": "731e6aec",
+      "state": "95abe788",
       "events": "a85480c4",
       "rng": {
         "draws": 28,
@@ -123,7 +125,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 395,
-      "state": "d7add125",
+      "state": "31932c35",
       "events": "ab8cc594",
       "rng": {
         "draws": 57,
@@ -149,12 +151,14 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 54100,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
@@ -347,7 +351,7 @@
       "tick": 54,
       "time": 2.7,
       "nextId": 395,
-      "state": "7faeb7b4",
+      "state": "953da230",
       "events": "741638a5",
       "rng": {
         "draws": 71,
@@ -373,12 +377,14 @@
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
+          "gatheringProficiency": {},
           "lifetimeXp": 54100,
           "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
-          }
+          },
+          "worldBossDaily": {}
         }
       ],
       "entities": [
