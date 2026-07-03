@@ -1,6 +1,7 @@
 import type {
   AccountCosmetics,
   DailyRewardHistory,
+  DailyRewardLeaderboardPage,
   DailyRewardSpinResult,
   DailyRewardStatus,
   DelveCompanionInfo,
@@ -1720,6 +1721,21 @@ export class Sim {
       spin: { claimed: false, points: null, outcomeKey: null, claimedAt: null },
       tasks: [],
       leaderboard: [],
+      leaderboardTotal: 0,
+    });
+  }
+
+  dailyRewardLeaderboard(
+    page = 0,
+    pageSize = LEADERBOARD_PAGE_SIZE,
+  ): Promise<DailyRewardLeaderboardPage> {
+    return Promise.resolve({
+      day: '1970-01-01',
+      leaders: [],
+      page: Math.max(0, Math.floor(page)),
+      pageCount: 1,
+      total: 0,
+      pageSize,
     });
   }
 
