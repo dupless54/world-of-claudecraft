@@ -390,6 +390,7 @@ export const sv_SE: EnTranslations = {
       "showWalletOnCharacterScreen": "Visa plånbok på karaktärsskärmen",
       "showWalletOnPlayerCard": "Visa plånbok på spelarkortet",
       "showDevBadges": "Visa utvecklarmärken",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Gränssnittsskala",
       "highContrastBackground": "Bakgrund med hög kontrast",
       "startAttackOnAbility": "Automatisk attack vid förmågeanvändning",

@@ -390,6 +390,7 @@ export const nl_NL: EnTranslations = {
       "showWalletOnCharacterScreen": "Portemonnee tonen op personagescherm",
       "showWalletOnPlayerCard": "Portemonnee tonen op spelerskaart",
       "showDevBadges": "Ontwikkelaarsinsignes tonen",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "UI-schaal",
       "highContrastBackground": "Hoog-contrastachtergrond",
       "startAttackOnAbility": "Auto-aanval bij gebruik van vaardigheid",

@@ -390,6 +390,7 @@ export const tr_TR: EnTranslations = {
       "showWalletOnCharacterScreen": "Cüzdanı Karakter Ekranında Göster",
       "showWalletOnPlayerCard": "Cüzdanı Oyuncu Kartında Göster",
       "showDevBadges": "Geliştirici Rozetlerini Göster",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Arayüz Ölçeği",
       "highContrastBackground": "Yüksek Kontrastlı Arka Plan",
       "startAttackOnAbility": "Yetenek Kullanımında Otomatik Saldırı",

@@ -331,6 +331,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.showWalletOnCharacterScreen': 'Показывать кошелек на экране персонажей',
   'hudChrome.options.showWalletOnPlayerCard': 'Показывать кошелек на карточке игрока',
   'hudChrome.options.showDevBadges': 'Показывать значки разработчика',
+  'hudChrome.options.showOwnNameplate': 'Показывать свою табличку с именем',
   'hudChrome.playerCard.showWalletBadge': 'Показывать значок кошелька',
   'hudChrome.options.uiScale': 'Масштаб интерфейса',
   'hudChrome.options.highContrastBackground': 'Фон высокой контрастности',

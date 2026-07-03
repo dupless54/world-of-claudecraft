@@ -390,6 +390,7 @@ export const ru_RU: EnTranslations = {
       "showWalletOnCharacterScreen": "Показывать кошелек на экране персонажей",
       "showWalletOnPlayerCard": "Показывать кошелек на карточке игрока",
       "showDevBadges": "Показывать значки разработчика",
+      "showOwnNameplate": "Показывать свою табличку с именем",
       "uiScale": "Масштаб интерфейса",
       "highContrastBackground": "Фон высокой контрастности",
       "startAttackOnAbility": "Автоатака при использовании способности",

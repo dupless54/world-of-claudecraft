@@ -390,6 +390,7 @@ export const vi_VN: EnTranslations = {
       "showWalletOnCharacterScreen": "Hiện Ví Tiền Ở Màn Hình Nhân Vật",
       "showWalletOnPlayerCard": "Hiện Ví Tiền Trên Thẻ Người Chơi",
       "showDevBadges": "Hiện Huy Hiệu Nhà Phát Triển",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Tỷ Lệ Giao Diện",
       "highContrastBackground": "Nền Tương Phản Cao",
       "startAttackOnAbility": "Tự Đánh Khi Dùng Kỹ Năng",

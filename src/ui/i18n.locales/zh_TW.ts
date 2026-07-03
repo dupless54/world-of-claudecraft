@@ -306,6 +306,7 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.showWalletOnCharacterScreen': '在角色畫面顯示錢包',
   'hudChrome.options.showWalletOnPlayerCard': '在玩家卡片顯示錢包',
   'hudChrome.options.showDevBadges': '顯示開發者徽章',
+  'hudChrome.options.showOwnNameplate': '顯示我的姓名板',
   'hudChrome.playerCard.showWalletBadge': '顯示錢包徽章',
   'hudChrome.options.uiScale': '介面縮放',
   'hudChrome.options.highContrastBackground': '高對比度背景',

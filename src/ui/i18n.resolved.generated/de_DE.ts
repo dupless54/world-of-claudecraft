@@ -390,6 +390,7 @@ export const de_DE: EnTranslations = {
       "showWalletOnCharacterScreen": "Wallet auf dem Charakterbildschirm anzeigen",
       "showWalletOnPlayerCard": "Wallet auf der Spielerkarte anzeigen",
       "showDevBadges": "Entwicklerabzeichen anzeigen",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "UI-Skalierung",
       "highContrastBackground": "Hintergrund mit hohem Kontrast",
       "startAttackOnAbility": "Auto-Angriff bei Fähigkeitseinsatz",

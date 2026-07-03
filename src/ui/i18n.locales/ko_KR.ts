@@ -322,6 +322,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.showWalletOnCharacterScreen': '캐릭터 화면에 지갑 표시',
   'hudChrome.options.showWalletOnPlayerCard': '플레이어 카드에 지갑 표시',
   'hudChrome.options.showDevBadges': '개발자 배지 표시',
+  'hudChrome.options.showOwnNameplate': '내 이름표 표시',
   'hudChrome.playerCard.showWalletBadge': '지갑 배지 표시',
   'hudChrome.options.uiScale': 'UI 배율',
   'hudChrome.options.highContrastBackground': '고대비 배경',

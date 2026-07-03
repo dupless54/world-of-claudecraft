@@ -390,6 +390,7 @@ export const id_ID: EnTranslations = {
       "showWalletOnCharacterScreen": "Tampilkan Dompet di Layar Karakter",
       "showWalletOnPlayerCard": "Tampilkan Dompet di Kartu Pemain",
       "showDevBadges": "Tampilkan Lencana Pengembang",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Skala UI",
       "highContrastBackground": "Latar Kontras Tinggi",
       "startAttackOnAbility": "Serangan Otomatis Saat Memakai Kemampuan",

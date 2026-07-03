@@ -390,6 +390,7 @@ export const pt_BR: EnTranslations = {
       "showWalletOnCharacterScreen": "Mostrar carteira na tela de personagens",
       "showWalletOnPlayerCard": "Mostrar carteira no cartão de jogador",
       "showDevBadges": "Exibir Insígnias de Desenvolvedor",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "Escala da interface",
       "highContrastBackground": "Fundo de alto contraste",
       "startAttackOnAbility": "Ataque Automático ao Usar Habilidade",

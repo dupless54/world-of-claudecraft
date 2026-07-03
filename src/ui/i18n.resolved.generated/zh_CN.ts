@@ -390,6 +390,7 @@ export const zh_CN: EnTranslations = {
       "showWalletOnCharacterScreen": "在角色界面显示钱包",
       "showWalletOnPlayerCard": "在玩家卡片显示钱包",
       "showDevBadges": "显示开发者徽章",
+      "showOwnNameplate": "显示我的姓名板",
       "uiScale": "界面缩放",
       "highContrastBackground": "高对比度背景",
       "startAttackOnAbility": "使用技能时自动攻击",

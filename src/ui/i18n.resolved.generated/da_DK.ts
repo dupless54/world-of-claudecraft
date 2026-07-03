@@ -390,6 +390,7 @@ export const da_DK: EnTranslations = {
       "showWalletOnCharacterScreen": "Vis pengepung på karakterskærm",
       "showWalletOnPlayerCard": "Vis pengepung på spillerkort",
       "showDevBadges": "Vis udviklermærker",
+      "showOwnNameplate": "Show My Nameplate",
       "uiScale": "UI-skala",
       "highContrastBackground": "Baggrund med høj kontrast",
       "startAttackOnAbility": "Autoangreb ved brug af evne",
