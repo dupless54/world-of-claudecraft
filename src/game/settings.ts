@@ -150,6 +150,10 @@ export const BOOL_SETTINGS = {
   // deliberate looting stays the default. Gates the client AutoLoot pass in
   // main.ts; the sim's authoritative gate and the raid-instance gate are separate.
   walkByAutoloot: { def: false },
+  // on by default: desktop ground-targeted spells open a terrain reticle before
+  // casting. Touch keeps the instant target-feet fallback because there is no
+  // persistent cursor to preview.
+  groundReticle: { def: true },
 
   // --- Interface & Comfort pack (booleans). ---
   // off by default: drop every HUD cross-fade / panel animation, for players

@@ -10,51 +10,121 @@
 
 export const pending: Record<string, readonly string[]> = {
   "es": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "es_ES": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "fr_FR": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "fr_CA": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "en_CA": [],
   "it_IT": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "de_DE": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "zh_CN": [],
   "zh_TW": [],
   "ko_KR": [],
   "ja_JP": [],
   "pt_BR": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "ru_RU": [],
   "nl_NL": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "pl_PL": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "id_ID": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "tr_TR": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "sv_SE": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "vi_VN": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ],
   "da_DK": [
-    "hudChrome.options.walkByAutoloot"
+    "hudChrome.dailyRewards.pointsGained",
+    "hudChrome.dailyRewards.taskMultiplier",
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers",
+    "hudChrome.options.walkByAutoloot",
+    "wallet.extensionHelp"
   ]
 };
