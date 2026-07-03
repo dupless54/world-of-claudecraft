@@ -209,6 +209,29 @@ describe('capacity gates at the grant boundaries', () => {
     expect(sim.countItem('linen_pouch')).toBe(0);
   });
 
+  it('walk-by autoloot stays silent when the bags are full (no toast loop)', () => {
+    const sim = makeSim();
+    fillBags(sim);
+    const wolf = [...sim.entities.values()].find((e) => e.kind === 'mob')!;
+    wolf.hp = 0;
+    wolf.dead = true;
+    wolf.lootable = true;
+    wolf.tappedById = sim.playerId;
+    wolf.loot = { copper: 0, items: [{ itemId: 'wolf_fang', count: 1 }] };
+    wolf.pos = { ...sim.player.pos };
+    sim.drainEvents();
+    sim.autoLoot(wolf.id);
+    const ev = sim.drainEvents();
+    expect(ev.some((e) => e.type === 'error')).toBe(false); // passive pass: no toast
+    expect(wolf.loot!.items[0].count).toBe(1); // item left on the corpse
+    // the deliberate click still gets exactly one toast
+    sim.lootCorpse(wolf.id);
+    const ev2 = sim.drainEvents();
+    expect(ev2.filter((e) => e.type === 'error' && e.text === 'Your bags are full.')).toHaveLength(
+      1,
+    );
+  });
+
   it('addItem never destroys an async grant even above capacity (force path)', () => {
     const sim = makeSim();
     fillBags(sim);
@@ -315,6 +338,21 @@ describe('pre-bag save migration (equivalent bags for earned space)', () => {
     ]);
     // needs 56: exactly four epics (the 72-slot ceiling)
     expect(migrationBagsFor(72)).toEqual([
+      'mistcallers_duffel',
+      'mistcallers_duffel',
+      'mistcallers_duffel',
+      'mistcallers_duffel',
+    ]);
+    // exact tier boundary: used 48 is needed 32 = 4x8, the strict < must KEEP
+    // the common tier (a <= would silently escalate to uncommon)
+    expect(migrationBagsFor(48)).toEqual([
+      'travelers_knapsack',
+      'travelers_knapsack',
+      'travelers_knapsack',
+      'travelers_knapsack',
+    ]);
+    // first slot past the 72 ceiling: four epics, 1 slot of tolerated overflow
+    expect(migrationBagsFor(73)).toEqual([
       'mistcallers_duffel',
       'mistcallers_duffel',
       'mistcallers_duffel',

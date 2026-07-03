@@ -4916,7 +4916,6 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'delveUi.board.companion.upgradeAria': 'Улучшить {name} до ранга {rank} за {marks} Меток Вылазок',
   'delveUi.board.companion.maxRank': 'Полностью улучшено',
   'delveUi.board.tabShop': 'Магазин',
-  // Modular bag filtering controls (hudChrome.bags.*).,
   'lockpickUi.pickTitle': 'Вскройте замок',
   'lockpickUi.cofferTitle': 'Богатый ларец',
   'lockpickUi.cache': '{tier} тайник',

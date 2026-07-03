@@ -751,6 +751,7 @@ export const zh_CN: EnTranslations = {
       "capacity": "{used}/{total}",
       "capacityAria": "背包格已用：{used}/{total}",
       "backpack": "背包",
+      "bagSocketAria": "{name}: {slots}",
       "socketEmpty": "空背包栏位",
       "unequipHint": "点击移除此背包"
     },

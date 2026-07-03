@@ -4827,7 +4827,6 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'delveUi.board.companion.upgradeAria': '탐굴 증표 {marks}개로 {name}을(를) {rank}랭크로 강화',
   'delveUi.board.companion.maxRank': '최대 강화',
   'delveUi.board.tabShop': '상점',
-  // Modular bag filtering controls (hudChrome.bags.*).,
   'lockpickUi.pickTitle': '자물쇠 따기',
   'lockpickUi.cofferTitle': '풍요의 금고',
   'lockpickUi.cache': '{tier} 상자',

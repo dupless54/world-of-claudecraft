@@ -751,6 +751,7 @@ export const ja_JP: EnTranslations = {
       "capacity": "{used}/{total}",
       "capacityAria": "使用中のバッグスロット: {total}個中{used}個",
       "backpack": "バックパック",
+      "bagSocketAria": "{name}: {slots}",
       "socketEmpty": "空のバッグスロット",
       "unequipHint": "クリックしてこのバッグを外す"
     },

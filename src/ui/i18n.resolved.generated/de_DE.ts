@@ -751,6 +751,7 @@ export const de_DE: EnTranslations = {
       "capacity": "{used}/{total}",
       "capacityAria": "Bag slots used: {used} of {total}",
       "backpack": "Backpack",
+      "bagSocketAria": "{name}: {slots}",
       "socketEmpty": "Empty bag slot",
       "unequipHint": "Click to remove this bag"
     },

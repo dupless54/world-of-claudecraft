@@ -815,6 +815,9 @@ export const hudChromeStrings = {
     capacity: '{used}/{total}',
     capacityAria: 'Bag slots used: {used} of {total}',
     backpack: 'Backpack',
+    // Accessible name for a bag-bar socket: '{name}: {slots}' where {slots} is
+    // the already-localized 'N Slot Bag' phrase, so no code-side concatenation.
+    bagSocketAria: '{name}: {slots}',
     socketEmpty: 'Empty bag slot',
     unequipHint: 'Click to remove this bag',
   },

@@ -4571,7 +4571,6 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'delveUi.board.companion.upgradeAria': '用 {marks} 枚秘探印記將 {name} 升級到 {rank} 級',
   'delveUi.board.companion.maxRank': '已滿級',
   'delveUi.board.tabShop': '商店',
-  // Modular bag filtering controls (hudChrome.bags.*).,
   'lockpickUi.pickTitle': '撬開鎖具',
   'lockpickUi.cofferTitle': '豐饒寶櫃',
   'lockpickUi.cache': '{tier}戰利品',

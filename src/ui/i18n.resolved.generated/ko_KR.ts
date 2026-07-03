@@ -751,6 +751,7 @@ export const ko_KR: EnTranslations = {
       "capacity": "{used}/{total}",
       "capacityAria": "사용 중인 가방 칸: {total}칸 중 {used}칸",
       "backpack": "배낭",
+      "bagSocketAria": "{name}: {slots}",
       "socketEmpty": "빈 가방 칸",
       "unequipHint": "클릭하여 이 가방을 해제"
     },

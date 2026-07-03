@@ -223,12 +223,22 @@ export class BagsWindow {
     );
     const bar = document.createElement('div');
     bar.className = 'bag-bar';
-    const backpack = document.createElement('div');
+    // The backpack and empty sockets are informational, not actionable, but a
+    // keyboard user still needs to reach their tooltip, so they are rendered as
+    // focusable no-op buttons (aria-disabled, cursor default via CSS).
+    const backpack = document.createElement('button');
+    backpack.type = 'button';
     backpack.className = 'bag-socket backpack';
+    backpack.setAttribute('aria-disabled', 'true');
     backpack.innerHTML = `<img class="item-icon q-common" src="${iconDataUrl('item', 'backpack')}" alt="" draggable="false">`;
     backpack.setAttribute(
       'aria-label',
-      `${t('hudChrome.bags.backpack')}, ${t('itemUi.tooltip.bagSlots', { slots: formatNumber(model.backpackSlots, { maximumFractionDigits: 0 }) })}`,
+      t('hudChrome.bags.bagSocketAria', {
+        name: t('hudChrome.bags.backpack'),
+        slots: t('itemUi.tooltip.bagSlots', {
+          slots: formatNumber(model.backpackSlots, { maximumFractionDigits: 0 }),
+        }),
+      }),
     );
     this.deps.attachTooltip(
       backpack,
@@ -245,7 +255,12 @@ export class BagsWindow {
         btn.innerHTML = this.deps.itemIcon(item);
         btn.setAttribute(
           'aria-label',
-          `${itemDisplayName(item)}, ${t('itemUi.tooltip.bagSlots', { slots: formatNumber(socket.slots, { maximumFractionDigits: 0 }) })}`,
+          t('hudChrome.bags.bagSocketAria', {
+            name: itemDisplayName(item),
+            slots: t('itemUi.tooltip.bagSlots', {
+              slots: formatNumber(socket.slots, { maximumFractionDigits: 0 }),
+            }),
+          }),
         );
         btn.addEventListener('click', () => {
           this.deps.world().unequipBag(socket.socket);
@@ -259,8 +274,10 @@ export class BagsWindow {
         );
         bar.appendChild(btn);
       } else {
-        const emptySocket = document.createElement('div');
+        const emptySocket = document.createElement('button');
+        emptySocket.type = 'button';
         emptySocket.className = 'bag-socket empty';
+        emptySocket.setAttribute('aria-disabled', 'true');
         emptySocket.setAttribute('aria-label', t('hudChrome.bags.socketEmpty'));
         this.deps.attachTooltip(
           emptySocket,

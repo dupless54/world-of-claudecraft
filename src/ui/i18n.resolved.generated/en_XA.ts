@@ -751,6 +751,7 @@ export const en_XA: EnTranslations = {
       "capacity": "[{used}/{total}]",
       "capacityAria": "[Ɓáĝ šļóţš úšéð: {used} óƒ {total}]",
       "backpack": "[Ɓáçķþáçķ]",
+      "bagSocketAria": "[{name}: {slots}]",
       "socketEmpty": "[Éɱþţý ƀáĝ šļóţ]",
       "unequipHint": "[Çļíçķ ţó ŕéɱóʋé ţĥíš ƀáĝ]"
     },

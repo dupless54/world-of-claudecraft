@@ -751,6 +751,7 @@ export const ru_RU: EnTranslations = {
       "capacity": "{used}/{total}",
       "capacityAria": "Занято ячеек сумок: {used} из {total}",
       "backpack": "Рюкзак",
+      "bagSocketAria": "{name}: {slots}",
       "socketEmpty": "Пустая ячейка для сумки",
       "unequipHint": "Нажмите, чтобы снять эту сумку"
     },

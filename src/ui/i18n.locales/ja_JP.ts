@@ -4817,7 +4817,6 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'delveUi.board.companion.upgradeAria': 'デルヴの刻印{marks}個で{name}をランク{rank}に強化',
   'delveUi.board.companion.maxRank': '最大ランク',
   'delveUi.board.tabShop': 'ショップ',
-  // Modular bag filtering controls (hudChrome.bags.*).,
   'lockpickUi.pickTitle': '錠を開ける',
   'lockpickUi.cofferTitle': '豊穣の宝庫',
   'lockpickUi.cache': '{tier}の宝庫',
