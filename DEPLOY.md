@@ -169,6 +169,14 @@ For off-box safety, sync the directory to S3 occasionally:
   (anything else gets an opaque 401). Configure the token on **both** the server
   and the Prometheus scrape job in the same change or scraping goes dark.
   `/livez` and `/readyz` stay open for load-balancer checks.
+- **Env hygiene: no empty numeric placeholders.** A SET-BUT-EMPTY numeric env
+  line (`CHAT_LOG_RETENTION_DAYS=`, `PORT=`, `MAX_WS_PER_IP_HARD=`,
+  `PERF_REPORT_RETENTION_DAYS=`) now means the DEFAULT, not `0`. Before the
+  validated config loader, `CHAT_LOG_RETENTION_DAYS=` resolved to `0` (keep chat
+  logs forever); the same line now resolves to the 90-day default and pruning
+  turns ON. Audit deployed env files for empty placeholder lines: delete the
+  line to take the default, or set an explicit value (`CHAT_LOG_RETENTION_DAYS=0`
+  is still keep-forever).
 - Logs: `sudo docker compose -f /opt/eastbrook/docker-compose.yml logs -f game`.
 - If the instance ever feels tight, stop → change instance type →
   start. Everything lives in Docker plus one EBS volume, so nothing

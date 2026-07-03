@@ -186,6 +186,12 @@ route was dropped:
 ```
 npx vitest run tests/server/http
 ```
+Also run the WALL-CLOCK perf arm before the flip (a Phase 24 QA ruling: the deterministic
+counted-work arm cannot see an O(routes) matcher scan internal to one dispatch, only this arm
+and the perf:load soak cover that class):
+```
+PERF_GATE_WALLCLOCK=1 npx vitest run tests/server/perf_gate.test.ts
+```
 If the scaffold or the canonical-example designation actually touches the real `apiError.*`
 catalog or `userFacingApiError` in src/ (check `git diff --name-only`), also run:
 ```

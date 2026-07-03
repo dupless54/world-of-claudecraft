@@ -135,6 +135,14 @@ STOPPING RULES (stop and surface to the user before proceeding)
    `PUBLIC_ORIGIN` that is not a bare http(s) origin, and a non-empty `REALMS` with no usable
    Name=origin entry (realm.ts used to warn-and-fallback on some of these). Check prod AND
    staging env files before deploying this branch, or the process fails fast at boot.
+   ALSO audit for SET-BUT-EMPTY numeric lines (QA finding, silent default-shift, NOT a
+   throw): `CHAT_LOG_RETENTION_DAYS=`, `PERF_REPORT_RETENTION_DAYS=`, `PORT=`, and
+   `MAX_WS_PER_IP_HARD=` used to resolve via `Number('') = 0` (for the retention keys:
+   0 = keep forever) and now resolve to their DEFAULTS (90/14/8787/20), so an empty
+   `CHAT_LOG_RETENTION_DAYS=` placeholder silently turns 90-day chat-log pruning ON,
+   an irreversible deletion. Keep-forever must now be an explicit
+   `CHAT_LOG_RETENTION_DAYS=0`. The semantics are pinned by config.test.ts and the
+   DEPLOY.md "Env hygiene" bullet carries the operator note.
 2. **Configure METRICS_TOKEN on both ends or accept a dark /metrics.** GET /metrics now
    answers 404 until `METRICS_TOKEN` is set in the server env, and requires
    `Authorization: Bearer <token>` once set. Set the token on the server AND the Prometheus
