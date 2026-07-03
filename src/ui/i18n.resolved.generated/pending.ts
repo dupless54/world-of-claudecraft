@@ -9,24 +9,66 @@
 // Reproducibility is checked by tests/i18n_resolved_equivalence.test.ts.
 
 export const pending: Record<string, readonly string[]> = {
-  "es": [],
-  "es_ES": [],
-  "fr_FR": [],
-  "fr_CA": [],
+  "es": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "es_ES": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "fr_FR": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "fr_CA": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
   "en_CA": [],
-  "it_IT": [],
-  "de_DE": [],
+  "it_IT": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "de_DE": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
   "zh_CN": [],
   "zh_TW": [],
   "ko_KR": [],
   "ja_JP": [],
-  "pt_BR": [],
+  "pt_BR": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
   "ru_RU": [],
-  "nl_NL": [],
-  "pl_PL": [],
-  "id_ID": [],
-  "tr_TR": [],
-  "sv_SE": [],
-  "vi_VN": [],
-  "da_DK": []
+  "nl_NL": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "pl_PL": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "id_ID": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "tr_TR": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "sv_SE": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "vi_VN": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ],
+  "da_DK": [
+    "hudChrome.dailyRewards.totalPlayer",
+    "hudChrome.dailyRewards.totalPlayers"
+  ]
 };

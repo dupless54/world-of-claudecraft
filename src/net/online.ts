@@ -46,6 +46,7 @@ import {
   type CharacterSearchResult,
   type ClientCommand,
   type DailyRewardHistory,
+  type DailyRewardLeaderboardPage,
   type DailyRewardSpinResult,
   type DailyRewardStatus,
   type DelveCompanionInfo,
@@ -2206,6 +2207,38 @@ export class ClientWorld implements IWorld {
     });
     if (!res.ok) throw new Error('daily rewards unavailable');
     return (await res.json()) as DailyRewardStatus;
+  }
+
+  async dailyRewardLeaderboard(
+    page = 0,
+    pageSize = LEADERBOARD_PAGE_SIZE,
+  ): Promise<DailyRewardLeaderboardPage> {
+    const empty: DailyRewardLeaderboardPage = {
+      day: '',
+      leaders: [],
+      page: 0,
+      pageCount: 1,
+      total: 0,
+      pageSize,
+    };
+    try {
+      const res = await fetch(
+        apiUrl(`/api/daily-rewards/leaderboard?page=${page}&pageSize=${pageSize}`, this.base),
+        { headers: { Authorization: `Bearer ${this.token}` } },
+      );
+      if (!res.ok) return empty;
+      const data = await res.json();
+      return {
+        day: data.day ?? '',
+        leaders: data.leaders ?? [],
+        page: data.page ?? page,
+        pageCount: data.pageCount ?? 1,
+        total: data.total ?? data.leaders?.length ?? 0,
+        pageSize: data.pageSize ?? pageSize,
+      };
+    } catch {
+      return empty;
+    }
   }
 
   async spinDailyReward(): Promise<DailyRewardSpinResult> {
