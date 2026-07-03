@@ -4,10 +4,11 @@
 // 429 strings (server/main.ts legacy arms + server/auth_routes.ts migrated arms) and
 // the admin operator copy (src/admin/i18n.locales/en_CA.ts), and retired the
 // authRateLimitDashToComma known deviation. The swap MUST stay matcher-safe: the
-// client prose-matcher (src/main.ts userFacingApiError) keys on the "too many
-// attempts" / "too many failed attempts" PREFIX, which sits BEFORE the punctuation,
-// so the localized message is unchanged. This gate reads the SOURCE files (never
-// imported: src/main.ts is DOM-coupled and main.ts builds a pg pool) and pins:
+// client prose-matcher (userFacingApiError, extracted to src/ui/api_error_i18n.ts in
+// Phase 22) keys on the "too many attempts" / "too many failed attempts" PREFIX,
+// which sits BEFORE the punctuation, so the localized message is unchanged. This gate
+// reads the SOURCE files (server/main.ts builds a pg pool, so it is never imported;
+// the matcher's runtime behavior is covered by tests/main_api_error.test.ts) and pins:
 //  - the four target files carry no U+2014 (the acceptance grep, locked as a test);
 //  - the two 429 strings are the comma form and START WITH their matcher prefix;
 //  - the userFacingApiError matcher still keys on those prefixes via startsWith.
@@ -75,17 +76,17 @@ describe('Phase 13 rate-limit copy: matcher-safe (prefix before the comma)', () 
   });
 
   it('userFacingApiError still keys on the two prefixes via startsWith', () => {
-    const client = read('src/main.ts');
+    const client = read('src/ui/api_error_i18n.ts');
     expect(client).toContain(`normalized.startsWith('${ATTEMPTS_PREFIX}')`);
     expect(client).toContain(`normalized.startsWith('${FAILED_PREFIX}')`);
   });
 
   it("userFacingApiError keeps the Phase 16 exact-match arm for the discord 'rate limited' 429", () => {
     // Phase 16 closed the discordRateLimited gap with one exact-match arm reusing the
-    // existing errors.api.tooManyAttempts key. src/main.ts is DOM-coupled (never
-    // imported here), so this text pin is the guard against a silent removal until the
-    // Phase 11 matcher-extraction follow-up makes the matcher unit-testable.
-    const client = read('src/main.ts');
+    // existing errors.api.tooManyAttempts key. The Phase 22 extraction made the matcher
+    // unit-testable (tests/main_api_error.test.ts); this text pin stays as the cheap
+    // source-level guard against a silent removal of the arm.
+    const client = read('src/ui/api_error_i18n.ts');
     expect(client).toContain("normalized === 'rate limited'");
   });
 });
