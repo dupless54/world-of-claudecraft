@@ -2908,7 +2908,8 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.petHook.warfiend':
     'Một chiến binh cận chiến bền bỉ, lựa chọn toàn diện một khi bạn có thể triệu hồi nó.',
   'guide.petHook.spellhound': 'Một kẻ tập kích bóng tối chuyên săn lùng các pháp sư của kẻ địch.',
-  'guide.petHook.emberkin': 'Một con quỷ bắn cầu lửa từ xa, gặm dần kẻ địch từ khoảng cách an toàn.',
+  'guide.petHook.emberkin':
+    'Một con quỷ bắn cầu lửa từ xa, gặm dần kẻ địch từ khoảng cách an toàn.',
   'guide.petHook.pyre_colossus':
     'Một cỗ máy hủy diệt đồ sộ với đòn cận chiến nghiền nát, được triệu hồi vì sức mạnh thuần túy.',
   'guide.petHook.duskborn':

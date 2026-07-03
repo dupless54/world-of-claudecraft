@@ -619,7 +619,11 @@ const classAbilityNamesEn = {
         'Onrush',
         'Charges an enemy, generating 9 rage and stunning it for 1 sec. 8-25 yd range.',
       ],
-      ['rend', 'Deep Gash', 'Wounds the target, causing them to bleed for {damage} damage over 9 sec.'],
+      [
+        'rend',
+        'Deep Gash',
+        'Wounds the target, causing them to bleed for {damage} damage over 9 sec.',
+      ],
       [
         'thunder_clap',
         'Quaking Blow',
@@ -667,7 +671,11 @@ const classAbilityNamesEn = {
         'Cinderbolt',
         'Hurls a fiery ball that causes {damage} Fire damage plus additional damage over time.',
       ],
-      ['frost_armor', 'Hoarfrost Mantle', 'Encases you in frost, increasing armor by 30 for 30 min.'],
+      [
+        'frost_armor',
+        'Hoarfrost Mantle',
+        'Encases you in frost, increasing armor by 30 for 30 min.',
+      ],
       ['arcane_intellect', 'Aether Insight', 'Increases Intellect by 2 for 30 min.'],
       [
         'frostbolt',
@@ -872,11 +880,7 @@ const classAbilityNamesEn = {
         'Stings the target, dealing {damage} Nature damage over 15 sec.',
       ],
       ['arcane_shot', 'Fell Shot', 'An instant shot that deals {damage} Arcane damage.'],
-      [
-        'concussive_shot',
-        'Rattling Shot',
-        'Dazes the target, slowing movement by 50% for 4 sec.',
-      ],
+      ['concussive_shot', 'Rattling Shot', 'Dazes the target, slowing movement by 50% for 4 sec.'],
       [
         'mongoose_bite',
         'Counterfang',
@@ -914,7 +918,11 @@ const classAbilityNamesEn = {
       ],
       ['renew', 'Lingering Grace', 'Heals the target for {damage} over 15 sec.'],
       ['mind_blast', 'Mindfracture', "Blasts the target's mind for {damage} Shadow damage."],
-      ['heal', 'Solemn Prayer', 'A slow but powerful prayer that heals a friendly target for {damage}.'],
+      [
+        'heal',
+        'Solemn Prayer',
+        'A slow but powerful prayer that heals a friendly target for {damage}.',
+      ],
       [
         'mind_flay',
         'Litany of Woe',
@@ -1023,7 +1031,11 @@ const classAbilityNamesEn = {
         'Burns the enemy with moonfire for {damage} Arcane damage plus damage over time.',
       ],
       ['rejuvenation', 'Wildbloom', 'Heals the target for {damage} over 12 sec.'],
-      ['thorns', 'Briarguard', 'Thorns sprout from the target: melee attackers take 3 Nature damage.'],
+      [
+        'thorns',
+        'Briarguard',
+        'Thorns sprout from the target: melee attackers take 3 Nature damage.',
+      ],
       ['entangling_roots', 'Gripping Roots', 'Roots the target in place for up to 12 sec.'],
       [
         'bear_form',
@@ -1066,11 +1078,7 @@ const classAbilityNamesEn = {
         'Heals a friendly target for {damage} and an additional amount over 21 sec.',
       ],
       ['barkskin', 'Oakhide', 'Your skin hardens like bark, increasing armor by 150 for 15 sec.'],
-      [
-        'starfire',
-        'Skyfall',
-        'Calls down a bolt of stellar fire, causing {damage} Arcane damage.',
-      ],
+      ['starfire', 'Skyfall', 'Calls down a bolt of stellar fire, causing {damage} Arcane damage.'],
       [
         'travel_form',
         'Fleet Form',

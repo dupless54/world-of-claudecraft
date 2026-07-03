@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
-import { SimEvent } from '../src/sim/types';
+import type { SimEvent } from '../src/sim/types';
 
 function makeWorld() {
   return new Sim({ seed: 42, playerClass: 'warrior', noPlayer: true });
@@ -30,16 +30,52 @@ describe('/listings command', () => {
   it('lists only your own active listings with price and time left', () => {
     const sim = makeWorld();
     const a = sim.addPlayer('warrior', 'Aleph');
-    const b = sim.addPlayer('mage', 'Bet');
+    const _b = sim.addPlayer('mage', 'Bet');
     sim.tick();
     const aName = metaOf(sim, a).name;
 
     // Two of mine, one belonging to another seller, plus untouchable house stock.
     sim.marketListings.push(
-      { id: 1, sellerKey: aName, sellerName: aName, itemId: 'worn_sword', count: 1, price: 150, expiresAt: sim.time + 3600 + 5, house: false },
-      { id: 2, sellerKey: aName, sellerName: aName, itemId: 'rusty_dagger', count: 3, price: 20, expiresAt: sim.time + 120, house: false },
-      { id: 3, sellerKey: 'Bet', sellerName: 'Bet', itemId: 'worn_sword', count: 1, price: 999, expiresAt: sim.time + 3600, house: false },
-      { id: 4, sellerKey: '', sellerName: 'Merchant', itemId: 'worn_sword', count: 1, price: 1, expiresAt: Infinity, house: true },
+      {
+        id: 1,
+        sellerKey: aName,
+        sellerName: aName,
+        itemId: 'worn_sword',
+        count: 1,
+        price: 150,
+        expiresAt: sim.time + 3600 + 5,
+        house: false,
+      },
+      {
+        id: 2,
+        sellerKey: aName,
+        sellerName: aName,
+        itemId: 'rusty_dagger',
+        count: 3,
+        price: 20,
+        expiresAt: sim.time + 120,
+        house: false,
+      },
+      {
+        id: 3,
+        sellerKey: 'Bet',
+        sellerName: 'Bet',
+        itemId: 'worn_sword',
+        count: 1,
+        price: 999,
+        expiresAt: sim.time + 3600,
+        house: false,
+      },
+      {
+        id: 4,
+        sellerKey: '',
+        sellerName: 'Merchant',
+        itemId: 'worn_sword',
+        count: 1,
+        price: 1,
+        expiresAt: Infinity,
+        house: true,
+      },
     );
 
     sim.chat('/listings', a);

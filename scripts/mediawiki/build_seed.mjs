@@ -1,8 +1,8 @@
-import { build } from 'esbuild';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
+import { build } from 'esbuild';
 
 const outDir = resolve('mediawiki/seed');
 const tmpDir = resolve('tmp/mediawiki-seed');
@@ -16,7 +16,9 @@ await mkdir(outDir, { recursive: true });
 
 const css = await readFile('mediawiki/theme/Common.css', 'utf8');
 
-await writeFile(sourcePath, `
+await writeFile(
+  sourcePath,
+  `
 import { ABILITIES, CLASSES, DUNGEON_LIST, ITEMS, MOBS, NPCS, QUEST_ORDER, QUESTS, ZONES } from '../../src/sim/data';
 
 const css = ${JSON.stringify(css)};
@@ -303,7 +305,8 @@ const xml = \`<?xml version="1.0" encoding="UTF-8"?>
 \`;
 
 console.log(xml);
-`);
+`,
+);
 
 await build({
   entryPoints: [sourcePath],

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Sim } from '../src/sim/sim';
-import { MOBS, ITEMS, CAMPS } from '../src/sim/data';
+import { CAMPS, ITEMS, MOBS } from '../src/sim/data';
 import { createMob } from '../src/sim/entity';
+import { Sim } from '../src/sim/sim';
 
 // Sloomtooth the Drowned — a rare elite murloc tyrant lurking by the Drowned
 // Chapel in Mirefen Marsh (content-integrity coverage for the new rare).

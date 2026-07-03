@@ -28,7 +28,7 @@ export function lowHealthVignette(hp: number, maxHp: number): LowHealthVignette 
 
   // t: 0 at the threshold, 1 at 0 HP.
   const t = clamp01((LOW_HEALTH_THRESHOLD - frac) / LOW_HEALTH_THRESHOLD);
-  const opacity = Math.pow(t, 0.8) * MAX_OPACITY;
+  const opacity = t ** 0.8 * MAX_OPACITY;
   const pulseHz = PULSE_HZ_MIN + (PULSE_HZ_MAX - PULSE_HZ_MIN) * t;
   return { active: true, opacity, pulseSeconds: 1 / pulseHz };
 }

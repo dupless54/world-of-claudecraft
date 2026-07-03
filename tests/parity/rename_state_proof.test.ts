@@ -223,16 +223,14 @@ d(`rename state proof (reverse-map re-digest vs ${BASE_REF})`, () => {
 
         // THE PROOF: reverse-map every string leaf new->old and re-digest; the
         // result must equal the baseline hash exactly.
-        const revState = canonical(
-          reverseMapValue(JSON.parse(captures.state[i]), mapStr),
-          { omitDefaults: false },
-        );
+        const revState = canonical(reverseMapValue(JSON.parse(captures.state[i]), mapStr), {
+          omitDefaults: false,
+        });
         expect(fnv1a(JSON.stringify(revState)), `frame ${i} state proof`).toBe(bf.state);
 
-        const revEvents = canonical(
-          reverseMapValue(JSON.parse(captures.events[i]), mapStr),
-          { omitDefaults: false },
-        );
+        const revEvents = canonical(reverseMapValue(JSON.parse(captures.events[i]), mapStr), {
+          omitDefaults: false,
+        });
         expect(fnv1a(JSON.stringify(revEvents)), `frame ${i} events proof`).toBe(bf.events);
       }
     });

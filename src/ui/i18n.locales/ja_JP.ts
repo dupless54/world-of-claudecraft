@@ -4179,7 +4179,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
     '頑丈な近接のブルーザーで、召喚できるようになればオールラウンドにこなせます。',
   'guide.petHook.spellhound': '敵のキャスターに食らいつくシャドウのスカーミッシャーです。',
   'guide.petHook.emberkin': '安全な距離から敵を削る、ファイアボルトを放つ遠距離のデーモンです。',
-  'guide.petHook.pyre_colossus': '強力な近接を持つ巨大なジャガーノートで、純粋な力を求めて召喚します。',
+  'guide.petHook.pyre_colossus':
+    '強力な近接を持つ巨大なジャガーノートで、純粋な力を求めて召喚します。',
   'guide.petHook.duskborn': '素早い近接のデーモンで、大きなダメージを与えますが打たれ弱いです。',
   'guide.petHook.gloomshade':
     '挑発して攻撃を受け止める頑丈なデーモンで、安心して詠唱できるようにします。',

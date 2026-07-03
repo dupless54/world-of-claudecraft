@@ -33,7 +33,7 @@ function makeSim(cls: PlayerClass, level: number): { sim: AnySim; p: AnyEntity; 
 
 // An idle hostile target in range + faced, so an offensive cast passes its guards.
 function spawnTarget(sim: AnySim, p: AnyEntity, level = 1, dz = 6): AnyEntity {
-  const mob = createMob(sim.nextId++, MOBS['forest_wolf'], level, {
+  const mob = createMob(sim.nextId++, MOBS.forest_wolf, level, {
     x: p.pos.x,
     y: p.pos.y,
     z: p.pos.z + dz,

@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ABILITIES, DUNGEONS, ITEMS, ITEM_SETS, MOBS, NPCS, QUESTS, ZONES } from '../src/sim/data';
 import { AUGMENTS } from '../src/sim/content/augments';
 import { TALENTS } from '../src/sim/content/talents';
+import { ABILITIES, DUNGEONS, ITEM_SETS, ITEMS, MOBS, NPCS, QUESTS, ZONES } from '../src/sim/data';
 import { en } from '../src/ui/i18n.resolved.generated/en';
 
 // The de-IP gate (session G0 of the IP pivot, ip-refactor/G0-deip-gates.md).
@@ -464,15 +464,23 @@ describe('ip_scrub - verbatim-WoW denylist scanner (G0)', () => {
   it('teeth: the Amendment #4 category scans (POI labels, descriptions, dialogue) are non-vacuous', () => {
     const poiCount = ZONES.reduce((n, z) => n + (z.pois?.length ?? 0), 0);
     // ~28 map POIs across the zones today; a hard floor far above zero.
-    expect(poiCount, 'POI labels vanished from ZONES - POI scan would be a no-op').toBeGreaterThan(15);
+    expect(poiCount, 'POI labels vanished from ZONES - POI scan would be a no-op').toBeGreaterThan(
+      15,
+    );
     const descCount = Object.values(ABILITIES).filter(
       (a) => typeof (a as { description?: unknown }).description === 'string',
     ).length;
-    expect(descCount, 'ability descriptions vanished - description scan would be a no-op').toBeGreaterThan(50);
+    expect(
+      descCount,
+      'ability descriptions vanished - description scan would be a no-op',
+    ).toBeGreaterThan(50);
     for (const rel of DIALOGUE_SOURCES) {
       const src = readFileSync(path.join(root, rel), 'utf8');
       const literals = [...src.matchAll(STRING_LITERAL_RE)].length;
-      expect(literals, `dialogue source ${rel} unreadable/empty - dialogue scan would be a no-op`).toBeGreaterThan(5);
+      expect(
+        literals,
+        `dialogue source ${rel} unreadable/empty - dialogue scan would be a no-op`,
+      ).toBeGreaterThan(5);
     }
   });
 
@@ -487,7 +495,7 @@ describe('ip_scrub - verbatim-WoW denylist scanner (G0)', () => {
     }
   });
 
-  it('teeth: reports ZERO hits on the game\'s own original names', () => {
+  it("teeth: reports ZERO hits on the game's own original names", () => {
     const fixture = [
       'Gravecaller',
       'Wyrmcult',
@@ -500,14 +508,18 @@ describe('ip_scrub - verbatim-WoW denylist scanner (G0)', () => {
       'Reaver Strike',
     ];
     const out: Violation[] = [];
-    fixture.forEach((name, i) => scanNameValue(`fixture.${i}.name`, `fixture_${i}`, name, true, out));
+    fixture.forEach((name, i) => {
+      scanNameValue(`fixture.${i}.name`, `fixture_${i}`, name, true, out);
+    });
     expect(out).toEqual([]);
   });
 
   it('teeth: fires exactly once when one denylisted name joins the original-name fixture', () => {
     const fixture = ['Gravecaller', 'Nythraxis', 'Reaver Strike', 'Frostbolt'];
     const out: Violation[] = [];
-    fixture.forEach((name, i) => scanNameValue(`fixture.${i}.name`, `fixture_${i}`, name, true, out));
+    fixture.forEach((name, i) => {
+      scanNameValue(`fixture.${i}.name`, `fixture_${i}`, name, true, out);
+    });
     expect(out).toHaveLength(1);
     expect(out[0]).toEqual({
       denylistEntry: 'Frostbolt',
@@ -541,7 +553,8 @@ describe('ip_scrub - verbatim-WoW denylist scanner (G0)', () => {
   it('player-visible display fields contain no denylisted WoW name', () => {
     const violations = collectViolations();
     const byEntry = new Map<string, number>();
-    for (const v of violations) byEntry.set(v.denylistEntry, (byEntry.get(v.denylistEntry) ?? 0) + 1);
+    for (const v of violations)
+      byEntry.set(v.denylistEntry, (byEntry.get(v.denylistEntry) ?? 0) + 1);
     const summary = [...byEntry.entries()]
       .map(([entry, count]) => `  ${entry}: ${count}`)
       .join('\n');

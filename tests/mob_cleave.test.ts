@@ -7,7 +7,7 @@ import type { Entity, SimEvent } from '../src/sim/types';
 // Spawn a fresh Knight-Commander Olen (the seeded cleaver) at the origin and
 // register it with the sim. Returns the live entity.
 function spawnOlen(sim: Sim): Entity {
-  const mob = createMob((sim as any).nextId++, MOBS['knight_commander_olen'], 13, {
+  const mob = createMob((sim as any).nextId++, MOBS.knight_commander_olen, 13, {
     x: 0,
     y: 0,
     z: 0,
@@ -31,7 +31,7 @@ function placePlayer(sim: Sim, pid: number, x: number, z: number): Entity {
 
 describe('mob cleave', () => {
   it('Knight-Commander Olen is seeded with the Cleave mechanic', () => {
-    expect(MOBS['knight_commander_olen'].cleave).toEqual({
+    expect(MOBS.knight_commander_olen.cleave).toEqual({
       radius: 8,
       mult: 0.6,
       name: 'Reaping Arc',
@@ -94,7 +94,7 @@ describe('mob cleave', () => {
     const main = sim.addPlayer('warrior', 'Tank');
     const near = sim.addPlayer('warrior', 'Bystander');
     // A plain wolf has no cleave field.
-    const wolf = createMob((sim as any).nextId++, MOBS['forest_wolf'], 5, { x: 0, y: 0, z: 0 });
+    const wolf = createMob((sim as any).nextId++, MOBS.forest_wolf, 5, { x: 0, y: 0, z: 0 });
     wolf.hostile = true;
     wolf.hp = wolf.maxHp;
     (sim as any).addEntity(wolf);

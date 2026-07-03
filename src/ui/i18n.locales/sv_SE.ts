@@ -2883,7 +2883,8 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'guide.petHook.wraithborn': 'En elitbesvärjare som regnar tunga skuggor på avstånd.',
   'guide.petHook.warfiend': 'En tålig närstridskämpe, allroundern när du väl kan frammana den.',
   'guide.petHook.spellhound': 'En skuggstrejfare som jagar fiendens besvärjare.',
-  'guide.petHook.emberkin': 'En eldpilskastande demon på avstånd som naggar fiender från säkert håll.',
+  'guide.petHook.emberkin':
+    'En eldpilskastande demon på avstånd som naggar fiender från säkert håll.',
   'guide.petHook.pyre_colossus':
     'En massiv anfallsvagn med krossande närstrid, frammanad för ren styrka.',
   'guide.petHook.duskborn': 'En snabb närstridsdemon som slår hårt men viker sig under press.',

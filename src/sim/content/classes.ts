@@ -2961,8 +2961,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
         effects: [{ type: 'buffTarget', kind: 'buff_armor', value: 75, duration: 1800 }],
       },
     ],
-    description:
-      'Places the Wildward on a friendly target, increasing armor by 25 for 30 min.',
+    description: 'Places the Wildward on a friendly target, increasing armor by 25 for 30 min.',
   },
   moonfire: {
     id: 'moonfire',

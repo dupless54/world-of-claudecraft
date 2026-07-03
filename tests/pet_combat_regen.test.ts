@@ -23,11 +23,15 @@ function summonInfernal(sim: Sim, p: any) {
 }
 
 function firstWildMob(sim: Sim) {
-  let best: any = null, bd = Infinity;
+  let best: any = null,
+    bd = Infinity;
   for (const e of sim.entities.values()) {
     if (e.kind !== 'mob' || e.dead || (e as any).ownerId !== null) continue;
     const d = dist2d(sim.player.pos, e.pos);
-    if (d < bd) { bd = d; best = e; }
+    if (d < bd) {
+      bd = d;
+      best = e;
+    }
   }
   if (!best) throw new Error('no wild mob');
   return best;
@@ -55,7 +59,10 @@ describe('pet-held combat does not block owner health regen', () => {
     p.combatTimer = 99;
     const hpStart = p.hp;
 
-    for (let i = 0; i < 200; i++) { place(); sim.tick(); }
+    for (let i = 0; i < 200; i++) {
+      place();
+      sim.tick();
+    }
 
     expect(pet.aggroTargetId).toBe(mob.id); // pet still "has" the target
     expect(p.hp).toBeGreaterThan(hpStart); // but the owner regenerates
@@ -68,7 +75,8 @@ describe('pet-held combat does not block owner health regen', () => {
 
     // Park a high-HP target in melee range of the pet so it keeps swinging:
     // the pet's combatTimer stays low, so the owner stays in combat.
-    mob.hp = 1_000_000; mob.maxHp = 1_000_000;
+    mob.hp = 1_000_000;
+    mob.maxHp = 1_000_000;
     pet.petMode = 'aggressive';
     const place = () => {
       pet.pos = { x: p.pos.x + 1, y: p.pos.y, z: p.pos.z };
@@ -80,7 +88,10 @@ describe('pet-held combat does not block owner health regen', () => {
     p.combatTimer = 99;
     const hpStart = p.hp;
 
-    for (let i = 0; i < 200; i++) { place(); sim.tick(); }
+    for (let i = 0; i < 200; i++) {
+      place();
+      sim.tick();
+    }
 
     expect(pet.combatTimer).toBeLessThan(5); // pet is genuinely fighting
     expect(p.hp).toBe(hpStart); // owner remains in combat, no health regen

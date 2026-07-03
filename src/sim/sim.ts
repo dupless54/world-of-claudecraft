@@ -367,7 +367,12 @@ const FLEE_DURATION = 5;
 // FLEE_RETURN_GRACE moved to mob/locomotion.ts (M2; used only by recoverFromFlee).
 // Only sentient, cowardly families flee; beasts/undead/elementals/dragonkin fight
 // to the death. Elites, rares, and bosses never flee regardless of family.
-const FLEEING_FAMILIES: ReadonlySet<MobFamily> = new Set(['humanoid', 'burrower', 'mudfin', 'troll']);
+const FLEEING_FAMILIES: ReadonlySet<MobFamily> = new Set([
+  'humanoid',
+  'burrower',
+  'mudfin',
+  'troll',
+]);
 const GRAVITY = 16;
 const JUMP_VELOCITY = 6; // apex = v^2/2g ≈ 1.125 yd
 // Exported for social/chat_readouts.ts (the /falling readout shares the landing-damage

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
-import { dist2d } from '../src/sim/types';
 import type { Entity } from '../src/sim/types';
+import { dist2d } from '../src/sim/types';
 import { terrainHeight } from '../src/sim/world';
 
 function makeSim(seed = 42) {
@@ -15,7 +15,10 @@ function nearestMob(sim: Sim): Entity {
   for (const e of sim.entities.values()) {
     if (e.kind !== 'mob' || e.dead || e.ownerId !== null) continue;
     const d = dist2d(p.pos, e.pos);
-    if (d < bestD) { bestD = d; best = e; }
+    if (d < bestD) {
+      bestD = d;
+      best = e;
+    }
   }
   return best!;
 }
@@ -46,13 +49,14 @@ describe('warlock demon pets', () => {
     expect(pet!.hostile).toBe(false);
   });
 
-  it('imp attacks the owner\'s enemy at range with fire damage', () => {
+  it("imp attacks the owner's enemy at range with fire damage", () => {
     const sim = makeSim();
     sim.setPlayerLevel(12);
     castAndFinish(sim, 'summon_imp');
     const imp = sim.petOf(sim.playerId)!;
     const mob = nearestMob(sim);
-    mob.maxHp = 5000; mob.hp = 5000;
+    mob.maxHp = 5000;
+    mob.hp = 5000;
     teleport(mob, sim.player.pos.x + 10, sim.player.pos.z, sim.cfg.seed);
     // owner engages: the pet assists targets the owner is attacking
     sim.targetEntity(mob.id);
@@ -60,7 +64,13 @@ describe('warlock demon pets', () => {
     let sawFire = false;
     for (let i = 0; i < 20 * 12; i++) {
       const ev = sim.tick();
-      if (ev.some((e: any) => e.type === 'damage' && e.sourceId === imp.id && e.school === 'fire' && e.amount > 0)) sawFire = true;
+      if (
+        ev.some(
+          (e: any) =>
+            e.type === 'damage' && e.sourceId === imp.id && e.school === 'fire' && e.amount > 0,
+        )
+      )
+        sawFire = true;
       if (sawFire) break;
     }
     expect(sawFire).toBe(true);
