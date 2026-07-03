@@ -373,10 +373,11 @@ export const hudChromeStrings = {
     // (wordy, M16: the five non-Latin fills land in the same change as each).
     playerFrameScale: 'Player Frame Scale',
     targetFrameScale: 'Target Frame Scale',
-    // Interface panel toggle: anchor the player's own buff/debuff rows to the
-    // movable player frame instead of the classic top-right corner (wordy,
-    // M16: the five non-Latin fills land in this same change).
-    aurasOnPlayerFrame: 'Auras on the Player Frame',
+    // Interface panel toggle: anchor the player's own buff row to the movable
+    // player frame (the debuff row then slides up beside the minimap) instead
+    // of the classic two-row top-right corner (wordy, M16: the five non-Latin
+    // fills land in this same change).
+    aurasOnPlayerFrame: 'Buffs on the Player Frame',
     highContrastBackground: 'High-Contrast Background',
     // Interface panel toggle: also engage auto-attack when using an offensive
     // ability, so white swings start without a separate Attack press (on by default).

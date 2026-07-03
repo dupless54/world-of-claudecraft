@@ -397,7 +397,7 @@ export const vi_VN: EnTranslations = {
       "uiScale": "Tỷ Lệ Giao Diện",
       "playerFrameScale": "Player Frame Scale",
       "targetFrameScale": "Target Frame Scale",
-      "aurasOnPlayerFrame": "Auras on the Player Frame",
+      "aurasOnPlayerFrame": "Buffs on the Player Frame",
       "highContrastBackground": "Nền Tương Phản Cao",
       "startAttackOnAbility": "Tự Đánh Khi Dùng Kỹ Năng",
       "walkByAutoloot": "Walk-by Autoloot",

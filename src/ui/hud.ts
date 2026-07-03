@@ -2179,14 +2179,17 @@ export class Hud {
     }
   }
 
-  // Auras on the Player Frame (aurasOnPlayerFrame): reparent the player's own
-  // buff/debuff rows into #player-frame, where CSS anchors them to the frame
-  // (above it while docked over the action bars, below it once moved) and the
-  // frame's children-zoom scale applies. Off (or the mobile layout, which owns
-  // its stock aura placement) returns the bars to their #ui home; the aura
-  // painters' element refs are live nodes, so they survive both moves.
+  // Buffs on the Player Frame (aurasOnPlayerFrame): reparent the player's own
+  // BUFF row into #player-frame, where CSS anchors it to the frame (above it
+  // while docked over the action bars, below it once moved) and the frame's
+  // children-zoom scale applies. The DEBUFF row never rides the frame: with the
+  // option on it slides up beside the minimap into the spot the buff row
+  // vacated (body.auras-on-frame, hud.css), classic WoW's debuff corner, so
+  // incoming debuffs stay in one glanceable place. Off (or the mobile layout,
+  // which owns its stock aura placement) restores the classic two-row corner;
+  // the aura painters' element refs are live nodes, so they survive the moves.
   private aurasOnPlayerFrame = false;
-  private auraBarsHome: { parent: ParentNode; next: Node | null } | null = null;
+  private buffBarHome: { parent: ParentNode; next: Node | null } | null = null;
 
   setAurasOnPlayerFrame(on: boolean): void {
     this.aurasOnPlayerFrame = on;
@@ -2195,19 +2198,18 @@ export class Hud {
 
   private applyAuraAnchor(): void {
     const on = this.aurasOnPlayerFrame && !this.isMobileLayout();
+    document.body.classList.toggle('auras-on-frame', on);
     const frame = this.playerFrameEl;
-    this.auraBarsHome ??= {
+    // The buff bar's stock home: right before its sibling debuff bar (which
+    // stays put in the DOM; only its CSS spot shifts with the body class).
+    this.buffBarHome ??= {
       parent: this.buffBarEl.parentNode as ParentNode,
-      next: this.debuffBarEl.nextSibling,
+      next: this.debuffBarEl,
     };
     if (on) {
-      if (this.buffBarEl.parentElement !== frame) {
-        frame.appendChild(this.buffBarEl);
-        frame.appendChild(this.debuffBarEl);
-      }
+      if (this.buffBarEl.parentElement !== frame) frame.appendChild(this.buffBarEl);
     } else if (this.buffBarEl.parentElement === frame) {
-      this.auraBarsHome.parent.insertBefore(this.debuffBarEl, this.auraBarsHome.next);
-      this.auraBarsHome.parent.insertBefore(this.buffBarEl, this.debuffBarEl);
+      this.buffBarHome.parent.insertBefore(this.buffBarEl, this.buffBarHome.next);
     }
   }
 

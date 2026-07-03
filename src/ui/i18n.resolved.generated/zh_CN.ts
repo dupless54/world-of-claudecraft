@@ -397,7 +397,7 @@ export const zh_CN: EnTranslations = {
       "uiScale": "界面缩放",
       "playerFrameScale": "玩家框缩放",
       "targetFrameScale": "目标框缩放",
-      "aurasOnPlayerFrame": "光环显示在玩家框",
+      "aurasOnPlayerFrame": "增益显示在玩家框",
       "highContrastBackground": "高对比度背景",
       "startAttackOnAbility": "使用技能时自动攻击",
       "walkByAutoloot": "路过自动拾取",

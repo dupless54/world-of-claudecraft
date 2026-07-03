@@ -75,7 +75,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.frameReset.label': '프레임 위치 초기화',
   'hudChrome.options.playerFrameScale': '플레이어 프레임 크기',
   'hudChrome.options.targetFrameScale': '대상 프레임 크기',
-  'hudChrome.options.aurasOnPlayerFrame': '오라를 플레이어 프레임에 표시',
+  'hudChrome.options.aurasOnPlayerFrame': '버프를 플레이어 프레임에 표시',
   'hud.core.mapCanvasLabel': '지도',
   'hud.core.mapSummary': '{zone}의 지도.',
   'hudChrome.castBar.playerAria': '내 시전 막대',
