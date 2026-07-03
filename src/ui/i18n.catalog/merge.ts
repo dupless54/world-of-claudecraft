@@ -3701,7 +3701,7 @@ const mergeExtraEn = {
       'Flense',
       'A stealth opener that rakes the enemy for weapon damage plus {damage} and causes bleeding damage over 9 sec. Awards 1 combo point. Wolf Form only.',
     ],
-    ['revive_pet', 'Rouse Companion', 'Revives your dead pet and returns it to your side.'],
+    ['revive_pet', 'Revive Pet', 'Revives your dead pet and returns it to your side.'],
   ]),
   items: {
     ...mergeNameTranslations(

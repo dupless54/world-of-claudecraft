@@ -1707,7 +1707,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
   },
   revive_pet: {
     id: 'revive_pet',
-    name: 'Rouse Companion',
+    name: 'Revive Pet',
     class: 'hunter',
     learnLevel: 10,
     cost: 45,

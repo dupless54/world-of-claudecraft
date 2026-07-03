@@ -214,6 +214,10 @@ const KEEP_EXEMPTIONS: { entry: string; value: string; fieldIncludes: string }[]
   { entry: 'Toughness', value: 'Toughness', fieldIncludes: 'aug_toughness' },
   { entry: 'Stormcaller', value: 'Stormcaller', fieldIncludes: 'holderTiers.stormcaller' },
   { entry: 'Berserker', value: 'Berserker', fieldIncludes: 'pow_berserker' },
+  // Generic UI category/mechanic labels (damage-meter 'Heal' column; pet-command
+  // 'Taunt'), operator-approved keeps, NOT the renamed priest/warrior abilities.
+  { entry: 'Heal', value: 'Heal', fieldIncludes: 'meters.healingShort' },
+  { entry: 'Taunt', value: 'Taunt', fieldIncludes: 'pet.taunt' },
 ];
 function isKeptException(field: string, value: string, entry: string): boolean {
   return KEEP_EXEMPTIONS.some(
@@ -274,15 +278,21 @@ function scanDescriptions(node: unknown, prefix: string, out: Violation[]): void
 const DIALOGUE_SOURCES = ['src/sim/encounters/nythraxis.ts', 'src/sim/delves/runs.ts'];
 const STRING_LITERAL_RE = /(['"`])((?:\\.|(?!\1).)*)\1/g;
 
-// Recursively scan the WHOLE resolved English table: every string under a
-// `name` or `title` key is a display name (this covers entities.<kind>.<id>
-// plus name-bearing sections outside `entities`, e.g. the augment catalog
-// copy), and inside the `entities` subtree the quest/NPC prose keys (`text`,
-// `completion`, `greeting`, `label`) get the explicit PROSE-SCAN pass -
-// mirroring exactly the sim-side prose scope, never a general prose sweep.
-// Returns the number of name/title string fields visited so a teeth test can
-// prove the walk is not vacuous (a renamed generated key must not silently
-// no-op this layer).
+// Recursively scan the WHOLE resolved English table. EVERY string value gets
+// the whole-NAME scan (`scanNameValue`, isSpecField=false): a display name can
+// surface under a `name`/`title` key OR be quoted inside any other rendered
+// UI/guide/tooltip string (e.g. "...then spend it with Judgement." in a guide
+// hint, "Bear Form: ..." in an aura label). This is SAFE against generic prose
+// because of the whole-value single-word rule - map-derived single armed words
+// (Charge/Slam/Vigor/...) match only when they ARE the entire trimmed value, so
+// they never trip inside a sentence; only distinctive MULTI-WORD names and the
+// HARDCODED coinages substring-match, and those are exactly the stale
+// old-name references we want caught wherever they appear. Additionally, inside
+// the `entities` subtree the quest/NPC prose keys (`text`, `completion`,
+// `greeting`, `label`) still get the explicit PROSE-SCAN pass, mirroring the
+// sim-side prose scope. Returns the number of name/title string fields visited
+// (unchanged semantics) so a teeth test can prove the walk is not vacuous (a
+// renamed generated key must not silently no-op this layer).
 function scanResolvedTable(
   node: unknown,
   prefix: string,
@@ -294,9 +304,10 @@ function scanResolvedTable(
   for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
     const p = `${prefix}.${key}`;
     if (typeof value === 'string') {
+      // Every string value is name-scanned (a name can hide in any prose).
+      scanNameValue(p, prefix, value, false, out);
       if (key === 'name' || key === 'title') {
         nameFields += 1;
-        scanNameValue(p, prefix, value, false, out);
       } else if (
         inEntities &&
         (key === 'text' || key === 'completion' || key === 'greeting' || key === 'label')

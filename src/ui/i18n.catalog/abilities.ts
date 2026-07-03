@@ -744,7 +744,7 @@ const classAbilityNamesEn = {
       [
         'crippling_poison',
         'Leaden Venom',
-        'Strikes the target with a crippling poison, dealing {damage} Nature damage and slowing its movement speed by 50% for 12 sec.',
+        'Strikes the target with a leaden venom, dealing {damage} Nature damage and slowing its movement speed by 50% for 12 sec.',
       ],
       [
         'expose_armor',
@@ -786,14 +786,14 @@ const classAbilityNamesEn = {
       [
         'judgement',
         'Verdict',
-        'Unleashes your active Seal upon the enemy, consuming it to deal its judgement damage.',
+        'Unleashes your active Seal upon the enemy, consuming it to deal its stored Holy damage.',
       ],
       [
         'blessing_of_might',
         'Oath of Iron',
         'Places a Blessing on a friendly target, increasing attack power by 15 for 5 min.',
       ],
-      ['divine_protection', 'Ward of Faith', 'A holy shield absorbs 50 damage for 10 sec.'],
+      ['divine_protection', 'Ward of Faith', 'A protective ward absorbs 50 damage for 10 sec.'],
       ['hammer_of_justice', 'Sundering Gavel', 'Stuns the target for 3 sec.'],
       [
         'lay_on_hands',
@@ -803,7 +803,7 @@ const classAbilityNamesEn = {
       [
         'flash_of_light',
         'Lightmend',
-        'A quick, efficient flash of Light that heals a friendly target for {damage}.',
+        'A quick, efficient burst of Light that heals a friendly target for {damage}.',
       ],
       [
         'exorcism',
@@ -839,7 +839,7 @@ const classAbilityNamesEn = {
       [
         'aspect_of_the_hawk',
         "Harrier's Guise",
-        'Take on the aspect of the hawk, increasing attack power by 20 for 30 min.',
+        "Take on the harrier's guise, increasing attack power by 20 for 30 min.",
       ],
       [
         'serpent_sting',
@@ -861,14 +861,14 @@ const classAbilityNamesEn = {
       [
         'aspect_of_the_monkey',
         "Marten's Guise",
-        'Take on the aspect of the monkey, increasing your dodge chance by 8% for 30 min.',
+        "Take on the marten's guise, increasing your dodge chance by 8% for 30 min.",
       ],
       [
         'aspect_of_the_cheetah',
         "Courser's Guise",
-        'Take on the aspect of the cheetah, increasing movement speed by 30% for 30 min.',
+        "Take on the courser's guise, increasing movement speed by 30% for 30 min.",
       ],
-      ['aimed_shot', 'Long Draw', 'A carefully aimed shot that deals {damage} damage.'],
+      ['aimed_shot', 'Long Draw', 'A carefully drawn shot that deals {damage} damage.'],
       ['rapid_fire', 'Fevered Draw', 'Increases your attack speed by 40% for 15 sec.'],
       ['smite', 'Smite', 'Smites the enemy for {damage} Holy damage.'],
       ['lesser_heal', 'Whispered Prayer', 'Heals a friendly target for {damage}.'],
@@ -1049,7 +1049,7 @@ const classAbilityNamesEn = {
       [
         'travel_form',
         'Fleet Form',
-        'Instantly shift into a swift travel form, increasing movement speed by 40%. You cannot use other abilities while shifted, but can shift in or out of combat, ideal for escaping.',
+        'Instantly shift into a swift fleet form, increasing movement speed by 40%. You cannot use other abilities while shifted, but can shift in or out of combat, ideal for escaping.',
       ],
       ['enrage', 'Stoke', 'Generates 20 rage instantly. Bruin Form only.'],
       ['bash', 'Concuss', 'Stuns the target for 2 sec. Bruin Form only.'],
@@ -1103,7 +1103,7 @@ const classAbilityNamesEn = {
       [
         'berserker_rage',
         'Seething Fury',
-        'Enter a berserker rage, generating 20 rage. (Warrior talent)',
+        'Enter a seething fury, generating 20 rage. (Warrior talent)',
       ],
       [
         'summon_imp',

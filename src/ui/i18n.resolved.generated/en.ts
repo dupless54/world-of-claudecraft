@@ -752,13 +752,13 @@ export const en: EnTranslations = {
       "disarm": "Disarmed: cannot use weapon attacks",
       "lockout": "Spell school locked out",
       "imbue": "Weapon imbued with bonus effects",
-      "imbueRange": "Weapon imbued: {min} to {max} bonus damage on judgement",
+      "imbueRange": "Weapon imbued: {min} to {max} bonus damage on Verdict",
       "stealth": "Concealed; movement speed reduced by {pct}%",
-      "formBear": "Bear Form: increased health and armor",
+      "formBear": "Bruin Form: increased health and armor",
       "formCat": "Cat Form: melee damage and energy",
-      "formTravel": "Travel Form: movement speed increased by {pct}%",
-      "defensiveStance": "Defensive Stance: reduced damage taken, more threat",
-      "righteousFury": "Righteous Fury: greatly increased threat from Holy damage",
+      "formTravel": "Fleet Form: movement speed increased by {pct}%",
+      "defensiveStance": "Guarded Stance: reduced damage taken, more threat",
+      "righteousFury": "Burning Oath: greatly increased threat from Holy damage",
       "scale": "Size increased by {pct}%",
       "jump": "Jump height increased by {pct}%",
       "school": {
@@ -1162,7 +1162,7 @@ export const en: EnTranslations = {
       "growBody": "Each level makes you tougher and unlocks new abilities, all the way to the cap of level {cap}. Questing is the fastest way up; dungeons and exploration round it out.",
       "effectsTitle": "Buffs, debuffs, and crowd control",
       "effectsBody": "Many abilities apply an effect that lingers. Helpful ones (buffs) raise your stats, shield you, or heal you a little at a time; harmful ones (debuffs) drain your health with damage over time or weaken you. Watch the small icons near your action bar to see what is on you and how long it lasts.",
-      "ccBody": "Crowd control is a special kind of debuff that limits what a target can do: stuns, roots and slows, silences that stop spellcasting, disarms, fears, and polymorph that turns a foe harmless for a moment. Some of these, like roots, fears, and polymorph, lose their hold when they are reapplied too quickly, so they cannot be chained forever.",
+      "ccBody": "Crowd control is a special kind of debuff that limits what a target can do: stuns, roots and slows, silences that stop spellcasting, disarms, fears, and transformations that turn a foe harmless for a moment. Some of these, like roots, fears, and transforms, lose their hold when they are reapplied too quickly, so they cannot be chained forever.",
       "deathTitle": "When you fall",
       "deathBody": "If your health reaches zero you are downed. Release your spirit to revive at the nearest graveyard at full health, then make your way back, so a death costs you a little time, not your progress. Between fights, sit to eat and drink so you start the next one at full strength."
     },
@@ -1303,12 +1303,12 @@ export const en: EnTranslations = {
       "charge": "Rushes a distant enemy to open the fight with a brief stun.",
       "rend": "Opens a bleed that wears the target down over time.",
       "thunder_clap": "Hits everything around you and slows their attacks.",
-      "seal_of_righteousness": "Imbues your swings with Holy damage, then spend it with Judgement.",
+      "seal_of_righteousness": "Imbues your swings with Holy damage, then spend it with Verdict.",
       "holy_light": "A steady, sizable heal for topping off an ally or yourself.",
       "devotion_aura": "A lasting self-buff that raises armor so hits land softer.",
       "judgement": "Spends your active Seal to strike an enemy from short range.",
       "blessing_of_might": "Raises a friendly target's attack power, good to cast before a pull.",
-      "divine_protection": "A quick holy shield to soak damage when things get rough.",
+      "divine_protection": "A quick protective ward to soak damage when things get rough.",
       "raptor_strike": "A hard melee swing for when something closes the gap on you.",
       "aspect_of_the_hawk": "A stance you keep up to sharpen your ranged attack power.",
       "serpent_sting": "Lands a venom that bleeds nature damage over time.",
@@ -2747,13 +2747,13 @@ export const en: EnTranslations = {
     },
     "lore": {
       "warrior": "Warriors are battle-hardened melee fighters who build Rage as they deal or take damage. They absorb heavy hits or crush foes with powerful weapons.",
-      "paladin": "Paladins are holy crusaders who support allies with blessings, heal wounds with Holy Light, and protect the weak in heavy armor.",
+      "paladin": "Paladins are holy crusaders who support allies with blessings, heal wounds with Mending Light, and protect the weak in heavy armor.",
       "hunter": "Hunters are ranged specialists who fight beside a tamed beast, peppering enemies with aimed and rapid shots, slowing them with stings and concussive fire, and shifting aspects to suit the moment.",
       "rogue": "Rogues are stealthy assassins who spend Energy and Combo Points on backstabs and finishing moves from the shadows.",
-      "priest": "Priests call on Holy Light to heal and shield allies, while Shadow magic lets them drain the life of their enemies.",
+      "priest": "Priests call on Mending Light to heal and shield allies, while Shadow magic lets them drain the life of their enemies.",
       "shaman": "Shaman command the elements, imbuing weapons with power, shocking enemies with lightning, and restoring allies.",
-      "mage": "Mages bend Fire, Frost, and Arcane power to destroy enemies, conjure water, and freeze threats in place.",
-      "warlock": "Warlocks summon demons, apply curses and damage-over-time magic, and drain life from enemies to endure.",
+      "mage": "Mages bend Fire, Frost, and arcane force to destroy enemies, summon water, and freeze threats in place.",
+      "warlock": "Warlocks summon demons, apply curses and damage-over-time magic, and leech life from enemies to endure.",
       "druid": "Druids channel nature, healing wounds, entangling foes, and shifting into animal forms for defense or damage."
     },
     "aria": "Class details for {className}: role {role}. Starting stats: Strength {str}, Agility {agi}, Stamina {sta}, Intellect {int}, Spirit {spi}.",
@@ -3870,7 +3870,7 @@ export const en: EnTranslations = {
       },
       "crippling_poison": {
         "name": "Leaden Venom",
-        "description": "Strikes the target with a crippling poison, dealing {damage} Nature damage and slowing its movement speed by 50% for 12 sec."
+        "description": "Strikes the target with a leaden venom, dealing {damage} Nature damage and slowing its movement speed by 50% for 12 sec."
       },
       "expose_armor": {
         "name": "Armor Breach",
@@ -3910,7 +3910,7 @@ export const en: EnTranslations = {
       },
       "judgement": {
         "name": "Verdict",
-        "description": "Unleashes your active Seal upon the enemy, consuming it to deal its judgement damage."
+        "description": "Unleashes your active Seal upon the enemy, consuming it to deal its stored Holy damage."
       },
       "blessing_of_might": {
         "name": "Oath of Iron",
@@ -3918,7 +3918,7 @@ export const en: EnTranslations = {
       },
       "divine_protection": {
         "name": "Ward of Faith",
-        "description": "A holy shield absorbs 50 damage for 10 sec."
+        "description": "A protective ward absorbs 50 damage for 10 sec."
       },
       "hammer_of_justice": {
         "name": "Sundering Gavel",
@@ -3930,7 +3930,7 @@ export const en: EnTranslations = {
       },
       "flash_of_light": {
         "name": "Lightmend",
-        "description": "A quick, efficient flash of Light that heals a friendly target for {damage}."
+        "description": "A quick, efficient burst of Light that heals a friendly target for {damage}."
       },
       "exorcism": {
         "name": "Rite of Expulsion",
@@ -3962,7 +3962,7 @@ export const en: EnTranslations = {
       },
       "aspect_of_the_hawk": {
         "name": "Harrier's Guise",
-        "description": "Take on the aspect of the hawk, increasing attack power by 20 for 30 min."
+        "description": "Take on the harrier's guise, increasing attack power by 20 for 30 min."
       },
       "serpent_sting": {
         "name": "Venom Barb",
@@ -3986,15 +3986,15 @@ export const en: EnTranslations = {
       },
       "aspect_of_the_monkey": {
         "name": "Marten's Guise",
-        "description": "Take on the aspect of the monkey, increasing your dodge chance by 8% for 30 min."
+        "description": "Take on the marten's guise, increasing your dodge chance by 8% for 30 min."
       },
       "aspect_of_the_cheetah": {
         "name": "Courser's Guise",
-        "description": "Take on the aspect of the cheetah, increasing movement speed by 30% for 30 min."
+        "description": "Take on the courser's guise, increasing movement speed by 30% for 30 min."
       },
       "aimed_shot": {
         "name": "Long Draw",
-        "description": "A carefully aimed shot that deals {damage} damage."
+        "description": "A carefully drawn shot that deals {damage} damage."
       },
       "rapid_fire": {
         "name": "Fevered Draw",
@@ -4194,7 +4194,7 @@ export const en: EnTranslations = {
       },
       "travel_form": {
         "name": "Fleet Form",
-        "description": "Instantly shift into a swift travel form, increasing movement speed by 40%. You cannot use other abilities while shifted, but can shift in or out of combat, ideal for escaping."
+        "description": "Instantly shift into a swift fleet form, increasing movement speed by 40%. You cannot use other abilities while shifted, but can shift in or out of combat, ideal for escaping."
       },
       "enrage": {
         "name": "Stoke",
@@ -4250,7 +4250,7 @@ export const en: EnTranslations = {
       },
       "berserker_rage": {
         "name": "Seething Fury",
-        "description": "Enter a berserker rage, generating 20 rage. (Warrior talent)"
+        "description": "Enter a seething fury, generating 20 rage. (Warrior talent)"
       },
       "summon_imp": {
         "name": "Summon Emberkin",
@@ -4297,7 +4297,7 @@ export const en: EnTranslations = {
         "description": "A stealth opener that rakes the enemy for weapon damage plus {damage} and causes bleeding damage over 9 sec. Awards 1 combo point. Wolf Form only."
       },
       "revive_pet": {
-        "name": "Rouse Companion",
+        "name": "Revive Pet",
         "description": "Revives your dead pet and returns it to your side."
       }
     },

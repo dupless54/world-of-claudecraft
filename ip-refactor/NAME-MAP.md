@@ -205,7 +205,7 @@ zero extra rows were needed (verified by G0, recorded in 02-WORKING-MEMORY.md).
 |---|---|---|---|---|
 | `tame_beast` | Tame Beast | Wildbond | ability | rename |
 | `dismiss_pet` | Dismiss Pet | Release Companion | ability | rename |
-| `revive_pet` | Revive Pet | Rouse Companion | ability | rename |
+| `revive_pet` | Revive Pet | Revive Pet (operator KEEP 2026-07-02: generic verb+noun, cf. Static Charge/Blood Frenzy) | ability | generic-keep? |
 | `raptor_strike` | Raptor Strike | Gutting Strike | ability | rename |
 | `aspect_of_the_hawk` | Aspect of the Hawk | Harrier's Guise | ability | rename |
 | `serpent_sting` | Serpent Sting | Venom Barb | ability | rename |

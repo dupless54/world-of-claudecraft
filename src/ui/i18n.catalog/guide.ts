@@ -278,7 +278,7 @@ export const guideStrings = {
     effectsBody:
       'Many abilities apply an effect that lingers. Helpful ones (buffs) raise your stats, shield you, or heal you a little at a time; harmful ones (debuffs) drain your health with damage over time or weaken you. Watch the small icons near your action bar to see what is on you and how long it lasts.',
     ccBody:
-      'Crowd control is a special kind of debuff that limits what a target can do: stuns, roots and slows, silences that stop spellcasting, disarms, fears, and polymorph that turns a foe harmless for a moment. Some of these, like roots, fears, and polymorph, lose their hold when they are reapplied too quickly, so they cannot be chained forever.',
+      'Crowd control is a special kind of debuff that limits what a target can do: stuns, roots and slows, silences that stop spellcasting, disarms, fears, and transformations that turn a foe harmless for a moment. Some of these, like roots, fears, and transforms, lose their hold when they are reapplied too quickly, so they cannot be chained forever.',
     // Death and recovery: light penalty, no lost progress.
     deathTitle: 'When you fall',
     deathBody:
@@ -457,12 +457,12 @@ export const guideStrings = {
     charge: 'Rushes a distant enemy to open the fight with a brief stun.',
     rend: 'Opens a bleed that wears the target down over time.',
     thunder_clap: 'Hits everything around you and slows their attacks.',
-    seal_of_righteousness: 'Imbues your swings with Holy damage, then spend it with Judgement.',
+    seal_of_righteousness: 'Imbues your swings with Holy damage, then spend it with Verdict.',
     holy_light: 'A steady, sizable heal for topping off an ally or yourself.',
     devotion_aura: 'A lasting self-buff that raises armor so hits land softer.',
     judgement: 'Spends your active Seal to strike an enemy from short range.',
     blessing_of_might: "Raises a friendly target's attack power, good to cast before a pull.",
-    divine_protection: 'A quick holy shield to soak damage when things get rough.',
+    divine_protection: 'A quick protective ward to soak damage when things get rough.',
     raptor_strike: 'A hard melee swing for when something closes the gap on you.',
     aspect_of_the_hawk: 'A stance you keep up to sharpen your ranged attack power.',
     serpent_sting: 'Lands a venom that bleeds nature damage over time.',
