@@ -497,7 +497,7 @@ export const hudChromeStrings = {
   // One-off chat-log tips shown at HUD bootstrap. The /join command tokens stay
   // literal (they are commands); the surrounding prose localizes.
   tips: {
-    joinChannels: 'Tip: type /join world or /join lfg to chat with players across the realm.',
+    joinChannels: 'Tip: type /join world or /join lfg to chat with players across the world.',
   },
   // Item-set (tier set) tooltip block. The set name and per-tier bonus text come
   // from content/item_sets.ts via entity_i18n; these two are the surrounding
@@ -566,7 +566,7 @@ export const hudChromeStrings = {
   // position/screenshot plus a free-text description and posts to the server.
   bugReport: {
     menuButton: 'Report a Bug',
-    realm: 'Realm',
+    realm: 'World',
     character: 'Character',
     position: 'Position',
     unknown: 'Unknown',

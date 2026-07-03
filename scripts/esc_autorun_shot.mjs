@@ -63,7 +63,7 @@ const waitForMove = async (from, min, ms) => {
 const recorder = await page.screencast({ path: 'tmp/esc-autorun.webm' });
 
 // Face north so the run heads into open ground, then press R to toggle autorun
-// (KeyR is the vanilla default for the 'autorun' edge action).
+// (KeyR is the classic default for the 'autorun' edge action).
 const start = await page.evaluate(() => {
   window.__game.input.autorun = false;
   return { pos: { x: window.__game.world.player.pos.x, z: window.__game.world.player.pos.z } };

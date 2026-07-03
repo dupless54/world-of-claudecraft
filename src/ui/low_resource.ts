@@ -1,5 +1,5 @@
 // Pure derivation of the low-resource warning state for the player resource
-// bar. Classic WoW pulses the mana bar when power runs low; we extend that to
+// bar. Classic-era clients pulse the mana bar when power runs low; we extend that to
 // energy as well. Rage is intentionally excluded — it *builds* in combat, so a
 // low value is a normal state, not a warning.
 //

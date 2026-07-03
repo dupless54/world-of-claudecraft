@@ -43,7 +43,7 @@ export const en: EnTranslations = {
       "subtitle": "Lifetime XP",
       "rank": "Rank",
       "name": "Name",
-      "realmCol": "Realm",
+      "realmCol": "World",
       "level": "Lvl",
       "vlevel": "V.Lvl",
       "lifetimeXp": "Lifetime XP",
@@ -52,7 +52,7 @@ export const en: EnTranslations = {
       "loading": "Loading rankings…",
       "unranked": "Unranked",
       "you": "You",
-      "globalSubtitle": "Top champions across all realms",
+      "globalSubtitle": "Top champions across all worlds",
       "retry": "Could not load the leaderboard. Try again."
     },
     "milestone": {
@@ -485,7 +485,7 @@ export const en: EnTranslations = {
       "defaultBuildName": "Build {n}"
     },
     "tips": {
-      "joinChannels": "Tip: type /join world or /join lfg to chat with players across the realm."
+      "joinChannels": "Tip: type /join world or /join lfg to chat with players across the world."
     },
     "itemSet": {
       "header": "{name} ({have}/{total})",
@@ -540,7 +540,7 @@ export const en: EnTranslations = {
     },
     "bugReport": {
       "menuButton": "Report a Bug",
-      "realm": "Realm",
+      "realm": "World",
       "character": "Character",
       "position": "Position",
       "unknown": "Unknown",
@@ -1087,12 +1087,12 @@ export const en: EnTranslations = {
         "q2": "Do I need a crypto wallet?",
         "a2": "No. The game is fully playable without one. The optional community token only unlocks cosmetic flair and never affects power.",
         "q3": "Can I play offline?",
-        "a3": "Yes. There is an instant single-player mode in your browser, plus the shared online realm.",
+        "a3": "Yes. There is an instant single-player mode in your browser, plus the shared online world.",
         "q4": "How long to reach max level?",
         "a4": "The cap is level {cap}, reached across three zones of quests, dungeons, and exploration."
       },
       "community": {
-        "heading": "Join the realm",
+        "heading": "Join the world",
         "body": "Jump in now, or come say hello. The world is better with company.",
         "play": "Play Now",
         "discord": "Join the Discord",
@@ -1126,7 +1126,7 @@ export const en: EnTranslations = {
       "groupingTitle": "Playing together",
       "groupingBody": "Invite others to a party to share quest credit and take on dungeons. Most of the world is soloable, so grouping is a choice, not a chore.",
       "onlineTitle": "Online or offline",
-      "onlineBody": "Play the shared online realm with everyone else, or start an instant offline world in your browser to learn the ropes.",
+      "onlineBody": "Play the shared online world with everyone else, or start an instant offline world in your browser to learn the ropes.",
       "reassure": "Talents unlock at level 10 and can be reset at any time, so your early choices are never permanent. Experiment freely.",
       "controlsLink": "See the full controls reference"
     },
@@ -1830,10 +1830,10 @@ export const en: EnTranslations = {
     "donate": "Donate"
   },
   "stats": {
-    "title": "Realm Status",
+    "title": "World Status",
     "accountsCreated": "Players",
     "playersOnline": "Players Online",
-    "realmName": "Realm Name"
+    "realmName": "World Name"
   },
   "footer": {
     "copyright": "2026 World of ClaudeCraft",
@@ -1851,7 +1851,7 @@ export const en: EnTranslations = {
   },
   "highscores": {
     "title": "High Scores Leaderboard",
-    "desc": "Track the realm's greatest champions and compare your progress."
+    "desc": "Track the world's greatest champions and compare your progress."
   },
   "wiki": {
     "title": "Game Wiki & Guide",
@@ -1873,12 +1873,12 @@ export const en: EnTranslations = {
   },
   "comingSoon": {
     "placeholder": "Coming Soon...",
-    "featureComingSoon": "This feature is coming soon to the realm."
+    "featureComingSoon": "This feature is coming soon to the world."
   },
   "mode": {
     "onlineTitle": "Play Online",
-    "onlineDesc": "Log in to the realm. Your characters live on the server and you share the world with everyone else who's on.",
-    "onlineAria": "Play Online: log in to the persistent shared realm",
+    "onlineDesc": "Log in to the world. Your characters live on the server and you share the world with everyone else who's on.",
+    "onlineAria": "Play Online: log in to the persistent shared world",
     "offlineTitle": "Play Offline",
     "offlineDesc": "Instant single-player world in your browser. Nothing is saved: perfect for a quick brawl or testing.",
     "offlineAria": "Play Offline: start an instant local single-player session",
@@ -1888,15 +1888,15 @@ export const en: EnTranslations = {
     "serverOffline": "Offline",
     "play": "Play",
     "playAria": "Play World of ClaudeCraft",
-    "serverLabel": "Choose your realm",
-    "serverAria": "Select realm: Online or Offline",
+    "serverLabel": "Choose your world",
+    "serverAria": "Select world: Online or Offline",
     "serverOfflineSub": "Instant local world",
     "caLabel": "$WOC Contract Address",
     "caCopyAria": "Copy contract address",
     "caNote": "WOC is our community token. It is not needed to play. Join Discord to discuss the WOC utility and flywheel."
   },
   "auth": {
-    "enterRealm": "Enter the Realm",
+    "enterRealm": "Enter the World",
     "username": "Username",
     "usernameError": "Please enter your username.",
     "usernamePlaceholder": "Enter username",
@@ -1908,16 +1908,16 @@ export const en: EnTranslations = {
     "logIn": "Log In",
     "createAccount": "Create Account",
     "back": "Back",
-    "realmList": "Realm List",
-    "loadingRealms": "Loading realms...",
-    "changeRealm": "Change Realm",
-    "realm": "Realm",
+    "realmList": "World List",
+    "loadingRealms": "Loading worlds...",
+    "changeRealm": "Change World",
+    "realm": "World",
     "newCharacter": "New Character",
     "appearance": "Appearance",
     "class": "Class",
     "name": "Name",
     "chromaOption": "Chroma {n}",
-    "noAccountPrompt": "New to the realm?",
+    "noAccountPrompt": "New to the world?",
     "haveAccountPrompt": "Already have an account?",
     "characters": "Characters:",
     "createCharacter": "Create Character",
@@ -2080,7 +2080,7 @@ export const en: EnTranslations = {
     "renderFailedStatus": "Card render failed.",
     "levelClass": "Level {level} - {className}",
     "topPercent": "TOP {percent}%",
-    "realmSubtitle": "{realm} Realm",
+    "realmSubtitle": "{realm} World",
     "defaultRealm": "World of ClaudeCraft",
     "brandWordmark": "WORLD OF CLAUDECRAFT",
     "recruited": "{count} recruited",
@@ -2089,7 +2089,7 @@ export const en: EnTranslations = {
     "footerCta": "Forge your legend: {siteUrl}",
     "arenaStat": "Arena",
     "shareTierBit": ", {tier}-rank $WOC holder",
-    "shareText": "I'm forging my legend in World of ClaudeCraft: Level {level} {className}{tierBit}. Join my realm:",
+    "shareText": "I'm forging my legend in World of ClaudeCraft: Level {level} {className}{tierBit}. Join my world:",
     "nativeShareTitle": "World of ClaudeCraft",
     "fileNameFallback": "player",
     "actionShareX": "Share to X",
@@ -2581,13 +2581,13 @@ export const en: EnTranslations = {
   },
   "seo": {
     "title": "World of ClaudeCraft: Classic-Style Web MMO",
-    "description": "Embark on an epic adventure in World of ClaudeCraft, a classic-style micro-MMO playable directly in your browser. Join a persistent shared realm, level up classes, and defeat enemies!",
+    "description": "Embark on an epic adventure in World of ClaudeCraft, a classic-style micro-MMO playable directly in your browser. Join a persistent shared world, level up classes, and defeat enemies!",
     "genre": "MMORPG",
     "playMode": "Multiplayer",
     "applicationCategory": "Game",
     "operatingSystem": "Web browser",
     "officialLabel": "Official World of ClaudeCraft website",
-    "officialBody": "worldofclaudecraft.com is the official free browser MMO for the Claudemoon realm. Play online with a persistent character, explore solo offline, read the wiki, and follow verified community links from this site."
+    "officialBody": "worldofclaudecraft.com is the official free browser MMO for the Claudemoon world. Play online with a persistent character, explore solo offline, read the wiki, and follow verified community links from this site."
   },
   "a11y": {
     "goHome": "Go to homepage",
@@ -2603,7 +2603,7 @@ export const en: EnTranslations = {
     "world": "Loading world...",
     "worldProgress": "Loading world... {done}/{total}",
     "enteringWorld": "Entering the world...",
-    "connectingRealm": "Connecting to realm...",
+    "connectingRealm": "Connecting to world...",
     "assetsFailed": "Asset loading failed: try reloading. {error}",
     "rendererFailed": "Could not start the renderer: try reloading. {error}",
     "enterTimeout": "Could not enter world. The connection timed out. Is the game server running?",
@@ -2645,25 +2645,25 @@ export const en: EnTranslations = {
     }
   },
   "realm": {
-    "noRealms": "No realms available.",
-    "loading": "Loading realms...",
+    "noRealms": "No worlds available.",
+    "loading": "Loading worlds...",
     "recommended": "Recommended",
     "checkingStatus": "Checking status...",
     "onlineNow": "{count} online now",
-    "down": "Realm is down",
+    "down": "World is down",
     "offline": "Offline",
     "full": "Full",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
     "popTipLow": "Low population: fewer than 15 players online right now. Plenty of room; great for a fresh start.",
-    "popTipMedium": "Medium population: 15 to 39 players online right now. A healthy, active realm.",
+    "popTipMedium": "Medium population: 15 to 39 players online right now. A healthy, active world.",
     "popTipHigh": "High population: 40 to 79 players online right now. Busy, with lots of players around.",
     "popTipFull": "Full population: 80 or more players online right now. Very busy; you may wait in a login queue.",
-    "popTipOffline": "Offline: this realm is unreachable right now and cannot be joined.",
+    "popTipOffline": "Offline: this world is unreachable right now and cannot be joined.",
     "characterCountOne": "{count} character",
     "characterCountOther": "{count} characters",
-    "selectedRealm": "Realm: {name}",
+    "selectedRealm": "World: {name}",
     "statsOffline": "Offline",
     "statsRealmOffline": "{realm} (Offline)"
   },
@@ -2778,10 +2778,10 @@ export const en: EnTranslations = {
     "otherInstallDetail": "Install or add this page to your Home screen for the best fullscreen mobile experience."
   },
   "serverUnavailable": {
-    "title": "World of ClaudeCraft - Realm Unavailable",
+    "title": "World of ClaudeCraft - World Unavailable",
     "logoAlt": "World of ClaudeCraft",
-    "eyebrow": "Realm maintenance",
-    "heading": "The realm is temporarily unavailable.",
+    "eyebrow": "World maintenance",
+    "heading": "The world is temporarily unavailable.",
     "body": "We are restarting the game service and expect Claudemoon to return shortly. This page will keep checking automatically.",
     "status": "Back soon"
   },

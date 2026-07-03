@@ -1,7 +1,7 @@
 // $WOC holder-tier "flexonomics" ladder.
 //
 // A purely cosmetic honor badge derived from how much $WOC a connected wallet
-// holds. It grants NO gameplay power (the vanilla-formula invariant forbids
+// holds. It grants NO gameplay power (the classic-formula invariant forbids
 // pay-to-win); it is flair for the player card and, later, nameplate cosmetics.
 //
 // This module is intentionally free of DOM, Three.js, and network imports: it is

@@ -170,14 +170,14 @@ export const guideStrings = {
       q2: 'Do I need a crypto wallet?',
       a2: 'No. The game is fully playable without one. The optional community token only unlocks cosmetic flair and never affects power.',
       q3: 'Can I play offline?',
-      a3: 'Yes. There is an instant single-player mode in your browser, plus the shared online realm.',
+      a3: 'Yes. There is an instant single-player mode in your browser, plus the shared online world.',
       q4: 'How long to reach max level?',
       a4: 'The cap is level {cap}, reached across three zones of quests, dungeons, and exploration.',
     },
 
     // Community call to action.
     community: {
-      heading: 'Join the realm',
+      heading: 'Join the world',
       body: 'Jump in now, or come say hello. The world is better with company.',
       play: 'Play Now',
       discord: 'Join the Discord',
@@ -226,7 +226,7 @@ export const guideStrings = {
       'Invite others to a party to share quest credit and take on dungeons. Most of the world is soloable, so grouping is a choice, not a chore.',
     onlineTitle: 'Online or offline',
     onlineBody:
-      'Play the shared online realm with everyone else, or start an instant offline world in your browser to learn the ropes.',
+      'Play the shared online world with everyone else, or start an instant offline world in your browser to learn the ropes.',
     reassure:
       'Talents unlock at level 10 and can be reset at any time, so your early choices are never permanent. Experiment freely.',
     controlsLink: 'See the full controls reference',

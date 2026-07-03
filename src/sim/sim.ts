@@ -379,7 +379,7 @@ export const SAY_RANGE = 25;
 // chat() router; HARMFUL_AURA_KINDS/isHarmfulAura + NEARBY_RANGE/NEARBY_MAX moved to
 // social/chat_readouts.ts with the /targetbuffs + /nearby readouts.
 // CHAT_BURST / CHAT_REFILL moved to social/chat.ts (chatAllowed moved with them).
-// Max characters in a single chat line, matching classic WoW's 255-char editbox.
+// Max characters in a single chat line, matching the classic 255-char editbox.
 // Authoritative cap: enforced here in the deterministic core so every host agrees;
 // the client maxlength + server chat-log slices mirror it.
 export const MAX_CHAT_MESSAGE_LEN = 255;

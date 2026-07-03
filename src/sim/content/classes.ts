@@ -2,7 +2,7 @@ import type { AbilityDef, AbilityEffect, PlayerClass, Stats, WeaponInfo } from '
 import type { TalentModifiers } from './talents';
 
 // ---------------------------------------------------------------------------
-// Player classes — per-level base stats follow vanilla growth curves.
+// Player classes — per-level base stats follow classic-era growth curves.
 // HP/mana rules are the real ones: first 20 stamina gives 1 hp each, the rest
 // 10 hp each; first 20 intellect gives 1 mana each, the rest 15 mana each.
 // ---------------------------------------------------------------------------
@@ -330,7 +330,7 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
 };
 
 // ---------------------------------------------------------------------------
-// Abilities — rank values and learn levels from vanilla (levels 1-10)
+// Abilities — classic-era rank values and learn levels (levels 1-10)
 // ---------------------------------------------------------------------------
 
 export const ABILITIES: Record<string, AbilityDef> = {

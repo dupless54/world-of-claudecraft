@@ -1,5 +1,5 @@
 // Combat overview. High level by design: concepts only, no formulas, coefficients, or
-// numbers, so there is nothing here to min-max or exploit (WoW-style altitude).
+// numbers, so there is nothing here to min-max or exploit (classic-guide altitude).
 
 import { t, formatNumber } from '../../ui/i18n';
 import { esc } from '../../ui/esc';

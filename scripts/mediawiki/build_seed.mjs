@@ -108,7 +108,7 @@ add('Main Page', \`
 <div>
 <p class="woc-kicker">Community player encyclopedia</p>
 <h1>World of Claudecraft Wiki</h1>
-World of Claudecraft is a browser-playable, WoW-Classic-flavored micro-MMO with online persistence, offline play, deterministic simulation logic, and a launch-week community that quickly turned jokes, dungeon clears, level races, bug reports, and feature requests into game history.
+World of Claudecraft is a browser-playable, classic-style micro-MMO with online persistence, offline play, deterministic simulation logic, and a launch-week community that quickly turned jokes, dungeon clears, level races, bug reports, and feature requests into game history.
 
 '''Start here:''' [[Quick Start]] · [[All Pages]] · [[Zones]] · [[Classes]] · [[Gameplay Systems]] · [[Community Lore]] · [[Development Timeline]]
 </div>
@@ -180,7 +180,7 @@ add('Sources Used', section('Local sources', bullets([
 ])), ['Sources']);
 
 const systemRows = [
-  ['Combat', 'Vanilla-style combat math, resources, GCD, threat, leashing, death, food, drink, and recovery.'],
+  ['Combat', 'Classic-era combat math, resources, GCD, threat, leashing, death, food, drink, and recovery.'],
   ['Parties', 'Five-player grouping, shared tap rights, shared kill credit, XP bonuses, party chat, and shared instances.'],
   ['Guilds', 'Guild creation, ranks, roster management, invites, guild chat, and public-discovery roadmap requests.'],
   ['Trading', 'Nearby players stage items and copper; both sides accept; walking apart cancels.'],

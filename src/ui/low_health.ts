@@ -1,5 +1,5 @@
 // Pure derivation of the low-health screen vignette — a pulsing red full-screen
-// glow that fades in as the player nears death (classic WoW's "FullScreenGlow").
+// glow that fades in as the player nears death (the classic full-screen low-health glow).
 // Kept DOM-free so the intensity curve can be unit-tested directly; the HUD just
 // applies the returned values to a fixed overlay element each frame.
 

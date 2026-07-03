@@ -29,7 +29,7 @@ export const gameStrings = {
     subtitle: "Lifetime XP",
     rank: "Rank",
     name: "Name",
-    realmCol: "Realm",
+    realmCol: "World",
     level: "Lvl",
     vlevel: "V.Lvl",
     lifetimeXp: "Lifetime XP",
@@ -38,7 +38,7 @@ export const gameStrings = {
     loading: "Loading rankings…",
     unranked: "Unranked",
     you: "You",
-    globalSubtitle: "Top champions across all realms",
+    globalSubtitle: "Top champions across all worlds",
     retry: "Could not load the leaderboard. Try again.",
   },
   milestone: {

@@ -1,4 +1,4 @@
-// Chat timestamps — a classic-WoW "Show Timestamps" interface option.
+// Chat timestamps — a classic-style "Show Timestamps" interface option.
 //
 // Pure, DOM-free formatting helpers (snapshot-tested in tests/). The HUD owns
 // the on/off + clock-format state and persists it to localStorage; this module

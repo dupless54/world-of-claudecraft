@@ -13,7 +13,7 @@ import { existsSync } from 'node:fs';
 // Edit this list to add/remove local realms. type: Normal | PvP | RP | RP-PvP
 const REALMS = [
   { name: 'Claudemoon', port: 8787, type: 'Normal' },
-  { name: 'Ironforge', port: 8788, type: 'PvP' },
+  { name: 'Highwatch', port: 8788, type: 'PvP' },
   { name: 'Stormhaven', port: 8789, type: 'RP' },
 ];
 
