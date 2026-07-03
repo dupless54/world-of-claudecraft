@@ -193,27 +193,32 @@ describe('routeHttpRequest health + metrics arms (integration)', () => {
     main.resetApiDispatchModeForTests();
   });
 
-  it('GET /livez returns 200 ok through the real ladder', async () => {
-    const res = await driveRoute('legacy', { url: '/livez' });
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toBe('ok');
-    expect(res.getHeader('Cache-Control')).toBe('no-store');
+  it('GET /livez returns 200 ok through the real ladder under both dispatch modes', async () => {
+    for (const mode of ['legacy', 'new'] as const) {
+      const res = await driveRoute(mode, { url: '/livez' });
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toBe('ok');
+      expect(res.getHeader('Cache-Control')).toBe('no-store');
+    }
   });
 
-  it('GET /readyz returns 200 ok, then 503 after markDraining()', async () => {
-    const ready = await driveRoute('legacy', { url: '/readyz' });
-    expect(ready.statusCode).toBe(200);
-    expect(ready.body).toBe('ok');
+  it('GET /readyz returns 200 ok, then 503 after markDraining(), under both dispatch modes', async () => {
+    for (const mode of ['legacy', 'new'] as const) {
+      resetHealthForTests();
+      const ready = await driveRoute(mode, { url: '/readyz' });
+      expect(ready.statusCode).toBe(200);
+      expect(ready.body).toBe('ok');
 
-    markDraining();
-    const draining = await driveRoute('legacy', { url: '/readyz' });
-    expect(draining.statusCode).toBe(503);
-    expect(draining.body).toBe('draining');
+      markDraining();
+      const draining = await driveRoute(mode, { url: '/readyz' });
+      expect(draining.statusCode).toBe(503);
+      expect(draining.body).toBe('draining');
 
-    // /livez stays 200 through the drain (liveness is not readiness).
-    const live = await driveRoute('legacy', { url: '/livez' });
-    expect(live.statusCode).toBe(200);
-    expect(live.body).toBe('ok');
+      // /livez stays 200 through the drain (liveness is not readiness).
+      const live = await driveRoute(mode, { url: '/livez' });
+      expect(live.statusCode).toBe(200);
+      expect(live.body).toBe('ok');
+    }
   });
 
   it('GET /metrics returns the prometheus exposition under both dispatch modes', async () => {

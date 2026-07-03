@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { compose } from '../../../server/http/compose';
 import {
   createHttpMetrics,
+  HTTP_DURATION_BUCKETS_SECONDS,
   HTTP_REQUEST_DURATION_SECONDS,
   HTTP_REQUESTS_TOTAL,
 } from '../../../server/http/metrics';
@@ -67,6 +68,21 @@ describe('createHttpMetrics: recording exposes both RED metrics', () => {
     expect(HTTP_REQUEST_DURATION_SECONDS).toBe('http_request_duration_seconds');
     expect(text).toContain(`# TYPE ${HTTP_REQUESTS_TOTAL} counter`);
     expect(text).toContain(`# TYPE ${HTTP_REQUEST_DURATION_SECONDS} histogram`);
+  });
+
+  it('pins the histogram bucket boundaries as literals, and each surfaces as an le=', async () => {
+    // A LITERAL pin: silently editing the bucket array (the acceptance-criterion
+    // "named bucket constant") must fail here, not ride the shared constant.
+    const boundaries = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10];
+    expect([...HTTP_DURATION_BUCKETS_SECONDS]).toEqual(boundaries);
+
+    const metrics = createHttpMetrics();
+    metrics.sink.record({ route: '/api/x', method: 'GET', status: 200, durationMs: 1 });
+    const text = await metrics.metricsText();
+    for (const boundary of boundaries) {
+      expect(text).toContain(`le="${boundary}"`);
+    }
+    expect(text).toContain('le="+Inf"');
   });
 });
 

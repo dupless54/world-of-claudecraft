@@ -74,6 +74,19 @@ describe('withRequestId: echoes the X-Request-Id response header', () => {
     expect(resOf(ctx).getHeader(REQUEST_ID_HEADER)).toBe('rid-2xx');
   });
 
+  it('sets the header on the way IN, surviving a downstream throw WITHOUT withErrors', async () => {
+    // Isolation pin: withErrors independently emits X-Request-Id on the error
+    // path, so the composed 5xx test below would pass even if withRequestId
+    // dropped its setHeader. This composes ONLY [withRequestId, throwing] and
+    // proves the echo comes from withRequestId itself.
+    const ctx = fakeCtx({ reqId: 'rid-isolated' });
+    const throwing: Middleware = async () => {
+      throw new Error('boom');
+    };
+    await expect(compose([withRequestId(), throwing])(ctx)).rejects.toThrow('boom');
+    expect(resOf(ctx).getHeader(REQUEST_ID_HEADER)).toBe('rid-isolated');
+  });
+
   it('still carries X-Request-Id on a thrown 5xx mapped by withErrors', async () => {
     // withRequestId sets the header on the way IN (before the throw), and it
     // survives the writeHead merge when withErrors serializes the 500.

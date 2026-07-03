@@ -28,6 +28,16 @@ describe('redact: named secret classes', () => {
     expect(out.authCode).toBe(REDACTED);
   });
 
+  it('(b) scrubs an opaque NON-hex value under a token-named key', () => {
+    // The bare `token` needle, not the 64-hex value pattern, must catch these.
+    const out = redact({ token: 'opaque-not-hex', sessionToken: 'abc123' }) as Record<
+      string,
+      unknown
+    >;
+    expect(out.token).toBe(REDACTED);
+    expect(out.sessionToken).toBe(REDACTED);
+  });
+
   it('(c) scrubs a password field and its variants', () => {
     const out = redact({ password: 'hunter2', newPassword: 'hunter3' }) as Record<string, unknown>;
     expect(out.password).toBe(REDACTED);

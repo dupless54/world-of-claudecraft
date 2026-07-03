@@ -11,6 +11,7 @@
 
 import type * as http from 'node:http';
 import { describe, expect, it, vi } from 'vitest';
+import { createAccessLogSink } from '../../../server/http/access_log';
 import { currentReqId } from '../../../server/http/context';
 import {
   type ApiDelegate,
@@ -18,8 +19,13 @@ import {
   createApiDispatcher,
   selectApiEntry,
 } from '../../../server/http/dispatch';
-import { logger } from '../../../server/http/logger';
-import type { MetricEvent, MetricSink } from '../../../server/http/middleware/metric_sink';
+import { createLogger, logger } from '../../../server/http/logger';
+import { createHttpMetrics } from '../../../server/http/metrics';
+import {
+  type MetricEvent,
+  type MetricSink,
+  teeMetricSink,
+} from '../../../server/http/middleware/metric_sink';
 import type { ApiRegistry } from '../../../server/http/registry';
 import type { MatchResult } from '../../../server/http/router';
 import type { RouteDef, RouteHandler, RouteMeta } from '../../../server/http/types';
@@ -299,6 +305,44 @@ describe('createApiDispatcher', () => {
       vi.unstubAllEnvs();
       warn.mockRestore();
     }
+  });
+
+  it('drives the PRODUCTION composite sink shape: one access line AND one counter increment per request', async () => {
+    // main.ts injects teeMetricSink(createAccessLogSink(logger), httpMetrics.sink)
+    // into every dispatcher; this composes the same shape end to end so the tee
+    // wiring itself (not just each sink in isolation) is pinned.
+    const metrics = createHttpMetrics();
+    const lines: string[] = [];
+    const log = createLogger({ out: (line) => lines.push(line), err: (line) => lines.push(line) });
+    const route = fakeRoute(async (ctx) => {
+      ctx.res.writeHead(200, { 'Content-Type': 'application/json' });
+      ctx.res.end('{}');
+    });
+    const dispatcher = createApiDispatcher({
+      registry: registryReturning({ kind: 'matched', route, params: { id: '42' }, head: false }),
+      delegate: () => {},
+      metricSink: teeMetricSink(createAccessLogSink(log), metrics.sink),
+    });
+
+    const res = new FakeRes();
+    dispatcher(
+      makeReq({ method: 'GET', url: '/api/things/42' }),
+      res as unknown as http.ServerResponse,
+    );
+    await flush(res);
+
+    // Exactly ONE structured access line, on the :param TEMPLATE, carrying the
+    // reqId bound by runOnion (withMetrics records inside its ALS scope).
+    expect(lines).toHaveLength(1);
+    const line = JSON.parse(lines[0]) as Record<string, unknown>;
+    expect(line.msg).toBe('access');
+    expect(line.route).toBe('/api/things/:id');
+    expect(line.status).toBe(200);
+    expect(line.reqId).toBeTruthy();
+    // The SAME request landed in the prom counter, on the same template.
+    const text = await metrics.metricsText();
+    expect(text).toContain('route="/api/things/:id"');
+    expect(text.match(/^http_requests_total\{[^}]*\} 1$/m)).toBeTruthy();
   });
 });
 
