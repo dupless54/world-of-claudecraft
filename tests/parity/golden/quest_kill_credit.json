@@ -15,8 +15,8 @@
     {
       "tick": 0,
       "time": 0,
-      "nextId": 390,
-      "state": "104984ca",
+      "nextId": 393,
+      "state": "65802200",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -32,16 +32,15 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
@@ -54,13 +53,14 @@
           "aiState": "idle",
           "attackPower": 46,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.06,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 90,
-          "id": 389,
+          "id": 392,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
@@ -103,9 +103,9 @@
     {
       "tick": 0,
       "time": 0,
-      "nextId": 390,
-      "state": "5ca7b59b",
-      "events": "d8fe6d87",
+      "nextId": 393,
+      "state": "c0e5e867",
+      "events": "5f459d47",
       "rng": {
         "draws": 0,
         "digest": "811c9dc5"
@@ -120,17 +120,16 @@
           "cls": "warrior",
           "companionUpgrades": {},
           "counters": {},
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
           "lifetimeXp": 27600,
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "questLog": [
             [
               "q_wolves",
@@ -155,13 +154,14 @@
           "aiState": "idle",
           "attackPower": 82,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0645,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0645,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 50000,
-          "id": 389,
+          "id": 392,
           "kind": "player",
           "level": 10,
           "lootFfaTimer": "Infinity",
@@ -204,9 +204,9 @@
     {
       "tick": 8,
       "time": 0.4,
-      "nextId": 398,
-      "state": "f34e926b",
-      "events": "68debff8",
+      "nextId": 401,
+      "state": "798c99e1",
+      "events": "2fad2100",
       "rng": {
         "draws": 32,
         "digest": "4d504aff"
@@ -225,17 +225,16 @@
             "kills": 8,
             "questProgress": 8
           },
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
           "lifetimeXp": 27600,
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "questLog": [
             [
               "q_wolves",
@@ -260,13 +259,14 @@
           "aiState": "idle",
           "attackPower": 82,
           "combatTimer": 0.05,
+          "comboUntil": -1,
           "critChance": 0.0645,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0645,
           "fallStartY": 1.5,
           "fiveSecondRule": 99.4,
           "hp": 50000,
-          "id": 389,
+          "id": 392,
           "inCombat": true,
           "kind": "player",
           "level": 10,
@@ -310,9 +310,9 @@
     {
       "tick": 8,
       "time": 0.4,
-      "nextId": 398,
-      "state": "d22af85a",
-      "events": "d91c55b7",
+      "nextId": 401,
+      "state": "0a6d7806",
+      "events": "f846efa3",
       "rng": {
         "draws": 32,
         "digest": "4d504aff"
@@ -334,17 +334,16 @@
             "questsCompleted": 1,
             "xpGained": 250
           },
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
           "lifetimeXp": 27850,
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "questsDone": [
             "q_wolves"
           ],
@@ -361,13 +360,14 @@
           "aiState": "idle",
           "attackPower": 82,
           "combatTimer": 0.05,
+          "comboUntil": -1,
           "critChance": 0.0645,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0645,
           "fallStartY": 1.5,
           "fiveSecondRule": 99.4,
           "hp": 50000,
-          "id": 389,
+          "id": 392,
           "inCombat": true,
           "kind": "player",
           "level": 10,
@@ -411,8 +411,8 @@
     {
       "tick": 10,
       "time": 0.5,
-      "nextId": 398,
-      "state": "abbc0eee",
+      "nextId": 401,
+      "state": "7e6b664e",
       "events": "741638a5",
       "rng": {
         "draws": 32,
@@ -435,17 +435,16 @@
             "questsCompleted": 1,
             "xpGained": 250
           },
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
           "lifetimeXp": 27850,
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "questsDone": [
             "q_wolves"
           ],
@@ -462,13 +461,14 @@
           "aiState": "idle",
           "attackPower": 82,
           "combatTimer": 0.15,
+          "comboUntil": -1,
           "critChance": 0.0645,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0645,
           "fallStartY": 1.5,
           "fiveSecondRule": 99.5,
           "hp": 50000,
-          "id": 389,
+          "id": 392,
           "inCombat": true,
           "kind": "player",
           "level": 10,

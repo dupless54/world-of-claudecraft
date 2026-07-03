@@ -14,8 +14,8 @@
     {
       "tick": 0,
       "time": 0,
-      "nextId": 390,
-      "state": "c1559139",
+      "nextId": 393,
+      "state": "3ae6e2b7",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -31,16 +31,15 @@
           "cls": "paladin",
           "companionUpgrades": {},
           "counters": {},
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "training_mace"
           },
           "gatheringProficiency": {},
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
@@ -53,13 +52,14 @@
           "aiState": "idle",
           "attackPower": 44,
           "combatTimer": 99,
+          "comboUntil": -1,
           "critChance": 0.0585,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0585,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 95,
-          "id": 389,
+          "id": 392,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
@@ -103,9 +103,9 @@
     {
       "tick": 20,
       "time": 1,
-      "nextId": 391,
-      "state": "166edfc0",
-      "events": "b4299a02",
+      "nextId": 394,
+      "state": "402558ee",
+      "events": "5576622a",
       "rng": {
         "draws": 4,
         "digest": "e457e920"
@@ -114,8 +114,8 @@
     {
       "tick": 40,
       "time": 2,
-      "nextId": 391,
-      "state": "b34a3aef",
+      "nextId": 394,
+      "state": "5b17d4f3",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -125,9 +125,9 @@
     {
       "tick": 60,
       "time": 3,
-      "nextId": 391,
-      "state": "8c0c5b2f",
-      "events": "51b826d4",
+      "nextId": 394,
+      "state": "953f2e09",
+      "events": "87a6d1e0",
       "rng": {
         "draws": 80,
         "digest": "ae0d25c6"
@@ -136,8 +136,8 @@
     {
       "tick": 80,
       "time": 4,
-      "nextId": 391,
-      "state": "a4e4c4d2",
+      "nextId": 394,
+      "state": "b8614e62",
       "events": "741638a5",
       "rng": {
         "draws": 170,
@@ -147,9 +147,9 @@
     {
       "tick": 100,
       "time": 5,
-      "nextId": 391,
-      "state": "48f3bca0",
-      "events": "bfd845e5",
+      "nextId": 394,
+      "state": "e4894700",
+      "events": "7f722377",
       "rng": {
         "draws": 270,
         "digest": "afc4bc0b"
@@ -158,8 +158,8 @@
     {
       "tick": 120,
       "time": 6,
-      "nextId": 391,
-      "state": "86c982df",
+      "nextId": 394,
+      "state": "db1a6cb9",
       "events": "741638a5",
       "rng": {
         "draws": 387,
@@ -169,9 +169,9 @@
     {
       "tick": 140,
       "time": 7,
-      "nextId": 391,
-      "state": "075d74e7",
-      "events": "b26de961",
+      "nextId": 394,
+      "state": "cc18e7a1",
+      "events": "cf6ae7ff",
       "rng": {
         "draws": 501,
         "digest": "9e9280f3"
@@ -180,8 +180,8 @@
     {
       "tick": 160,
       "time": 8,
-      "nextId": 391,
-      "state": "86c824c5",
+      "nextId": 394,
+      "state": "a2932007",
       "events": "741638a5",
       "rng": {
         "draws": 627,
@@ -191,9 +191,9 @@
     {
       "tick": 180,
       "time": 9,
-      "nextId": 391,
-      "state": "567d11e7",
-      "events": "edc2d1e7",
+      "nextId": 394,
+      "state": "0dc91051",
+      "events": "9583d1a1",
       "rng": {
         "draws": 765,
         "digest": "84d7375c"
@@ -202,8 +202,8 @@
     {
       "tick": 200,
       "time": 10,
-      "nextId": 391,
-      "state": "fc9baba8",
+      "nextId": 394,
+      "state": "57ca3a68",
       "events": "741638a5",
       "rng": {
         "draws": 931,
@@ -213,8 +213,8 @@
     {
       "tick": 201,
       "time": 10.05,
-      "nextId": 391,
-      "state": "0475c8dc",
+      "nextId": 394,
+      "state": "a42d4f06",
       "events": "741638a5",
       "rng": {
         "draws": 932,
@@ -233,17 +233,16 @@
             "damageDealt": 164,
             "damageTaken": 22
           },
-          "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 389,
+          "entityId": 392,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "training_mace"
           },
           "gatheringProficiency": {},
           "lifetimeXp": 167200,
-          "nodeHarvestReadyAt": {},
+          "mailWelcomed": true,
           "talents": {
             "choices": {},
             "ranks": {}
@@ -256,13 +255,14 @@
           "aiState": "idle",
           "attackPower": 120,
           "combatTimer": 1.95,
+          "comboUntil": -1,
           "critChance": 0.068,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.068,
           "fallStartY": 1.5,
           "fiveSecondRule": 10,
           "hp": 49978,
-          "id": 389,
+          "id": 392,
           "inCombat": true,
           "kind": "player",
           "level": 20,
@@ -295,7 +295,7 @@
             "sta": 60,
             "str": 60
           },
-          "targetId": 390,
+          "targetId": 393,
           "templateId": "paladin",
           "weapon": {
             "max": 5,
@@ -304,9 +304,10 @@
           }
         },
         {
-          "aggroTargetId": 389,
+          "aggroTargetId": 392,
           "aiState": "attack",
           "combatTimer": 1.95,
+          "comboUntil": -1,
           "critChance": 0.05,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.05,
@@ -315,7 +316,7 @@
           "fiveSecondRule": 99,
           "hostile": true,
           "hp": 39836,
-          "id": 390,
+          "id": 393,
           "inCombat": true,
           "kind": "mob",
           "leashAnchor": {
@@ -345,11 +346,11 @@
             "armor": 40
           },
           "swingTimer": 0.05,
-          "tappedById": 389,
+          "tappedById": 392,
           "templateId": "forest_wolf",
           "threat": [
             [
-              389,
+              392,
               165
             ]
           ],
