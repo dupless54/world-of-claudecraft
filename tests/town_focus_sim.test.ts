@@ -32,12 +32,7 @@ function setup() {
   return { sim, internals, a };
 }
 
-function spawnHideWolf(
-  sim: Sim,
-  internals: SimInternals,
-  id: number,
-  pos: { x: number; z: number },
-) {
+function spawnHideWolf(internals: SimInternals, id: number, pos: { x: number; z: number }) {
   const template = MOBS.forest_wolf;
   const mob = createMob(id, template, template.maxLevel, { x: pos.x, y: 0, z: pos.z });
   mob.dead = true;
@@ -80,7 +75,7 @@ describe('harvestCorpse + town focus: additive bonus, baseline never lowered', (
       if (focused) sim.setTownFocus({ hide: POINTS_PER_TIER_BONUS }, a);
       let total = 0;
       for (let i = 0; i < trials; i++) {
-        const mob = spawnHideWolf(sim, internals, 10000 + i, ZONE1.hub);
+        const mob = spawnHideWolf(internals, 10000 + i, ZONE1.hub);
         sim.harvestCorpse(mob.id, undefined, a);
         total = sim.countItem('boar_hide', a);
       }
@@ -96,12 +91,12 @@ describe('harvestCorpse + town focus: additive bonus, baseline never lowered', (
     const { sim, internals, a } = setup();
     // spend the whole budget on 'fang'; 'hide' stays unfocused throughout.
     sim.setTownFocus({ fang: 10 }, a);
-    const mob = spawnHideWolf(sim, internals, 20000, ZONE1.hub);
+    const mob = spawnHideWolf(internals, 20000, ZONE1.hub);
     sim.harvestCorpse(mob.id, undefined, a);
     const withOtherFocused = sim.countItem('boar_hide', a);
 
     const { sim: sim2, internals: internals2, a: a2 } = setup();
-    const mob2 = spawnHideWolf(sim2, internals2, 20001, ZONE1.hub);
+    const mob2 = spawnHideWolf(internals2, 20001, ZONE1.hub);
     sim2.harvestCorpse(mob2.id, undefined, a2);
     const baseline = sim2.countItem('boar_hide', a2);
 
