@@ -21,6 +21,7 @@ import {
   revokeReadToken,
   saveToken,
 } from './db';
+import { logger } from './http/logger';
 import type { RouteDef, RouteMeta } from './http/types';
 import { json, readBinaryBody } from './http_util';
 import {
@@ -185,7 +186,7 @@ export async function handleOAuth(
     if (req.method === 'POST' && path === '/oauth/device') return await approveDevice(req, res);
     oauthError(res, 404, 'not_found');
   } catch (err) {
-    console.error('oauth error:', err);
+    logger.error({ err }, 'oauth error');
     oauthError(res, 500, 'server_error');
   }
 }

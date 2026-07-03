@@ -31,6 +31,7 @@ import {
   parseTokenResponse,
 } from './github_oauth';
 import { ctxAccountId } from './http/context';
+import { logger } from './http/logger';
 import { type BearerActiveGuardDb, createActiveGuard } from './http/middleware/bearer_active_guard';
 import type { Ctx, Middleware, Next, RouteDef } from './http/types';
 import { json } from './http_util';
@@ -140,7 +141,7 @@ export async function handleGitHubCallback(
     }
     return bouncePage(res, 200, { ok: true, login: user.login });
   } catch (err) {
-    console.error('github callback error:', err);
+    logger.error({ err }, 'github callback error');
     recordUsageMetric('github.link.failure');
     return bouncePage(res, 500, { ok: false, error: 'server_error' });
   }

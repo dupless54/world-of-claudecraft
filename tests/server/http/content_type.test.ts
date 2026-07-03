@@ -7,6 +7,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { compose } from '../../../server/http/compose';
+import { logger } from '../../../server/http/logger';
 import {
   CONTENT_TYPE_ENFORCE_ENV,
   type ContentTypeMismatch,
@@ -291,24 +292,37 @@ describe('contentTypeEnforced: named-flag parse', () => {
 });
 
 describe('defaultContentTypeMismatchSink', () => {
-  it('emits exactly one console.warn line', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    defaultContentTypeMismatchSink({
-      route: '/api/thing',
-      method: 'POST',
-      contentType: 'text/plain',
-      enforced: false,
-    });
-    expect(warn).toHaveBeenCalledTimes(1);
+  it('emits exactly one structured warn line through the logger', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      defaultContentTypeMismatchSink({
+        route: '/api/thing',
+        method: 'POST',
+        contentType: 'text/plain',
+        enforced: false,
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][1]).toBe('content-type mismatch');
+      expect(warn.mock.calls[0][0]).toMatchObject({
+        route: '/api/thing',
+        contentType: 'text/plain',
+      });
+    } finally {
+      warn.mockRestore();
+    }
   });
 
-  it('is the sink the gate uses when none is injected (mismatch reaches console.warn)', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const state: HandlerState = { ran: false };
-    const ctx = postCtx('text/plain');
-    // No sink in opts: the gate falls back to defaultContentTypeMismatchSink.
-    await compose([withContentType(makeRoute(), { env: LOGONLY_ENV }), terminal(state)])(ctx);
-    expect(state.ran).toBe(true);
-    expect(warn).toHaveBeenCalledTimes(1);
+  it('is the sink the gate uses when none is injected (mismatch reaches the logger)', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      const state: HandlerState = { ran: false };
+      const ctx = postCtx('text/plain');
+      // No sink in opts: the gate falls back to defaultContentTypeMismatchSink.
+      await compose([withContentType(makeRoute(), { env: LOGONLY_ENV }), terminal(state)])(ctx);
+      expect(state.ran).toBe(true);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

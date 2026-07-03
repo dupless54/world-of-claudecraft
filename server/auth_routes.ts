@@ -55,6 +55,7 @@ import {
   touchLogin,
 } from './db';
 import { emailAccountCreated } from './email';
+import { logger } from './http/logger';
 import { withBody } from './http/middleware/body';
 import { turnstile } from './http/middleware/turnstile';
 import type { Ctx, Middleware, RouteDef } from './http/types';
@@ -291,12 +292,12 @@ async function registerHandler(ctx: Ctx): Promise<void> {
       username: account.username,
       ...rt.requestMetadata(ctx.req),
     })
-    .catch((err) => console.error('suspicious registration report failed:', err));
+    .catch((err) => logger.error({ err }, 'suspicious registration report failed'));
   // Capture the referral when this account signed up via a card link (?ref=<slug>).
   // Best-effort: never block or fail registration on it.
   void authDb
     .captureReferral(account.id, body.ref)
-    .catch((err) => console.error('referral capture failed:', err));
+    .catch((err) => logger.error({ err }, 'referral capture failed'));
   json(ctx.res, 200, { token, username: account.username });
 }
 

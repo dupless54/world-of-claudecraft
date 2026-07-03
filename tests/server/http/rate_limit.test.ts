@@ -9,6 +9,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mapError } from '../../../server/http/errors';
+import { logger } from '../../../server/http/logger';
 import {
   CARD_UPLOAD_POLICY,
   CHARACTER_CREATE_POLICY,
@@ -265,7 +266,7 @@ describe('rateLimit: tier-2 trip', () => {
 
 describe('rateLimit: tier-2 fails open', () => {
   it('proceeds (next runs) when the tier-2 store throws', async () => {
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
     const store = new RecordingRateLimitStore(() => {
       throw new Error('pg is down');
     });
@@ -287,7 +288,7 @@ describe('rateLimit: tier-2 fails open', () => {
     // During a pg outage EVERY tier-1-allowed request lands in the fail-open
     // catch; the log line is throttled to one per WINDOW_MS (via the injected
     // clock) so an outage under load cannot flood the ops log.
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
     const store = new RecordingRateLimitStore(() => {
       throw new Error('pg is down');
     });

@@ -17,6 +17,7 @@
 import type * as http from 'node:http';
 import { allowedCorsOrigin } from '../../web_login_guard';
 import { HttpError } from '../errors';
+import { logger } from '../logger';
 import type { Ctx, Middleware, Next, RouteDef } from '../types';
 // The shared mutating-method set: single-sourced in the sibling gate so the two
 // Phase 21 gates cannot diverge on which methods they cover.
@@ -52,12 +53,11 @@ export interface CrossSiteMismatch {
 export type CrossSiteMismatchSink = (mismatch: CrossSiteMismatch) => void;
 
 /**
- * The default sink: emit ONE structured dev-channel warning via the console
- * facade (NOT a new logger; the structured logger is Phase 23). English only:
- * this is a dev/ops channel, not player-facing text.
+ * The default sink: emit ONE structured dev-channel warning via the Phase 23
+ * structured logger. English only: this is a dev/ops channel, not player-facing text.
  */
 export const defaultCrossSiteMismatchSink: CrossSiteMismatchSink = (mismatch) => {
-  console.warn('[http] cross-site origin on mutating /api request', mismatch);
+  logger.warn({ ...mismatch }, 'cross-site origin on mutating /api request');
 };
 
 /**

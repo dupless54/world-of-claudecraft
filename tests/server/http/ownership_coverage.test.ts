@@ -37,6 +37,7 @@ import {
   setCharactersDbForTests,
 } from '../../../server/characters';
 import { compose } from '../../../server/http/compose';
+import { logger } from '../../../server/http/logger';
 import { ADMIN_AUTH_REQUIRED } from '../../../server/http/middleware/require_admin';
 import {
   DAILY_REWARD_SECRET_ENV,
@@ -165,9 +166,10 @@ async function runRoute(
 
 describe('ownership coverage: registry-wide deny-by-default sweep', () => {
   beforeEach(() => {
-    // Silence the loader's structured bola_denied stderr line (defaultDenyLog) so
-    // the sweep does not spam the test output with one warn per denied route.
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Silence the loader's structured bola_denied line (defaultDenyLog, now through
+    // the logger) so the sweep does not spam the test output with one warn per
+    // denied route.
+    vi.spyOn(logger, 'warn').mockImplementation(() => {});
     installDenyingCharacterDb();
     installFakeRuntime();
   });

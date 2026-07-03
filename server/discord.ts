@@ -68,6 +68,7 @@ import {
 } from './discord_oauth';
 import { ctxAccountId } from './http/context';
 import type { ErrorCode } from './http/error_codes';
+import { logger } from './http/logger';
 import {
   type BearerActiveGuardDb,
   bearerToken,
@@ -277,7 +278,7 @@ export async function handleDiscordCallback(
     }
     return await completeLogin(req, res, user, guildMember);
   } catch (err) {
-    console.error('discord callback error:', err);
+    logger.error({ err }, 'discord callback error');
     return bouncePage(res, 500, { ok: false, mode, error: 'server_error' });
   }
 }
@@ -435,7 +436,7 @@ export async function handleDiscordLoginNew(
     const token = await issueDiscordSession(accountId, meta);
     return json(res, 200, { token, username });
   } catch (err) {
-    console.error('discord login/new error:', err);
+    logger.error({ err }, 'discord login/new error');
     return json(res, 500, { error: 'server_error' });
   }
 }
@@ -812,7 +813,7 @@ export async function handleSwagClaim(
     try {
       grantCosmetic(swag.grantId);
     } catch (err) {
-      console.error('discord swag cosmetic grant failed:', err);
+      logger.error({ err }, 'discord swag cosmetic grant failed');
     }
   }
   note('discord.swag.claim.success');

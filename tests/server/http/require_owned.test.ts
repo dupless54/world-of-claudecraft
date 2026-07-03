@@ -11,6 +11,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { HttpError } from '../../../server/http/errors';
+import { logger } from '../../../server/http/logger';
 import { requireOwned } from '../../../server/http/middleware/require_owned';
 import type { Ctx, Next } from '../../../server/http/types';
 import { fakeCtx } from '../helpers/fake_ctx';
@@ -119,23 +120,29 @@ describe('requireOwned: miss (cross-account or absent)', () => {
   });
 
   it('uses the per-route notFoundBody (a different route emits a different body)', async () => {
-    const load = vi.fn().mockResolvedValue(null);
-    const mw = requireOwned({
-      resource: 'auction',
-      param: 'id',
-      load,
-      notFoundBody: { error: 'not found' },
-    });
-    const ctx = fakeCtx({ account: { accountId: 7, scope: 'full' }, params: { id: '5' } });
-    const res = resOf(ctx);
-    const next = makeNext();
+    // Silence the default deny sink (now through the logger) for this body-only case.
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      const load = vi.fn().mockResolvedValue(null);
+      const mw = requireOwned({
+        resource: 'auction',
+        param: 'id',
+        load,
+        notFoundBody: { error: 'not found' },
+      });
+      const ctx = fakeCtx({ account: { accountId: 7, scope: 'full' }, params: { id: '5' } });
+      const res = resOf(ctx);
+      const next = makeNext();
 
-    await mw(ctx, next);
+      await mw(ctx, next);
 
-    expect(next).not.toHaveBeenCalled();
-    expect(res.statusCode).toBe(404);
-    expect(JSON.parse(res.body)).toEqual({ error: 'not found' });
-    expect(res.body).toBe(JSON.stringify({ error: 'not found' }));
+      expect(next).not.toHaveBeenCalled();
+      expect(res.statusCode).toBe(404);
+      expect(JSON.parse(res.body)).toEqual({ error: 'not found' });
+      expect(res.body).toBe(JSON.stringify({ error: 'not found' }));
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });
 
@@ -247,8 +254,8 @@ describe('requireOwned: missing account (composition bug)', () => {
 });
 
 describe('requireOwned: default deny log', () => {
-  it('emits one structured stderr warn line on a miss when no denyLog is injected', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('emits one structured warn line through the logger on a miss when no denyLog is injected', async () => {
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
     try {
       const load = vi.fn().mockResolvedValue(null);
       const mw = requireOwned({
@@ -265,9 +272,12 @@ describe('requireOwned: default deny log', () => {
 
       expect(res.statusCode).toBe(404);
       expect(warnSpy).toHaveBeenCalledTimes(1);
-      // The default sink writes ONE structured JSON line, never the player body.
-      const line = warnSpy.mock.calls[0][0] as string;
-      expect(JSON.parse(line).event).toBe('bola_denied');
+      // The default sink emits ONE structured deny line, never the player body.
+      expect(warnSpy.mock.calls[0][1]).toBe('bola_denied');
+      const fields = warnSpy.mock.calls[0][0] as Record<string, unknown>;
+      expect(fields.event).toBe('bola_denied');
+      expect(fields.resource).toBe('character');
+      expect(fields.accountId).toBe(7);
     } finally {
       warnSpy.mockRestore();
     }

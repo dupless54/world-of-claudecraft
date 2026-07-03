@@ -39,6 +39,7 @@ import {
 import { emailSecurityIncident } from './email';
 import type { GameServer } from './game';
 import { ctxAccountId } from './http/context';
+import { logger } from './http/logger';
 import {
   ADMIN_META,
   type AdminAuthDb,
@@ -223,7 +224,7 @@ export async function handleAdminApi(
                     : 'until reviewed';
               emailSecurityIncident(target, action, reasonText, until);
             })
-            .catch((err) => console.error('security-incident email failed:', err));
+            .catch((err) => logger.error({ err }, 'security-incident email failed'));
         }
         return ok(res, { ok: true });
       } catch (err) {
@@ -551,7 +552,7 @@ export async function handleAdminApi(
 
     fail(res, 404, 'unknown admin endpoint');
   } catch (err) {
-    console.error('admin api error:', err);
+    logger.error({ err }, 'admin api error');
     fail(res, 500, 'internal error');
   }
 }
@@ -978,7 +979,7 @@ async function moderateActionHandler(ctx: Ctx): Promise<void> {
                 : 'until reviewed';
           adminDb().emailSecurityIncident(target, action, reasonText, until);
         })
-        .catch((err) => console.error('security-incident email failed:', err));
+        .catch((err) => logger.error({ err }, 'security-incident email failed'));
     }
     return ok(ctx.res, { ok: true });
   } catch (err) {

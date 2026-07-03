@@ -15,10 +15,11 @@
 // Audited ground truth: the perf-report and site-presence beacons SEND
 // application/json, so they are correctly gated-but-passing, not exempted.
 //
-// Server-side, language-agnostic: the mismatch line is dev-channel English (the
-// Phase 8 console facade, NOT a new logger; Phase 23 owns real logging).
+// Server-side, language-agnostic: the mismatch line is dev-channel English,
+// emitted through the Phase 23 structured logger.
 
 import { HttpError } from '../errors';
+import { logger } from '../logger';
 import type { Ctx, Method, Middleware, Next, RouteDef } from '../types';
 
 /** The named ops flag that flips the gate from log-only to 415 enforcement. */
@@ -61,20 +62,23 @@ export interface ContentTypeMismatch {
   readonly enforced: boolean;
 }
 
-/** Receives every mismatch; the default emits one structured console.warn line. */
+/** Receives every mismatch; the default emits one structured logger.warn line. */
 export type ContentTypeMismatchSink = (mismatch: ContentTypeMismatch) => void;
 
 /**
- * The default sink: one structured dev-channel line per mismatch. This is the
- * Phase 8 console facade (Phase 23 owns real logging), not a new logger.
+ * The default sink: one structured dev-channel line per mismatch, through the
+ * Phase 23 structured logger.
  */
 export const defaultContentTypeMismatchSink: ContentTypeMismatchSink = (mismatch) => {
-  console.warn('[content-type] mismatch', {
-    route: mismatch.route,
-    method: mismatch.method,
-    contentType: mismatch.contentType,
-    enforced: mismatch.enforced,
-  });
+  logger.warn(
+    {
+      route: mismatch.route,
+      method: mismatch.method,
+      contentType: mismatch.contentType,
+      enforced: mismatch.enforced,
+    },
+    'content-type mismatch',
+  );
 };
 
 /**

@@ -30,6 +30,7 @@
 
 import { json } from '../../http_util';
 import { ctxAccountId, currentReqId } from '../context';
+import { logger } from '../logger';
 import { num } from '../schema';
 import type { Ctx, Middleware, Next } from '../types';
 
@@ -69,9 +70,9 @@ export interface BolaDenyEvent {
  */
 export type BolaDenyLogger = (event: BolaDenyEvent) => void;
 
-/** Default deny sink: one structured stderr line (never the player-facing body). */
+/** Default deny sink: one structured warn line via the logger (never the player-facing body). */
 const defaultDenyLog: BolaDenyLogger = (event) => {
-  console.warn(JSON.stringify(event));
+  logger.warn({ ...event }, 'bola_denied');
 };
 
 /** Everything requireOwned needs to load, authorize, and deny an owned :id resource. */

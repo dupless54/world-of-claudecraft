@@ -37,6 +37,7 @@ import {
 } from '../../ratelimit';
 import { ctxAccountId } from '../context';
 import { HttpError, rateLimit429Headers } from '../errors';
+import { logger } from '../logger';
 import type { Ctx, Middleware, Next, RateLimitOutcome, RateLimitStore } from '../types';
 
 /** How a policy derives its rate-limit key: per client IP, or per (IP AND account). */
@@ -138,7 +139,7 @@ export function rateLimit(policy: RateLimitPolicy): Middleware {
           const nowMs = rateLimitNow();
           if (nowMs - lastTier2ErrorLogMs >= WINDOW_MS) {
             lastTier2ErrorLogMs = nowMs;
-            console.error('[ratelimit] tier-2 store error, failing open', err);
+            logger.error({ err }, 'ratelimit tier-2 store error, failing open');
           }
         }
         // Throw OUTSIDE the try so a deliberate tier-2 429 is never swallowed by

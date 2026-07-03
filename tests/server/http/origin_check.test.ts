@@ -8,6 +8,7 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { compose } from '../../../server/http/compose';
+import { logger } from '../../../server/http/logger';
 import {
   type CrossSiteMismatch,
   defaultCrossSiteMismatchSink,
@@ -309,27 +310,37 @@ describe('originCheckEnforced: named-flag parse', () => {
 });
 
 describe('defaultCrossSiteMismatchSink', () => {
-  it('emits exactly one console.warn line', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    defaultCrossSiteMismatchSink({
-      route: '/api/thing',
-      method: 'POST',
-      origin: 'https://evil.example',
-      secFetchSite: 'cross-site',
-      enforced: false,
-    });
-    expect(warn).toHaveBeenCalledTimes(1);
+  it('emits exactly one structured warn line through the logger', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      defaultCrossSiteMismatchSink({
+        route: '/api/thing',
+        method: 'POST',
+        origin: 'https://evil.example',
+        secFetchSite: 'cross-site',
+        enforced: false,
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][1]).toBe('cross-site origin on mutating /api request');
+      expect(warn.mock.calls[0][0]).toMatchObject({ origin: 'https://evil.example' });
+    } finally {
+      warn.mockRestore();
+    }
   });
 
-  it('is the sink the check uses when none is injected (mismatch reaches console.warn)', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    let ran = false;
-    const ctx = makeCtx({ origin: 'https://evil.example' });
-    // No sink in opts: the check falls back to defaultCrossSiteMismatchSink.
-    await withOriginCheck(makeRoute(), { env: LOGONLY_ENV })(ctx, async () => {
-      ran = true;
-    });
-    expect(ran).toBe(true);
-    expect(warn).toHaveBeenCalledTimes(1);
+  it('is the sink the check uses when none is injected (mismatch reaches the logger)', async () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+    try {
+      let ran = false;
+      const ctx = makeCtx({ origin: 'https://evil.example' });
+      // No sink in opts: the check falls back to defaultCrossSiteMismatchSink.
+      await withOriginCheck(makeRoute(), { env: LOGONLY_ENV })(ctx, async () => {
+        ran = true;
+      });
+      expect(ran).toBe(true);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
