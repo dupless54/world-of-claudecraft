@@ -11,28 +11,34 @@
 export const pending: Record<string, readonly string[]> = {
   "es": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "es_ES": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "fr_FR": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "fr_CA": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "en_CA": [],
   "it_IT": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "de_DE": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "zh_CN": [],
   "zh_TW": [],
@@ -40,35 +46,43 @@ export const pending: Record<string, readonly string[]> = {
   "ja_JP": [],
   "pt_BR": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "ru_RU": [],
   "nl_NL": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "pl_PL": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "id_ID": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "tr_TR": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "sv_SE": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "vi_VN": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ],
   "da_DK": [
     "hudChrome.dailyRewards.totalPlayer",
-    "hudChrome.dailyRewards.totalPlayers"
+    "hudChrome.dailyRewards.totalPlayers",
+    "wallet.extensionHelp"
   ]
 };

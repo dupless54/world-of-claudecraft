@@ -547,6 +547,8 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'wallet.helpLinkedWithBalance': '持有者特权已启用。钱包应用已在此浏览器中连接。',
   'wallet.helpLinkedDisconnected': '持有者特权已启用。需要签名或消费时请连接应用。',
   'wallet.helpLinkedDisconnectedWithBalance': '持有者特权已启用。需要签名或消费时请连接应用。',
+  'wallet.extensionHelp':
+    '若要在此处看到钱包，请保持 Solflare Wallet 等浏览器钱包扩展处于启用状态。',
   'wallet.flowConnect': '选择一个钱包。验证会自动继续。',
   'wallet.flowSign': '在钱包应用中签署验证消息。无需交易或 SOL。',
   'wallet.flowVerify': '正在验证钱包所有权...',
