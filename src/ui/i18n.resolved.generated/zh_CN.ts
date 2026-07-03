@@ -393,6 +393,7 @@ export const zh_CN: EnTranslations = {
       "uiScale": "界面缩放",
       "highContrastBackground": "高对比度背景",
       "startAttackOnAbility": "使用技能时自动攻击",
+      "walkByAutoloot": "路过自动拾取",
       "groundReticle": "地面瞄准指示圈",
       "showItemLevel": "显示物品等级",
       "itemLevelLine": "物品等级 {level}",
