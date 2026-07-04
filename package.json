@@ -41,6 +41,7 @@
     "gate": "node scripts/gate.mjs",
     "security:scan": "node scripts/malware_scan.mjs",
     "security:gate": "node scripts/malware_scan.mjs --gate",
+    "new:endpoint": "node scripts/new_endpoint.mjs",
     "i18n:build": "node scripts/i18n_build.mjs",
     "i18n:admin": "node scripts/i18n_admin_build.mjs",
     "i18n:scan": "node scripts/i18n_scan.mjs",

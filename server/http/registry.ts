@@ -37,6 +37,7 @@ import { routes as oauthRoutes } from '../oauth';
 import { routes as reportsRoutes } from '../reports';
 import { routes as userAssetsRoutes } from '../user_assets_routes';
 import { routes as walletRoutes } from '../wallet';
+// new:endpoint imports appear above this line (npm run new:endpoint)
 import { type CompiledPattern, compilePattern } from './path_pattern';
 import { createRouter, type MatchResult } from './router';
 import type { OwnerScope, RouteDef } from './types';
@@ -120,6 +121,7 @@ export const apiRoutes: readonly RouteDef[] = [
   ...adminRoutes,
   ...oauthRoutes,
   ...internalRoutes,
+  // new:endpoint spreads appear above this line (npm run new:endpoint)
 ];
 
 /**

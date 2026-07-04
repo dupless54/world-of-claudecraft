@@ -356,12 +356,17 @@ export default defineConfig({
     // - the opt-in browser suite (vitest.browser.config.ts, npm run test:browser) must NOT
     //   leak into a bare `vitest run`: excluding its files keeps the default Node run from
     //   importing the Playwright provider or launching a browser. Cross-engine CI is P17b.
+    // - tmp/ is gitignored scratch (screenshot tours, the new:endpoint golden test's emitted
+    //   *.test.ts under a temp root); excluding it keeps a crashed golden run's orphan emitted
+    //   test out of a bare `vitest run`. The golden test runs its emitted test through a child
+    //   vitest with an explicit --config override so this exclude does not block it.
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.claude/**',
       '**/.codex/**',
       '**/.venv/**',
+      'tmp/**',
       'tests/browser/**',
       '**/*.browser.test.ts',
     ],
