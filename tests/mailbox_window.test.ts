@@ -41,6 +41,68 @@ describe('mailbox_window: mail outcomes repaint the inventory cluster', () => {
   });
 });
 
+describe('mailbox_window: recipient autocomplete wiring', () => {
+  it('recipient input has role="combobox"', () => {
+    expect(painter).toContain('role="combobox"');
+  });
+
+  it('recipient input has aria-autocomplete="list"', () => {
+    expect(painter).toContain('aria-autocomplete="list"');
+  });
+
+  it('recipient listbox has role="listbox"', () => {
+    expect(painter).toContain('role="listbox"');
+  });
+
+  it('recipient input is wired with aria-controls pointing to the listbox', () => {
+    expect(painter).toContain('aria-controls="mail-to-suggest"');
+  });
+
+  it('calls searchCharacters when building recipient suggestions', () => {
+    expect(painter).toContain('searchCharacters(');
+  });
+
+  it('excludes the current player name from suggestions', () => {
+    // The filter uses player.name to exclude self (matches social_window behavior).
+    expect(painter).toMatch(/filter[\s\S]{0,80}player\.name/);
+  });
+
+  it('limits suggestions to RECIPIENT_SUGGEST_MAX results', () => {
+    expect(painter).toContain('RECIPIENT_SUGGEST_MAX');
+  });
+
+  it('selecting a suggestion writes the name into the recipient input', () => {
+    // selectRecipient sets input.value = name and then clears the list.
+    expect(painter).toMatch(/input\.value\s*=\s*name/);
+  });
+
+  it('ArrowDown moves the suggestion highlight', () => {
+    expect(painter).toContain("'ArrowDown'");
+    expect(painter).toContain('moveRecipientSuggest');
+  });
+
+  it('ArrowUp moves the suggestion highlight', () => {
+    expect(painter).toContain("'ArrowUp'");
+  });
+
+  it('Escape closes the suggestion list', () => {
+    expect(painter).toMatch(/'Escape'[\s\S]{0,120}renderRecipientSuggest/);
+  });
+
+  it('blur clears suggestions after a delay so mousedown can fire first', () => {
+    expect(painter).toContain('RECIPIENT_SUGGEST_BLUR_CLEAR_MS');
+  });
+
+  it('aria-expanded toggles when suggestions appear or disappear', () => {
+    expect(painter).toContain("'aria-expanded', 'true'");
+    expect(painter).toContain("'aria-expanded', 'false'");
+  });
+
+  it('aria-activedescendant is set on the highlighted option', () => {
+    expect(painter).toContain('aria-activedescendant');
+  });
+});
+
 describe('mailbox_window: house style', () => {
   it('uses no em or en dashes (ASCII separators only)', () => {
     expect(painter.includes('\u2014'), 'em dash found').toBe(false);

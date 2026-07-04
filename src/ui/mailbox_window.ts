@@ -38,6 +38,12 @@ const COPPER_PER_SILVER = 100;
 // Grace before "no mailInfo" closes the window: online, the mail mirror rides
 // the staggered heavy self refresh, so it can lag the open by up to ~2s.
 const MAIL_INFO_GRACE_MS = 3_000;
+// Recipient autocomplete timings: debounce before querying, delay clear after
+// blur so a pending mousedown on a suggestion can still fire first.
+const RECIPIENT_SUGGEST_DEBOUNCE_MS = 160;
+const RECIPIENT_SUGGEST_BLUR_CLEAR_MS = 150;
+// Maximum number of autocomplete suggestions shown.
+const RECIPIENT_SUGGEST_MAX = 8;
 
 export interface MailboxWindowDeps extends PainterHostPresentation {
   root(): HTMLElement;
@@ -59,6 +65,12 @@ export class MailboxWindow {
   private lastSig = '';
   private openerFocus: HTMLElement | null = null;
   private openedAt = 0;
+  // Recipient autocomplete state (Send tab only).
+  private recipientSuggestTimer: number | undefined;
+  private recipientSuggest: {
+    items: { name: string; cls: string; level: number }[];
+    index: number;
+  } = { items: [], index: -1 };
 
   constructor(private readonly deps: MailboxWindowDeps) {}
 
@@ -360,7 +372,9 @@ export class MailboxWindow {
     body.innerHTML =
       `<div class="mail-send-form">` +
       `<div class="mail-field"><label for="mail-to">${esc(t('hudChrome.mailbox.toLabel'))}</label>` +
-      `<input id="mail-to" type="text" maxlength="32" autocomplete="off" placeholder="${esc(t('hudChrome.mailbox.toPlaceholder'))}"></div>` +
+      `<div class="mail-to-wrap">` +
+      `<div class="mail-to-suggest" id="mail-to-suggest" role="listbox"></div>` +
+      `<input id="mail-to" type="text" maxlength="32" autocomplete="off" placeholder="${esc(t('hudChrome.mailbox.toPlaceholder'))}" role="combobox" aria-autocomplete="list" aria-controls="mail-to-suggest" aria-expanded="false"></div></div>` +
       `<div class="mail-field"><label for="mail-subject">${esc(t('hudChrome.mailbox.subjectLabel'))}</label>` +
       `<input id="mail-subject" type="text" maxlength="64" autocomplete="off"></div>` +
       `<div class="mail-field"><label for="mail-body">${esc(t('hudChrome.mailbox.bodyLabel'))}</label>` +
@@ -393,6 +407,7 @@ export class MailboxWindow {
         coin.addEventListener('mouseup', (e) => e.preventDefault(), { once: true });
       });
     }
+    this.wireRecipientSuggest(body);
     body.querySelector('#mail-send-btn')?.addEventListener('click', () => {
       const root = this.deps.root();
       const read = (id: string) =>
@@ -419,6 +434,132 @@ export class MailboxWindow {
       this.deps.world().mailSend(to, subject, letter, copper, this.attachments);
       audio.click();
     });
+  }
+
+  // Wire the recipient field combobox: debounced searchCharacters, keyboard
+  // navigation (ArrowDown/Up/Enter/Escape), hover highlight, click-to-select,
+  // and blur-with-delay so mousedown on a suggestion fires before the list clears.
+  private wireRecipientSuggest(body: HTMLElement): void {
+    const input = body.querySelector<HTMLInputElement>('#mail-to');
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      window.clearTimeout(this.recipientSuggestTimer);
+      if (!q) {
+        this.renderRecipientSuggest(body, []);
+        return;
+      }
+      this.recipientSuggestTimer = window.setTimeout(async () => {
+        const results = await this.deps.world().searchCharacters(q);
+        // Exclude current player; limit to max suggestions.
+        const filtered = results
+          .filter((r) => r.name !== this.deps.world().player.name)
+          .slice(0, RECIPIENT_SUGGEST_MAX);
+        this.renderRecipientSuggest(body, filtered);
+      }, RECIPIENT_SUGGEST_DEBOUNCE_MS);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const ke = e as KeyboardEvent;
+      const open = this.recipientSuggest.items.length > 0;
+      if (ke.key === 'ArrowDown' && open) {
+        ke.preventDefault();
+        this.moveRecipientSuggest(body, 1);
+      } else if (ke.key === 'ArrowUp' && open) {
+        ke.preventDefault();
+        this.moveRecipientSuggest(body, -1);
+      } else if (ke.key === 'Escape' && open) {
+        ke.preventDefault();
+        this.renderRecipientSuggest(body, []);
+      } else if (ke.key === 'Enter' && open && this.recipientSuggest.index >= 0) {
+        ke.preventDefault();
+        const picked = this.recipientSuggest.items[this.recipientSuggest.index]?.name;
+        if (picked) this.selectRecipient(body, input, picked);
+      }
+    });
+
+    input.addEventListener('blur', () => {
+      window.setTimeout(
+        () => this.renderRecipientSuggest(body, []),
+        RECIPIENT_SUGGEST_BLUR_CLEAR_MS,
+      );
+    });
+  }
+
+  private selectRecipient(
+    body: HTMLElement,
+    input: HTMLInputElement,
+    name: string,
+  ): void {
+    input.value = name;
+    this.renderRecipientSuggest(body, []);
+  }
+
+  private renderRecipientSuggest(
+    body: HTMLElement,
+    results: { name: string; cls: string; level: number }[],
+  ): void {
+    const box = body.querySelector<HTMLElement>('#mail-to-suggest');
+    const input = body.querySelector<HTMLInputElement>('#mail-to');
+    if (!box) return;
+    this.recipientSuggest = { items: results, index: -1 };
+    if (results.length === 0) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      input?.setAttribute('aria-expanded', 'false');
+      input?.removeAttribute('aria-activedescendant');
+      return;
+    }
+    box.innerHTML = results
+      .map(
+        (r, i) =>
+          `<div id="mail-to-sugg-${i}" class="soc-sugg-item" data-i="${i}" data-name="${esc(r.name)}" role="option" aria-selected="false"><span class="soc-name">${esc(r.name)}</span></div>`,
+      )
+      .join('');
+    box.style.display = 'block';
+    input?.setAttribute('aria-expanded', 'true');
+    input?.removeAttribute('aria-activedescendant');
+    box.querySelectorAll('.soc-sugg-item').forEach((it) => {
+      it.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        const name = (it as HTMLElement).dataset.name ?? '';
+        if (name && input) this.selectRecipient(body, input, name);
+      });
+      it.addEventListener('mousemove', () => {
+        this.recipientSuggest.index = Number((it as HTMLElement).dataset.i);
+        this.highlightRecipientSuggest(body);
+      });
+    });
+  }
+
+  private moveRecipientSuggest(body: HTMLElement, delta: number): void {
+    const n = this.recipientSuggest.items.length;
+    if (n === 0) return;
+    this.recipientSuggest.index =
+      this.recipientSuggest.index < 0
+        ? delta > 0
+          ? 0
+          : n - 1
+        : (this.recipientSuggest.index + delta + n) % n;
+    this.highlightRecipientSuggest(body);
+  }
+
+  private highlightRecipientSuggest(body: HTMLElement): void {
+    const box = body.querySelector<HTMLElement>('#mail-to-suggest');
+    const input = body.querySelector<HTMLInputElement>('#mail-to');
+    if (!box) return;
+    box.querySelectorAll('.soc-sugg-item').forEach((it) => {
+      const on = Number((it as HTMLElement).dataset.i) === this.recipientSuggest.index;
+      it.classList.toggle('active', on);
+      it.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) (it as HTMLElement).scrollIntoView({ block: 'nearest' });
+    });
+    if (this.recipientSuggest.index >= 0) {
+      input?.setAttribute('aria-activedescendant', `mail-to-sugg-${this.recipientSuggest.index}`);
+    } else {
+      input?.removeAttribute('aria-activedescendant');
+    }
   }
 
   private renderParcels(): void {
