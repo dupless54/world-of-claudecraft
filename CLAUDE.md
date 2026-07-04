@@ -28,6 +28,7 @@ dependency set. The one sanctioned exception is the standalone admin dashboard
 | `src/world_api.ts` | `IWorld`, the seam render/ui depend on (see Architecture). |
 | `src/main.ts` | Client entry; fixes the world seed. |
 | `server/` | Authoritative game server: HTTP+WS, world loop, Postgres, auth, social, moderation. |
+| `server/http/` | The REST request pipeline spine: table router, middleware onion, per-domain `RouteDef` tables, typed schemas, stable error codes. |
 | `headless/` + `python/` | RL env server (`env_server.ts`) + Python Gym bindings. |
 | `tests/` | Vitest suite. |
 | `scripts/` | Asset build + browser E2E / screenshot / integration scripts (`.mjs`). |
@@ -64,6 +65,8 @@ See `README.md` for the full host/develop/play guide and the classic-fidelity ch
   20 Hz; the server runs the one shared `Sim` and returns interest-scoped
   (~120 yd) snapshots + per-player events. All combat, loot, quest credit, and
   economy resolve server-side. The client is a renderer; it never decides outcomes.
+  REST requests run through the in-house pipeline seam (`server/http/`): a new endpoint is a
+  `RouteDef` module behind the registry, never an inline route in `main.ts` (see `server/http/CLAUDE.md`).
 
 ## Invariants, YOU MUST keep these
 - **`src/sim/` has zero DOM/browser/Three.js imports** and never imports from
@@ -162,6 +165,9 @@ Use the seams this repo already has, do not invent new ones:
   Player-facing content also feeds the `/wiki` guide: run `npm run wiki:content` (auto in
   `pretest`/`build`, freshness-gated by `tests/guide.test.ts`) and add any new `guide.*`
   prose keys (see `src/guide/CLAUDE.md`).
+- New server REST endpoint: a `RouteDef` module (`server/<domain>.ts` `export const routes`)
+  registered in `server/http/registry.ts`, never an inline handler in `main.ts`. Scaffold with
+  `npm run new:endpoint` (see `server/http/CLAUDE.md`).
 - New multi-file subsystem: a directory with an `index.ts` barrel exposing only its
   public surface (templates: `src/render/characters/`, `src/ui/i18n.catalog/`), plus a local `CLAUDE.md`.
 

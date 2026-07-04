@@ -10,7 +10,7 @@ Postgres and serves the built client from `dist/`.
 ## Key files
 | File | Role |
 |---|---|
-| `main.ts` | HTTP server + route table, REST `/api/*`, WS `/ws` upgrade + auth handshake, boot/shutdown, leaderboard cache |
+| `main.ts` | HTTP server + the prefix-ladder dispatch (`routeHttpRequest` sends `/api` `/admin/api` `/oauth` `/internal` to four flag-gated entries) + the RETAINED legacy handler ladder, WS `/ws` upgrade + auth handshake, boot/shutdown, leaderboard cache. Migrated routes live in per-domain `RouteDef` modules behind `server/http/` (see `server/http/CLAUDE.md`), NOT in a route table here |
 | `game.ts` | `GameServer`: owns the `Sim`, the 50 ms loop, interest-scoped snapshots, command dispatch, chat. **Largest file** |
 | `db.ts` | `pg` pool, `SCHEMA` DDL, all character/account/token/world-state queries |
 | `auth.ts` | scrypt hashing, `newToken`, name/password validators (`obscenity` profanity) |
@@ -91,6 +91,62 @@ Postgres and serves the built client from `dist/`.
   Until #4 lands, add new commands inline as above. See
   `docs/refactor/world-api-to-server-runtime-handoff.md` for exactly what #4 inherits
   and owns.
+
+## The REST request pipeline (`server/http/`)
+Every REST surface (`/api`, `/oauth`, `/admin/api`, `/internal`) runs through the in-house
+pipeline under `server/http/` (its own `CLAUDE.md` is the spine reference). `main.ts` is a
+prefix ladder: `routeHttpRequest` sends each prefix to one of four flag-gated entries
+(`apiEntry` / `adminApiEntry` / `oauthApiEntry` / `internalApiEntry`), each built by
+`selectApiEntry`. Under `API_DISPATCH=new` (the default) a matched `RouteDef` from the registry
+runs the middleware onion; an unmatched path (and HEAD) delegates to the retained legacy handler
+for that prefix. `API_DISPATCH=legacy` is the one-flag rollback to the old ladder. A migrated
+route is served by BOTH arms until the ladder-deletion follow-up, so any behavior edit to one twin
+MUST land in the other in the SAME change (the flag model, the `RouteDef`/envelope contract, and
+this dual-edit rule live in `server/http/CLAUDE.md`).
+
+## Adding an endpoint (REST)
+0. **Scaffold it.** `npm run new:endpoint -- --domain <slug> --method <METHOD> --path </api/...>
+   [--public]` (`scripts/new_endpoint.mjs`) emits the `RouteDef` stub in a domain module, a typed
+   `Infer`-derived schema (`server/http/schema.ts` combinators), a paired error code appended to
+   `error_codes.ts`, the English `apiError.*` catalog entry plus its `API_ERROR_KEYS` client
+   mapping, and a `FakeDb`-based test. It auto-attaches a `requireOwned` loader on a `:id` route
+   unless `--public`.
+
+Then fill the handler in by rung (real reference commits, reference by hash + module):
+1. **Public read:** commit c07d677af, `server/leaderboard.ts`. Shows a static `export const routes`
+   array, a `configure<Domain>Runtime` injection (avoids an import cycle), lenient query decoders,
+   and `meta.publicRead` on an intentional public `:param`.
+2. **Authenticated:** commit 14275d39e, `server/auth_routes.ts`. The canonical "add one
+   authenticated endpoint" example.
+3. **Owner-gated `:id`:** commit 5bba9353e, `server/characters.ts`. Uses the `requireOwned` loader
+   (`server/http/middleware/require_owned.ts`) with `meta.requireOwned`; denial is 404
+   (anti-enumeration); order is the auth guard, then the per-action limiter, then `withBody`, then
+   `requireOwned<X>`, then the handler.
+
+Register the domain's `routes` in `server/http/registry.ts` (import + spread into `apiRoutes`); the
+registry sorts most-specific-first and runs the BOLA-shadow guard at build time.
+
+## Error localization: emit the CODE, never English
+A REST handler raises an `HttpError` (`server/http/errors.ts`) carrying a stable `<domain>.<reason>`
+code appended to `server/http/error_codes.ts`, NEVER English prose (the server stays
+language-agnostic). The client localizes code-first: `userFacingApiError` (`src/ui/api_error_i18n.ts`)
+maps a code verbatim to `apiError.<domain>.<reason>`, English source in
+`src/ui/i18n.catalog/api_error.ts`; `tests/api_error_code_parity.test.ts` fails a server code with no
+client key. Contributors add English only, same as the WS emits above. A new `apiError.*`
+English leaf that is wordy (any word of 4+ letters, i.e. most real prose) also needs its five
+non-Latin fills (`zh`, `zh_TW`, `ja`, `ko`, `ru`) in the same change, or M16
+(`tests/i18n_completeness.test.ts`) reds; `npm run new:endpoint` prints this reminder for the
+leaf it appends.
+
+## Endpoint tests: FakeDb, not a pg-mock
+Test a migrated endpoint through its `routes` + `configure<Domain>Runtime` + the
+`tests/server/helpers/` barrel: `fakeCtx` builds a well-formed frozen `Ctx` with a `FakeRes`, and
+`FakeCharactersDb`/`FakeLeaderboardDb`/`FakeReportsDb` are type-only fakes with zero runtime `pg`.
+Exemplar: `tests/server/leaderboard.test.ts` (unit-tests the pure read functions with a `FakeDb`,
+then drives handlers via `routes` + `configureLeaderboardRuntime` + `fakeCtx`). This REPLACES the old
+`vi.mock('../server/db')` + `sql.includes()` idiom for NEW endpoint tests. One seam caveat for the
+migrated housekeeping family is recorded in `server/http/CLAUDE.md` (Testing seam notes): it reaches
+Postgres via `housekeeping_db` directly, so a pool-less dispatcher-level test must `vi.mock` that.
 
 ## i18n: player-facing text is English at the source
 - Like the sim, `server/` is **language-agnostic** (no `t()`, no DOM). `game.ts` emits
