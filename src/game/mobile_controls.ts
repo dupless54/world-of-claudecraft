@@ -1,5 +1,6 @@
 import { t } from '../ui/i18n';
 import type { Input, TouchMoveInput } from './input';
+import { type ChromeFadeHandle, startChromeFade } from './mobile_chrome_fade';
 
 // Detects a genuinely touch-primary device (a phone or a hand-held tablet). The
 // primary test is a coarse primary pointer that cannot hover -- deliberately
@@ -249,6 +250,7 @@ export class MobileControls {
 
   private chatPressTimer: ReturnType<typeof setTimeout> | null = null;
   private chatLongFired = false;
+  private chromeFade: ChromeFadeHandle | null = null;
 
   private canvas = document.getElementById('game-canvas') as HTMLElement | null;
   private root = document.getElementById('mobile-controls') as HTMLElement | null;
@@ -289,6 +291,15 @@ export class MobileControls {
     this.mq.addEventListener?.('change', () =>
       this.setActive(useTouchInterface() || isNativeAppShell()),
     );
+
+    // Idle-fade: dims the action row + minimap quick-access rail after a stretch
+    // of no touch, brightens instantly on the next one. Body-scoped (CSS decides
+    // which chrome selectors respond) so it works regardless of which control the
+    // player actually touches.
+    this.chromeFade = startChromeFade(document.body);
+    document.addEventListener('pointerdown', () => {
+      if (this.active) this.chromeFade?.touch();
+    });
 
     // The move joystick floats: the pointer lifecycle lives on the lower-left
     // capture zone (so a thumb can land anywhere), while the joystick element is
