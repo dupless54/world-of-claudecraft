@@ -23,7 +23,7 @@
 // `src/sim`-pure: no DOM/Three/render-ui-game-net imports, no Math.random/Date.now
 // (enforced by tests/architecture.test.ts).
 
-import { ITEMS, MOBS, QUESTS } from './data';
+import { ITEMS, MOBS, QUESTS, SPIRIT_HEALER_NPC_ID } from './data';
 import {
   activateNythraxisRelic,
   interactObjectForQuests,
@@ -66,10 +66,26 @@ function corpseLootRights(
 
 // `honorFfa` (default true) keeps manual looting honoring the owner-lock lapse; the
 // passive walk-by path passes false so it never grants a stranger's FFA corpse.
-export function lootCorpse(ctx: SimContext, mobId: number, pid?: number, honorFfa = true): void {
+// `quiet` (default false) suppresses the full-bags toast: the walk-by pass retries
+// every couple of seconds while the player stands near a corpse, so a full-bags
+// player would otherwise get the toast on loop; a deliberate click keeps it.
+export function lootCorpse(
+  ctx: SimContext,
+  mobId: number,
+  pid?: number,
+  honorFfa = true,
+  quiet = false,
+): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const { meta, e: p } = r;
+  // Dead players (released ghosts included) cannot loot; the same rejection the
+  // item family uses (src/sim/items.ts). The walk-by autoLootForParty path never
+  // reaches this: it silently drops a dead trigger before delegating here.
+  if (p.dead) {
+    ctx.error(meta.entityId, "You can't do that while dead.");
+    return;
+  }
   const mob = ctx.entities.get(mobId);
   if (!mob?.lootable || !mob.loot) return;
   // owner-lock lapses LOOT_FFA_DELAY after the corpse became lootable: then anyone may loot.
@@ -84,26 +100,37 @@ export function lootCorpse(ctx: SimContext, mobId: number, pid?: number, honorFf
     return;
   }
   if (rights.shared) distributeLootCopper(ctx, mob, meta);
+  // Capacity gate: an item that doesn't fit the looter's bags STAYS on the
+  // corpse (classic behavior), with one "bags are full" toast per loot action.
+  let bagsFull = false;
   let tookPersonal = false;
   for (const s of [...mob.loot.items]) {
     if (!lootSlotVisibleTo(s, meta.entityId)) continue;
     if (s.openToAll) {
-      for (let i = 0; i < s.count; i++) ctx.addItem(s.itemId, 1, meta.entityId);
-      s.count = 0;
+      while (s.count > 0 && ctx.canAddItem(s.itemId, 1, meta.entityId)) {
+        ctx.addItem(s.itemId, 1, meta.entityId);
+        s.count--;
+      }
+      if (s.count > 0) bagsFull = true;
       continue;
     }
     if (s.personalFor) {
+      if (!ctx.canAddItem(s.itemId, 1, meta.entityId)) {
+        bagsFull = true;
+        continue;
+      }
       ctx.addItem(s.itemId, 1, meta.entityId);
       s.personalFor = s.personalFor.filter((id) => id !== meta.entityId);
       tookPersonal = true;
       continue;
     }
     if (!rights.shared) continue;
-    for (let i = 0; i < s.count; i++) {
-      awardSharedLootItem(ctx, s.itemId, mob, meta);
+    while (s.count > 0 && awardSharedLootItem(ctx, s.itemId, mob, meta)) {
+      s.count--;
     }
-    s.count = 0;
+    if (s.count > 0) bagsFull = true;
   }
+  if (bagsFull && !quiet) ctx.error(meta.entityId, 'Your bags are full.');
   // World-boss daily lockout is consumed by LOOTING, not by the kill: taking any
   // personal slot from the boss's corpse burns today's roll (rollWorldBossLoot
   // checks eligibility when the next boss dies). A contributor who never reaches
@@ -135,16 +162,28 @@ export function autoLootForParty(ctx: SimContext, mobId: number, triggerPid: num
   // reads as hostile, so an aged-out corpse is left for a deliberate manual loot click.
   const rights = corpseLootRights(ctx, mob, meta.entityId, false);
   if (!rights.shared && !rights.personal && !rights.open) return;
+  // LOAD-BEARING alignment: this pre-check (rights via the same corpseLootRights
+  // + range via the same INTERACT_RANGE above) is what makes the delegated
+  // lootCorpse's "no permission" / "too far" toasts unreachable from this
+  // passive pass; only the full-bags toast needs the explicit quiet flag. If
+  // either threshold ever diverges from lootCorpse's, the walk-by retry loop
+  // starts toasting players again.
 
   // honorFfa=false so the delegated distribution also refuses the FFA shared grant,
-  // matching the pre-check (which only keeps this pass silent on ineligibility).
-  lootCorpse(ctx, mobId, meta.entityId, false);
+  // matching the pre-check (which only keeps this pass silent on ineligibility);
+  // quiet=true so a full-bags player is not toasted on every 2s walk-by retry.
+  lootCorpse(ctx, mobId, meta.entityId, false, true);
 }
 
 export function pickUpObject(ctx: SimContext, objId: number, pid?: number): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const { meta, e: p } = r;
+  // Dead players (released ghosts included) cannot pick up world objects.
+  if (p.dead) {
+    ctx.error(meta.entityId, "You can't do that while dead.");
+    return;
+  }
   const obj = ctx.entities.get(objId);
   if (obj?.kind !== 'object' || !obj.lootable || !obj.objectItemId) return;
   if (dist2d(p.pos, obj.pos) > INTERACT_RANGE) {
@@ -177,6 +216,10 @@ export function pickUpObject(ctx: SimContext, objId: number, pid?: number): void
       return;
     }
   }
+  if (!ctx.canAddItem(obj.objectItemId, 1, meta.entityId)) {
+    ctx.error(meta.entityId, 'Your bags are full.');
+    return;
+  }
   ctx.addItem(obj.objectItemId, 1, meta.entityId);
   obj.lootable = false;
   obj.respawnTimer = OBJECT_RESPAWN;
@@ -186,6 +229,30 @@ export function interact(ctx: SimContext, pid?: number): void {
   const r = ctx.resolve(pid);
   if (!r) return;
   const p = r.e;
+  if (p.dead) {
+    // A dead player or released spirit cannot interact with the world: no
+    // looting, object pickup, mailbox, or quest talk. The one exception is the
+    // Spirit Healer (talking to the angel is how a ghost reaches the healer
+    // resurrection), so route a nearby angel through the normal quest-NPC talk
+    // and refuse everything else. A ghost still re-enters its instance via the
+    // proximity door trigger (updateDoorTriggers), which never comes through here.
+    let bestHealer: Entity | null = null;
+    let bestHealerD2 = INTERACT_RANGE * INTERACT_RANGE;
+    ctx.grid.forEachInRadius(p.pos.x, p.pos.z, INTERACT_RANGE, (e, d2) => {
+      if (e.kind === 'npc' && e.templateId === SPIRIT_HEALER_NPC_ID && d2 < bestHealerD2) {
+        bestHealer = e;
+        bestHealerD2 = d2;
+      }
+    });
+    // re-read through a wider type: TS cannot see the closure assignment above
+    const healer = bestHealer as Entity | null;
+    if (healer) {
+      ctx.talkToNpc(healer.id, p.id);
+      return;
+    }
+    ctx.error(r.meta.entityId, "You can't do that while dead.");
+    return;
+  }
   if (p.targetId !== null) {
     const target = ctx.entities.get(p.targetId);
     if (target && dist2d(p.pos, target.pos) <= INTERACT_RANGE + 2) {
