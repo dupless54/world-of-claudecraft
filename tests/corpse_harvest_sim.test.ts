@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bagCapacity } from '../src/sim/bags';
+import { HARVEST_COMPONENT_ITEMS } from '../src/sim/content/professions';
 import { ITEMS, MOBS } from '../src/sim/data';
 import { createMob } from '../src/sim/entity';
 import type { PlayerMeta } from '../src/sim/sim';
@@ -169,6 +170,33 @@ describe('corpse harvest: single-use, first-come (#1141)', () => {
     sim.harvestCorpse(mob.id, b);
     expect(mob.harvestClaimedBy).toBe(b);
     expect(sim.countItem('boar_hide', b)).toBe(1);
+  });
+
+  it('a tagged corpse with no mapped item consumes the claim and yields nothing', () => {
+    // fen_troll's tags (claw, tusk) map to no harvest item yet: the documented
+    // deferred-design path (single-use claimed, zero yield, zero emits; the
+    // silent success is flagged upstream as an open design call, so this pin
+    // locks the CURRENT behavior and reds intentionally if that call lands).
+    const { sim, internals, a, b } = setup();
+    const template = MOBS.fen_troll;
+    expect(template.componentTags).toEqual(['claw', 'tusk']);
+    for (const tag of template.componentTags!) {
+      expect(HARVEST_COMPONENT_ITEMS[tag]).toBeUndefined();
+    }
+    const noYieldMob = createMob(7777, template, template.maxLevel, { x: 0, y: 0, z: 0 });
+    noYieldMob.dead = true;
+    noYieldMob.corpseTimer = 9999;
+    noYieldMob.respawnTimer = 9999;
+    internals.entities.set(noYieldMob.id, noYieldMob);
+    const before = internals.players.get(a)!.inventory.length;
+    sim.drainEvents();
+    sim.harvestCorpse(noYieldMob.id, a);
+    expect(sim.drainEvents()).toEqual([]);
+    expect(noYieldMob.harvestClaimedBy).toBe(a);
+    expect(internals.players.get(a)!.inventory.length).toBe(before);
+    // The zero-yield claim is still single-use for everyone else.
+    sim.harvestCorpse(noYieldMob.id, b);
+    expect(noYieldMob.harvestClaimedBy).toBe(a);
   });
 
   it('clears the claim on respawn, so the next corpse is harvestable again', () => {

@@ -895,8 +895,11 @@ describe('S3: every sim.ts emit is recognized (drift guard)', () => {
     // scanned). Literals are byte-identical after the move so their matchers are unchanged.
     fs.readFileSync(path.resolve(process.cwd(), 'src/sim/encounters/nythraxis.ts'), 'utf8'),
     // H1 (#1141): the interaction command bodies (corpse harvest + loot/pickup). The two
-    // corpse-harvest errors' ONLY emitter occurrences live here, so without this entry a
-    // rewording of either side would silently ship English while the guard stayed green.
+    // corpse-harvest deny strings ("That corpse has nothing to harvest." / "This corpse
+    // has already been harvested.") have their ONLY emitter occurrences here; the file's
+    // OTHER emits (too-far, bags-full, dead, no-permission) are byte-identical to
+    // literals in already-scanned files, so only a rewording of THIS file's sites was
+    // invisible to the guard before this entry.
     fs.readFileSync(path.resolve(process.cwd(), 'src/sim/interaction.ts'), 'utf8'),
     // H1: the gathering profession module: no emits today, scanned so future
     // profession-harvest emits land under the drift guard automatically.
