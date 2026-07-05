@@ -28,11 +28,20 @@ function makeRes(): http.ServerResponse {
  * Build a 'matched' MatchResult with NULL-PROTO params (mirroring the router's
  * matchPattern), so a test can assert ctx.params is null-proto on the matched path.
  */
-function matched(params: Record<string, string> = {}): MatchResult<RouteDef> {
+function matched(
+  params: Record<string, string> = {},
+  template = '/api/x/:id',
+): MatchResult<RouteDef> {
   const nullProtoParams: Record<string, string> = Object.create(null);
   for (const [key, value] of Object.entries(params)) nullProtoParams[key] = value;
-  // buildContext does not read route, so an empty cast is fine in a test.
-  return { kind: 'matched', route: {} as RouteDef, params: nullProtoParams, head: false };
+  // buildContext reads only route.path (the :param template, surfaced as
+  // ctx.route) and params off the match, so a path-only cast is fine in a test.
+  return {
+    kind: 'matched',
+    route: { path: template } as RouteDef,
+    params: nullProtoParams,
+    head: false,
+  };
 }
 
 describe('buildContext field population', () => {
@@ -43,6 +52,7 @@ describe('buildContext field population', () => {
     expect(ctx.url).toBeInstanceOf(URL);
     expect(ctx.url.pathname).toBe('/api/x/42');
     expect(ctx.path).toBe('/api/x/42');
+    expect(ctx.route).toBe('/api/x/:id');
     expect(ctx.params.id).toBe('42');
     expect(ctx.ip).toBe('127.0.0.1');
     expect(typeof ctx.reqId).toBe('string');
@@ -85,6 +95,23 @@ describe('null-prototype shapes', () => {
   it('keeps params on a null prototype when matched', () => {
     const ctx = buildContext(makeReq({ url: '/api/x/42' }), makeRes(), matched({ id: '42' }));
     expect(Object.getPrototypeOf(ctx.params)).toBeNull();
+  });
+});
+
+describe('the route template field', () => {
+  it('carries the matched route :param TEMPLATE, never the concrete path', () => {
+    const ctx = buildContext(
+      makeReq({ url: '/api/x/42' }),
+      makeRes(),
+      matched({ id: '42' }, '/api/x/:id'),
+    );
+    expect(ctx.route).toBe('/api/x/:id');
+    expect(ctx.route).not.toBe('/api/x/42');
+  });
+
+  it('leaves route undefined for a non-matched variant', () => {
+    const ctx = buildContext(makeReq({ url: '/p' }), makeRes(), { kind: 'notFound' });
+    expect(ctx.route).toBeUndefined();
   });
 });
 

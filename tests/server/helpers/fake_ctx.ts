@@ -20,6 +20,8 @@ export interface FakeCtxOverrides {
   method?: Method;
   url?: string | URL;
   path?: string;
+  /** The matched route's :param template (Ctx.route); unset models an unmatched ctx. */
+  route?: string;
   headers?: Record<string, string>;
   body?: unknown;
   account?: CtxAccount;
@@ -65,6 +67,7 @@ export function fakeCtx(overrides: FakeCtxOverrides = {}): Ctx {
     method,
     url,
     path: overrides.path ?? url.pathname,
+    route: overrides.route,
     query: overrides.query ?? {},
     params: overrides.params ?? {},
     ip: overrides.ip ?? '127.0.0.1',

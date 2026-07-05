@@ -4,8 +4,12 @@
 // database and no real timers. WINDOW_MS is imported from server/ratelimit as the
 // single source of truth (no magic 60000).
 import type { Pool } from 'pg';
-import { describe, expect, it, vi } from 'vitest';
-import type { MetricEvent, MetricSink } from '../../server/http/middleware/metric_sink';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  type AttackSignalSink,
+  noopAttackSignalSink,
+  setAttackSignalSink,
+} from '../../server/http/attack_signals';
 import { WINDOW_MS } from '../../server/ratelimit';
 import { createPgRateLimitStore, RATE_LIMIT_UPSERT_SQL } from '../../server/ratelimit_db';
 
@@ -40,16 +44,34 @@ function fakePool(returnRow: { count: number | string; window_start: number | st
   };
 }
 
-// A MetricSink spy that records every event it receives.
-function fakeMetricSink(): MetricSink & { events: MetricEvent[] } {
-  const events: MetricEvent[] = [];
+// A recording AttackSignalSink: captures the policy label of every pgLimiterWrite
+// so a test can pin exactly which policy (and how many writes) the store emitted.
+function recordingAttackSignalSink(): AttackSignalSink & { writes: string[] } {
+  const writes: string[] = [];
   return {
-    events,
-    record(event) {
-      events.push(event);
+    writes,
+    rateLimitHit() {},
+    authFailure() {},
+    bolaDenied() {},
+    pgLimiterWrite(policy) {
+      writes.push(policy);
     },
   };
 }
+
+// The store emits its pg-write count through the process-wide attack-signal slot
+// (server/http/attack_signals.ts), so install a fresh recording fake before each
+// test and restore the no-op after, never leaking a sink across tests.
+let attackSink: ReturnType<typeof recordingAttackSignalSink>;
+
+beforeEach(() => {
+  attackSink = recordingAttackSignalSink();
+  setAttackSignalSink(attackSink);
+});
+
+afterEach(() => {
+  setAttackSignalSink(noopAttackSignalSink);
+});
 
 describe('createPgRateLimitStore hit()', () => {
   it('issues the exact parameterized UPSERT, splitting the policy at the first colon', async () => {
@@ -172,37 +194,49 @@ describe('createPgRateLimitStore hit()', () => {
     expect(pool.query).toHaveBeenLastCalledWith(RATE_LIMIT_UPSERT_SQL, ['login', 'ip', WINDOW_MS]);
   });
 
-  it('increments the metric counter exactly once per hit', async () => {
+  it('counts one pg write under the parsed policy, never labeled with the ip portion', async () => {
     const clock = fakeClock(0);
     const pool = fakePool({ count: 1, window_start: 0 });
-    const metrics = fakeMetricSink();
-    const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now, metrics });
+    const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now });
 
-    await store.hit('login:ip', 5);
-    await store.hit('login:ip', 5);
+    await store.hit('some_policy:ip:1.2.3.4', 5);
 
-    expect(metrics.events).toHaveLength(2);
-    expect(metrics.events[0].route).toBe('ratelimit.pg.hit');
+    // Exactly one write, labeled with the POLICY the key parsed to (the segment
+    // before the first colon), never the ip / class-key portion after it.
+    expect(attackSink.writes).toEqual(['some_policy']);
+    expect(attackSink.writes[0]).not.toContain('1.2.3.4');
+    expect(attackSink.writes[0]).not.toContain(':');
   });
 
-  it('encodes the decision in the metric status (200 allowed, 429 limited)', async () => {
+  it("counts a colonless key under the literal 'default' policy", async () => {
+    const clock = fakeClock(0);
+    const pool = fakePool({ count: 1, window_start: 0 });
+    const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now });
+
+    await store.hit('globalflood', 5);
+
+    expect(attackSink.writes).toEqual(['default']);
+  });
+
+  it('counts each upsert exactly once whether the hit is allowed or tripped', async () => {
     const clock = fakeClock(0);
     const pool = fakePool({ count: 5, window_start: 0 });
-    const metrics = fakeMetricSink();
-    const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now, metrics });
+    const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now });
 
-    await store.hit('login:ip', 5); // count 5, max 5: allowed
+    await store.hit('login:1.2.3.4', 5); // count 5, max 5: allowed
     pool.setRow({ count: 6, window_start: 0 });
-    await store.hit('login:ip', 5); // count 6, max 5: limited
+    await store.hit('login:1.2.3.4', 5); // count 6, max 5: over the limit (tripped)
 
-    expect(metrics.events[0].status).toBe(200);
-    expect(metrics.events[1].status).toBe(429);
+    // It counts WRITES, not decisions: one per upsert regardless of allow/deny.
+    expect(attackSink.writes).toEqual(['login', 'login']);
   });
 
-  it('defaults to the no-op metric sink when none is supplied', async () => {
+  it('drops the write and still returns a correct outcome when the slot holds the no-op', async () => {
+    // With no real sink installed (the boot default), the emission is a no-op:
+    // hit() must not throw and must still return the correct outcome.
+    setAttackSignalSink(noopAttackSignalSink);
     const clock = fakeClock(0);
     const pool = fakePool({ count: 1, window_start: 0 });
-    // No metrics option: must not throw and must still return a correct outcome.
     const store = createPgRateLimitStore({ pool: pool.asPool, now: clock.now });
 
     const outcome = await store.hit('login:ip', 5);

@@ -8,6 +8,12 @@
 // leaks into another.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  type AttackSignalKeyKind,
+  type AttackSignalSink,
+  noopAttackSignalSink,
+  setAttackSignalSink,
+} from '../../../server/http/attack_signals';
 import { mapError } from '../../../server/http/errors';
 import { logger } from '../../../server/http/logger';
 import {
@@ -43,6 +49,7 @@ import {
   WINDOW_MS,
   WOC_BALANCE_MAX_PER_MINUTE,
 } from '../../../server/ratelimit';
+import { createPgRateLimitStore } from '../../../server/ratelimit_db';
 import { fakeCtx } from '../helpers/fake_ctx';
 
 const WINDOW_SECONDS = WINDOW_MS / 1000;
@@ -66,6 +73,23 @@ class RecordingRateLimitStore implements RateLimitStore {
 }
 
 const ALWAYS_ALLOWED: RateLimitOutcome = { allowed: true, remaining: 999, resetSeconds: 1 };
+
+// A recording fake AttackSignalSink: it captures every rate_limit_hits_total and
+// pg_limiter_writes_total emission so a test can assert the exact (policy, keyKind)
+// tuple and the exact call count. Installed via setAttackSignalSink in beforeEach and
+// restored to the no-op in afterEach so it never leaks across tests.
+class RecordingAttackSignalSink implements AttackSignalSink {
+  rateLimitHits: Array<{ policy: string; keyKind: AttackSignalKeyKind }> = [];
+  pgLimiterWrites: string[] = [];
+  rateLimitHit(policy: string, keyKind: AttackSignalKeyKind): void {
+    this.rateLimitHits.push({ policy, keyKind });
+  }
+  authFailure(): void {}
+  bolaDenied(): void {}
+  pgLimiterWrite(policy: string): void {
+    this.pgLimiterWrites.push(policy);
+  }
+}
 
 beforeEach(() => {
   setRateLimitClock(() => PINNED);
@@ -359,5 +383,135 @@ describe('rateLimit: policy derivation guard', () => {
       // Every mounted-and-unmounted policy is pg-global backed in the table.
       expect(policy.tier2, `${policy.name} tier2`).toBe('global');
     }
+  });
+});
+
+describe('rateLimit: rate_limit_hits_total attack-signal counter', () => {
+  let signals: RecordingAttackSignalSink;
+
+  beforeEach(() => {
+    signals = new RecordingAttackSignalSink();
+    setAttackSignalSink(signals);
+  });
+  afterEach(() => {
+    setAttackSignalSink(noopAttackSignalSink);
+  });
+
+  it('records one hit with the literal (name, ip) on a tier-1 rejection', async () => {
+    const ctx = fakeCtx();
+    for (let i = 0; i < WOC_BALANCE_MAX_PER_MINUTE; i++) {
+      await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    }
+    // Nothing recorded while every call is under the cap.
+    expect(signals.rateLimitHits).toEqual([]);
+
+    await expect(rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+      status: 429,
+      code: 'rate_limit.exceeded',
+    });
+    expect(signals.rateLimitHits).toEqual([{ policy: 'woc_balance', keyKind: 'ip' }]);
+  });
+
+  it('records one hit with the literal (name, ip+account) on a tier-2 rejection', async () => {
+    // tier-1 allows the first call; the pg-global store then rejects, so the 429
+    // comes from tier-2 and the counter still fires exactly once.
+    const store = new RecordingRateLimitStore(() => ({
+      allowed: false,
+      remaining: 0,
+      resetSeconds: 30,
+    }));
+    setRateLimitTier2Store(store);
+    const ctx = fakeCtx({ account: { accountId: 7, scope: 'full' } });
+
+    await expect(rateLimit(CARD_UPLOAD_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+      status: 429,
+      code: 'rate_limit.exceeded',
+    });
+    expect(signals.rateLimitHits).toEqual([{ policy: 'card_upload', keyKind: 'ip+account' }]);
+  });
+
+  it('records nothing for an allowed request', async () => {
+    const ctx = fakeCtx();
+    let nextRan = false;
+    await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {
+      nextRan = true;
+    });
+    expect(nextRan).toBe(true);
+    expect(signals.rateLimitHits).toEqual([]);
+  });
+
+  it('under a tier-1 flood, records one hit per rejection and never touches pg (tier-2 store or pgLimiterWrite)', async () => {
+    // A store IS wired, so the under-cap portion records tier-2 hits; the point is
+    // that the over-cap (tier-1-rejected) portion reaches NEITHER the tier-2 store
+    // NOR pg_limiter_writes_total. This is the "pg_limiter_writes_total stays 0 under
+    // a tier-1 flood" guarantee (docs/api-pipeline/qa-checklist.md).
+    const store = new RecordingRateLimitStore(() => ALWAYS_ALLOWED);
+    setRateLimitTier2Store(store);
+    const ctx = fakeCtx();
+
+    // Fill tier-1 to the cap; each allowed call records exactly one tier-2 hit.
+    for (let i = 0; i < WOC_BALANCE_MAX_PER_MINUTE; i++) {
+      await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    }
+    const tier2HitsAtCap = store.hits.length;
+    expect(signals.rateLimitHits).toEqual([]);
+
+    // Three over-cap attempts, each rejected at tier-1.
+    for (let i = 0; i < 3; i++) {
+      await expect(rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+        status: 429,
+      });
+    }
+
+    // The flood never called the tier-2 store's hit() again. (The recording fake
+    // never emits pgLimiterWrite, so the empty-writes line below is only decisive
+    // by composition; the companion test with the REAL pg store closes that.)
+    expect(store.hits.length).toBe(tier2HitsAtCap);
+    expect(signals.pgLimiterWrites).toEqual([]);
+    // Exactly one counter hit per rejected request: three rejections, three hits.
+    expect(signals.rateLimitHits.length).toBe(3);
+    expect(signals.rateLimitHits).toEqual([
+      { policy: 'woc_balance', keyKind: 'ip' },
+      { policy: 'woc_balance', keyKind: 'ip' },
+      { policy: 'woc_balance', keyKind: 'ip' },
+    ]);
+  });
+
+  it('under a tier-1 flood with the REAL pg store wired, pg sees zero queries and zero writes', async () => {
+    // End-to-end companion to the test above: the tier-2 store here is the REAL
+    // PgRateLimitStore over a counting fake pool, which emits one pgLimiterWrite
+    // per upsert. If a tier-1-rejected request erroneously consulted tier-2, the
+    // pool query count AND pg_limiter_writes_total would both move, so the
+    // "pg_limiter_writes_total stays 0 under a tier-1 flood" claim
+    // (docs/api-pipeline/qa-checklist.md) is pinned by the real store, not by a
+    // fake that could never emit.
+    let queries = 0;
+    const pool = {
+      query: async () => {
+        queries += 1;
+        return { rows: [{ count: 1, window_start: PINNED - (PINNED % WINDOW_MS) }] };
+      },
+    } as unknown as import('pg').Pool;
+    setRateLimitTier2Store(createPgRateLimitStore({ pool, now: () => PINNED }));
+    const ctx = fakeCtx();
+
+    // Fill tier-1 to the cap: each allowed call reaches pg once and counts once.
+    for (let i = 0; i < WOC_BALANCE_MAX_PER_MINUTE; i++) {
+      await rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {});
+    }
+    expect(queries).toBe(WOC_BALANCE_MAX_PER_MINUTE);
+    expect(signals.pgLimiterWrites.length).toBe(WOC_BALANCE_MAX_PER_MINUTE);
+    expect(signals.pgLimiterWrites[0]).toBe('woc_balance');
+
+    // Three over-cap attempts, each rejected at tier-1: pg is never queried and
+    // the write counter never moves.
+    for (let i = 0; i < 3; i++) {
+      await expect(rateLimit(WOC_BALANCE_POLICY)(ctx, async () => {})).rejects.toMatchObject({
+        status: 429,
+      });
+    }
+    expect(queries).toBe(WOC_BALANCE_MAX_PER_MINUTE);
+    expect(signals.pgLimiterWrites.length).toBe(WOC_BALANCE_MAX_PER_MINUTE);
+    expect(signals.rateLimitHits.length).toBe(3);
   });
 });

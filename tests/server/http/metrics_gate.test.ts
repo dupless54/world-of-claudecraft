@@ -7,15 +7,24 @@
 //      via resetActiveConfigForTests, and proving /livez + /readyz stay open.
 //   c) BOOT LOG: logApiDispatchSelection (server/main.ts) logs the mode and emits the
 //      legacy-in-production ALERT only for legacy + production.
-//   d) PG SINK: createPgRateLimitStore records a ratelimit.pg.hit MetricEvent (with
-//      the allow/deny status) through the injected sink, the contract the boot line
-//      relies on to feed tier-2 decisions into the composite (access log + prom) sink.
+//   d) PG SINK: createPgRateLimitStore counts each pg upsert on the real
+//      pg_limiter_writes_total{policy} series via the process-wide attack-signal
+//      slot (server/http/attack_signals.ts), one write per hit for both the allowed
+//      and the tripped case, with the old ratelimit.pg.hit http_requests_total proxy
+//      row gone; plus the /metrics exposition lists all six RED + attack-signal series.
+//   e) BOOT WIRING: importing main installs the exporter-backed attack-signal sink
+//      on the process-wide slot (setAttackSignalSink(httpMetrics.attackSignals)), so
+//      an emission through attackSignalSink() surfaces in a real /metrics scrape.
 
 import type * as http from 'node:http';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  type AttackSignalSink,
+  attackSignalSink,
+  setAttackSignalSink,
+} from '../../../server/http/attack_signals';
 import { handleMetricsGate, resetHealthForTests } from '../../../server/http/health';
 import { createHttpMetrics } from '../../../server/http/metrics';
-import type { MetricEvent, MetricSink } from '../../../server/http/middleware/metric_sink';
 import { createPgRateLimitStore } from '../../../server/ratelimit_db';
 import { FakeRes, makeReq } from '../helpers/fake_http';
 
@@ -26,6 +35,20 @@ function metricsWithSample() {
   const m = createHttpMetrics();
   m.sink.record({ route: '/api/x', method: 'GET', status: 200, durationMs: 5 });
   return m;
+}
+
+/** A recording AttackSignalSink: captures the policy label of every pgLimiterWrite. */
+function recordingAttackSignalSink(): AttackSignalSink & { writes: string[] } {
+  const writes: string[] = [];
+  return {
+    writes,
+    rateLimitHit() {},
+    authFailure() {},
+    bolaDenied() {},
+    pgLimiterWrite(policy) {
+      writes.push(policy);
+    },
+  };
 }
 
 describe('handleMetricsGate (unit)', () => {
@@ -93,43 +116,74 @@ describe('handleMetricsGate (unit)', () => {
   });
 });
 
-describe('pg rate-limit store records through the injected metric sink', () => {
-  it('records a ratelimit.pg.hit MetricEvent carrying the allow/deny status per hit', async () => {
-    const events: MetricEvent[] = [];
-    const recording: MetricSink = { record: (e) => events.push(e) };
-    const now = 1_000_000;
-    const windowStart = now - (now % 60_000);
-    const makePool = (count: number) =>
-      ({
-        query: async () => ({ rows: [{ count, window_start: windowStart }] }),
-      }) as unknown as import('pg').Pool;
+describe('the /metrics exposition lists all six RED + attack-signal series', () => {
+  it('exposes every series TYPE line at the /metrics surface even before any traffic', async () => {
+    // A fresh exporter with no samples still declares each registered series, so
+    // the four attack-signal counters are scrapeable the moment the process boots.
+    const m = createHttpMetrics();
+    const res = new FakeRes();
+    await handleMetricsGate(
+      makeReq({ url: '/metrics', headers: { authorization: `Bearer ${TOKEN}` } }),
+      res as unknown as http.ServerResponse,
+      m,
+      TOKEN,
+    );
+    expect(res.statusCode).toBe(200);
+    const body = String(res.body);
+    expect(body).toContain('# TYPE http_requests_total counter');
+    expect(body).toContain('# TYPE http_request_duration_seconds histogram');
+    expect(body).toContain('# TYPE rate_limit_hits_total counter');
+    expect(body).toContain('# TYPE auth_failures_total counter');
+    expect(body).toContain('# TYPE bola_denied_total counter');
+    expect(body).toContain('# TYPE pg_limiter_writes_total counter');
+  });
+});
 
-    const underLimit = createPgRateLimitStore({
-      pool: makePool(1),
-      metrics: recording,
-      now: () => now,
-    });
-    await underLimit.hit('auth:1.2.3.4', 5);
-    const tripped = createPgRateLimitStore({
-      pool: makePool(6),
-      metrics: recording,
-      now: () => now,
-    });
-    await tripped.hit('auth:1.2.3.4', 5);
+describe('pg rate-limit store emits on the attack-signal slot (no ratelimit.pg.hit proxy)', () => {
+  const now = 1_000_000;
+  const windowStart = now - (now % 60_000);
+  const makePool = (count: number) =>
+    ({
+      query: async () => ({ rows: [{ count, window_start: windowStart }] }),
+    }) as unknown as import('pg').Pool;
 
-    expect(events).toHaveLength(2);
-    expect(events[0]).toMatchObject({
-      route: 'ratelimit.pg.hit',
-      method: 'PG',
-      status: 200,
-      durationMs: 0,
-    });
-    expect(events[1]).toMatchObject({
-      route: 'ratelimit.pg.hit',
-      method: 'PG',
-      status: 429,
-      durationMs: 0,
-    });
+  // The pg-write count lands on the process-wide attack-signal slot, so capture
+  // and restore whatever is installed (main.ts wired its exporter at import).
+  let prevSink: AttackSignalSink;
+  beforeEach(() => {
+    prevSink = attackSignalSink();
+  });
+  afterEach(() => {
+    setAttackSignalSink(prevSink);
+  });
+
+  it('emits pgLimiterWrite once per hit for both the allowed and the tripped case', async () => {
+    const sink = recordingAttackSignalSink();
+    setAttackSignalSink(sink);
+
+    const underLimit = createPgRateLimitStore({ pool: makePool(1), now: () => now });
+    await underLimit.hit('auth:1.2.3.4', 5); // count 1, max 5: allowed
+    const tripped = createPgRateLimitStore({ pool: makePool(6), now: () => now });
+    await tripped.hit('auth:1.2.3.4', 5); // count 6, max 5: tripped
+
+    // One write per upsert (it counts writes, not decisions), labeled with the
+    // parsed policy 'auth' and never the ip portion of the key.
+    expect(sink.writes).toEqual(['auth', 'auth']);
+    expect(sink.writes[0]).not.toContain('1.2.3.4');
+  });
+
+  it('surfaces the write on pg_limiter_writes_total, the old ratelimit.pg.hit proxy row gone', async () => {
+    const m = createHttpMetrics();
+    setAttackSignalSink(m.attackSignals);
+
+    const store = createPgRateLimitStore({ pool: makePool(1), now: () => now });
+    await store.hit('auth:1.2.3.4', 5);
+
+    const text = await m.metricsText();
+    // The real named series carries the count, labeled by policy only.
+    expect(text).toContain('pg_limiter_writes_total{policy="auth"} 1');
+    // The proxy MetricEvent row is gone from the exporter entirely.
+    expect(text).not.toContain('ratelimit.pg.hit');
   });
 });
 
@@ -204,6 +258,21 @@ describe('routeHttpRequest /metrics gate (integration)', () => {
     const missing = await drive('/metrics');
     expect(missing.statusCode).toBe(401);
     expect(missing.body).toBe('unauthorized');
+  });
+
+  it('boot wires the attack-signal slot onto the SAME registry /metrics serves', async () => {
+    // Pins the main.ts boot line setAttackSignalSink(httpMetrics.attackSignals):
+    // importing main installed the real exporter-backed sink on the process-wide
+    // slot, so an emission through attackSignalSink() must surface in a real
+    // /metrics scrape driven through routeHttpRequest. Deleting that one wiring
+    // line leaves the noop on the slot and this scrape misses the series sample
+    // (every other suite installs its own fake, so only this test would catch it).
+    process.env.METRICS_TOKEN = TOKEN;
+    main.resetActiveConfigForTests();
+    attackSignalSink().bolaDenied('/api/boot-wiring-pin/:id');
+    const res = await drive('/metrics', { authorization: `Bearer ${TOKEN}` });
+    expect(res.statusCode).toBe(200);
+    expect(String(res.body)).toContain('bola_denied_total{route="/api/boot-wiring-pin/:id"} 1');
   });
 
   it('leaves /livez and /readyz open while the token gates /metrics', async () => {

@@ -8,6 +8,8 @@
 // the suite is deterministic and leaves global state clean.
 import type * as http from 'node:http';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { AttackSignalSink, AuthFailureKind } from '../../server/http/attack_signals';
+import { noopAttackSignalSink, setAttackSignalSink } from '../../server/http/attack_signals';
 import {
   authThrottled,
   clearAuthFailures,
@@ -203,5 +205,71 @@ describe('authThrottled: read-only per-account failed-login outcome', () => {
       remaining: MAX_AUTH_FAILURES,
       resetSeconds: 0,
     });
+  });
+});
+
+describe('attack-signal auth-failure emissions', () => {
+  // A recording fake sink installed for this block only; the outer resetAll
+  // beforeEach still clears the maps and clock first, then we install the sink.
+  let records: AuthFailureKind[];
+
+  beforeEach(() => {
+    records = [];
+    const sink: AttackSignalSink = {
+      rateLimitHit() {},
+      authFailure(kind) {
+        records.push(kind);
+      },
+      bolaDenied() {},
+      pgLimiterWrite() {},
+    };
+    setAttackSignalSink(sink);
+  });
+
+  afterEach(() => {
+    setAttackSignalSink(noopAttackSignalSink);
+  });
+
+  // Driving an account to the lockout ceiling calls recordAuthFailure, which each
+  // time emits a 'bad_credentials' record; filter by kind to isolate the signal
+  // the assertion is about.
+  const countOf = (k: AuthFailureKind) => records.filter((r) => r === k).length;
+
+  it('recordAuthFailure emits exactly one bad_credentials signal per call', () => {
+    pinClock(9_000_000);
+    recordAuthFailure('someuser');
+    expect(records).toEqual(['bad_credentials']);
+  });
+
+  it('authThrottled below the failure ceiling emits nothing', () => {
+    pinClock(9_100_000);
+    const user = 'under';
+    for (let i = 0; i < MAX_AUTH_FAILURES - 1; i++) recordAuthFailure(user);
+    const before = records.length;
+    expect(authThrottled(user).allowed).toBe(true);
+    // The check itself added no record: it stays read-only when not a lockout.
+    expect(records.length).toBe(before);
+  });
+
+  it('authThrottled emits one throttled signal per lockout-outcome check', () => {
+    pinClock(9_200_000);
+    const user = 'locked';
+    for (let i = 0; i < MAX_AUTH_FAILURES; i++) recordAuthFailure(user);
+    expect(countOf('bad_credentials')).toBe(MAX_AUTH_FAILURES);
+
+    // Each lockout-outcome (allowed false) check emits exactly one 'throttled'.
+    expect(authThrottled(user).allowed).toBe(false);
+    expect(countOf('throttled')).toBe(1);
+    expect(authThrottled(user).allowed).toBe(false);
+    expect(countOf('throttled')).toBe(2);
+  });
+
+  it('clearAuthFailures emits nothing (successful-path helper)', () => {
+    pinClock(9_300_000);
+    const user = 'cleared';
+    for (let i = 0; i < MAX_AUTH_FAILURES; i++) recordAuthFailure(user);
+    const before = records.length;
+    clearAuthFailures(user);
+    expect(records.length).toBe(before);
   });
 });

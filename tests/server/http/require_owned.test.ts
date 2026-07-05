@@ -9,7 +9,12 @@
 // loader return null, so the observable output (the 404 body AND the deny-log
 // shape) must be byte-identical, leaking no cross-account existence signal.
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  type AttackSignalSink,
+  noopAttackSignalSink,
+  setAttackSignalSink,
+} from '../../../server/http/attack_signals';
 import { HttpError } from '../../../server/http/errors';
 import { logger } from '../../../server/http/logger';
 import { requireOwned } from '../../../server/http/middleware/require_owned';
@@ -281,5 +286,118 @@ describe('requireOwned: default deny log', () => {
     } finally {
       warnSpy.mockRestore();
     }
+  });
+});
+
+describe('requireOwned: bola_denied_total attack-signal counter', () => {
+  // A recording fake AttackSignalSink capturing the route LABELS bolaDenied is called
+  // with, installed process-wide for the block and restored to the no-op after each.
+  let recordedRoutes: string[];
+  beforeEach(() => {
+    recordedRoutes = [];
+    const fake: AttackSignalSink = {
+      rateLimitHit() {},
+      authFailure() {},
+      bolaDenied(route: string) {
+        recordedRoutes.push(route);
+      },
+      pgLimiterWrite() {},
+    };
+    setAttackSignalSink(fake);
+  });
+  afterEach(() => {
+    setAttackSignalSink(noopAttackSignalSink);
+  });
+
+  it('increments once with the :param route TEMPLATE (never the concrete path) on a miss', async () => {
+    const load = vi.fn().mockResolvedValue(null);
+    const denyLog = vi.fn();
+    const mw = requireOwned({
+      resource: 'character',
+      param: 'id',
+      load,
+      notFoundBody: { error: 'character not found' },
+      denyLog,
+    });
+    const ctx = fakeCtx({
+      method: 'DELETE',
+      route: '/api/characters/:id',
+      url: '/api/characters/42',
+      account: { accountId: 7, scope: 'full' },
+      params: { id: '42' },
+    });
+    const next = makeNext();
+
+    await mw(ctx, next);
+
+    // Exactly one counter increment, labeled with the route TEMPLATE.
+    expect(recordedRoutes).toEqual(['/api/characters/:id']);
+    // And NEVER the concrete request path (which would leak the requested id and
+    // explode the label cardinality).
+    expect(recordedRoutes[0]).not.toBe('/api/characters/42');
+  });
+
+  it('records nothing on a successful (owned) load', async () => {
+    const load = vi.fn().mockResolvedValue({ id: 42, accountId: 7 });
+    const mw = requireOwned({
+      resource: 'character',
+      param: 'id',
+      load,
+      notFoundBody: { error: 'character not found' },
+    });
+    const ctx = fakeCtx({
+      route: '/api/characters/:id',
+      url: '/api/characters/42',
+      account: { accountId: 7, scope: 'full' },
+      params: { id: '42' },
+    });
+    const next = makeNext();
+
+    await mw(ctx, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(recordedRoutes).toEqual([]);
+  });
+
+  it("labels the counter 'unknown' when the ctx carries no matched route", async () => {
+    const load = vi.fn().mockResolvedValue(null);
+    const denyLog = vi.fn();
+    const mw = requireOwned({
+      resource: 'character',
+      param: 'id',
+      load,
+      notFoundBody: { error: 'character not found' },
+      denyLog,
+    });
+    // No `route` override models a ctx built without a route match.
+    const ctx = fakeCtx({ account: { accountId: 7, scope: 'full' }, params: { id: '42' } });
+    const next = makeNext();
+
+    await mw(ctx, next);
+
+    expect(recordedRoutes).toEqual(['unknown']);
+  });
+
+  it('records nothing when a non-numeric :id is rejected (422) before any load', async () => {
+    const load = vi.fn().mockResolvedValue({ id: 1 });
+    const mw = requireOwned({
+      resource: 'character',
+      param: 'id',
+      load,
+      notFoundBody: { error: 'character not found' },
+    });
+    const ctx = fakeCtx({
+      route: '/api/characters/:id',
+      account: { accountId: 7, scope: 'full' },
+      params: { id: 'abc' },
+    });
+    const next = makeNext();
+
+    // The validator throws the decode failure (422) before any DB call, so the
+    // deny counter (a load-authorize miss signal only) must not fire.
+    await expect(mw(ctx, next)).rejects.toBeDefined();
+
+    expect(load).not.toHaveBeenCalled();
+    expect(recordedRoutes).toEqual([]);
   });
 });

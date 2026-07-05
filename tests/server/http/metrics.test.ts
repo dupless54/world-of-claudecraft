@@ -10,10 +10,14 @@
 import { describe, expect, it } from 'vitest';
 import { compose } from '../../../server/http/compose';
 import {
+  AUTH_FAILURES_TOTAL,
+  BOLA_DENIED_TOTAL,
   createHttpMetrics,
   HTTP_DURATION_BUCKETS_SECONDS,
   HTTP_REQUEST_DURATION_SECONDS,
   HTTP_REQUESTS_TOTAL,
+  PG_LIMITER_WRITES_TOTAL,
+  RATE_LIMIT_HITS_TOTAL,
 } from '../../../server/http/metrics';
 import { withMetrics } from '../../../server/http/middleware/metric_sink';
 import type { Middleware } from '../../../server/http/types';
@@ -176,6 +180,80 @@ describe('createHttpMetrics: duration is observed in seconds', () => {
     expect(sampleValue(text, /^http_request_duration_seconds_sum\{[^}]*\} ([\d.]+)$/m)).toBe(
       '0.25',
     );
+  });
+});
+
+describe('createHttpMetrics: the four attack-signal counters', () => {
+  it('registers all six series on one registry, exposed before any traffic', async () => {
+    const metrics = createHttpMetrics();
+    const text = await metrics.metricsText();
+    // Literal name pins for the whole source-spec 4.9 request-layer RED catalog:
+    // a rename must fail here, never silently ride an exported constant.
+    expect(text).toContain('# TYPE http_requests_total counter');
+    expect(text).toContain('# TYPE http_request_duration_seconds histogram');
+    expect(text).toContain('# TYPE rate_limit_hits_total counter');
+    expect(text).toContain('# TYPE auth_failures_total counter');
+    expect(text).toContain('# TYPE bola_denied_total counter');
+    expect(text).toContain('# TYPE pg_limiter_writes_total counter');
+  });
+
+  it('pins the exported name constants to their literal series names', () => {
+    expect(RATE_LIMIT_HITS_TOTAL).toBe('rate_limit_hits_total');
+    expect(AUTH_FAILURES_TOTAL).toBe('auth_failures_total');
+    expect(BOLA_DENIED_TOTAL).toBe('bola_denied_total');
+    expect(PG_LIMITER_WRITES_TOTAL).toBe('pg_limiter_writes_total');
+  });
+
+  it('rateLimitHit increments rate_limit_hits_total with the policy and key_kind labels', async () => {
+    const metrics = createHttpMetrics();
+    metrics.attackSignals.rateLimitHit('character_create', 'ip+account');
+    metrics.attackSignals.rateLimitHit('character_create', 'ip+account');
+    metrics.attackSignals.rateLimitHit('public_read', 'ip');
+    const text = await metrics.metricsText();
+    expect(
+      sampleValue(
+        text,
+        /^rate_limit_hits_total\{policy="character_create",key_kind="ip\+account"\} (\d+)$/m,
+      ),
+    ).toBe('2');
+    expect(
+      sampleValue(text, /^rate_limit_hits_total\{policy="public_read",key_kind="ip"\} (\d+)$/m),
+    ).toBe('1');
+  });
+
+  it('authFailure fans the two bounded kinds into two series', async () => {
+    const metrics = createHttpMetrics();
+    metrics.attackSignals.authFailure('bad_credentials');
+    metrics.attackSignals.authFailure('bad_credentials');
+    metrics.attackSignals.authFailure('throttled');
+    const text = await metrics.metricsText();
+    expect(sampleValue(text, /^auth_failures_total\{kind="bad_credentials"\} (\d+)$/m)).toBe('2');
+    expect(sampleValue(text, /^auth_failures_total\{kind="throttled"\} (\d+)$/m)).toBe('1');
+  });
+
+  it('bolaDenied labels by the route TEMPLATE handed to it', async () => {
+    const metrics = createHttpMetrics();
+    metrics.attackSignals.bolaDenied('/api/characters/:id');
+    const text = await metrics.metricsText();
+    expect(sampleValue(text, /^bola_denied_total\{route="\/api\/characters\/:id"\} (\d+)$/m)).toBe(
+      '1',
+    );
+  });
+
+  it('pgLimiterWrite increments pg_limiter_writes_total by policy', async () => {
+    const metrics = createHttpMetrics();
+    metrics.attackSignals.pgLimiterWrite('wallet_link');
+    metrics.attackSignals.pgLimiterWrite('wallet_link');
+    const text = await metrics.metricsText();
+    expect(sampleValue(text, /^pg_limiter_writes_total\{policy="wallet_link"\} (\d+)$/m)).toBe('2');
+  });
+
+  it('keeps attack-signal increments scoped to their own instance', async () => {
+    const a = createHttpMetrics();
+    const b = createHttpMetrics();
+    a.attackSignals.authFailure('throttled');
+    const textB = await b.metricsText();
+    expect(textB).not.toMatch(/^auth_failures_total\{/m);
   });
 });
 
