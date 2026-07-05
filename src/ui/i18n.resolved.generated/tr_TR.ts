@@ -1169,6 +1169,12 @@ export const tr_TR: EnTranslations = {
     "social": {
       "lastSeen": "Son görülme: {when}",
       "lastSeenNever": "hiç"
+    },
+    "gathering": {
+      "title": "Toplama",
+      "mining": "Madencilik",
+      "logging": "Ağaç kesme",
+      "herbalism": "Bitkicilik"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const tr_TR: EnTranslations = {
   },
   "download": {
     "title": "Masaüstü Başlatıcısını İndir",
-    "desc": "Optimize edilmiş performans ve tam ekran oyun için bağımsız başlatıcıyı edinin."
+    "desc": "Optimize edilmiş performans ve tam ekran oyun için bağımsız başlatıcıyı edinin.",
+    "macCta": "macOS için indir",
+    "windowsPending": "Windows derlemesi beklemede."
   },
   "comingSoon": {
     "placeholder": "Yakında...",

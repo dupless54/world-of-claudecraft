@@ -536,6 +536,8 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'news.title': 'Новости и обновления',
   'news.desc': 'Читайте описание последних обновлений, информацию о событиях и новости сообщества.',
   'download.title': 'Скачать загрузчик для ПК',
+  'download.macCta': 'Скачать для macOS',
+  'download.windowsPending': 'Сборка для Windows готовится.',
   'download.desc':
     'Загрузите отдельный клиент для оптимальной производительности и игры на весь экран.',
   'comingSoon.placeholder': 'Скоро...',
@@ -5919,4 +5921,8 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.calendar.events.moongateCommunion.title': 'Единение у лунных врат',
   'hudChrome.calendar.events.moongateCommunion.note':
     'Паломники собираются у лунных врат храма под срединной луной.',
+  'hudChrome.gathering.title': 'Собирательство',
+  'hudChrome.gathering.mining': 'Горное дело',
+  'hudChrome.gathering.logging': 'Лесозаготовка',
+  'hudChrome.gathering.herbalism': 'Травничество',
 };

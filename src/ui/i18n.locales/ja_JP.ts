@@ -526,6 +526,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'news.title': 'ニュース & アップデート',
   'news.desc': '最新のパッチノート、イベント、コミュニティの更新情報を確認しましょう。',
   'download.title': 'デスクトップランチャーのダウンロード',
+  'download.macCta': 'macOS版をダウンロード',
+  'download.windowsPending': 'Windows版は準備中です。',
   'download.desc':
     '最適化されたパフォーマンスと全画面表示でのプレイのために、スタンドアロン版ランチャーを入手してください。',
   'comingSoon.placeholder': '近日公開...',
@@ -5800,4 +5802,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
     'ハルヴェン修道士が海図に印を。崩落した聖遺物庫に挑む好日。',
   'hudChrome.calendar.events.moongateCommunion.title': '月門の集い',
   'hudChrome.calendar.events.moongateCommunion.note': '月半ばの月の下、巡礼者が神殿の月門に集う。',
+  'hudChrome.gathering.title': '採集',
+  'hudChrome.gathering.mining': '採掘',
+  'hudChrome.gathering.logging': '伐採',
+  'hudChrome.gathering.herbalism': '薬草学',
 };

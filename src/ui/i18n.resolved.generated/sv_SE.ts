@@ -1169,6 +1169,12 @@ export const sv_SE: EnTranslations = {
     "social": {
       "lastSeen": "Senast sedd: {when}",
       "lastSeenNever": "aldrig"
+    },
+    "gathering": {
+      "title": "Insamling",
+      "mining": "Gruvdrift",
+      "logging": "Skogsavverkning",
+      "herbalism": "Örtkunskap"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const sv_SE: EnTranslations = {
   },
   "download": {
     "title": "Ladda ner skrivbordsstartaren",
-    "desc": "Hämta den fristående startaren för optimerad prestanda och spel i helskärm."
+    "desc": "Hämta den fristående startaren för optimerad prestanda och spel i helskärm.",
+    "macCta": "Ladda ner för macOS",
+    "windowsPending": "Windows-bygge väntar."
   },
   "comingSoon": {
     "placeholder": "Kommer snart...",

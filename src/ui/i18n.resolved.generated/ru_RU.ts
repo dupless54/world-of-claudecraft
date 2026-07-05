@@ -1169,6 +1169,12 @@ export const ru_RU: EnTranslations = {
     "social": {
       "lastSeen": "Последний вход: {when}",
       "lastSeenNever": "никогда"
+    },
+    "gathering": {
+      "title": "Собирательство",
+      "mining": "Горное дело",
+      "logging": "Лесозаготовка",
+      "herbalism": "Травничество"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const ru_RU: EnTranslations = {
   },
   "download": {
     "title": "Скачать загрузчик для ПК",
-    "desc": "Загрузите отдельный клиент для оптимальной производительности и игры на весь экран."
+    "desc": "Загрузите отдельный клиент для оптимальной производительности и игры на весь экран.",
+    "macCta": "Скачать для macOS",
+    "windowsPending": "Сборка для Windows готовится."
   },
   "comingSoon": {
     "placeholder": "Скоро...",

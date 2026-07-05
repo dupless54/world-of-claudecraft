@@ -505,6 +505,8 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'news.title': '新聞與更新說明',
   'news.desc': '閱讀最新修補程式說明、遊戲內事件和社群動態。',
   'download.title': '下載電腦版啟動器',
+  'download.macCta': '下載 macOS 版',
+  'download.windowsPending': 'Windows 版本即將推出。',
   'download.desc': '獲取獨立啟動器，以獲得更優化的效能和全螢幕遊戲體驗。',
   'comingSoon.placeholder': '敬請期待...',
   'comingSoon.featureComingSoon': '此功能即將在這個世界上線，敬請期待。',
@@ -5488,4 +5490,8 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.calendar.events.delveDay.note': '哈爾文修士在圖上做了標記：宜探坍塌聖物窖。',
   'hudChrome.calendar.events.moongateCommunion.title': '月門共禱',
   'hudChrome.calendar.events.moongateCommunion.note': '朝聖者在月中之月下聚於神廟月門。',
+  'hudChrome.gathering.title': '採集',
+  'hudChrome.gathering.mining': '採礦',
+  'hudChrome.gathering.logging': '伐木',
+  'hudChrome.gathering.herbalism': '藥草學',
 };

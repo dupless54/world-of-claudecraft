@@ -504,6 +504,8 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'news.title': '新闻与更新说明',
   'news.desc': '阅读最新补丁说明、游戏内事件和社区动态。',
   'download.title': '下载电脑版启动器',
+  'download.macCta': '下载 macOS 版',
+  'download.windowsPending': 'Windows 版本即将推出。',
   'download.desc': '获取独立启动器，以获得更优化的性能和全屏游戏体验。',
   'comingSoon.placeholder': '敬请期待...',
   'comingSoon.featureComingSoon': '该功能即将上线，敬请期待。',
@@ -5487,4 +5489,8 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.calendar.events.delveDay.note': '哈尔文修士在图上做了标记：宜探坍塌圣物窖。',
   'hudChrome.calendar.events.moongateCommunion.title': '月门共祷',
   'hudChrome.calendar.events.moongateCommunion.note': '朝圣者在月中之月下聚于神庙月门。',
+  'hudChrome.gathering.title': '采集',
+  'hudChrome.gathering.mining': '采矿',
+  'hudChrome.gathering.logging': '伐木',
+  'hudChrome.gathering.herbalism': '草药学',
 };

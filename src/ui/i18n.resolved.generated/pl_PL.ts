@@ -1169,6 +1169,12 @@ export const pl_PL: EnTranslations = {
     "social": {
       "lastSeen": "Ostatnio widziano: {when}",
       "lastSeenNever": "nigdy"
+    },
+    "gathering": {
+      "title": "Zbieractwo",
+      "mining": "Górnictwo",
+      "logging": "Wyrąb",
+      "herbalism": "Zielarstwo"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const pl_PL: EnTranslations = {
   },
   "download": {
     "title": "Pobierz launcher na komputer",
-    "desc": "Pobierz samodzielny launcher dla zoptymalizowanej wydajności i gry na pełnym ekranie."
+    "desc": "Pobierz samodzielny launcher dla zoptymalizowanej wydajności i gry na pełnym ekranie.",
+    "macCta": "Pobierz dla macOS",
+    "windowsPending": "Build Windows w przygotowaniu."
   },
   "comingSoon": {
     "placeholder": "Już wkrótce...",

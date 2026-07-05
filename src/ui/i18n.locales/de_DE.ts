@@ -1210,6 +1210,8 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'news.title': 'Neuigkeiten und Updates',
   'news.desc': 'Lies die neuesten Patchnotes, Events und Community-Updates.',
   'download.title': 'Desktop-Launcher herunterladen',
+  'download.macCta': 'Download fuer macOS',
+  'download.windowsPending': 'Windows-Build ausstehend.',
   'download.desc': 'Hol dir den eigenständigen Launcher für optimierte Leistung und Vollbildspiel.',
   'comingSoon.placeholder': 'Demnächst...',
   'comingSoon.featureComingSoon': 'Diese Funktion ist demnächst in der Welt verfügbar.',
@@ -6012,4 +6014,8 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.letters.letter_q_hollow.subject': 'Was Ihr im Dunkeln vollbracht habt',
   'entities.letters.letter_q_hollow.body':
     'Nur wenige werden je erfahren, was in jener Senke begraben lag, und noch weniger würden es glauben. Ich weiß es, und ich werde es nicht vergessen.\n\nMöge Euer Weg erleuchtet bleiben.\n- Bruder Aldric',
+  'hudChrome.gathering.herbalism': 'Kräuterkunde',
+  'hudChrome.gathering.logging': 'Holzfällen',
+  'hudChrome.gathering.mining': 'Bergbau',
+  'hudChrome.gathering.title': 'Sammeln',
 };

@@ -1169,6 +1169,12 @@ export const en_XA: EnTranslations = {
     "social": {
       "lastSeen": "[Ļášţ šééñ: {when}]",
       "lastSeenNever": "[ñéʋéŕ]"
+    },
+    "gathering": {
+      "title": "[Ĝáţĥéŕíñĝ]",
+      "mining": "[Ɱíñíñĝ]",
+      "logging": "[Ļóĝĝíñĝ]",
+      "herbalism": "[Ĥéŕƀáļíšɱ]"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const en_XA: EnTranslations = {
   },
   "download": {
     "title": "[Ðóŵñļóáð Ðéšķţóþ Ļáúñçĥéŕ]",
-    "desc": "[Ĝéţ ţĥé šţáñðáļóñé ļáúñçĥéŕ ƒóŕ óþţíɱížéð þéŕƒóŕɱáñçé áñð ƒúļļ-šçŕééñ þļáý.]"
+    "desc": "[Ĝéţ ţĥé šţáñðáļóñé ļáúñçĥéŕ ƒóŕ óþţíɱížéð þéŕƒóŕɱáñçé áñð ƒúļļ-šçŕééñ þļáý.]",
+    "macCta": "[Ðóŵñļóáð ƒóŕ ɱáçÓŠ]",
+    "windowsPending": "[Ŵíñðóŵš ƀúíļð þéñðíñĝ.]"
   },
   "comingSoon": {
     "placeholder": "[Çóɱíñĝ Šóóñ...]",

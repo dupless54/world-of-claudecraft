@@ -1169,6 +1169,12 @@ export const nl_NL: EnTranslations = {
     "social": {
       "lastSeen": "Laatst gezien: {when}",
       "lastSeenNever": "nooit"
+    },
+    "gathering": {
+      "title": "Verzamelen",
+      "mining": "Mijnbouw",
+      "logging": "Houtkap",
+      "herbalism": "Kruidenkunde"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const nl_NL: EnTranslations = {
   },
   "download": {
     "title": "Desktop-launcher downloaden",
-    "desc": "Download de losse launcher voor optimale prestaties en schermvullend spelen."
+    "desc": "Download de losse launcher voor optimale prestaties en schermvullend spelen.",
+    "macCta": "Download voor macOS",
+    "windowsPending": "Windows-build volgt later."
   },
   "comingSoon": {
     "placeholder": "Binnenkort beschikbaar...",

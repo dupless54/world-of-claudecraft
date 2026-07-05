@@ -1169,6 +1169,12 @@ export const en_CA: EnTranslations = {
     "social": {
       "lastSeen": "Last seen: {when}",
       "lastSeenNever": "never"
+    },
+    "gathering": {
+      "title": "Gathering",
+      "mining": "Mining",
+      "logging": "Logging",
+      "herbalism": "Herbalism"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const en_CA: EnTranslations = {
   },
   "download": {
     "title": "Download Desktop Launcher",
-    "desc": "Get the standalone launcher for optimized performance and full-screen play."
+    "desc": "Get the standalone launcher for optimized performance and full-screen play.",
+    "macCta": "Download for macOS",
+    "windowsPending": "Windows build pending."
   },
   "comingSoon": {
     "placeholder": "Coming Soon...",

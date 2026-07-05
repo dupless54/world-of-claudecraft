@@ -527,6 +527,8 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'news.title': '새소식 및 업데이트',
   'news.desc': '최신 패치 노트, 이벤트 소식, 커뮤니티 업데이트를 확인해 보세요.',
   'download.title': '데스크톱 런처 다운로드',
+  'download.macCta': 'macOS용 다운로드',
+  'download.windowsPending': 'Windows 빌드는 준비 중입니다.',
   'download.desc': '최적화된 성능과 전체 화면 플레이를 위해 독립형 런처를 다운로드하세요.',
   'comingSoon.placeholder': '준비 중...',
   'comingSoon.featureComingSoon': '이 기능은 곧 월드에 추가될 예정입니다.',
@@ -5795,4 +5797,8 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.calendar.events.moongateCommunion.title': '달문 집회',
   'hudChrome.calendar.events.moongateCommunion.note':
     '보름의 달 아래 순례자들이 사원의 달문에 모입니다.',
+  'hudChrome.gathering.title': '채집',
+  'hudChrome.gathering.mining': '채광',
+  'hudChrome.gathering.logging': '벌목',
+  'hudChrome.gathering.herbalism': '약초학',
 };

@@ -1169,6 +1169,12 @@ export const fr_CA: EnTranslations = {
     "social": {
       "lastSeen": "Vu pour la dernière fois : {when}",
       "lastSeenNever": "jamais"
+    },
+    "gathering": {
+      "title": "Récolte",
+      "mining": "Minage",
+      "logging": "Bûcheronnage",
+      "herbalism": "Herboristerie"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const fr_CA: EnTranslations = {
   },
   "download": {
     "title": "Télécharger le lanceur de bureau",
-    "desc": "Obtenez le lanceur autonome pour des performances optimisées et un jeu en plein écran."
+    "desc": "Obtenez le lanceur autonome pour des performances optimisées et un jeu en plein écran.",
+    "macCta": "Telecharger la version macOS",
+    "windowsPending": "Version Windows a venir."
   },
   "comingSoon": {
     "placeholder": "Bientôt disponible...",

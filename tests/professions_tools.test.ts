@@ -12,8 +12,7 @@ import {
   resolveToolEffectUse,
   slotEffect,
 } from '../src/sim/professions/tools';
-import { Rng } from '../src/sim/rng';
-import { Sim } from '../src/sim/sim';
+import { Rng } from '../src/sim/rng';import { Sim } from '../src/sim/sim';
 import type { ItemDef } from '../src/sim/types';
 
 describe('gathering tool tier gating (#1123)', () => {
@@ -100,6 +99,15 @@ describe('crafted higher-tier base tools and monster-material gating (#1135)', (
     const mining = [ITEMS.thorium_mining_pick, ITEMS.arcanite_mining_pick];
     const logging = [ITEMS.ashwood_axe, ITEMS.elderwood_axe];
     const herbalism = [ITEMS.goldleaf_sickle, ITEMS.sunpetal_sickle];
+    const craftedIds = new Set([...mining, ...logging, ...herbalism].map((item) => item.id));
+    // Direct scan of every NPC's vendorItems list, not just the buyValue
+    // convention: makes the "never vendor-sold" claim self-contained instead
+    // of leaning on buyValue and vendorItems always staying in lockstep.
+    for (const npc of Object.values(NPCS)) {
+      for (const stockedId of npc.vendorItems ?? []) {
+        expect(craftedIds.has(stockedId)).toBe(false);
+      }
+    }
     for (const [profession, tools] of [
       ['mining', mining],
       ['logging', logging],
@@ -150,8 +158,7 @@ describe('crafted higher-tier base tools and monster-material gating (#1135)', (
       for (let i = 0; i < 1000; i++) {
         // Repeated simulated gathers never mutate or exhaust the item.
         expect(gatherToolTier(item, 'mining')).toBe(tier);
-      }
-      expect(item).not.toHaveProperty('durability');
+      }      expect(item).not.toHaveProperty('durability');
     }
   });
 
@@ -183,8 +190,7 @@ describe('crafted higher-tier base tools and monster-material gating (#1135)', (
       expect(canHarvestMonsterMaterial(commonTier, nodeOrMaterialTier)).toBe(
         canHarvestMonsterMaterial(epicTier, nodeOrMaterialTier),
       );
-    }
-    // Real vendor (uncommon, tier 3) and crafted (rare, tier 4) tools also
+    }    // Real vendor (uncommon, tier 3) and crafted (rare, tier 4) tools also
     // carry different rarities: confirm the rarity difference is real, so the
     // tier-only gating check above is meaningful and not vacuously true.
     expect(ITEMS.mithril_mining_pick.quality).toBe('uncommon');

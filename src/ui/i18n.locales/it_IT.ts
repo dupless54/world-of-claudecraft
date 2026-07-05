@@ -1194,6 +1194,8 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'news.title': 'Notizie e aggiornamenti',
   'news.desc': 'Leggi le ultime note sulla patch, gli eventi e gli aggiornamenti della community.',
   'download.title': 'Scarica il launcher per desktop',
+  'download.macCta': 'Scarica per macOS',
+  'download.windowsPending': 'Build Windows in arrivo.',
   'download.desc':
     'Ottieni il launcher autonomo per prestazioni ottimizzate e gioco a schermo intero.',
   'comingSoon.placeholder': 'Prossimamente...',
@@ -5974,4 +5976,8 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.letters.letter_q_hollow.subject': 'Ciò che hai compiuto nel buio',
   'entities.letters.letter_q_hollow.body':
     'Pochi sapranno mai cosa giaceva sepolto in quella conca, e ancora meno ci crederebbero. Io lo so, e non lo dimenticherò.\n\nChe la tua strada resti illuminata.\n- Fratello Aldric',
+  'hudChrome.gathering.herbalism': 'Erbalismo',
+  'hudChrome.gathering.logging': 'Taglio del legname',
+  'hudChrome.gathering.mining': 'Estrazione mineraria',
+  'hudChrome.gathering.title': 'Raccolta',
 };

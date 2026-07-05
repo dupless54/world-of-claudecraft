@@ -1169,6 +1169,12 @@ export const id_ID: EnTranslations = {
     "social": {
       "lastSeen": "Terakhir terlihat: {when}",
       "lastSeenNever": "tidak pernah"
+    },
+    "gathering": {
+      "title": "Pengumpulan",
+      "mining": "Penambangan",
+      "logging": "Penebangan",
+      "herbalism": "Herbalisme"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const id_ID: EnTranslations = {
   },
   "download": {
     "title": "Unduh Peluncur Desktop",
-    "desc": "Dapatkan peluncur mandiri untuk performa optimal dan permainan layar penuh."
+    "desc": "Dapatkan peluncur mandiri untuk performa optimal dan permainan layar penuh.",
+    "macCta": "Unduh untuk macOS",
+    "windowsPending": "Build Windows tertunda."
   },
   "comingSoon": {
     "placeholder": "Segera Hadir...",

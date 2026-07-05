@@ -1169,6 +1169,12 @@ export const es: EnTranslations = {
     "social": {
       "lastSeen": "Última conexión: {when}",
       "lastSeenNever": "nunca"
+    },
+    "gathering": {
+      "title": "Recolección",
+      "mining": "Minería",
+      "logging": "Tala",
+      "herbalism": "Herboristería"
     }
   },
   "guide": {
@@ -2507,7 +2513,9 @@ export const es: EnTranslations = {
   },
   "download": {
     "title": "Descargar Lanzador de Escritorio",
-    "desc": "Consigue el lanzador independiente para un rendimiento optimizado y juego a pantalla completa."
+    "desc": "Consigue el lanzador independiente para un rendimiento optimizado y juego a pantalla completa.",
+    "macCta": "Descargar para macOS",
+    "windowsPending": "Compilacion para Windows pendiente."
   },
   "comingSoon": {
     "placeholder": "Próximamente...",
