@@ -2027,8 +2027,10 @@ async function startGame(
   let pendingReleaseFacing: number | null = null;
   // Local display-only integration of keyboard turns online (see the module docs).
   const kbTurn = newKeyboardTurnState();
-  // One-shot wire latch for a just-released keyboard turn's final heading.
+  // Wire latch for a just-released keyboard turn's final heading; stays armed
+  // until an input send carries it (see the online branch), TTL as backstop.
   let kbReleaseLatch: number | null = null;
+  let kbReleaseLatchAgeMs = 0;
   function updateCamera(frameDt: number, interpFacing: number): void {
     const mi = input.readMoveInput();
     const clickMoving = !!input.clickMoveTarget && !input.suspendMovement && !movementFrozen();
@@ -2376,19 +2378,31 @@ async function startGame(
       onlineInputEchoMs,
     );
     // kbReleaseLatch: the final local heading of a just-released keyboard turn
-    // (set below, sent once here). The server applies a sent facing outright,
-    // so it adopts the exact locally-shown angle; without this its own tick
-    // integration lands up to ~one turn-tick away and the display would have
-    // to re-aim a few degrees moments after every turn.
+    // (set below). The server applies a sent facing outright, so it adopts the
+    // exact locally-shown angle; without this its own tick integration lands
+    // up to ~one turn-tick away and the display would have to re-aim a few
+    // degrees moments after every turn. The latch stays ARMED until an input
+    // send actually carries it: sends are rate-limited (>=16ms apart) and the
+    // frame right after the release edge usually falls inside that window, so
+    // a one-shot latch was silently dropped about half the time. Any send
+    // while armed includes the held facing (the 50ms input timer reads it
+    // too), so the age TTL below is a pure backstop.
     const foreignFacing = movementFacing ?? resolved.facing;
+    if (foreignFacing !== null || resolved.mi.turnLeft || resolved.mi.turnRight) {
+      kbReleaseLatch = null; // superseded by a foreign owner or a new turn
+    }
     const netFacing = foreignFacing ?? kbReleaseLatch;
     Object.assign(net.moveInput, resolved.mi);
     net.setMouselookFacing(netFacing);
-    // Online streams facing every frame, so the latched release yaws are
-    // consumed here; drop them so they are not re-applied next frame.
+    // Online streams facing every frame, so the mouselook release yaw is
+    // consumed here; drop it so it is not re-applied next frame.
     pendingReleaseFacing = null;
-    kbReleaseLatch = null;
-    if (net.flushInput()) perf.markInputSent(performance.now());
+    const inputSent = net.flushInput();
+    if (inputSent) perf.markInputSent(performance.now());
+    if (kbReleaseLatch !== null) {
+      kbReleaseLatchAgeMs += frameDt * 1000;
+      if (inputSent || kbReleaseLatchAgeMs > 120) kbReleaseLatch = null;
+    }
     const echoSamples = net.consumeInputEchoSamples();
     for (const sample of echoSamples) {
       if (Number.isFinite(sample) && sample >= 0) {
@@ -2449,9 +2463,10 @@ async function startGame(
       frameDt,
     });
     // A turn key was just released: latch the final local heading for the next
-    // frame's input send, so the server adopts the exact displayed angle.
+    // frames' input sends, so the server adopts the exact displayed angle.
     if (kbTurn.releaseFacingToSend !== null) {
       kbReleaseLatch = kbTurn.releaseFacingToSend;
+      kbReleaseLatchAgeMs = 0;
       kbTurn.releaseFacingToSend = null;
     }
     // Display-only self extrapolation (src/render/self_motion.ts). Off while
