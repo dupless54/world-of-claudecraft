@@ -152,6 +152,7 @@ const INDEX_SECTIONS = [
   'Premium Class Details Panel',
   'mobile touch controls (runtime-gated with body.mobile-touch + game-active)',
   'mobile action ring (paged combat buttons)',
+  'mobile hud layout tiers',
   'Unified Character Select Layout',
   'Cosmetic skin-select event overlay',
   // accessibility infra: three global sections added to base.css (loaded by both
@@ -161,8 +162,8 @@ const INDEX_SECTIONS = [
   'print reset',
 ];
 
-// The two index-only sections play.html does not ship, so its count is 57 (plus the
-// three global sections both entries load via base.css = 60).
+// The two index-only sections play.html does not ship, so its count is 58 (plus the
+// three global sections both entries load via base.css = 61).
 const PLAY_OMITS = ['new-adventurer tutorial', 'UI theme picker'];
 const PLAY_SECTIONS = INDEX_SECTIONS.filter((name) => !PLAY_OMITS.includes(name));
 
@@ -170,12 +171,12 @@ const PLAY_SECTIONS = INDEX_SECTIONS.filter((name) => !PLAY_OMITS.includes(name)
 const MANIFEST = INDEX_SECTIONS;
 
 describe('css_corpus section manifest', () => {
-  it('pins a non-vacuous manifest: 63 index + 61 play sections, no duplicate names', () => {
-    expect(INDEX_SECTIONS.length).toBe(63);
-    expect(PLAY_SECTIONS.length).toBe(61);
-    expect(MANIFEST.length).toBe(63);
-    expect(new Set(INDEX_SECTIONS).size).toBe(63);
-    expect(new Set(PLAY_SECTIONS).size).toBe(61);
+  it('pins a non-vacuous manifest: 64 index + 62 play sections, no duplicate names', () => {
+    expect(INDEX_SECTIONS.length).toBe(64);
+    expect(PLAY_SECTIONS.length).toBe(62);
+    expect(MANIFEST.length).toBe(64);
+    expect(new Set(INDEX_SECTIONS).size).toBe(64);
+    expect(new Set(PLAY_SECTIONS).size).toBe(62);
   });
 
   it('captures the live corpus markers (the marker regex is non-vacuous, not a zero match)', () => {

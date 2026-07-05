@@ -1092,15 +1092,62 @@
     left: auto;
     right: max(18px, env(safe-area-inset-right));
   }
-  body.mobile-touch.mobile-left-handed #mobile-camera-joystick {
-    /* Left-handed mirrors the move joystick to the right (above), so the camera
-       joystick stays on the LEFT (its non-left-handed default) rather than
-       mirroring too: the ring cluster is bottom-right regardless of handedness
-       (out of scope for the mirror), so the camera joystick must not follow the
-       move joystick there or it would collide with the ring. */
+  /* The paged action ring (Phase 1) lives bottom-right, the same corner the
+     move joystick mirrors to above. Pin the ring to the LEFT in left-handed
+     mode instead so it moves under the (now-right) move thumb's opposite hand
+     and stops overlapping it; mirror every absolutely positioned ring child by
+     swapping its right: offset to the identical left: expression so the
+     crescent arcs for a left thumb instead of a right one. */
+  body.mobile-touch.mobile-left-handed #mobile-action-ring {
     left: max(18px, env(safe-area-inset-left));
     right: auto;
-    bottom: calc(26px + env(safe-area-inset-bottom));
+    transform-origin: left bottom;
+  }
+  body.mobile-touch.mobile-left-handed #mobile-action-attack {
+    left: 0;
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed .mobile-action-slot[data-mobile-index="0"] {
+    left: calc(var(--mobile-ring-attack-size) + var(--mobile-ring-gap));
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed .mobile-action-slot[data-mobile-index="1"] {
+    left: calc(var(--mobile-ring-attack-size) * 0.65 + var(--mobile-ring-gap));
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed .mobile-action-slot[data-mobile-index="2"] {
+    left: calc(var(--mobile-ring-attack-size) * 0.06 + var(--mobile-ring-gap));
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed .mobile-action-slot[data-mobile-index="3"] {
+    left: calc(0px - var(--mobile-ring-action-size) * 0.55);
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed .mobile-action-slot[data-mobile-index="4"] {
+    left: calc(0px - var(--mobile-ring-action-size) * 1.1 - var(--mobile-ring-gap));
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed #mobile-action-page-toggle {
+    left: calc(var(--mobile-ring-attack-size) * 0.3);
+    right: auto;
+  }
+  /* Attack Nearest sits next to the ring cluster (Phase 1); mirror it to the
+     left alongside the ring. */
+  body.mobile-touch.mobile-left-handed #mobile-attack-nearest {
+    left: max(18px, env(safe-area-inset-left));
+    right: auto;
+  }
+  body.mobile-touch.mobile-left-handed #mobile-camera-joystick {
+    /* Left-handed mirrors the move joystick to the right (above) AND the ring
+       (this section, above) to the left, so the camera joystick's non-left-
+       handed LEFT home is now occupied by the mirrored ring. Stack it above the
+       move joystick's new right-side home instead (matching the non-left-handed
+       stacking geometry mirrored), so an opted-in joystick never collides with
+       either the move stick or the ring. */
+    right: max(18px, env(safe-area-inset-right));
+    left: auto;
+    bottom: calc(158px + env(safe-area-inset-bottom));
+    transform-origin: right bottom;
   }
   body.mobile-touch.mobile-left-handed #mobile-more {
     left: auto;
@@ -2275,5 +2322,61 @@
       right: 12px;
       width: 190px;
     }
+  }
+
+  /* ---------- mobile hud layout tiers ---------- */
+  /* Phase 3 of the mobile combat HUD rework: src/ui/mobile_hud_layout.ts resolves
+     a responsive tier (compact/standard/tablet) from the live viewport, and
+     src/game/mobile_hud_layout_applier.ts stamps exactly one of the three
+     classes below onto body alongside the existing tier-independent rules in
+     this file. Standard is the baseline (no overrides needed here, the rest of
+     hud.mobile.css already targets it); compact and tablet layer ON TOP of that
+     baseline and of the existing portrait media blocks above, they do not
+     replace them. Every rule here stays under body.mobile-touch.
+     hud-menu-open / hud-chat-open mirror mobile-window-open / mobile-chat-open
+     (the applier reads those to build its input) so a tier rule can react to
+     "a menu is open" without re-deriving that state. */
+  body.mobile-touch.hud-mobile-compact #chatlog-wrap {
+    width: min(240px, calc(100vw - 20px));
+    bottom: calc(140px + env(safe-area-inset-bottom));
+  }
+  body.mobile-touch.hud-mobile-compact #chatlog-frame {
+    height: 84px;
+  }
+  body.mobile-touch.hud-mobile-compact #right-tracker-stack {
+    width: 148px;
+    top: max(96px, env(safe-area-inset-top));
+  }
+  body.mobile-touch.hud-mobile-compact #quest-tracker {
+    font-size: 10px;
+  }
+  body.mobile-touch.hud-mobile-compact #minimap-wrap {
+    transform: scale(0.58);
+  }
+  /* A short landscape phone (the compact tier's primary trigger) has too little
+     vertical room for a full chat log AND the action ring at once; drop the log
+     out of flow entirely unless the player has it explicitly open. Keys on the
+     LIVE mobile-chat-open / mobile-chatlog-peek body classes (toggled
+     synchronously by mobile_controls.ts), not the applier-mirrored hud-chat-open
+     (which only refreshes on viewport syncs, so it would lag a chat toggle), and
+     exempts the long-press log peek so peeking still works on compact. */
+  body.mobile-touch.hud-mobile-compact:not(.mobile-chat-open):not(.mobile-chatlog-peek)
+  #chatlog-wrap {
+    display: none;
+  }
+  /* Tablet: a large viewport can afford a slightly bigger, easier-to-hit ring
+     and utility row than the standard baseline; reuses the ring's own sizing
+     hooks (a tier value on top of the settings scale, not a fork of it) and
+     grows the paged-toggle/attack-nearest targets a little past their 44/56px
+     floors for a roomier hand-held tablet. */
+  body.mobile-touch.hud-mobile-tablet #mobile-action-ring {
+    --mobile-ring-attack-size: 116px;
+    --mobile-ring-action-size: 76px;
+  }
+  body.mobile-touch.hud-mobile-tablet #mobile-attack-nearest {
+    --mobile-ring-secondary-size: 60px;
+  }
+  body.mobile-touch.hud-mobile-tablet #right-tracker-stack {
+    width: 220px;
   }
 }
