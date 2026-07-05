@@ -28,7 +28,12 @@ const info = await page.evaluate(() => {
     const el = document.getElementById(id);
     if (!el) return null;
     const r = el.getBoundingClientRect();
-    return { w: Math.round(r.width), h: Math.round(r.height), x: Math.round(r.x), y: Math.round(r.y) };
+    return {
+      w: Math.round(r.width),
+      h: Math.round(r.height),
+      x: Math.round(r.x),
+      y: Math.round(r.y),
+    };
   };
   const attack = document.getElementById('mobile-action-attack');
   const nearest = document.getElementById('mobile-attack-nearest');
