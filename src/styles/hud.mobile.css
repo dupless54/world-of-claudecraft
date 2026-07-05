@@ -788,25 +788,6 @@
   body.native-app.mobile-touch #daily-rewards-window {
     display: none !important;
   }
-  body.mobile-touch #actionbar {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 4px;
-    padding: 4px;
-    width: 100%;
-    max-width: 100%;
-    min-height: 50px;
-    box-sizing: border-box;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    background: linear-gradient(170deg, #15151fc8, #08080dd8);
-  }
-  body.mobile-touch #actionbar.many-spells {
-    grid-template-columns: none;
-  }
   /* The second action bar is desktop-only; the mobile hotbar stays a single scroll row. */
   body.mobile-touch #actionbar2 {
     display: none;
@@ -814,41 +795,10 @@
   /* The mobile action ring (above) supersedes both desktop bars: it makes the
      hotbar castable on touch, so the scaled desktop rows would only duplicate
      it. #actionbar-stack siblings (xpbar/player-frame/petbar) are untouched and
-     keep rendering via their own existing mobile rules elsewhere in this file. */
+     keep rendering via their own existing mobile rules elsewhere in this file.
+     Both bars stay display:none, so no layout/sizing/drag/hover/state rule for
+     their contents is reachable here; that styling lives only in hud.css. */
   body.mobile-touch #actionbar {
-    display: none;
-  }
-  body.mobile-touch .action-btn {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    border-radius: 7px;
-  }
-  body.mobile-touch.mobile-hotbar-dragging #actionbar {
-    touch-action: none;
-  }
-  body.mobile-touch .action-btn.mobile-drag-source {
-    border-color: var(--gold);
-    box-shadow:
-      0 0 12px #ffd100aa,
-      inset 0 0 0 1px #ffd10077;
-  }
-  body.mobile-touch .action-btn:not(.used):not(.queued):not(.drop-target):hover {
-    border-color: #4a3d1d;
-  }
-  body.mobile-touch .action-btn .icon-label {
-    border-radius: 6px;
-  }
-  body.mobile-touch .action-btn .cd-text {
-    font-size: 13px;
-  }
-  body.mobile-touch .action-btn .keybind {
-    display: none;
-  }
-  body.mobile-touch .action-btn:first-child {
-    display: none;
-  }
-  body.mobile-touch .action-btn.empty {
     display: none;
   }
   body.mobile-touch #community-hud {
@@ -2225,19 +2175,6 @@
       left: calc(max(20px, env(safe-area-inset-left)) + 136px);
       right: calc(max(20px, env(safe-area-inset-right)) + 136px);
       bottom: calc(57px + env(safe-area-inset-bottom));
-    }
-    body.mobile-touch #actionbar {
-      gap: 4px;
-      padding: 4px;
-      background: linear-gradient(170deg, #15151fa8, #08080db8);
-    }
-    body.mobile-touch #actionbar.many-spells {
-      grid-template-columns: none;
-    }
-    body.mobile-touch .action-btn {
-      width: 40px;
-      height: 40px;
-      flex-basis: 40px;
     }
     body.mobile-touch #xpbar {
       display: none;

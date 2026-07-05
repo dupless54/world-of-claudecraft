@@ -692,6 +692,20 @@ describe('client HTML shell', () => {
     expect(html).toMatch(/id="mobile-discord"\s+hidden/);
   });
 
+  it('carries identical mobile-action-ring markup in BOTH entries', () => {
+    for (const entry of [html, playHtml]) {
+      expect(entry).toContain('id="mobile-action-ring"');
+      expect(entry).toContain('id="mobile-action-attack"');
+      expect(entry).toContain('id="mobile-action-page-toggle"');
+      const slotMatches = [
+        ...entry.matchAll(/class="mobile-action-slot"[^>]*data-mobile-index="(\d+)"/g),
+      ];
+      expect(slotMatches).toHaveLength(5);
+      const indices = slotMatches.map((m) => m[1]).sort();
+      expect(indices).toEqual(['0', '1', '2', '3', '4']);
+    }
+  });
+
   it('keeps the game menu free of duplicate and dev-only entries', () => {
     const interfaceEntries = optionsViewTs.match(/labelKey: 'hud\.options\.interface'/g) ?? [];
     expect(interfaceEntries).toHaveLength(1);
@@ -1317,19 +1331,18 @@ describe('client HTML shell', () => {
     expect(hudMobileCss).toContain('left: calc(max(20px, env(safe-area-inset-left)) + 136px);');
     expect(hudMobileCss).toContain('right: calc(max(20px, env(safe-area-inset-right)) + 136px);');
     expect(hudMobileCss).toContain('bottom: calc(57px + env(safe-area-inset-bottom));');
-    expect(hudMobileCss).toContain(
-      'body.mobile-touch #actionbar {\n    display: flex;\n    flex-wrap: nowrap;',
-    );
-    expect(hudMobileCss).toContain('overflow-x: auto;\n    overflow-y: hidden;');
-    expect(hudMobileCss).toContain('touch-action: pan-x;');
-    expect(hudMobileCss).toContain('min-height: 50px;');
-    expect(hudMobileCss).toContain(
-      'body.mobile-touch .action-btn {\n    width: 42px;\n    height: 42px;\n    flex: 0 0 42px;',
-    );
-    expect(hudMobileCss).toContain(
-      'body.mobile-touch.mobile-hotbar-dragging #actionbar {\n    touch-action: none;\n  }',
-    );
-    expect(hudMobileCss).toContain('body.mobile-touch .action-btn.mobile-drag-source');
+  });
+
+  it('hides the desktop action bars on touch: the mobile action ring supersedes them', () => {
+    // The paged mobile action ring (bcc5fa53) replaced the scrollable desktop
+    // #actionbar row on touch, so both desktop bars (and their .action-btn
+    // sizing/drag/hover rules, only ever reachable while a bar is visible) stay
+    // display:none rather than also being scaled/laid out for touch.
+    expect(hudMobileCss).toContain('body.mobile-touch #actionbar2 {\n    display: none;\n  }');
+    expect(hudMobileCss).toContain('body.mobile-touch #actionbar {\n    display: none;\n  }');
+    expect(hudMobileCss).not.toContain('body.mobile-touch #actionbar {\n    display: flex;');
+    expect(hudMobileCss).not.toContain('body.mobile-touch .action-btn {');
+    expect(hudMobileCss).not.toContain('body.mobile-touch #actionbar.many-spells');
   });
 
   it('seeds druid form bars with the form kit, and only clones normal for rogue stealth', () => {
