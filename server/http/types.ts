@@ -164,6 +164,13 @@ export interface Ctx {
   readonly url: URL;
   /** url.pathname, for convenience. */
   readonly path: string;
+  /**
+   * The matched route's :param TEMPLATE (e.g. '/api/characters/:id'), set by
+   * buildContext for a registry-matched request. It is the ONLY route identity a
+   * middleware may put in a metric or log label (ctx.path is concrete and would
+   * explode cardinality / leak the requested id).
+   */
+  readonly route?: string;
   /** Parsed query string; a repeated key becomes a string[]. */
   readonly query: Record<string, string | string[]>;
   /** Path params extracted by the router (e.g. { id: '42' } for /api/x/:id). */

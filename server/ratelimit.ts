@@ -1,5 +1,6 @@
 import type * as http from 'node:http';
 import * as net from 'node:net';
+import { attackSignalSink } from './http/attack_signals';
 import type { RateLimitOutcome, RateLimitStore } from './http/types';
 
 // Simple in-memory rate limiter (per client IP, sliding minute window). Every
@@ -647,11 +648,19 @@ function isThrottled(times: number[], windowStart: number): boolean {
 }
 
 /**
- * The failed-login outcome for an account. READ-ONLY: it prunes stale failures
- * but records NONE (only recordAuthFailure does). allowed is false once the
- * account has hit the failed-attempt ceiling within the window; remaining counts
- * the attempts left before the lockout, and resetSeconds is the wait until the
- * oldest failure ages out (0 when there are no failures in the window).
+ * The failed-login outcome for an account. READ-ONLY on LIMITER state: it prunes
+ * stale failures but records NONE (only recordAuthFailure does). It DOES emit the
+ * auth_failures_total{kind="throttled"} observability signal when the outcome is a
+ * lockout rejection (allowed false), so /metrics can count throttled attempts.
+ * That count is exact only under an assumption every current caller honors: the
+ * three callers (server/auth_routes.ts, server/discord.ts, server/main.ts) all
+ * gate on the result and reject the request when allowed is false, so one
+ * lockout-outcome check equals one rejected attempt. A future caller that only
+ * inspects the status without rejecting must split this predicate instead of
+ * reusing it, or the metric would over-count. allowed is false once the account
+ * has hit the failed-attempt ceiling within the window; remaining counts the
+ * attempts left before the lockout, and resetSeconds is the wait until the oldest
+ * failure ages out (0 when there are no failures in the window).
  */
 export function authThrottled(username: string): RateLimitOutcome {
   const key = authKey(username);
@@ -661,16 +670,23 @@ export function authThrottled(username: string): RateLimitOutcome {
   if (recent.length > 0) authFailures.set(key, recent);
   else authFailures.delete(key);
   const count = recent.length;
-  return {
+  const outcome: RateLimitOutcome = {
     allowed: count < MAX_AUTH_FAILURES,
     remaining: Math.max(0, MAX_AUTH_FAILURES - count),
     resetSeconds:
       count > 0 ? Math.max(0, Math.ceil((recent[0] + AUTH_FAIL_WINDOW_MS - now) / 1000)) : 0,
   };
+  // A lockout rejection is one throttled auth-failure attack signal. Emitting only
+  // on allowed === false relies on the caller-rejects assumption in the doc above.
+  if (!outcome.allowed) attackSignalSink().authFailure('throttled');
+  return outcome;
 }
 
 /** Record a failed login for an account (call on bad password / unknown user). */
 export function recordAuthFailure(username: string): void {
+  // Every caller is recording a failed credential check (bad password, unknown
+  // user, wrong current password): the brute-force bad-credentials signal series.
+  attackSignalSink().authFailure('bad_credentials');
   const key = authKey(username);
   const windowStart = clockNow() - AUTH_FAIL_WINDOW_MS;
   const recent = (authFailures.get(key) ?? []).filter((t) => t > windowStart);

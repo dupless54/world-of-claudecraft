@@ -1,8 +1,8 @@
 // Tier-2, pg-backed GLOBAL rate-limit backstop for the multi-realm deployment
 // (SQL only). The DDL (RATELIMIT_SCHEMA) is appended to ensureSchema() in db.ts
 // like DISCORD_SCHEMA / GITHUB_SCHEMA; the store takes the shared `pool` by
-// INJECTION (factory arg) and imports only `import type { Pool }` so this module
-// never imports db.ts, keeping db.ts <-> ratelimit_db.ts cycle-free (mirrors
+// INJECTION (factory arg) and imports `pg` only as `import type { Pool }` so this
+// module never imports db.ts, keeping db.ts <-> ratelimit_db.ts cycle-free (mirrors
 // discord_db.ts / github_db.ts, both of which db.ts imports for their schema).
 //
 // Why tier-2 exists: each realm process keeps its own in-memory tier-1 limiter
@@ -11,10 +11,16 @@
 // (policy, key), that enforces the same named limit across every realm process.
 // Tier-1 always runs first in the resolver, so floods never reach pg; this store
 // just needs to be correct, atomic, and cheap.
+//
+// Counting: the store counts each pg upsert on the real pg_limiter_writes_total
+// {policy} series via the process-wide attack-signal slot
+// (server/http/attack_signals.ts, installed by main.ts at boot). That is now the
+// ONE source of truth for the tier-2 write count; the old
+// http_requests_total{route='ratelimit.pg.hit'} proxy row is GONE, so the count
+// can never be double-sourced.
 
 import type { Pool } from 'pg';
-import type { MetricSink } from './http/middleware/metric_sink';
-import { noopMetricSink } from './http/middleware/metric_sink';
+import { attackSignalSink } from './http/attack_signals';
 import type { RateLimitOutcome, RateLimitStore } from './http/types';
 import { WINDOW_MS, windowedRateLimitOutcome } from './ratelimit';
 
@@ -79,22 +85,15 @@ export interface PgRateLimitStoreOptions {
    * drives an injected fake so windows and resetSeconds are deterministic.
    */
   readonly now?: () => number;
-  /**
-   * The MetricSink seam (server/http/middleware/metric_sink.ts); defaults to the
-   * no-op (main.ts tees the real access-log + /metrics sinks in at boot).
-   */
-  readonly metrics?: MetricSink;
 }
 
 class PgRateLimitStore implements RateLimitStore {
   private readonly pool: Pool;
   private readonly now: () => number;
-  private readonly metrics: MetricSink;
 
   constructor(opts: PgRateLimitStoreOptions) {
     this.pool = opts.pool;
     this.now = opts.now ?? Date.now;
-    this.metrics = opts.metrics ?? noopMetricSink;
   }
 
   async hit(key: string, maxPerMinute: number): Promise<RateLimitOutcome> {
@@ -127,16 +126,14 @@ class PgRateLimitStore implements RateLimitStore {
       now,
     );
 
-    // Fire the pg-write counter once per UPSERT. MetricEvent is HTTP-shaped (the
-    // shared MetricSink seam): `route` carries the counter name, and `status`
-    // encodes the decision (200 under the limit, 429 tripped) so the wired
-    // exporter can split allowed from limited. durationMs is left 0 here.
-    this.metrics.record({
-      route: 'ratelimit.pg.hit',
-      method: 'PG',
-      status: outcome.allowed ? 200 : 429,
-      durationMs: 0,
-    });
+    // Count this pg upsert once on the real pg_limiter_writes_total{policy} series
+    // via the process-wide attack-signal slot (server/http/attack_signals.ts,
+    // installed by main.ts at boot; read here, never captured at import). This
+    // counts WRITES, not decisions: an allowed hit and a tripped hit each add
+    // exactly one. The allowed-vs-tripped split lives on the separate
+    // rate_limit_hits_total series (the rate_limit middleware), so the old
+    // http_requests_total{route='ratelimit.pg.hit'} proxy row is GONE.
+    attackSignalSink().pgLimiterWrite(policy);
 
     return outcome;
   }

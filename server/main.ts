@@ -118,6 +118,7 @@ import {
 import { configureGithubContributorsRuntime, topContributors } from './github_contributors';
 import { pruneGitHubOAuthStates } from './github_db';
 import { createAccessLogSink } from './http/access_log';
+import { setAttackSignalSink } from './http/attack_signals';
 import { handleClientError } from './http/client_error';
 import { type Config, DEFAULT_DISPATCH, type DispatchMode, loadConfig } from './http/config';
 import {
@@ -1923,9 +1924,16 @@ configureDiscordRuntime({
 // structured access line; the route :param TEMPLATE bounds the metric cardinality
 // and disambiguates the four surfaces, which is why all four dispatchers below
 // share this single registry and access-log stream. Built BEFORE the tier-2 store
-// so the store can record its pg-hit counter through this same composite sink.
+// wiring so every emission path below shares this one exporter instance.
 const httpMetrics = createHttpMetrics({ defaultMetrics: true });
 const httpMetricSink = teeMetricSink(createAccessLogSink(logger), httpMetrics.sink);
+
+// Install the four attack-signal counters (source-spec 4.9: rate_limit_hits_total,
+// auth_failures_total, bola_denied_total, pg_limiter_writes_total) process-wide.
+// Their emission sites (the rate_limit middleware, the ratelimit.ts auth-failure
+// choke point, the requireOwned deny path, the tier-2 pg store) read this slot at
+// emission time, so all of them land on the single /metrics registry above.
+setAttackSignalSink(httpMetrics.attackSignals);
 
 // Wire the pg-backed GLOBAL tier-2 rate-limit store (server/ratelimit_db.ts) into
 // the two-tier resolver (server/http/middleware/rate_limit.ts). Unconditional: the
@@ -1934,10 +1942,10 @@ const httpMetricSink = teeMetricSink(createAccessLogSink(logger), httpMetrics.si
 // time any request records a tier-2 hit. This only registers the store reference;
 // it opens no connection here (createPgRateLimitStore just wraps the shared pool),
 // so a bare import of main stays inert. Tier-2 fails open, so a pg outage degrades
-// to tier-1-only limiting rather than failing requests. The store records each pg
-// hit (ratelimit.pg.hit, status 200 allowed / 429 tripped) through the composite
-// sink above, so tier-2 decisions land in both the access log and Prometheus.
-setRateLimitTier2Store(createPgRateLimitStore({ pool, metrics: httpMetricSink }));
+// to tier-1-only limiting rather than failing requests. The store counts each pg
+// upsert on pg_limiter_writes_total via the attack-signal slot above; the request
+// itself still lands in the access log with its final status.
+setRateLimitTier2Store(createPgRateLimitStore({ pool }));
 
 // The in-house dispatcher that fronts the legacy handleApi ladder via a per-path
 // delegate. Built once; a path the registry owns runs the onion, every

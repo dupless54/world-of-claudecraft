@@ -4,9 +4,10 @@
 //           SAME per-realm memory buckets the legacy arms used, checked FIRST.
 //   tier-2: a pg-backed GLOBAL fixed-window counter (server/ratelimit_db.ts),
 //           shared across every realm process, checked ONLY when tier-1 allows.
-// On a rejection the adapter throws HttpError(429, 'rate_limit.exceeded', {
-// retryAfterSeconds }, <draft-11 headers>); the withErrors error boundary
-// serializes it. The effective tier-1 behavior of every policy is bit-identical to
+// On a rejection the adapter increments the rate_limit_hits_total attack-signal
+// counter (labeled by policy name and key class only) and throws HttpError(429,
+// 'rate_limit.exceeded', { retryAfterSeconds }, <draft-11 headers>); the withErrors
+// error boundary serializes it. The effective tier-1 behavior of every policy is bit-identical to
 // its single-tier predecessor (same limiter fn, same named limit, same window), so a single
 // process sees no change: tier-1 records first and the fixed window counts a
 // subset of the sliding window, so tier-2 can never reject when tier-1 allowed.
@@ -42,6 +43,7 @@ import {
   walletLinkRateLimited,
   wocBalanceRateLimited,
 } from '../../ratelimit';
+import { attackSignalSink } from '../attack_signals';
 import { ctxAccountId } from '../context';
 import { HttpError, rateLimit429Headers } from '../errors';
 import { logger } from '../logger';
@@ -133,7 +135,14 @@ export function resetTier2ErrorLogThrottle(): void {
 export function rateLimit(policy: RateLimitPolicy): Middleware {
   return async (ctx: Ctx, next: Next) => {
     const t1 = policy.tier1(ctx);
-    if (!t1.allowed) throw rateLimit429(policy, t1);
+    if (!t1.allowed) {
+      // rate_limit_hits_total attack-signal series (source-spec 4.9): count every
+      // 429 from BOTH tiers, labeled ONLY by the bounded policy name and key class,
+      // never by ip or account. Emitted just before the throw so a flood rejected
+      // here (tier-1) is recorded without ever touching tier-2.
+      attackSignalSink().rateLimitHit(policy.name, policy.keyClass);
+      throw rateLimit429(policy, t1);
+    }
 
     if (policy.tier2 === 'global') {
       const store = rateLimitTier2Store();
@@ -151,7 +160,10 @@ export function rateLimit(policy: RateLimitPolicy): Middleware {
         }
         // Throw OUTSIDE the try so a deliberate tier-2 429 is never swallowed by
         // the fail-open catch.
-        if (merged && !merged.allowed) throw rateLimit429(policy, merged);
+        if (merged && !merged.allowed) {
+          attackSignalSink().rateLimitHit(policy.name, policy.keyClass);
+          throw rateLimit429(policy, merged);
+        }
       }
     }
 

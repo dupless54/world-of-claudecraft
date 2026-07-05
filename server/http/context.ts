@@ -128,6 +128,9 @@ export function buildContext(
     method,
     url,
     path: url.pathname,
+    // The matched variant alone carries the route (and so its :param template);
+    // the template, never the concrete path, is what may reach a metric label.
+    route: match.kind === 'matched' ? match.route.path : undefined,
     query: parseQuery(url.searchParams),
     params,
     ip: requestIp(req),

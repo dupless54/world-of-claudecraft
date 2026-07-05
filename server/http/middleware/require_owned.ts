@@ -12,9 +12,10 @@
 //   4. on a hit, stash the loaded, authorized row on ctx.state for the handler and
 //      continue; on a MISS (the row does not exist OR belongs to another account,
 //      indistinguishable by construction because the loader is account-scoped),
-//      emit a structured `bola_denied` deny-log and answer the route's player-owned
-//      denial body: a 404 (anti-enumeration, the locked decision), NOT a 403, so a
-//      caller cannot tell "exists but not yours" apart from "does not exist".
+//      emit a structured `bola_denied` deny-log AND increment the bola_denied_total
+//      counter (the source-spec 4.9 attack signal), then answer the route's
+//      player-owned denial body: a 404 (anti-enumeration, the locked decision), NOT a
+//      403, so a caller cannot tell "exists but not yours" apart from "does not exist".
 //
 // The denial writes the LEGACY { error } body byte-for-byte and short-circuits (no
 // next(), no throw), exactly like the auth-surface credential guards: the migrated
@@ -29,6 +30,7 @@
 // non-numeric id, so this is not a parity divergence the harness can observe).
 
 import { json } from '../../http_util';
+import { attackSignalSink } from '../attack_signals';
 import { ctxAccountId, currentReqId } from '../context';
 import { logger } from '../logger';
 import { num } from '../schema';
@@ -122,6 +124,11 @@ export function requireOwned<T>(config: RequireOwnedConfig<T>): Middleware {
         requestedId: decoded.value,
         reqId: currentReqId(),
       });
+      // The counter label MUST be ctx.route (the :param TEMPLATE, e.g.
+      // '/api/characters/:id'), NEVER ctx.path (the concrete request, which would
+      // explode label cardinality and leak the requested id); 'unknown' is only the
+      // defensive fallback for a ctx built without a route match.
+      attackSignalSink().bolaDenied(ctx.route ?? 'unknown');
       json(ctx.res, 404, config.notFoundBody);
       return;
     }

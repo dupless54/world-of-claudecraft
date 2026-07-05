@@ -4,11 +4,20 @@
 // observation. RED = Rate (the request counter), Errors (the status label), and
 // Duration (the latency histogram).
 //
-// CARDINALITY IS BOUNDED BY DESIGN. The only three labels are route, method, and
-// status, and `route` is ALWAYS the :param TEMPLATE the caller of withMetrics
-// passes (e.g. '/api/characters/:id'), never a concrete path, so a million
-// distinct ids collapse onto one series. method is uppercased and status is the
-// numeric code; nothing request-derived (ip, query, body) ever becomes a label.
+// CARDINALITY IS BOUNDED BY DESIGN. Every label value comes from a small fixed
+// set: `route` is ALWAYS the :param TEMPLATE the caller of withMetrics passes
+// (e.g. '/api/characters/:id'), never a concrete path, so a million distinct ids
+// collapse onto one series; method is uppercased and status is the numeric code;
+// the attack-signal labels (policy, key_kind, kind, route template) each come
+// from a fixed policy/kind/registry set. Nothing request-derived (ip, account,
+// token, query, body, concrete resource id) ever becomes a label.
+//
+// Alongside the two request-level RED metrics, the factory registers the four
+// source-spec 4.9 attack-signal counters (rate-limit 429s, auth failures, BOLA
+// denials, tier-2 pg limiter writes) on the SAME registry and exposes them as an
+// AttackSignalSink; main.ts installs it process-wide via setAttackSignalSink
+// (server/http/attack_signals.ts) so the scattered emission sites share this one
+// exporter instance.
 //
 // EACH factory call builds its OWN Registry and registers the metrics ONLY on it
 // (never the prom-client global default register), so many instances coexist in a
@@ -16,6 +25,7 @@
 // language-agnostic: no t(), no DOM, no sim/client imports.
 
 import { Counter, collectDefaultMetrics, Histogram, Registry } from 'prom-client';
+import type { AttackSignalKeyKind, AttackSignalSink, AuthFailureKind } from './attack_signals';
 import type { MetricEvent, MetricSink } from './middleware/metric_sink';
 
 /** The request-counter metric name (RED: Rate + Errors via the status label). */
@@ -23,6 +33,18 @@ export const HTTP_REQUESTS_TOTAL = 'http_requests_total';
 
 /** The request-duration histogram metric name, in SECONDS (RED: Duration). */
 export const HTTP_REQUEST_DURATION_SECONDS = 'http_request_duration_seconds';
+
+/** Rate-limited (429) requests by policy and key kind, both tiers (attack signal). */
+export const RATE_LIMIT_HITS_TOTAL = 'rate_limit_hits_total';
+
+/** Authentication failures by kind: bad_credentials or throttled (brute force). */
+export const AUTH_FAILURES_TOTAL = 'auth_failures_total';
+
+/** BOLA (requireOwned) denials by route template (resource enumeration). */
+export const BOLA_DENIED_TOTAL = 'bola_denied_total';
+
+/** Tier-2 (pg) limiter upsert writes by policy (a tier-1-rejected flood adds none). */
+export const PG_LIMITER_WRITES_TOTAL = 'pg_limiter_writes_total';
 
 /**
  * The complete, bounded label set shared by both metrics. `route` is the :param
@@ -57,6 +79,12 @@ export interface HttpMetrics {
   registry: Registry;
   /** The per-request sink to hand to withMetrics; its record() never throws. */
   sink: MetricSink;
+  /**
+   * The four attack-signal counters on this instance's registry, behind the
+   * AttackSignalSink contract; none of its methods ever throws. Boot installs
+   * this process-wide via setAttackSignalSink (server/http/attack_signals.ts).
+   */
+  attackSignals: AttackSignalSink;
   /** The Prometheus exposition text for a /metrics response body. */
   metricsText(): Promise<string>;
   /** The Content-Type to send with the exposition text. */
@@ -93,9 +121,70 @@ export function createHttpMetrics(opts: CreateHttpMetricsOptions = {}): HttpMetr
     registers: [registry],
   });
 
+  const rateLimitHits = new Counter({
+    name: RATE_LIMIT_HITS_TOTAL,
+    help: 'Rate-limited (429) requests, labeled by policy name and key kind, both tiers.',
+    labelNames: ['policy', 'key_kind'],
+    registers: [registry],
+  });
+
+  const authFailures = new Counter({
+    name: AUTH_FAILURES_TOTAL,
+    help: 'Authentication failures, labeled by kind (bad_credentials, throttled).',
+    labelNames: ['kind'],
+    registers: [registry],
+  });
+
+  const bolaDenials = new Counter({
+    name: BOLA_DENIED_TOTAL,
+    help: 'Object-level authorization (requireOwned) denials, labeled by route template.',
+    labelNames: ['route'],
+    registers: [registry],
+  });
+
+  const pgLimiterWrites = new Counter({
+    name: PG_LIMITER_WRITES_TOTAL,
+    help: 'Tier-2 (pg) rate-limiter upsert writes, labeled by policy. One per tier-1-allowed request on a tier-2 global policy; a tier-1-rejected flood must add none.',
+    labelNames: ['policy'],
+    registers: [registry],
+  });
+
   if (opts.defaultMetrics) {
     collectDefaultMetrics({ register: registry });
   }
+
+  // Every attack-signal increment is guarded like sink.record below: a metric
+  // write must never break the auth / rate-limit / BOLA path it observes.
+  const attackSignals: AttackSignalSink = {
+    rateLimitHit(policy: string, keyKind: AttackSignalKeyKind): void {
+      try {
+        rateLimitHits.inc({ policy, key_kind: keyKind });
+      } catch {
+        // Drop the sample rather than propagate into a rejection path.
+      }
+    },
+    authFailure(kind: AuthFailureKind): void {
+      try {
+        authFailures.inc({ kind });
+      } catch {
+        // Drop the sample rather than propagate into a rejection path.
+      }
+    },
+    bolaDenied(route: string): void {
+      try {
+        bolaDenials.inc({ route });
+      } catch {
+        // Drop the sample rather than propagate into a rejection path.
+      }
+    },
+    pgLimiterWrite(policy: string): void {
+      try {
+        pgLimiterWrites.inc({ policy });
+      } catch {
+        // Drop the sample rather than propagate into a rejection path.
+      }
+    },
+  };
 
   const sink: MetricSink = {
     record(event: MetricEvent): void {
@@ -118,6 +207,7 @@ export function createHttpMetrics(opts: CreateHttpMetricsOptions = {}): HttpMetr
   return {
     registry,
     sink,
+    attackSignals,
     metricsText: () => registry.metrics(),
     contentType: registry.contentType,
   };
