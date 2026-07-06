@@ -3635,7 +3635,9 @@ export class GameServer {
     // Gathering profession proficiency (Mining/Logging/Herbalism), a small
     // per-player read, so kept per-tick like the other small maps above. Wire
     // key `prof` and IWorld member `professionsState` are the settled names
-    // for the professions facet (#1164, src/sim/professions/CLAUDE.md).
+    // for the professions facet (#1164, src/sim/professions/CLAUDE.md). `gprof`
+    // mirrors the raw per-craft proficiency map for the `gatheringProficiency`
+    // IWorld data member (#1119), independent of the `professionsState` view.
     maybe('prof', this.sim.professionsStateFor(anchorSession.pid));
     // Raw gathering-profession proficiency map (IWorld `gatheringProficiency`,
     // #1119), a second small read alongside `prof` for the ORIGINAL flat-map

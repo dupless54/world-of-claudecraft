@@ -1600,9 +1600,6 @@ export class Sim {
           markClears: s.delveDaily.markClears,
         };
       }
-      // Legacy s.worldBossDaily is intentionally not restored: world-boss lockouts now
-      // ride raidLockouts (loaded above), so a pre-migration save just drops its stale
-      // daily record.
     }
 
     // Resolve the flat talent struct once, before the stat pass + ability
