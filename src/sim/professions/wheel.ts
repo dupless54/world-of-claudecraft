@@ -13,7 +13,12 @@
 // imports, no Math.random/Date.now, host-agnostic so it runs offline, on the
 // server, and in the headless RL env unchanged.
 
-import { craftById, CRAFT_RING, PERK_THRESHOLDS, type PerkThresholdDef } from '../content/professions';
+import {
+  CRAFT_RING,
+  craftById,
+  PERK_THRESHOLDS,
+  type PerkThresholdDef,
+} from '../content/professions';
 import type { SimContext } from '../sim_context';
 
 /** Per-craft skill values, keyed by CraftDef.id. Every craft is always present. */
