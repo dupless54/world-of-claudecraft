@@ -815,6 +815,7 @@ export interface PlayerMeta {
   // MARKET_WIRE_LIMIT listings per snapshot to bound wire cost, so this
   // server-side substring filter (matched against item names) is how a player
   // reaches goods past the cap. Never persisted: resets on login.
+  // reaches goods past the cap. Never persisted, resets on login.
   marketFilter: string;
   // Flat per-craft skill tracking (#1126): one independent, additive-only skill
   // value per craft on the ten-craft ring (see professions/wheel.ts). Persisted
@@ -865,10 +866,9 @@ export interface CharacterState {
   // Rested XP pool. Optional so pre-rested-XP saves load cleanly (defaults to 0).
   restedXp?: number;
   // Gathering profession proficiency (JSONB; optional so pre-professions saves
-  // load cleanly, defaulting every profession to 0). Key is `professions`
-  // (not `gatheringProficiency`), reserved by the settled professions
-  // contract (src/sim/professions/CLAUDE.md, #1164) parallel to the existing
-  // `delveDaily`/`companionUpgrades` persisted fields.
+  // load cleanly, defaulting every profession to 0). `professions` is the legacy
+  // pre-rename key, kept for back-compat with old saves; `gatheringProficiency`
+  // is the current key both read (preferred) and written going forward.
   professions?: Partial<Record<string, number>>;
   // load cleanly, defaulting every profession to 0).
   gatheringProficiency?: Partial<Record<string, number>>;
@@ -934,6 +934,14 @@ export interface CharacterState {
   // Ravenpost welcome letter already sent (optional so pre-mail saves load
   // cleanly and receive the announcement letter once on their next login).
   mailWelcomed?: boolean;
+  // World-boss loot lockouts now ride `raidLockouts` (keyed worldboss:<mobId>). The
+  // legacy per-day `worldBossDaily` field is intentionally dropped: pre-migration saves
+  // that still carry it just ignore it (a player locked at deploy may loot once more, a
+  // one-time, player-friendly transition), and their lockouts persist via raidLockouts
+  // from then on.
+  // World-boss daily loot record. Optional so saves from before world bosses load
+  // cleanly (addPlayer falls back to an empty record).
+  worldBossDaily?: { date: string; looted: string[] };
   // Flat per-craft skill tracking (#1126; JSONB, additive back-compat: absent or
   // partial on older saves loads the missing crafts as 0, see normalizeCraftSkills).
   craftSkills?: Record<string, number>;
@@ -1519,6 +1527,12 @@ export class Sim {
       meta.restedXp = Math.max(0, s.restedXp ?? 0);
       meta.gatheringProficiency = normalizeGatheringProficiency(s.professions);
       meta.gatheringProficiency = normalizeGatheringProficiency(s.gatheringProficiency);
+      // `s.professions` is the legacy pre-rename field (#1119); `s.gatheringProficiency`
+      // is the current one. Prefer the current field, fall back to the legacy one so
+      // saves from before the rename still load correctly.
+      meta.gatheringProficiency = normalizeGatheringProficiency(
+        s.gatheringProficiency ?? s.professions,
+      );
       if (s.unlockedMilestones)
         for (const id of s.unlockedMilestones) meta.unlockedMilestones.add(id);
       meta.copper = s.copper;

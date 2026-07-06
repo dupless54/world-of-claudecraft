@@ -980,6 +980,9 @@ export const ZONE1_QUESTS: Record<string, QuestDef> = {
     xpReward: 100,
     copperReward: 0,
     itemRewards: {},
+    // Not wired to acceptArchetypeQuest yet: retired keeps it out of the live
+    // accept flow (computeQuestState -> 'unavailable') until that hook lands.
+    retired: true,
   },
   q_prof_make_amends: {
     id: 'q_prof_make_amends',
@@ -994,6 +997,9 @@ export const ZONE1_QUESTS: Record<string, QuestDef> = {
     xpReward: 50,
     copperReward: 0,
     itemRewards: {},
+    // Not wired to switchArchetype yet: retired keeps it out of the live
+    // accept flow (computeQuestState -> 'unavailable') until that hook lands.
+    retired: true,
   },
 };
 
