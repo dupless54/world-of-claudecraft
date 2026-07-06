@@ -34,7 +34,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "es_ES": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -61,7 +62,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "fr_FR": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -88,7 +90,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "fr_CA": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -115,7 +118,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "en_CA": [],
   "it_IT": [
@@ -143,7 +147,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "de_DE": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -170,12 +175,21 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
-  "zh_CN": [],
-  "zh_TW": [],
-  "ko_KR": [],
-  "ja_JP": [],
+  "zh_CN": [
+    "hudChrome.discord.roleTag.coredevs"
+  ],
+  "zh_TW": [
+    "hudChrome.discord.roleTag.coredevs"
+  ],
+  "ko_KR": [
+    "hudChrome.discord.roleTag.coredevs"
+  ],
+  "ja_JP": [
+    "hudChrome.discord.roleTag.coredevs"
+  ],
   "pt_BR": [
     "entities.npcs.bursar_aldous_crane.greeting",
     "entities.npcs.bursar_aldous_crane.name",
@@ -201,9 +215,12 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
-  "ru_RU": [],
+  "ru_RU": [
+    "hudChrome.discord.roleTag.coredevs"
+  ],
   "cs_CZ": [
     "entities.npcs.bursar_aldous_crane.greeting",
     "entities.npcs.bursar_aldous_crane.name",
@@ -229,7 +246,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "nl_NL": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -256,7 +274,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "pl_PL": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -283,7 +302,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "id_ID": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -310,7 +330,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "tr_TR": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -337,7 +358,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "sv_SE": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -364,7 +386,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "vi_VN": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -391,7 +414,8 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ],
   "da_DK": [
     "entities.npcs.bursar_aldous_crane.greeting",
@@ -418,6 +442,7 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawPartialHint",
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
-    "hudChrome.bank.withdrawQuantityTitle"
+    "hudChrome.bank.withdrawQuantityTitle",
+    "hudChrome.discord.roleTag.coredevs"
   ]
 };
