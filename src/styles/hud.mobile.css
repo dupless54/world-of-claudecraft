@@ -663,17 +663,21 @@
     bottom: calc(var(--mobile-ring-attack-size) / 2 - var(--mobile-ring-secondary-size) / 2);
   }
   /* Jump: a right-thumb seat on the ring's bottom row, one arc-seat past the
-     180deg action slot (radius + action/2 + a 10px circle gap), on Use's row,
-     so a player can hold the move joystick with the left thumb and jump with
-     the right, the same reach as any ability tap. */
+     180deg action slot on Use's row, so a player can hold the move joystick
+     with the left thumb and jump with the right. Its circle-edge gap to that
+     slot EQUALS Use's gap on the other side (Use gap = radius - hollow -
+     secondary/2 - action/2, so Jump's centre lands at 2 * radius - hollow
+     from the attack centre), keeping the bottom row visually even-spaced at
+     every tier. */
   body.mobile-touch #mobile-action-ring #mobile-jump {
     right: calc(
       var(--mobile-ring-attack-size) /
       2 +
-      var(--mobile-ring-radius) +
-      var(--mobile-ring-action-size) /
-      2 +
-      10px
+      var(--mobile-ring-radius) *
+      2 -
+      var(--mobile-ring-hollow) -
+      var(--mobile-ring-secondary-size) /
+      2
     );
     bottom: calc(var(--mobile-ring-attack-size) / 2 - var(--mobile-ring-secondary-size) / 2);
   }
@@ -1434,10 +1438,11 @@
     left: calc(
       var(--mobile-ring-attack-size) /
       2 +
-      var(--mobile-ring-radius) +
-      var(--mobile-ring-action-size) /
-      2 +
-      10px
+      var(--mobile-ring-radius) *
+      2 -
+      var(--mobile-ring-hollow) -
+      var(--mobile-ring-secondary-size) /
+      2
     );
     right: auto;
   }

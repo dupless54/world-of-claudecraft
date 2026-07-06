@@ -1475,10 +1475,12 @@ describe('client HTML shell', () => {
       // The page toggle is the gold swap badge: number over the swap glyph.
       expect(ring, name).toContain('data-icon="swap"');
     }
-    // Jump's seat: one arc-seat past the 180deg action slot on Use's row
-    // (radius + action/2 + a 10px circle gap), plus its left-handed mirror.
+    // Jump's seat: one arc-seat past the 180deg action slot on Use's row,
+    // with its circle-edge gap to that slot EQUAL to Use's gap on the other
+    // side (centre at 2 * radius - hollow from the attack centre), so the
+    // bottom row reads even-spaced at every tier. Plus its left-handed mirror.
     expect(hudMobileCss).toContain(
-      'body.mobile-touch #mobile-action-ring #mobile-jump {\n    right: calc(\n      var(--mobile-ring-attack-size) /\n      2 +\n      var(--mobile-ring-radius) +\n      var(--mobile-ring-action-size) /\n      2 +\n      10px\n    );',
+      'body.mobile-touch #mobile-action-ring #mobile-jump {\n    right: calc(\n      var(--mobile-ring-attack-size) /\n      2 +\n      var(--mobile-ring-radius) *\n      2 -\n      var(--mobile-ring-hollow) -\n      var(--mobile-ring-secondary-size) /\n      2\n    );',
     );
     expect(hudMobileCss).toContain(
       'body.mobile-touch.mobile-left-handed #mobile-action-ring #mobile-jump {\n    left: calc(',

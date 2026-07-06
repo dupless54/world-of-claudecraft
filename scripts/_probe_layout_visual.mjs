@@ -90,6 +90,19 @@ try {
       Math.abs(jumpC.y - useC.y) < 3 && jumpC.x > vw / 2 && jumpC.x < useC.x,
       `jump=(${jumpC.x.toFixed(0)},${jumpC.y.toFixed(0)}) use=(${useC.x.toFixed(0)},${useC.y.toFixed(0)})`,
     );
+    // Even spacing on the bottom row: Jump's circle-edge gap to the 180deg
+    // slot must equal Use's gap on the other side.
+    const slot0 = await rect('.mobile-action-slot[data-mobile-index="0"]');
+    if (slot0) {
+      const slotC = { x: (slot0.l + slot0.r) / 2, y: (slot0.t + slot0.b) / 2 };
+      const gapUse = Math.abs(slotC.x - useC.x) - slot0.w / 2 - use.w / 2;
+      const gapJump = Math.abs(slotC.x - jumpC.x) - slot0.w / 2 - jump.w / 2;
+      check(
+        'jump and Use sit at equal gaps from the 180deg slot',
+        Math.abs(gapUse - gapJump) < 1.5,
+        `gapUse=${gapUse.toFixed(1)} gapJump=${gapJump.toFixed(1)}`,
+      );
+    }
     // Size parity with the ring's Target/Use secondaries.
     const target = await rect('#mobile-target-cycle');
     if (target) {
