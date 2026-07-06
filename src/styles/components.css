@@ -3141,6 +3141,162 @@
     background: radial-gradient(circle at 35% 30%, #e8a87a, #8b4513);
   }
 
+  /* ---------- bank ---------- */
+  /* The Gilded Strongbox: a cold pooled deposit box, a desktop companion of the bags
+     window (docked side by side under body.bank-open). The slot grid mirrors the bag
+     grid, styled from the same tokens with parallel .bank-* classes; quality drives
+     the cell border via the painter-set --bank-slot-quality custom property. */
+  #bank-window {
+    width: 420px;
+    max-height: calc(var(--app-vh, 100vh) * 0.72 / var(--window-scale) - 24px);
+    flex-direction: column;
+  }
+  #bank-window .panel-title {
+    flex: none;
+  }
+  .bank-capacity {
+    flex: none;
+    margin-bottom: 6px;
+    color: var(--gold-dim);
+    font-family: var(--title-font);
+    font-size: 12px;
+    text-align: right;
+  }
+  .bank-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 4px;
+    padding: 2px;
+    align-content: start;
+    overflow-y: auto;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .bank-item {
+    position: relative;
+    aspect-ratio: 1;
+    /* SC 2.5.8: the 42px column floor keeps every cell >= 40x40 on touch too. */
+    min-width: 0;
+    min-height: 40px;
+    padding: 0;
+    border: 1px solid #4a3d26;
+    border-radius: 5px;
+    cursor: var(--cursor-point);
+    background: linear-gradient(160deg, #17130c, #0c0a07);
+    box-shadow: inset 0 1px 4px #000c;
+    color: inherit;
+    font-family: var(--ui-font);
+  }
+  .bank-item:hover {
+    filter: brightness(1.25);
+  }
+  .bank-item .item-icon {
+    position: absolute;
+    inset: 2px;
+    width: calc(100% - 4px);
+    height: calc(100% - 4px);
+    border: 0;
+    border-radius: 4px;
+  }
+  /* the cell owns the quality border; a soft outer glow from the same quality color
+     (set by the painter from the shared QUALITY_COLOR map) lifts rare+ */
+  .bank-item[class*=" q-"] {
+    box-shadow:
+      inset 0 1px 4px #000c,
+      0 0 5px color-mix(in srgb, var(--bank-slot-quality, transparent) 45%, transparent);
+  }
+  /* classic look: poor/common cells keep the neutral socket border */
+  .bank-item.q-poor,
+  .bank-item.q-common {
+    border-color: #4a3d26 !important;
+    box-shadow: inset 0 1px 4px #000c;
+  }
+  .bank-count {
+    position: absolute;
+    right: 2px;
+    bottom: 1px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-shadow:
+      0 1px 2px #000,
+      0 0 3px #000;
+    pointer-events: none;
+  }
+  .bank-item.empty {
+    cursor: default;
+    background: #0b0906;
+    border-color: #2f281a;
+    box-shadow: inset 0 2px 6px #000d;
+  }
+  .bank-empty {
+    grid-column: 1 / -1;
+    padding: 12px 5px;
+    font-size: 12px;
+    color: #887c5c;
+    text-align: center;
+  }
+  .bank-buy-row {
+    flex: none;
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid #463a1c;
+    display: flex;
+    justify-content: center;
+  }
+  .bank-buy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px;
+    border: 1px solid #6a5320;
+    border-radius: 4px;
+    cursor: var(--cursor-point);
+    background: linear-gradient(#8a6a26, #5a4413 55%, #473409);
+    color: #ffe6a8;
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  .bank-buy-btn:hover {
+    filter: brightness(1.12);
+  }
+  .bank-buy-maxed {
+    padding: 8px;
+    color: #c8b888;
+    font-family: var(--title-font);
+    font-size: 12px;
+  }
+  /* Desktop side-by-side docking: the bank sits left of centre, the bags companion
+     right of centre, symmetric about the page centre. Scoped under body.bank-open so
+     nothing else moves; the .vendor-open rules stay untouched. --bank-dock-gap lives
+     on body.bank-open so BOTH sibling windows inherit it. */
+  body.bank-open {
+    --bank-dock-gap: 8px;
+  }
+  body.bank-open #bank-window {
+    left: 50%;
+    top: 10vh;
+    right: auto;
+    bottom: auto;
+    transform: translateX(calc(-100% - var(--bank-dock-gap)));
+  }
+  body.bank-open #bags {
+    left: 50%;
+    top: 10vh;
+    right: auto;
+    bottom: auto;
+    width: 320px;
+    max-height: calc(var(--app-vh, 100vh) * 0.72 / var(--window-scale) - 24px);
+    transform: translateX(var(--bank-dock-gap));
+  }
+
   /* ---------- social ---------- */
   /* social: friends / guild / ignore */
   #social-window {

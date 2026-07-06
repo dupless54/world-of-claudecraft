@@ -127,6 +127,7 @@ import { AurasPainter, type AurasPainterDeps } from './auras_painter';
 import { type AurasDeps, createAurasView } from './auras_view';
 import { attachAvatarFallback } from './avatar_fallback';
 import { BagsWindow } from './bags_window';
+import { BankWindow } from './bank_window';
 import { CalendarWindow } from './calendar_window';
 import { CastBarPainter } from './cast_bar_painter';
 import { buildPaperdollView, type PaperdollSlot } from './char_view';
@@ -1947,6 +1948,10 @@ export class Hud {
         // Route through the painter so focus returns to the opener (WCAG 2.2 AA).
         this.mailboxWindow.close();
         break;
+      case 'bank-window':
+        // Route through the painter so focus returns to the opener (WCAG 2.2 AA).
+        this.closeBank();
+        break;
       case 'calendar-window':
         // Route through the painter so focus returns to the opener (WCAG 2.2 AA).
         this.calendarWindow.close();
@@ -3264,6 +3269,24 @@ export class Hud {
       }
     },
   });
+  // Bank window painter (bank_view.ts core + bank_window.ts painter). A non-modal
+  // companion of the bags cluster (the vendor-open docking pattern): it composes the
+  // shared presentation bag (icon/money/tooltip) and reads/commands the pooled bank
+  // through IWorld. Non-trapping focus capture/return (NOT windowFocus, which would
+  // install a Tab trap and break the bank + bags cluster); onClosed drops the docking
+  // body class and resyncs bags.
+  private readonly bankWindow = new BankWindow({
+    ...this.presentationBag,
+    root: () => $('#bank-window'),
+    world: () => this.sim,
+    closeOthers: () => this.closeOtherWindows(['#bank-window', '#bags']),
+    hideTooltip: () => this.hideTooltip(),
+    // Non-trapping focus capture/return (bank is a non-modal companion of bags):
+    // NOT windowFocus('#bank-window'), which would install a Tab trap.
+    captureFocus: () => this.focusManager.activeFocusable(),
+    restoreFocus: (target) => this.focusManager.restore(target),
+    onClosed: () => this.onBankClosed(),
+  });
   // Event calendar window painter (calendar_view.ts month-grid core +
   // calendar_window.ts painter). System events expand from data rules; guild
   // events read the socialInfo mirror and book/remove through IWorld.
@@ -3938,6 +3961,7 @@ export class Hud {
     if (this.openVendorNpcId !== null && $('#vendor-window').style.display === 'block')
       this.renderVendor();
     if (this.marketWindow.isOpen) this.marketWindow.render();
+    if (this.bankWindow.isOpen) this.bankWindow.render();
     this.charWindow.renderIfOpen();
     // The arena window's render-skip signature is text-independent (offline sentinel or a
     // JSON of ids/numbers), so a language switch alone never moves it; relocalize() forces
@@ -5721,6 +5745,8 @@ export class Hud {
     }
     // The mailbox closes itself when the mail mirror goes null (walked away).
     if (slowHud && this.mailboxWindow.isOpen) this.mailboxWindow.refreshIfChanged();
+    // The bank closes itself when the bank mirror goes null (left the banker).
+    if (slowHud && this.bankWindow.isOpen) this.bankWindow.refreshIfChanged();
     if (slowHud && this.calendarWindow.isOpen) this.calendarWindow.refreshIfChanged();
     if (slowHud) this.updateMailIndicator();
   }
@@ -7391,6 +7417,10 @@ export class Hud {
         case 'mailbox':
           // Keyboard/sim interact at a mailbox object: open the mail window.
           this.openMailbox();
+          break;
+        case 'bank':
+          // Keyboard/sim interact at a banker NPC: open the bank window.
+          this.openBank();
           break;
         case 'mailArrived': {
           // Player names splice verbatim; authored letters carry their
@@ -9716,6 +9746,42 @@ export class Hud {
 
   get mailboxWindowOpen(): boolean {
     return this.mailboxWindow.isOpen;
+  }
+
+  // The bank docks its bags companion alongside (the vendor-open pattern): a body
+  // class drives the side-by-side desktop layout, and the bags window is force-opened
+  // so items can be withdrawn into it. closeBank routes through the painter (which
+  // fires onClosed) so focus returns to the opener (WCAG 2.4.3).
+  openBank(): void {
+    document.body.classList.add('bank-open');
+    this.bankWindow.open();
+    this.renderBags();
+    $('#bags').style.display = 'flex';
+  }
+
+  closeBank(): void {
+    this.bankWindow.close();
+  }
+
+  private onBankClosed(): void {
+    const closeMobileBags =
+      document.body.classList.contains('mobile-touch') && $('#bags').style.display !== 'none';
+    document.body.classList.remove('bank-open'); // bags (if still open) re-centres
+    if (closeMobileBags) {
+      // Mirror closeVendor's teardown backstop: a discard/sell prompt may hold #bags
+      // inert (installPromptDialog) and this mobile path hides the grid without running
+      // the prompt's dismiss(), so clear inert here too (a hidden #bags is never inert).
+      const bags = $('#bags');
+      bags.style.display = 'none';
+      bags.inert = false;
+      this.cancelPetFeed();
+    } else if ($('#bags').style.display !== 'none') {
+      this.renderBags();
+    }
+  }
+
+  get bankWindowOpen(): boolean {
+    return this.bankWindow.isOpen;
   }
 
   toggleCalendar(): void {
