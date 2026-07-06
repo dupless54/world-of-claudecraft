@@ -40,4 +40,11 @@ describe('bags_window: load-bearing behaviors preserved', () => {
     expect(painter).toContain(".bag-grid')?.scrollTop");
     expect(painter).toContain('grid.scrollTop = prevScrollTop');
   });
+
+  it('prompt Escape stops propagation so the global escape does not also close the window', () => {
+    // Without stopPropagation the keypress bubbles to the input layer's window
+    // keydown, whose escape action runs closeAll: one Escape on a prompt BUTTON
+    // (not tag-exempt like inputs) would dismiss the prompt AND close the bags.
+    expect(painter).toMatch(/ke\.preventDefault\(\);\s*ke\.stopPropagation\(\);/);
+  });
 });

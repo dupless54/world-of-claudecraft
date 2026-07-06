@@ -586,8 +586,13 @@ export class BagsWindow {
     };
     prompt.addEventListener('keydown', (e) => {
       const ke = e as KeyboardEvent;
+      // Escape: stopPropagation, not just preventDefault. The input layer's
+      // window-level keydown runs the global escape action (closeAll) regardless of
+      // defaultPrevented, and prompt BUTTONS are not tag-exempt like inputs, so
+      // without it one keypress dismisses the prompt AND closes the whole window.
       if (ke.key === 'Escape') {
         ke.preventDefault();
+        ke.stopPropagation();
         dismissAndReturn();
         return;
       }
