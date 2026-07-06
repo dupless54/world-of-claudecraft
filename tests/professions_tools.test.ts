@@ -360,14 +360,7 @@ describe('always/prompt-on-use confirmation gate (#1138)', () => {
     const rng = new Rng(1);
     const slot = slotEffect('gatherers_cache', 'prompt');
     const startingDurability = slot.durability;
-    const result = resolveToolEffectUse(
-      slot,
-      baseOutcome,
-      TOOL_RARITY,
-      TARGET_RARITY,
-      rng,
-      false,
-    );
+    const result = resolveToolEffectUse(slot, baseOutcome, TOOL_RARITY, TARGET_RARITY, rng, false);
     expect(result.applied).toBe(false);
     expect(result.depleted).toBe(false);
     expect(result.outcome).toEqual(baseOutcome);
@@ -407,7 +400,14 @@ describe('always/prompt-on-use confirmation gate (#1138)', () => {
     const rng = new Rng(7);
     const slot = slotEffect('artisans_eye', 'prompt');
     for (let i = 0; i < 100; i++) {
-      const result = resolveToolEffectUse(slot, baseOutcome, TOOL_RARITY, TARGET_RARITY, rng, false);
+      const result = resolveToolEffectUse(
+        slot,
+        baseOutcome,
+        TOOL_RARITY,
+        TARGET_RARITY,
+        rng,
+        false,
+      );
       expect(result.applied).toBe(false);
       expect(result.outcome).toEqual(baseOutcome);
     }
