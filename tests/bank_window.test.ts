@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 const painter = readFileSync(new URL('../src/ui/bank_window.ts', import.meta.url), 'utf8');
 const tokens = readFileSync(new URL('../src/styles/tokens.css', import.meta.url), 'utf8');
+const components = readFileSync(new URL('../src/styles/components.css', import.meta.url), 'utf8');
 const hud = readFileSync(new URL('../src/ui/hud.ts', import.meta.url), 'utf8');
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const playHtml = readFileSync(new URL('../play.html', import.meta.url), 'utf8');
@@ -31,6 +32,12 @@ describe('bank_window: no magic values', () => {
   it('uses no em or en dashes (ASCII separators only)', () => {
     expect(painter.includes('—'), 'em dash found').toBe(false);
     expect(painter.includes('–'), 'en dash found').toBe(false);
+  });
+
+  it('gives both keyboard-focusable bank controls a tokenized :focus-visible ring', () => {
+    expect(components).toMatch(
+      /\.bank-item:focus-visible,\s*\.bank-buy-btn:focus-visible \{\s*outline: 2px solid var\(--color-border-focus\);/,
+    );
   });
 });
 

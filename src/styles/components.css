@@ -3267,6 +3267,13 @@
   .bank-buy-btn:hover {
     filter: brightness(1.12);
   }
+  /* Steady tokenized focus ring on both keyboard-focusable bank controls (the
+     .bag-item precedent; also in base.css's shared ring list). */
+  .bank-item:focus-visible,
+  .bank-buy-btn:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 1px;
+  }
   .bank-buy-maxed {
     padding: 8px;
     color: #c8b888;
@@ -3282,14 +3289,14 @@
   }
   body.bank-open #bank-window {
     left: 50%;
-    top: 10vh;
+    top: calc(var(--app-vh, 100vh) * 0.1);
     right: auto;
     bottom: auto;
     transform: translateX(calc(-100% - var(--bank-dock-gap)));
   }
   body.bank-open #bags {
     left: 50%;
-    top: 10vh;
+    top: calc(var(--app-vh, 100vh) * 0.1);
     right: auto;
     bottom: auto;
     width: 320px;
