@@ -252,22 +252,25 @@ describe('corpse harvest: single-use, first-come (#1141)', () => {
 // harvester's own name; below that rarity floor the grant stays a plain
 // fungible stack, same behavior as before this issue. Seeds below are
 // pre-verified against this exact setup() shape (two players, seeded before
-// the harvest's one rng draw) to land on each side of the rarity floor.
+// the harvest's rng draws: a tier roll per tagged component from the #1142
+// focus-harvest resolve, then one rarity roll per yielded component) to land
+// on each side of the rarity floor for the `hide` component's boar_hide yield.
 describe('signed materials (#1145)', () => {
-  it('a rare-or-better harvest stamps the item with the harvester name (seed 6)', () => {
-    const { sim, internals, a, mob } = setup(6);
-    sim.harvestCorpse(mob.id, a);
+  it('a rare-or-better harvest stamps the item with the harvester name (seed 11)', () => {
+    const { sim, internals, a, mob } = setup(11);
+    sim.harvestCorpse(mob.id, undefined, a);
     const meta = internals.players.get(a)!;
     const slot = meta.inventory.find((s) => s.itemId === 'boar_hide');
     expect(slot).toBeDefined();
     expect(slot?.instance?.signer).toBe('Alpha');
-    // Still exactly one copy granted, same as an unsigned harvest.
-    expect(sim.countItem('boar_hide', a)).toBe(1);
+    // A signed slot still carries the full tier-rolled quantity, it just
+    // stamps the instance rather than granting a plain fungible stack.
+    expect(sim.countItem('boar_hide', a)).toBe(2);
   });
 
-  it('a below-rare harvest grants a plain, unsigned fungible item (seed 1)', () => {
-    const { sim, internals, a, mob } = setup(1);
-    sim.harvestCorpse(mob.id, a);
+  it('a below-rare harvest grants a plain, unsigned fungible item (seed 2)', () => {
+    const { sim, internals, a, mob } = setup(2);
+    sim.harvestCorpse(mob.id, undefined, a);
     const meta = internals.players.get(a)!;
     const slot = meta.inventory.find((s) => s.itemId === 'boar_hide');
     expect(slot).toBeDefined();
