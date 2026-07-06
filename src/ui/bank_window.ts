@@ -94,7 +94,12 @@ export class BankWindow {
     return this.opened;
   }
 
+  // Re-interacting with the banker while already open must not re-run the open
+  // bookkeeping: re-capturing openerFocus could record a node INSIDE this window
+  // (returned-to after close, i.e. destroyed), and a fresh render would tear an
+  // open prompt down for no reason. Data changes ride refreshIfChanged.
   open(): void {
+    if (this.opened) return;
     this.deps.closeOthers();
     this.openerFocus = this.deps.captureFocus();
     this.opened = true;
@@ -125,6 +130,17 @@ export class BankWindow {
 
   render(): void {
     const el = this.deps.root();
+    // A rebuild invalidates any open prompt (its localized text and its captured
+    // slot index go stale against the fresh data/language) and destroys the focused
+    // node. Tear prompts down first, clearing the inert they set, and remember
+    // whether focus was inside the window or a prompt so it can re-land on the
+    // fresh close button instead of dropping to <body> (WCAG 2.4.3).
+    const active = document.activeElement as HTMLElement | null;
+    const hadFocus = el.contains(active) || active?.closest(BANK_PROMPT_SELECTOR) != null;
+    if (document.querySelector(BANK_PROMPT_SELECTOR)) {
+      dismissBankPrompts();
+      el.inert = false;
+    }
     this.deps.hideTooltip();
     markDialogRoot(el, { label: t('hudChrome.bank.title') });
     // .bank-grid (not #bank-window) is the scroll container; it is recreated on every
@@ -136,6 +152,7 @@ export class BankWindow {
       `<div class="panel-title"><span>${esc(t('hudChrome.bank.title'))} <span class="panel-subtitle">${esc(t('hudChrome.bank.subtitle'))}</span></span>` +
       `<button type="button" class="x-btn" data-close aria-label="${esc(t('hudChrome.bank.close'))}">${svgIcon('close')}</button></div>`;
     el.querySelector('[data-close]')?.addEventListener('click', () => this.close());
+    if (hadFocus) (el.querySelector('[data-close]') as HTMLElement | null)?.focus();
     if (model.kind === 'away') {
       const away = document.createElement('div');
       away.className = 'bank-empty';
@@ -328,7 +345,21 @@ export class BankWindow {
     prompt.append(input, confirm, cancel);
     const { dismiss, dismissAndReturn } = this.installPromptDialog(prompt, opener, close);
     const submit = () => {
-      const count = Math.max(1, Math.min(maxCount, Math.floor(Number(input.value) || 0)));
+      // The prompt captured slotIndex when it opened; the bank can repaint under it
+      // (a server correction, another op landing), shifting what sits at that
+      // index. Re-resolve the live slot and refuse on a mismatch: silently
+      // withdrawing the WRONG item is worse than dismissing the prompt. The count
+      // clamps to the live stack so a shrunken stack withdraws what is there.
+      const live = this.deps.world().bankInfo?.slots[slotIndex];
+      if (!live || !slot || live.itemId !== slot.itemId) {
+        dismiss();
+        (this.deps.root().querySelector('[data-close]') as HTMLElement | null)?.focus();
+        return;
+      }
+      const count = Math.max(
+        1,
+        Math.min(maxCount, live.count, Math.floor(Number(input.value) || 0)),
+      );
       this.deps.world().bankWithdraw(slotIndex, count);
       audio.click();
       dismiss();
@@ -385,8 +416,13 @@ export class BankWindow {
     };
     prompt.addEventListener('keydown', (e) => {
       const ke = e as KeyboardEvent;
+      // Escape: stopPropagation, not just preventDefault. The input layer's
+      // window-level keydown runs the global escape action (closeAll) regardless of
+      // defaultPrevented, and prompt BUTTONS are not tag-exempt like inputs, so
+      // without it one keypress dismisses the prompt AND closes the whole window.
       if (ke.key === 'Escape') {
         ke.preventDefault();
+        ke.stopPropagation();
         dismissAndReturn();
         return;
       }
