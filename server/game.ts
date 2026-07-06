@@ -55,12 +55,14 @@ import type { AccountChatMuteStatus, AccountCosmetics, RequestMetadata } from '.
 import {
   closePlaySession,
   grantAccountMechChroma,
+  heartbeatCharacterLeases,
   insertChatLogs,
   loadMailState,
   loadMarketState,
   markAccountQuestComplete,
   openPlaySession,
   pool,
+  releaseCharacterLease,
   revokeAccountMechChroma,
   saveCharacterAndMarketState,
   saveCharacterState,
@@ -430,6 +432,12 @@ export interface ClientSession {
   adminPermissions: ReadonlySet<string>;
   // Seed the client sends at auth; signs its challenge answers.
   clientSeed: string;
+  // Per-join fence for this session's DB load lease (server/db.ts
+  // character_leases). leave() releases with it so a stale release from an
+  // earlier join cannot delete a lease a reconnect has since re-acquired.
+  // undefined for sessions created without the lease path (direct game.join in
+  // tests); a resume keeps the original session's nonce.
+  leaseNonce: string | undefined;
   // Behavioral bot-detection state. Ephemeral — reset on every join.
   botTrackingContext: BotTrackingContext;
   spectating: {
@@ -850,6 +858,14 @@ export class GameServer {
     return this.ipSessionCounts.get(ip) ?? 0;
   }
 
+  // True when this process already holds a live session for the character. Read
+  // by the WS auth handshake (server/ws_auth.ts): when game.join refuses after
+  // the per-character load lease was taken, this decides whether a live session
+  // owns that lease (keep it) or the lease is an orphan to release.
+  hasSessionForCharacter(characterId: number): boolean {
+    return this.sessionsByCharacterId.has(characterId);
+  }
+
   // -------------------------------------------------------------------------
   // Social presence/transport: bridges the persistent SocialService to the
   // live client map + sim. Keyed by character id (stable across sessions),
@@ -1119,13 +1135,7 @@ export class GameServer {
             this.tickMsAvg === 0
               ? tickMs
               : this.tickMsAvg + TICK_EMA_ALPHA * (tickMs - this.tickMsAvg);
-          this.saveTimer += dt;
-          if (this.saveTimer >= AUTOSAVE_SECONDS) {
-            this.saveTimer = 0;
-            void this.saveAll('autosave');
-            void this.saveMarket();
-            void this.saveMail();
-          }
+          this.flushPeriodicSaves(dt);
         },
         (err) => console.error('[tick] guarded tick body threw, skipping this tick:', err),
       );
@@ -1146,6 +1156,23 @@ export class GameServer {
     this.keepaliveInterval = setInterval(() => {
       this.pingLiveSessions();
     }, WS_KEEPALIVE_PING_MS);
+  }
+
+  // The periodic persistence flush, advanced by the loop each tick. Every
+  // AUTOSAVE_SECONDS it kicks off the character/market/mail saves and, riding the
+  // same cadence, heartbeats this process's character load leases so an online
+  // character's lease never lapses under a peer. Extracted from the interval body
+  // so it can be unit-tested directly (the loop calls it one line). Every write is
+  // fire-and-forget: a slow or failed save must not stall the 20 Hz loop.
+  private flushPeriodicSaves(dt: number): void {
+    this.saveTimer += dt;
+    if (this.saveTimer >= AUTOSAVE_SECONDS) {
+      this.saveTimer = 0;
+      void this.saveAll('autosave');
+      void this.saveMarket();
+      void this.saveMail();
+      void heartbeatCharacterLeases().catch((err) => console.error('lease heartbeat failed:', err));
+    }
   }
 
   // Protocol-level WS liveness sweep, every WS_KEEPALIVE_PING_MS. Two jobs:
@@ -1565,6 +1592,7 @@ export class GameServer {
         fbp?: string | null;
         fbc?: string | null;
         sourceUrl?: string | null;
+        leaseNonce?: string;
       } = {},
   ): ClientSession | { error: string } {
     // Anti-bot: cap simultaneous online characters per account. Accounts can
@@ -1663,6 +1691,7 @@ export class GameServer {
       // no in-game moderation commands.
       adminPermissions: new Set(meta.adminPermissions ?? []),
       clientSeed: meta.clientSeed ?? '',
+      leaseNonce: meta.leaseNonce,
       botTrackingContext,
       spectating: null,
     };
@@ -1884,6 +1913,21 @@ export class GameServer {
     }
     await this.saveCharacterOnLeave(session);
     this.sessionsByCharacterId.delete(session.characterId);
+    // Release the per-character load lease so a fresh login (here or on another
+    // process) can reload the character without waiting out the TTL. Order
+    // matters: only after saveCharacterOnLeave has awaited above, so the lease
+    // outlives the atomic leave-flush. Awaiting it (unlike the fire-and-forget
+    // closePlaySession) makes the sequential takeover path prompt: takeOverCharacter
+    // awaits leave(), so this DELETE lands before the client's rejoin re-acquires.
+    // The grace-expiry sweep instead calls leave() fire-and-forget, so a reconnect
+    // CAN interleave; the NONCE fence covers that, the reconnect's acquire re-stamps
+    // the row with a new nonce and this DELETE, carrying the session's own (now
+    // stale) nonce, matches nothing, so it never eats the live session's re-acquired
+    // lease. The holder guard keeps a cross-process reclaim untouched; an unreleased
+    // lease self-expires after a crash.
+    await releaseCharacterLease(session.characterId, session.leaseNonce).catch((err) =>
+      console.error('lease release failed:', err),
+    );
     this.sim.removePlayer(session.pid);
     // Departures are no longer broadcast to the realm — the leaving player has
     // already disconnected, so there is no one to show their own notice to.

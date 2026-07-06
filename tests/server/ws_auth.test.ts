@@ -60,6 +60,8 @@ function setup() {
   const game = {
     isIpBlocked: vi.fn((_ip: string) => false),
     countIpSessions: vi.fn((_ip: string) => 0),
+    // No live session by default, so the handshake takes the fresh-acquire arm.
+    hasSessionForCharacter: vi.fn((_characterId: number) => false),
     join: vi.fn(() => session),
     clients: { size: 1 },
     handleMessage: vi.fn(),
@@ -82,6 +84,11 @@ function setup() {
     metaRequestUserData: vi.fn(() => ({ fbp: null, fbc: null })),
     metaEventSourceUrl: vi.fn(() => undefined as string | undefined),
     loadAccountCosmetics: vi.fn(async () => ({ completedQuestIds: [], mechChromaIds: [] })),
+    // Phase 4 lease deps: the happy path holds the lease so every existing case
+    // reaches game.join unchanged; the lease branches themselves are covered by
+    // tests/character_lease_ws.test.ts.
+    acquireCharacterLease: vi.fn(async () => true),
+    releaseCharacterLease: vi.fn(async () => {}),
     isConnectionRefused: vi.fn(() => false),
     bufferHandshakeMessages,
     requestMetadata: vi.fn(() => ({ ip: '1.2.3.4', userAgent: 'ua' })),

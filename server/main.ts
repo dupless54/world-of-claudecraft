@@ -54,6 +54,7 @@ import {
   accountAndScopeForToken,
   accountById,
   accountForToken,
+  acquireCharacterLease,
   type CharacterRow,
   characterCountsByRealm,
   chatMuteStatusForAccount,
@@ -82,6 +83,8 @@ import {
   pruneClientPerfReports,
   reclaimDeactivatedName,
   referralCountForAccount,
+  releaseAllCharacterLeases,
+  releaseCharacterLease,
   renameCharacter,
   revokeCompanionToken,
   saveToken,
@@ -2324,6 +2327,8 @@ export async function startServer(): Promise<http.Server> {
     bufferHandshakeMessages,
     requestMetadata,
     maxWsPerIpHard: config.maxWsPerIpHard,
+    acquireCharacterLease,
+    releaseCharacterLease,
   });
   wsAuth.attachUpgrade(server, wss);
 
@@ -2345,6 +2350,13 @@ export async function startServer(): Promise<http.Server> {
     await game.saveMarket();
     await game.saveMail();
     await game.endAllPlaySessions();
+    // Drop every character load lease this process holds so a clean restart can
+    // reload its characters immediately instead of waiting out the lease TTL.
+    // Runs before pool.end(); a failure here must not abort the drain, so log
+    // and continue to close the pool.
+    await releaseAllCharacterLeases().catch((err) =>
+      console.error('lease release-all failed:', err),
+    );
     await game.chatLog.stop();
     await pool.end();
     process.exit(0);
