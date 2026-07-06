@@ -250,28 +250,34 @@ describe('corpse harvest: single-use, first-come (#1141)', () => {
 
 // #1145: a rare-or-better corpse-harvested monster material is stamped with the
 // harvester's own name; below that rarity floor the grant stays a plain
-// fungible stack, same behavior as before this issue. Seeds below are
-// pre-verified against this exact setup() shape (two players, seeded before
-// the harvest's one rng draw) to land on each side of the rarity floor.
+// fungible stack (at the yield's rolled tier quantity, per the #1142 focus-harvest
+// tier roll), same behavior as before this issue. Each case focuses on a single
+// component (`['hide']`) so the harvest draws exactly one tier roll and one rarity
+// roll, keeping the seed choice legible. Seeds below are pre-verified against this
+// exact setup() shape (two players, seeded before the harvest's rolls) to land on
+// each side of the rarity floor.
 describe('signed materials (#1145)', () => {
-  it('a rare-or-better harvest stamps the item with the harvester name (seed 6)', () => {
-    const { sim, internals, a, mob } = setup(6);
-    sim.harvestCorpse(mob.id, a);
+  it('a rare-or-better harvest stamps the item with the harvester name (seed 5)', () => {
+    const { sim, internals, a, mob } = setup(5);
+    sim.harvestCorpse(mob.id, ['hide'], a);
     const meta = internals.players.get(a)!;
     const slot = meta.inventory.find((s) => s.itemId === 'boar_hide');
     expect(slot).toBeDefined();
     expect(slot?.instance?.signer).toBe('Alpha');
-    // Still exactly one copy granted, same as an unsigned harvest.
+    // A signed instance is always its own single-count slot (addItemInstance),
+    // regardless of the tier the focus-harvest roll landed on.
     expect(sim.countItem('boar_hide', a)).toBe(1);
   });
 
-  it('a below-rare harvest grants a plain, unsigned fungible item (seed 1)', () => {
-    const { sim, internals, a, mob } = setup(1);
-    sim.harvestCorpse(mob.id, a);
+  it('a below-rare harvest grants a plain, unsigned fungible stack at its tier quantity (seed 2)', () => {
+    const { sim, internals, a, mob } = setup(2);
+    sim.harvestCorpse(mob.id, ['hide'], a);
     const meta = internals.players.get(a)!;
     const slot = meta.inventory.find((s) => s.itemId === 'boar_hide');
     expect(slot).toBeDefined();
     expect(slot?.instance).toBeUndefined();
-    expect(sim.countItem('boar_hide', a)).toBe(1);
+    // This seed's focus-tier roll lands above the poor floor, so the fungible
+    // grant is more than a single unit (harvestTierQuantity(tier), #1142).
+    expect(sim.countItem('boar_hide', a)).toBe(2);
   });
 });
