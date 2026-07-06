@@ -393,6 +393,7 @@ function installMobileControlDom(): {
   jumpButton: FakeElement;
   emoteButton: FakeElement;
   discordButton: FakeElement;
+  donateButton: FakeElement;
   windowTarget: EventTarget;
 } {
   const elements = new Map<string, FakeElement>([
@@ -412,6 +413,7 @@ function installMobileControlDom(): {
     ['mobile-jump', new FakeElement()],
     ['mobile-emote', new FakeElement()],
     ['mobile-discord', new FakeElement()],
+    ['mobile-donate', new FakeElement()],
   ]);
   const body = new FakeElement();
   const documentTarget = new EventTarget();
@@ -440,6 +442,7 @@ function installMobileControlDom(): {
     jumpButton: elements.get('mobile-jump')!,
     emoteButton: elements.get('mobile-emote')!,
     discordButton: elements.get('mobile-discord')!,
+    donateButton: elements.get('mobile-donate')!,
     windowTarget,
   };
 }
@@ -469,6 +472,7 @@ function mobileCallbacks() {
     onMenu: noop,
     onSocial: noop,
     onDiscord: noop,
+    onDonate: noop,
     onEmotes: noop,
     onArena: noop,
     onQuestLog: noop,
@@ -801,6 +805,29 @@ describe('MobileControls pointer lifecycle', () => {
     discordButton.dispatchEvent(new Event('click', { bubbles: true, cancelable: true }));
 
     expect(discord).toBe(1);
+  });
+
+  it('fires the Donate callback when the on-screen Donate button is tapped', () => {
+    const { donateButton } = installMobileControlDom();
+    const input = {
+      setTouchMove: () => {},
+      clearTouchMove: () => {},
+      setTouchLook: () => {},
+      setTouchLookVector: () => {},
+    } as unknown as Input;
+
+    let donate = 0;
+    const callbacks = {
+      ...mobileCallbacks(),
+      onDonate: () => {
+        donate += 1;
+      },
+    };
+    new MobileControls(input, callbacks).start();
+
+    donateButton.dispatchEvent(new Event('click', { bubbles: true, cancelable: true }));
+
+    expect(donate).toBe(1);
   });
 
   it('closes the open More modal when tapping outside it', () => {

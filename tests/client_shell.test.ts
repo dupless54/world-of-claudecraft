@@ -479,24 +479,29 @@ describe('client HTML shell', () => {
   it('keeps the Discord unlink panel clickable over the pre-game shell', () => {
     const startZ = Number(shellCss.match(/#start-screen \{[\s\S]*?z-index: (\d+);/)?.[1]);
     const modalZ = Number(shellCss.match(/\.modal-backdrop \{[\s\S]*?z-index: (\d+);/)?.[1]);
-    const discordZ = Number(indexExtraCss.match(/#discord-window \{[\s\S]*?z-index: (\d+);/)?.[1]);
+    const discordZ = Number(componentsCss.match(/#discord-window \{[\s\S]*?z-index: (\d+);/)?.[1]);
     expect(discordZ).toBeGreaterThan(startZ);
     expect(discordZ).toBeLessThan(modalZ);
   });
 
-  it('keeps the Discord unlink modal at top level so it shows in-game', () => {
+  it('keeps the Discord unlink modal at top level so it shows in-game, in BOTH entries', () => {
     // #start-screen is display:none once the game starts (main.ts hides it) and is a
     // lower z-index:100 stacking context, so a keep-modal nested inside it would be
     // invisible in-game and trapped below the top-level #discord-window. It must be a
     // top-level sibling declared above #start-screen, exactly like #discord-window.
-    const modalAt = html.indexOf('id="discord-keep-modal"');
-    const windowAt = html.indexOf('id="discord-window"');
-    const startAt = html.indexOf('id="start-screen"');
-    expect(modalAt).toBeGreaterThan(-1);
-    expect(windowAt).toBeGreaterThan(-1);
-    // Declared before #start-screen opens, hence a top-level sibling, never a descendant.
-    expect(modalAt).toBeLessThan(startAt);
-    expect(windowAt).toBeLessThan(startAt);
+    for (const [name, entry] of [
+      ['index.html', html],
+      ['play.html', playHtml],
+    ] as const) {
+      const modalAt = entry.indexOf('id="discord-keep-modal"');
+      const windowAt = entry.indexOf('id="discord-window"');
+      const startAt = entry.indexOf('id="start-screen"');
+      expect(modalAt, name).toBeGreaterThan(-1);
+      expect(windowAt, name).toBeGreaterThan(-1);
+      // Declared before #start-screen opens, hence a top-level sibling, never a descendant.
+      expect(modalAt, name).toBeLessThan(startAt);
+      expect(windowAt, name).toBeLessThan(startAt);
+    }
   });
 
   it('shows a logged-in Logout nav item next to Account', () => {
@@ -718,14 +723,36 @@ describe('client HTML shell', () => {
     expect(html).toContain('aria-label="Quest Log"');
   });
 
-  it('offers a Discord entry in the mobile drawer, hidden until Discord is available', () => {
+  it('offers Discord and Donate entries in the mobile drawer of BOTH entries', () => {
     // Mobile has no keyboard, so the U-key Discord panel toggle is unreachable;
-    // this drawer button is the touch path into #discord-window (link / unlink).
-    expect(html).toContain('id="mobile-discord"');
-    // Carries the icon hook (hydrateIcons swaps [data-icon] for the inline SVG).
-    expect(html).toMatch(/id="mobile-discord"[^>]*data-icon="discord"/);
-    // Starts hidden; main.ts reveals it only when Discord is enabled and logged in.
-    expect(html).toMatch(/id="mobile-discord"\s+hidden/);
+    // this drawer button is the touch path to Discord (the account panel when
+    // available, else the community invite). Donate mirrors the desktop shell's
+    // sponsors community link.
+    for (const [name, entry] of [
+      ['index.html', html],
+      ['play.html', playHtml],
+    ] as const) {
+      expect(entry, name).toContain('id="mobile-discord"');
+      // Carries the icon hook (hydrateIcons swaps [data-icon] for the inline SVG).
+      expect(entry, name).toMatch(/id="mobile-discord"[^>]*data-icon="discord"/);
+      // Starts hidden; main.ts reveals it at boot on any build with Discord UI
+      // enabled (it stays hidden in the native-app build).
+      expect(entry, name).toMatch(/id="mobile-discord"\s+hidden/);
+      expect(entry, name).toContain('id="mobile-donate"');
+      expect(entry, name).toMatch(/id="mobile-donate"[^>]*data-icon="donate"/);
+      // Donate is never gated: no hidden attribute on it.
+      expect(entry, name).not.toMatch(/id="mobile-donate"\s+hidden/);
+    }
+    // The tap targets: the account panel with the invite as the logged-out /
+    // offline fallback, and the sponsors page, pinned to the shells' URLs.
+    expect(mainTs).toContain("const DISCORD_INVITE_URL = 'https://discord.gg/GjhnUsBtw';");
+    expect(mainTs).toContain("const DONATE_URL = 'https://github.com/sponsors/levy-street';");
+    expect(mainTs).toContain(
+      "window.open(discordInviteUrl() || DISCORD_INVITE_URL, '_blank', 'noopener,noreferrer');",
+    );
+    expect(mainTs).toContain(
+      "onDonate: () => window.open(DONATE_URL, '_blank', 'noopener,noreferrer'),",
+    );
   });
 
   it('carries identical mobile-action-ring markup in BOTH entries', () => {
