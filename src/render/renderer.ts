@@ -3616,8 +3616,14 @@ export class Renderer {
   // Delve module interiors build asynchronously; track in-flight keys so a
   // per-frame ensureDelveInteriorsNear does not re-schedule a build mid-load.
   private pendingInteriors = new Set<string>();
-  private fogState: 'outdoor' | 'dungeon' | 'temple' | 'nythraxis' | 'delve' | 'underwater' =
-    'outdoor';
+  private fogState:
+    | 'outdoor'
+    | 'dungeon'
+    | 'temple'
+    | 'nythraxis'
+    | 'delve'
+    | 'yumiMaze'
+    | 'underwater' = 'outdoor';
 
   private buildInterior(interior: string, ox: number, oz: number): void {
     this.dungeons ??= new DungeonInteriors(this.scene, this.lowGfx, this.flames, this.fireLights);
@@ -3723,7 +3729,11 @@ export class Renderer {
         if (this.yumiMazeViews.has(i)) continue;
         const o = yumiMazeOrigin(i);
         if (Math.abs(px - o.x) < 200 && Math.abs(pz - o.z) < 120) {
-          const view = buildYumiMaze(o, this.sim.cfg.seed);
+          const view = buildYumiMaze(o, this.sim.cfg.seed, {
+            flames: this.flames,
+            fireLights: this.fireLights,
+            lowGfx: this.lowGfx,
+          });
           this.scene.add(view.group);
           this.yumiMazeViews.set(i, view);
         }
@@ -3758,20 +3768,24 @@ export class Renderer {
     // the Drowned Temple reads as submerged: a teal murk instead of the
     // crypt's near-black, so its flooded halls feel underwater, not just dark
     const inDelve = inside && isDelvePos(px);
-    const interior = inside && !inDelve && !isArenaPos(px) ? dungeonAt(px)?.interior : null;
+    const inYumiMaze = inside && isYumiMazePos(px);
+    const interior =
+      inside && !inDelve && !inYumiMaze && !isArenaPos(px) ? dungeonAt(px)?.interior : null;
     const inTemple = interior === 'temple';
     const inNythraxis = interior === 'nythraxis';
     const desired = inDelve
       ? 'delve'
-      : inTemple
-        ? 'temple'
-        : inNythraxis
-          ? 'nythraxis'
-          : inside
-            ? 'dungeon'
-            : camY < waterLevelAt(px, pz) - 0.05
-              ? 'underwater'
-              : 'outdoor';
+      : inYumiMaze
+        ? 'yumiMaze'
+        : inTemple
+          ? 'temple'
+          : inNythraxis
+            ? 'nythraxis'
+            : inside
+              ? 'dungeon'
+              : camY < waterLevelAt(px, pz) - 0.05
+                ? 'underwater'
+                : 'outdoor';
     const fog = this.scene.fog as THREE.Fog;
     if (desired !== this.fogState) {
       this.fogState = desired;
@@ -3796,6 +3810,13 @@ export class Renderer {
         fog.color.setHex(0x0e0705);
         fog.near = 14;
         fog.far = 74;
+      } else if (desired === 'yumiMaze') {
+        // the Protect Yumi maze is a COMPETITIVE arena: a lighter night-blue
+        // murk pushed well past the ~61yd footprint, so the plaza braziers +
+        // team beacons read across the maze instead of dissolving at 30yd
+        fog.color.setHex(0x0d1120);
+        fog.near = 24;
+        fog.far = 130;
       } else if (desired === 'underwater') {
         fog.color.setHex(0x17506e);
         fog.near = 2;
@@ -3814,7 +3835,8 @@ export class Renderer {
           desired === 'dungeon' ||
           desired === 'temple' ||
           desired === 'nythraxis' ||
-          desired === 'delve';
+          desired === 'delve' ||
+          desired === 'yumiMaze';
         this.sun.intensity = underground ? DUNGEON_SUN_INTENSITY : SUN_INTENSITY;
         this.hemi.intensity = underground ? DUNGEON_HEMI_INTENSITY : HEMI_INTENSITY;
         this.scene.environmentIntensity = underground

@@ -170,6 +170,37 @@ check(
   JSON.stringify(healed),
 );
 
+// Engage the enemy cat exactly like the right-click path does (targetEntity +
+// startAutoAttack) from melee range, and confirm real swings land.
+const engaged = await page.evaluate(() => {
+  const sim = window.__game.sim;
+  const m = sim.arenaMatchFor(sim.playerId);
+  const y = m.yumi;
+  const myTeam = m.teamA.includes(sim.playerId) ? 'A' : 'B';
+  const enemyCat = sim.entities.get(myTeam === 'A' ? y.yumiB : y.yumiA);
+  const p = sim.player;
+  p.pos.x = enemyCat.pos.x + 1.5;
+  p.pos.z = enemyCat.pos.z;
+  p.prevPos = { ...p.pos };
+  p.facing = Math.atan2(enemyCat.pos.x - p.pos.x, enemyCat.pos.z - p.pos.z);
+  sim.rebucket(p);
+  sim.targetEntity(enemyCat.id);
+  sim.startAutoAttack();
+  return { armed: p.autoAttack === true, hpBefore: enemyCat.hp, id: enemyCat.id };
+});
+await sleep(3000);
+const swung = await page.evaluate((id) => {
+  const sim = window.__game.sim;
+  const c = sim.entities.get(id);
+  sim.stopAutoAttack();
+  return { hp: c.hp };
+}, engaged.id);
+check(
+  'auto-attack engages and lands on the enemy cat',
+  engaged.armed && swung.hp < engaged.hpBefore,
+  JSON.stringify({ engaged, swung }),
+);
+
 // Force the 60s teleport: jump the match clock to just before the boundary.
 const beforeTp = await page.evaluate(() => {
   const sim = window.__game.sim;

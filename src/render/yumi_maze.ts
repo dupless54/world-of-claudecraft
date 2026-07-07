@@ -17,10 +17,27 @@ import { stoneTexture } from './textures';
 const TEAM_BLUE = 0x2f6fe0;
 const TEAM_RED = 0xd8342c;
 const CENTER_GOLD = 0xcaa84a;
-const WALL_COLOR = 0x6b6257;
-const FLOOR_COLOR = 0x4c463e;
+const WALL_COLOR = 0x8a8175;
+const FLOOR_COLOR = 0x635c52;
 const BEACON_HEIGHT = 12;
 const BEACON_RADIUS = 0.7;
+// Brazier lights ride the renderer's shared fire-light budget (the dungeon
+// torch contract: flame cone -> flames[], PointLight with baseIntensity ->
+// fireLights[], budgetFireLights enables the nearest GFX.maxPointLights).
+// Values mirror the dungeon torches.
+const BRAZIER_LIGHT_INTENSITY = 46;
+const BRAZIER_LIGHT_DISTANCE = 30;
+const BRAZIER_LIGHT_Y = 5.4;
+const BRAZIER_FLAME_Y = 1.9;
+const BRAZIER_FLAME_EMISSIVE = 2.2;
+const WARM_FLAME = 0xffb054;
+
+/** The renderer-owned pools the maze's braziers plug into. */
+export interface YumiMazeLightHooks {
+  flames: THREE.Mesh[];
+  fireLights: THREE.PointLight[];
+  lowGfx: boolean;
+}
 
 export interface YumiMazeView {
   group: THREE.Group;
@@ -29,7 +46,11 @@ export interface YumiMazeView {
   dispose(): void;
 }
 
-export function buildYumiMaze(origin: { x: number; z: number }, seed: number): YumiMazeView {
+export function buildYumiMaze(
+  origin: { x: number; z: number },
+  seed: number,
+  lights: YumiMazeLightHooks,
+): YumiMazeView {
   const group = new THREE.Group();
   const layout = yumiMazeLayout();
   const floorY = groundHeight(origin.x, origin.z, seed);
@@ -93,6 +114,54 @@ export function buildYumiMaze(origin: { x: number; z: number }, seed: number): Y
   };
   accent(spawnACenter.x, spawnACenter.z, TEAM_BLUE);
   accent(spawnBCenter.x, spawnBCenter.z, TEAM_RED);
+
+  // Braziers: one per plaza (team-colored flames at the spawns) plus four
+  // mid-corridor posts so no run of the maze sits in the dark. The lights
+  // join the renderer's shared budget, so tiers cap how many burn at once
+  // while the flame cones always show (readability, not gameplay info).
+  const flameGeo = new THREE.ConeGeometry(0.24, 0.7, 6);
+  const pedestalGeo = new THREE.CylinderGeometry(0.32, 0.42, 1.3, 8);
+  const pedestalMat = surfaceMat({ color: WALL_COLOR, roughness: 0.9 });
+  const brazier = (bx: number, bz: number, flameColor: number) => {
+    const pedestal = new THREE.Mesh(pedestalGeo, pedestalMat);
+    pedestal.position.set(bx, 0.65, bz);
+    group.add(pedestal);
+    const flame = new THREE.Mesh(
+      flameGeo,
+      new THREE.MeshLambertMaterial({
+        color: flameColor,
+        emissive: flameColor,
+        emissiveIntensity: lights.lowGfx ? 1.6 : BRAZIER_FLAME_EMISSIVE,
+        transparent: true,
+        opacity: 0.92,
+      }),
+    );
+    flame.position.set(bx, BRAZIER_FLAME_Y, bz);
+    group.add(flame);
+    lights.flames.push(flame);
+    // Low tier keeps a stronger constructor intensity than the dungeon
+    // torches (14 vs 10): the maze plazas are 13.5yd wide, not a 3.5yd
+    // corridor, so the same falloff reads darker there.
+    const light = new THREE.PointLight(flameColor, 14, BRAZIER_LIGHT_DISTANCE, 2);
+    if (!lights.lowGfx) light.userData.baseIntensity = BRAZIER_LIGHT_INTENSITY;
+    light.position.set(bx, BRAZIER_LIGHT_Y, bz);
+    group.add(light);
+    lights.fireLights.push(light);
+  };
+  // Every brazier sits OFF the cell centers (teleport destinations) and
+  // clear of the corridor wall faces; the offsets keep the pedestal inside
+  // the open floor of its cell whatever the wall pattern.
+  const inward = (v: number, by: number) => v - Math.sign(v) * by;
+  brazier(inward(spawnACenter.x, 1.8), inward(spawnACenter.z, 1.8), TEAM_BLUE);
+  brazier(inward(spawnBCenter.x, 1.8), inward(spawnBCenter.z, 1.8), TEAM_RED);
+  brazier(inward(layout.yumiStartA.x, 1.8), inward(layout.yumiStartA.z, 1.8), WARM_FLAME);
+  brazier(inward(layout.yumiStartB.x, 1.8), inward(layout.yumiStartB.z, 1.8), WARM_FLAME);
+  brazier(1.0, 1.0, CENTER_GOLD);
+  const mid = layout.pitch * 4; // four cells out on each axis, always an open cell
+  brazier(mid + 1.0, 1.0, WARM_FLAME);
+  brazier(-mid + 1.0, 1.0, WARM_FLAME);
+  brazier(1.0, mid + 1.0, WARM_FLAME);
+  brazier(1.0, -mid + 1.0, WARM_FLAME);
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(2.4, 3.2, 40),
     surfaceMat({
