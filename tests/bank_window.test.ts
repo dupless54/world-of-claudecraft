@@ -32,8 +32,9 @@ describe('bank_window: no magic values', () => {
   });
 
   it('uses no em or en dashes (ASCII separators only)', () => {
-    expect(painter.includes('—'), 'em dash found').toBe(false);
-    expect(painter.includes('–'), 'en dash found').toBe(false);
+    // escape sequences, not literal dashes: the pre-push copy scan flags the raw characters
+    expect(painter.includes('\u2014'), 'em dash found').toBe(false);
+    expect(painter.includes('\u2013'), 'en dash found').toBe(false);
   });
 
   it('gives both keyboard-focusable bank controls a tokenized :focus-visible ring', () => {
