@@ -131,7 +131,7 @@ Open http://localhost:5173, choose **Play Online**, create an account, create a 
 What persists and how the server stays in charge:
 
 - **Accounts**: scrypt-hashed passwords and 7-day bearer tokens (`auth_tokens`).
-- **Characters**: up to 10 per account; level, gear, bags, quests, talents, position, and money persist as JSONB in Postgres, saved every 30 seconds, on logout, and on server shutdown. Names are globally unique, letters only, classic style.
+- **Characters**: up to 10 per account; level, gear, bags, bank vault, quests, talents, position, and money persist as JSONB in Postgres, saved every 30 seconds, on logout, and on server shutdown. Names are globally unique, letters only, classic style.
 - **The server is authoritative**: clients stream movement intent and commands at 20 Hz; the server runs the one shared `Sim` and returns interest-scoped snapshots (~120 yd) plus per-player events. Every combat roll, loot drop, quest credit, and vendor transaction resolves server-side. The client is a renderer.
 
 ## Train an agent (headless RL)
