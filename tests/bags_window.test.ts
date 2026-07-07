@@ -170,4 +170,15 @@ describe('bags_window: Phase 7 touch peek + bank-cluster close', () => {
     );
   });
 
+  it('the prompt stops Enter/Space propagation (the submit-dismiss race, bank family fix)', () => {
+    // submit() removes the prompt node synchronously during the Enter keydown, so a
+    // window-level gate keyed on the prompt's presence runs too late and the chat
+    // bind steals the WCAG 2.4.3 focus return. The prompt's own keydown listener
+    // stops the bubble, and once the prompt was detached mid-dispatch it must ALSO
+    // cancel the default (or the activation ghost-clicks the re-landed focus).
+    // Escape-only handling (the pre-Phase-7 shape) reds this.
+    expect(painter).toMatch(
+      /if \(ke\.key === 'Enter' \|\| ke\.key === ' ' \|\| ke\.code === 'Space'\) \{\s*ke\.stopPropagation\(\);\s*if \(!prompt\.isConnected\) ke\.preventDefault\(\);\s*return;\s*\}/,
+    );
+  });
 });

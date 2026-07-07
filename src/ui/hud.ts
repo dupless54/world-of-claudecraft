@@ -1472,13 +1472,21 @@ export class Hud {
         this.questlogWindow.openWithQuest(row.dataset.quest);
       }
     });
-    // The delve board, lockpick panel, and map window are non-modal overlays, so
-    // canUseGameKeys() stays true and the global jump (Space) / chat (Enter) binds
-    // would otherwise hijack those keys on a focused panel button (the map's
-    // Quests toggle, per-quest track buttons, zoom, and close included). Stop
-    // propagation (but NOT the default, so the button's native activation still
-    // fires) when a panel button has focus, mirroring the quest-tracker guard above.
-    for (const panelId of ['#delve-board', '#lockpick-panel', '#delve-rite-panel', '#map-window']) {
+    // The delve board, lockpick panel, map window, and the bank + bags cluster are
+    // non-modal overlays, so canUseGameKeys() stays true and the global jump (Space)
+    // / chat (Enter) binds would otherwise hijack those keys on a focused panel
+    // button (the map's Quests toggle, a bank grid cell, and each close button
+    // included). Stop propagation (but NOT the default, so the button's native
+    // activation still fires) when a panel button has focus, mirroring the
+    // quest-tracker guard above.
+    for (const panelId of [
+      '#delve-board',
+      '#lockpick-panel',
+      '#delve-rite-panel',
+      '#map-window',
+      '#bank-window',
+      '#bags',
+    ]) {
       $(panelId).addEventListener('keydown', (e) => {
         if ((e.target as HTMLElement).tagName !== 'BUTTON') return;
         if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') e.stopPropagation();
@@ -12689,6 +12697,18 @@ export class Hud {
       $('#emote-editor').style.display === 'block' ||
       this.cardModalEl !== null
     );
+  }
+
+  // True while an aria-modal quantity/confirm prompt (the bank/bags
+  // installPromptDialog family) owns the keyboard. Game keybinds must not fire
+  // then: the Enter that confirms a prompt re-focuses a button synchronously, so
+  // the same keydown would bubble to the window handler and open chat, stealing
+  // the WCAG 2.4.3 focus return. Deliberately NOT part of isModalOpen(): these
+  // prompts do not pause movement (the confirm-dialog family precedent), and the
+  // party/trade/duel prompts (no aria-modal) stay non-blocking. Called from
+  // keydown paths only, never per frame.
+  promptModalOpen(): boolean {
+    return $('#prompt-stack').querySelector('.prompt[aria-modal="true"]') !== null;
   }
 
   // True when any interactive HUD surface is open: a modal OR a managed window

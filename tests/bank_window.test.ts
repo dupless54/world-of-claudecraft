@@ -13,6 +13,7 @@ const tokens = readFileSync(new URL('../src/styles/tokens.css', import.meta.url)
 const components = readFileSync(new URL('../src/styles/components.css', import.meta.url), 'utf8');
 const mobileCss = readFileSync(new URL('../src/styles/hud.mobile.css', import.meta.url), 'utf8');
 const hud = readFileSync(new URL('../src/ui/hud.ts', import.meta.url), 'utf8');
+const mainSrc = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const playHtml = readFileSync(new URL('../play.html', import.meta.url), 'utf8');
 
@@ -404,3 +405,47 @@ describe('bank_window: Phase 7 mobile pairing (hud.mobile.css)', () => {
   });
 });
 
+describe('bank_window: Phase 7 keyboard a11y (non-modal activation + prompt Enter)', () => {
+  it('bank and bags are in the non-modal Enter/Space activation guard (WCAG 2.1.1)', () => {
+    // The bank cluster is non-modal, so canUseGameKeys() stays true while a bank
+    // button has focus: without the guard, Enter opens chat and Space jumps instead
+    // of activating the focused control. The guard stopPropagation's Enter/Space on
+    // a focused BUTTON so native activation survives (the delve/lockpick/map family
+    // precedent). Slice to the guard array so a removal reds this.
+    const start = hud.indexOf("'#delve-board',");
+    const guardArray = hud.slice(start, hud.indexOf(']', start));
+    expect(start).toBeGreaterThan(0);
+    expect(guardArray).toContain("'#bank-window'");
+    expect(guardArray).toContain("'#bags'");
+  });
+
+  it('an open aria-modal prompt suppresses game keybinds (WCAG 2.4.3 focus return)', () => {
+    // Enter that confirms a bank prompt synchronously re-focuses a button; the same
+    // keydown then bubbles to the window handler, and without this gate the chat
+    // bind fires and steals the focus return. promptModalOpen() matches ONLY the
+    // installPromptDialog family (party/trade/duel prompts carry no aria-modal and
+    // must stay non-blocking), and every canUseGameKeys predicate consults it.
+    expect(hud).toContain('promptModalOpen(): boolean {');
+    expect(hud).toContain(
+      `$('#prompt-stack').querySelector('.prompt[aria-modal="true"]') !== null`,
+    );
+    const gateSites = mainSrc.match(/!hud\.promptModalOpen\(\)/g) ?? [];
+    expect(gateSites.length).toBeGreaterThanOrEqual(3);
+    expect(mainSrc).toMatch(
+      /canUseGameKeys: \(\) =>\s*!hud\.isModalOpen\(\) && !hud\.promptModalOpen\(\) && chatInput\.style\.display !== 'block'/,
+    );
+  });
+
+  it('the prompt itself stops Enter/Space propagation (the submit-dismiss race)', () => {
+    // The window-level gate alone is NOT enough: submit() removes the prompt node
+    // synchronously during the Enter keydown, so by the time the event reaches the
+    // window handler promptModalOpen() is already false and the chat bind fires.
+    // The prompt's own keydown listener must stop the bubble, and once the prompt
+    // was detached mid-dispatch it must ALSO cancel the default (or the browser
+    // runs the activation against the re-landed focus, Enter ghost-clicking
+    // [data-close]). Escape-only handling (the pre-Phase-7 shape) must red this.
+    expect(painter).toMatch(
+      /if \(ke\.key === 'Enter' \|\| ke\.key === ' ' \|\| ke\.code === 'Space'\) \{\s*ke\.stopPropagation\(\);\s*if \(!prompt\.isConnected\) ke\.preventDefault\(\);\s*return;\s*\}/,
+    );
+  });
+});

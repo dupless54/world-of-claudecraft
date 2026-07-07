@@ -1096,14 +1096,16 @@ async function startGame(
       onEmoteWheel: (open) => hud.setEmoteWheelOpen(open),
       onClickPick: (x, y, button) => handlePick(x, y, button),
       onAttackMove: (x, y) => handleAttackMove(x, y),
-      canUseGameKeys: () => !hud.isModalOpen() && chatInput.style.display !== 'block',
+      canUseGameKeys: () =>
+        !hud.isModalOpen() && !hud.promptModalOpen() && chatInput.style.display !== 'block',
     },
     keybinds,
   );
   input.camYaw = world.player.facing;
   perf.setInputDebugProvider(() => ({
     ...input.debugState(),
-    canUseGameKeys: !hud.isModalOpen() && chatInput.style.display !== 'block',
+    canUseGameKeys:
+      !hud.isModalOpen() && !hud.promptModalOpen() && chatInput.style.display !== 'block',
     modalOpen: hud.isModalOpen(),
     chatOpen: chatInput.style.display === 'block',
     gameInputReady,
@@ -1161,7 +1163,8 @@ async function startGame(
     });
   }, APM_BEAT_MS);
   const gamepadBindings = new GamepadBindings();
-  const canUseGameKeysNow = () => !hud.isModalOpen() && chatInput.style.display !== 'block';
+  const canUseGameKeysNow = () =>
+    !hud.isModalOpen() && !hud.promptModalOpen() && chatInput.style.display !== 'block';
   function dispatchGamepadAction(id: string): void {
     if (id === 'escape') {
       if (hud.cancelGroundAim()) return;

@@ -668,6 +668,21 @@ export class BagsWindow {
         dismissAndReturn();
         return;
       }
+      // Enter / Space: stopPropagation for the same reason, keeping the default so
+      // native activation (Enter/Space on the confirm and cancel buttons) survives.
+      // A submit handler on the quantity input runs at the target phase and removes
+      // the prompt DURING this keydown, so a window-level gate keyed on the prompt's
+      // presence runs too late: without the stop, the same press hits the global
+      // chat/jump bind and steals the WCAG 2.4.3 focus return. The event path is
+      // fixed at dispatch, so this listener still runs after the detach; only THEN
+      // cancel the default too, or the browser runs the key's activation against
+      // the freshly re-landed focus (Enter ghost-clicking [data-close] and closing
+      // the whole window).
+      if (ke.key === 'Enter' || ke.key === ' ' || ke.code === 'Space') {
+        ke.stopPropagation();
+        if (!prompt.isConnected) ke.preventDefault();
+        return;
+      }
       if (ke.key !== 'Tab') return;
       // Reuse the one canonical focusable set so a prompt that ever
       // gains an [href] / [tabindex] control stays inside the trap.
