@@ -41,6 +41,7 @@
 //                                            content + basic crafting action landed in #1127)
 //   bank.ts             IWorldBank           per-character deposit box (proximity-gated info +
 //                                            deposit/withdraw/buy-slots)
+//   vale_cup.ts         IWorldValeCup        Vale Cup boarball queue/roles/betting/practice
 //
 // THREE GATES pin this seam (run before any facet edit; the literal counts are
 // pinned THERE and re-stale here, so this prose stays count-free):
