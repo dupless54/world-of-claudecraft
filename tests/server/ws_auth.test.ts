@@ -89,6 +89,10 @@ function setup() {
     // tests/character_lease_ws.test.ts.
     acquireCharacterLease: vi.fn(async () => true),
     releaseCharacterLease: vi.fn(async () => {}),
+    // Phase 8: the fresh-join arm recomputes the bank bonus and stamps it into the join
+    // meta. The default returns an empty grant so every existing case reaches game.join
+    // unchanged; the stamp/resume branches are pinned in the bank-bonus block below.
+    bankBonusForAccount: vi.fn(async () => ({ bonusSlots: 0, sources: [] })),
     isConnectionRefused: vi.fn(() => false),
     bufferHandshakeMessages,
     requestMetadata: vi.fn(() => ({ ip: '1.2.3.4', userAgent: 'ua' })),
@@ -416,6 +420,44 @@ describe('createWsAuth: authenticateWebSocket accept path', () => {
       false,
       expect.objectContaining({ mutedUntil: '2050-06-06T00:00:00Z' }),
     );
+  });
+});
+
+describe('createWsAuth: bank bonus stamp', () => {
+  it('recomputes the bank bonus once and stamps it into the join meta on a fresh join', async () => {
+    const { ws, game, deps, req } = setup();
+    const grant = {
+      bonusSlots: 6,
+      sources: [
+        { id: 'email', slots: 2, maxSlots: 2 },
+        { id: 'referral', slots: 4, maxSlots: 10, count: 2, cap: 5 },
+      ],
+    };
+    deps.bankBonusForAccount = vi.fn(async () => grant);
+    const { authenticateWebSocket } = createWsAuth(deps);
+    await authenticateWebSocket(asWs(ws), authRaw(), req);
+
+    // Called exactly once, keyed by the resolved account id (1), on the fresh-join arm.
+    expect(deps.bankBonusForAccount).toHaveBeenCalledTimes(1);
+    expect(deps.bankBonusForAccount).toHaveBeenCalledWith(1);
+    // The resolved grant rides the join meta bag (the 8th arg), exactly like leaseNonce,
+    // so addPlayer stamps it into the character state.
+    const joinMeta = (game.join as any).mock.calls[0][7] as { bankBonus?: unknown };
+    expect(joinMeta.bankBonus).toEqual(grant);
+  });
+
+  it('never recomputes the bank bonus on the resume arm (no mid-session recompute)', async () => {
+    const { ws, game, deps, req } = setup();
+    // A live/linkdead session already owns the lease row: the handshake takes the resume
+    // arm, which must not recompute or stamp a fresh bonus (locked policy).
+    game.hasSessionForCharacter = vi.fn(() => true);
+    const { authenticateWebSocket } = createWsAuth(deps);
+    await authenticateWebSocket(asWs(ws), authRaw(), req);
+
+    expect(game.join).toHaveBeenCalledTimes(1);
+    expect(deps.bankBonusForAccount).not.toHaveBeenCalled();
+    const joinMeta = (game.join as any).mock.calls[0][7] as { bankBonus?: unknown };
+    expect(joinMeta.bankBonus).toBeUndefined();
   });
 });
 

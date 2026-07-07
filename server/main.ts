@@ -46,6 +46,7 @@ import {
   verifyPassword,
 } from './auth';
 import { configureAuthRuntime } from './auth_routes';
+import { computeBankBonus } from './bank_entitlements';
 import { bankLedgerIdle } from './bank_ledger';
 import { BUG_DESCRIPTION_MAX, BugReportRateLimitError, createBugReport } from './bug_report_db';
 import { characterSheet, type SheetRank } from './character_sheet';
@@ -56,6 +57,7 @@ import {
   accountById,
   accountForToken,
   acquireCharacterLease,
+  bankBonusFactsForAccount,
   type CharacterRow,
   characterCountsByRealm,
   chatMuteStatusForAccount,
@@ -2330,6 +2332,7 @@ export async function startServer(): Promise<http.Server> {
     maxWsPerIpHard: config.maxWsPerIpHard,
     acquireCharacterLease,
     releaseCharacterLease,
+    bankBonusForAccount: async (id) => computeBankBonus(await bankBonusFactsForAccount(id)),
   });
   wsAuth.attachUpgrade(server, wss);
 

@@ -32,7 +32,7 @@ import {
   RUN_SPEED,
   type SimEvent,
 } from '../src/sim/types';
-import { type CommandName, isOverheadEmoteId } from '../src/world_api';
+import { type BankBonusSource, type CommandName, isOverheadEmoteId } from '../src/world_api';
 import { recordOnlineSample } from './admin_db';
 import { offensiveName } from './auth';
 import { recordBankOp } from './bank_ledger';
@@ -1680,6 +1680,10 @@ export class GameServer {
         fbc?: string | null;
         sourceUrl?: string | null;
         leaseNonce?: string;
+        // Server-recomputed bank bonus slots (ws_auth.ts, fresh-join arm) stamped into
+        // the character state via addPlayer. Absent on a resume and for callers that
+        // pass no meta (tests, the bot-detector overlay), which keep the saved value.
+        bankBonus?: { bonusSlots: number; sources: BankBonusSource[] };
       } = {},
   ): ClientSession | { error: string } {
     // Anti-bot: cap simultaneous online characters per account. Accounts can
@@ -1713,7 +1717,11 @@ export class GameServer {
     for (const s of linkdeadOthers) {
       void this.leave(s, 'replaced by a new character login');
     }
-    const pid = this.sim.addPlayer(cls, name, { state: state ?? undefined, characterId });
+    const pid = this.sim.addPlayer(cls, name, {
+      state: state ?? undefined,
+      characterId,
+      bankBonus: meta.bankBonus,
+    });
     if (isGm) {
       // GM characters: invulnerable, and always at the level cap (the row is
       // created without state, so the first join levels them up)

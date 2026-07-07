@@ -15,6 +15,7 @@ import { randomUUID } from 'node:crypto';
 import type { EventEmitter } from 'node:events';
 import type * as http from 'node:http';
 import type { WebSocket, WebSocketServer } from 'ws';
+import type { BankBonusSource } from '../src/world_api';
 import type {
   AccountChatMuteStatus,
   AccountCosmetics,
@@ -98,6 +99,13 @@ export interface WsAuthDeps {
   // that nonce so a stale release cannot delete a re-acquired lease.
   acquireCharacterLease: (characterId: number, nonce: string) => Promise<boolean>;
   releaseCharacterLease: (characterId: number, nonce?: string) => Promise<void>;
+  // Recomputes the account's bank bonus slots from live facts (email/Discord/wallet/
+  // referrals) so a fresh join stamps the current entitlement into the character state.
+  // Called on the FRESH-JOIN arm only, never on a resume (no mid-session recompute); a
+  // rejection fails the handshake exactly like a getCharacter failure.
+  bankBonusForAccount: (
+    accountId: number,
+  ) => Promise<{ bonusSlots: number; sources: BankBonusSource[] }>;
 }
 
 export interface WsAuthHandlers {
@@ -124,6 +132,7 @@ export function createWsAuth(deps: WsAuthDeps): WsAuthHandlers {
     maxWsPerIpHard: MAX_WS_PER_IP_HARD,
     acquireCharacterLease,
     releaseCharacterLease,
+    bankBonusForAccount,
   } = deps;
 
   // Character ids whose lease-acquire-through-join section is in flight in THIS
@@ -242,6 +251,13 @@ export function createWsAuth(deps: WsAuthDeps): WsAuthHandlers {
         // per-join nonce fences the row so a later stale release cannot delete it. A
         // live foreign lease fails closed with the exact 'character already in world'
         // string planJoin already uses.
+        //
+        // Recompute the bank bonus slots from live account facts and stamp them into
+        // the character state at load (server authority). Fresh-join arm ONLY: a resume
+        // above keeps its stamped value (no mid-session recompute, locked policy).
+        // Computed BEFORE the lease acquire so the lease-held window stays tight; a bare
+        // await means a DB error fails the handshake exactly like a getCharacter failure.
+        const bankBonus = await bankBonusForAccount(accountId);
         leaseNonce = randomUUID();
         const leased = await acquireCharacterLease(character.id, leaseNonce);
         if (!leased) {
@@ -256,7 +272,7 @@ export function createWsAuth(deps: WsAuthDeps): WsAuthHandlers {
           character.class,
           character.state,
           character.is_gm,
-          { ...joinMeta, leaseNonce },
+          { ...joinMeta, leaseNonce, bankBonus },
         );
       }
       if ('error' in result) {

@@ -49,6 +49,11 @@ function makeDeps(opts: { joinResult?: any; hasSession?: boolean; acquireResult?
     return opts.acquireResult ?? true;
   });
   const releaseSpy = vi.fn(async (_characterId: number, _nonce?: string) => {});
+  // Phase 8: the fresh-join arm recomputes the bank bonus before acquiring the lease.
+  const bankBonusSpy = vi.fn(async (_accountId: number) => ({
+    bonusSlots: 0,
+    sources: [] as unknown[],
+  }));
   const game = {
     isIpBlocked: () => false,
     countIpSessions: () => 0,
@@ -73,8 +78,9 @@ function makeDeps(opts: { joinResult?: any; hasSession?: boolean; acquireResult?
     maxWsPerIpHard: 100,
     acquireCharacterLease: acquireSpy,
     releaseCharacterLease: releaseSpy,
+    bankBonusForAccount: bankBonusSpy,
   };
-  return { deps, game, joinSpy, hasSessionSpy, acquireSpy, releaseSpy, session };
+  return { deps, game, joinSpy, hasSessionSpy, acquireSpy, releaseSpy, bankBonusSpy, session };
 }
 
 beforeEach(() => {
@@ -187,6 +193,51 @@ describe('ws auth character load lease', () => {
     // authenticated user lock arbitrary characters (a login DoS).
     expect(acquireSpy).not.toHaveBeenCalled();
     expect(sent).toContainEqual({ t: 'error', error: 'no such character' });
+  });
+
+  it('recomputes the bank bonus BEFORE acquiring the lease and stamps it into the join meta', async () => {
+    const { deps, acquireSpy, joinSpy, bankBonusSpy } = makeDeps();
+    const { ws } = fakeWs();
+
+    await createWsAuth(deps).authenticateWebSocket(ws, authFrame(7), fakeReq());
+
+    // Recomputed once, keyed by the resolved account id (1), and BEFORE the lease acquire
+    // so the lease-held window stays tight.
+    expect(bankBonusSpy).toHaveBeenCalledTimes(1);
+    expect(bankBonusSpy).toHaveBeenCalledWith(1);
+    expect(acquireSpy).toHaveBeenCalledTimes(1);
+    expect(bankBonusSpy.mock.invocationCallOrder[0]).toBeLessThan(
+      acquireSpy.mock.invocationCallOrder[0],
+    );
+    // The grant rides the join meta bag (8th arg), so addPlayer stamps it at load.
+    const joinMeta = joinSpy.mock.calls[0][7] as any;
+    expect(joinMeta.bankBonus).toEqual({ bonusSlots: 0, sources: [] });
+  });
+
+  it('never recomputes the bank bonus on a linkdead resume (session exists)', async () => {
+    const { deps, acquireSpy, bankBonusSpy } = makeDeps({ hasSession: true });
+    const { ws } = fakeWs();
+
+    await createWsAuth(deps).authenticateWebSocket(ws, authFrame(7), fakeReq());
+
+    // Resume arm: no lease acquire and no bonus recompute (locked no-mid-session-recompute).
+    expect(acquireSpy).not.toHaveBeenCalled();
+    expect(bankBonusSpy).not.toHaveBeenCalled();
+  });
+
+  it('fails the handshake without taking the lease when the bank-bonus recompute rejects', async () => {
+    const { deps, acquireSpy, releaseSpy, joinSpy, bankBonusSpy } = makeDeps();
+    bankBonusSpy.mockRejectedValueOnce(new Error('db down'));
+    const { ws } = fakeWs();
+
+    // A bare await: a DB error here fails the handshake exactly like a getCharacter
+    // failure, and because it runs before the acquire, no lease is ever taken.
+    await expect(
+      createWsAuth(deps).authenticateWebSocket(ws, authFrame(7), fakeReq()),
+    ).rejects.toThrow('db down');
+    expect(acquireSpy).not.toHaveBeenCalled();
+    expect(releaseSpy).not.toHaveBeenCalled();
+    expect(joinSpy).not.toHaveBeenCalled();
   });
 
   it('refuses a second concurrent handshake for one character without touching the lease', async () => {
