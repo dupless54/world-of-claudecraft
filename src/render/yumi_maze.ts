@@ -43,6 +43,14 @@ export interface YumiMazeView {
   group: THREE.Group;
   /** Per-frame: anchors the two team beacons to the live cat positions. */
   update(world: IWorld): void;
+  /**
+   * Fold a yumiTeleport event's landing spot into the beacon immediately.
+   * Online, arenaInfo rides the 10s arena wire cadence, so without this the
+   * beacon would mark the OLD cell for up to 10s after each teleport; the
+   * beacon is actionable info and must be as fresh on every host as it is
+   * offline (where arenaInfo is polled per frame).
+   */
+  noteTeleport(catId: number, x: number, z: number): void;
   dispose(): void;
 }
 
@@ -220,11 +228,16 @@ export function buildYumiMaze(
   const beaconB = beacon(TEAM_RED);
   const lastA = { x: Number.NaN, z: Number.NaN, on: false };
   const lastB = { x: Number.NaN, z: Number.NaN, on: false };
+  // Teleport landing spots by cat entity id, ahead of the (online, 10s-cadence)
+  // arenaInfo mirror. A cat only ever moves by teleporting, so the latest event
+  // position is authoritative until arenaInfo catches up, at which point the
+  // override is dropped. Cleared whenever no yumi match is visible.
+  const teleported = new Map<number, { x: number; z: number }>();
 
   const place = (
     mesh: THREE.Mesh,
     last: { x: number; z: number; on: boolean },
-    view: { x: number; z: number; alive: boolean } | undefined,
+    view: { entityId: number; x: number; z: number; alive: boolean } | undefined,
   ) => {
     const on = !!view?.alive;
     if (on !== last.on) {
@@ -232,11 +245,21 @@ export function buildYumiMaze(
       last.on = on;
     }
     if (!view || !on) return;
-    if (view.x !== last.x || view.z !== last.z) {
-      const gy = groundHeight(view.x, view.z, seed);
-      mesh.position.set(view.x, gy + BEACON_HEIGHT / 2, view.z);
-      last.x = view.x;
-      last.z = view.z;
+    let px = view.x;
+    let pz = view.z;
+    const o = teleported.get(view.entityId);
+    if (o) {
+      if (o.x === view.x && o.z === view.z) teleported.delete(view.entityId);
+      else {
+        px = o.x;
+        pz = o.z;
+      }
+    }
+    if (px !== last.x || pz !== last.z) {
+      const gy = groundHeight(px, pz, seed);
+      mesh.position.set(px, gy + BEACON_HEIGHT / 2, pz);
+      last.x = px;
+      last.z = pz;
     }
   };
 
@@ -244,8 +267,12 @@ export function buildYumiMaze(
     group,
     update(world: IWorld): void {
       const yumi = world.arenaInfo?.match?.yumi;
+      if (!yumi && teleported.size > 0) teleported.clear();
       place(beaconA, lastA, yumi?.yumiA);
       place(beaconB, lastB, yumi?.yumiB);
+    },
+    noteTeleport(catId: number, x: number, z: number): void {
+      teleported.set(catId, { x, z });
     },
     dispose(): void {
       group.removeFromParent();

@@ -2986,6 +2986,9 @@ export class Renderer {
         const toY = groundHeight(ev.toX, ev.toZ, this.sim.cfg.seed);
         this.vfx.burst(new THREE.Vector3(ev.fromX, fromY + 1, ev.fromZ), 'arcane', 26, 1.2);
         this.vfx.burst(new THREE.Vector3(ev.toX, toY + 1, ev.toZ), 'arcane', 26, 1.2);
+        // Snap the objective beacon to the landing spot NOW: online, the
+        // arenaInfo mirror the beacon polls refreshes only every 10s.
+        for (const view of this.yumiMazeViews.values()) view.noteTeleport(ev.catId, ev.toX, ev.toZ);
         break;
       }
       case 'delveRitePulse': {

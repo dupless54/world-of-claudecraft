@@ -307,6 +307,31 @@ check('both cats teleported', movedA && movedB, JSON.stringify({ beforeTp, after
 check('teleport separation >= 5yd', sep >= 5, `sep=${sep.toFixed(1)}`);
 await page.screenshot({ path: 'tmp/yumi_after_teleport.png' });
 
+// The objective beacons must snap to the landing spots immediately (the
+// yumiTeleport event fold; online this is what keeps the beacon fresh
+// between the 10s arena-wire refreshes).
+const beaconTrack = await page.evaluate(() => {
+  const g = window.__game;
+  const view = [...g.renderer.yumiMazeViews.values()][0];
+  if (!view) return { err: 'no maze view' };
+  const beacons = view.group.children.find(
+    (c) => c.isGroup && c.children.length === 2 && c.children.every((m) => m.isMesh),
+  );
+  if (!beacons) return { err: 'no beacons group' };
+  const world = (m) => m.getWorldPosition(m.position.clone());
+  const [wa, wb] = beacons.children.map(world);
+  const y = g.sim.arenaInfo.match.yumi;
+  return {
+    dA: Math.hypot(wa.x - y.yumiA.x, wa.z - y.yumiA.z),
+    dB: Math.hypot(wb.x - y.yumiB.x, wb.z - y.yumiB.z),
+  };
+});
+check(
+  'beacons snapped to both cats after the teleport',
+  beaconTrack.dA < 0.5 && beaconTrack.dB < 0.5,
+  JSON.stringify(beaconTrack),
+);
+
 // Kill the enemy cat through the real damage hub: the match must end won.
 const won = await page.evaluate(() => {
   const sim = window.__game.sim;
