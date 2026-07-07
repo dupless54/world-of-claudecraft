@@ -1226,6 +1226,20 @@ export const ja_JP: EnTranslations = {
       "logging": "伐採",
       "herbalism": "薬草学"
     },
+    "archetypeTitle": {
+      "label": "称号",
+      "none": "なし",
+      "armorcrafting": "防具鍛冶師",
+      "weaponcrafting": "武器鍛冶師",
+      "jewelcrafting": "宝石職人",
+      "alchemy": "錬金術師",
+      "engineering": "工作師",
+      "cooking": "料理人",
+      "inscription": "銘文師",
+      "enchanting": "エンチャンター",
+      "tailoring": "仕立て屋",
+      "leatherworking": "皮革職人"
+    },
     "crafting": {
       "title": "製作",
       "close": "製作を閉じる",

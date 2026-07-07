@@ -1226,6 +1226,20 @@ export const zh_CN: EnTranslations = {
       "logging": "伐木",
       "herbalism": "草药学"
     },
+    "archetypeTitle": {
+      "label": "称号",
+      "none": "无",
+      "armorcrafting": "锻甲师",
+      "weaponcrafting": "武器匠",
+      "jewelcrafting": "珠宝匠",
+      "alchemy": "炼金师",
+      "engineering": "工程师",
+      "cooking": "厨师",
+      "inscription": "铭文师",
+      "enchanting": "附魔师",
+      "tailoring": "裁缝",
+      "leatherworking": "制皮师"
+    },
     "crafting": {
       "title": "制作",
       "close": "关闭制作",
