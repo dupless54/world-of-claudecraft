@@ -37,7 +37,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "es_ES": [
     "guide.nav.professions",
@@ -67,7 +74,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "fr_FR": [
     "guide.nav.professions",
@@ -97,7 +111,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "fr_CA": [
     "guide.nav.professions",
@@ -127,7 +148,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "en_CA": [],
   "it_IT": [
@@ -158,7 +186,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "de_DE": [
     "guide.nav.professions",
@@ -188,7 +223,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "zh_CN": [],
   "zh_TW": [],
@@ -222,7 +264,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "ru_RU": [],
   "cs_CZ": [
@@ -253,7 +302,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "nl_NL": [
     "guide.nav.professions",
@@ -283,7 +339,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "pl_PL": [
     "guide.nav.professions",
@@ -313,7 +376,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "id_ID": [
     "guide.nav.professions",
@@ -343,7 +413,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "tr_TR": [
     "guide.nav.professions",
@@ -373,7 +450,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "sv_SE": [
     "guide.nav.professions",
@@ -403,7 +487,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "vi_VN": [
     "guide.nav.professions",
@@ -433,7 +524,14 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ],
   "da_DK": [
     "guide.nav.professions",
@@ -463,6 +561,13 @@ export const pending: Record<string, readonly string[]> = {
     "guide.professions.gatherToolsTitle",
     "guide.professions.gatherWhatBody",
     "guide.professions.gatherWhatTitle",
-    "guide.professions.intro"
+    "guide.professions.intro",
+    "hudChrome.townFocus.budgetLabel",
+    "hudChrome.townFocus.decreaseAria",
+    "hudChrome.townFocus.hint",
+    "hudChrome.townFocus.increaseAria",
+    "hudChrome.townFocus.notInTownHint",
+    "hudChrome.townFocus.saveButton",
+    "hudChrome.townFocus.title"
   ]
 };
