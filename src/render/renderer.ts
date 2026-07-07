@@ -91,6 +91,7 @@ import { isOwnedPetHostile } from './reaction';
 import { RenderBudgetGovernor, type RenderBudgetState } from './render_budget';
 import { downscaleDims } from './screenshot';
 import { drapeRingLocalY } from './selection_ring';
+import { type SelfMotionFrame, SelfMotionPredictor } from './self_motion';
 import { isSharedGeometry, isSharedMaterial } from './shared_resource';
 import { buildClouds, buildSky, type SkyView } from './sky';
 import { nearestSloppyPickId, type SloppyPickCandidate } from './sloppy_pick';
@@ -227,6 +228,9 @@ const CAMERA_BASE_FOV = 60;
 const CAMERA_MAX_COMP_FOV = 98;
 const SELF_RENDER_SMOOTH_RATE = 30;
 const SELF_RENDER_SNAP_DIST_SQ = 6 * 6;
+// Decay rate of the one-time offset captured when the self-motion predictor
+// takes over from the lead-smoothing path (gone in ~0.3 s, no camera step).
+const SELF_MOTION_HANDOFF_RATE = 15;
 const SUN_HALO_OPACITY = 0.35; // bloom now supplies most of the halo
 // lighting rig (high/ultra) — IBL supplies ambient, sun carries the key
 const HEMI_INTENSITY = 0.45;
@@ -566,6 +570,8 @@ export interface EntityView {
   stepAccum: number;
   wasAirborne: boolean;
   wasSwimming: boolean;
+  // consecutive frames the foot-height heuristic read airborne (debounce)
+  airborneHeurFrames: number;
 }
 
 function collectCasters(root: THREE.Object3D, into: THREE.Object3D[]): void {
@@ -822,6 +828,7 @@ export class Renderer {
   private readonly animScratch: AnimState = {
     speed: 0,
     moving: false,
+    running: false,
     airborne: false,
     backwards: false,
     reverseBackpedal: false,
@@ -832,6 +839,20 @@ export class Renderer {
   };
   private selfRenderPosition = new THREE.Vector3();
   private selfRenderPositionReady = false;
+  // Online display-only self extrapolation (see src/render/self_motion.ts).
+  // Lazy: offline never passes a SelfMotionFrame, so it is never constructed.
+  private selfMotionPredictor: SelfMotionPredictor | null = null;
+  private selfMotionActive = false;
+  private selfMotionOffset = new THREE.Vector3();
+
+  /** Perf-overlay telemetry: ms of latency the self-motion extrapolation is
+   *  currently hiding, or null while the predictor is inactive. */
+  get selfMotionLeadMs(): number | null {
+    return this.selfMotionActive && this.selfMotionPredictor
+      ? this.selfMotionPredictor.leadMs
+      : null;
+  }
+
   private lastSelfId: number | null = null;
   // Last yaw applied to the local player while the camera was driving its facing
   // (mouselook / mouse-camera). Null when the override is disengaged, so the next
@@ -3365,6 +3386,7 @@ export class Renderer {
       stepAccum: 0,
       wasAirborne: false,
       wasSwimming: false,
+      airborneHeurFrames: 0,
     });
     const view = this.views.get(e.id);
     // Never gate the player's OWN view: it must be on screen immediately, its
@@ -3815,7 +3837,13 @@ export class Renderer {
     this.targetCone = { group, pos, localXZ: fan.localXZ, worldXYZ, ringPos, ringXZ, ringWorldXYZ };
   }
 
-  sync(alpha: number, dt: number, renderFacingOverride: number | null, selfAlphaLead = 0): void {
+  sync(
+    alpha: number,
+    dt: number,
+    renderFacingOverride: number | null,
+    selfAlphaLead = 0,
+    selfMotion: SelfMotionFrame | null = null,
+  ): void {
     const totalStart = performance.now();
     let phaseStart = totalStart;
     const framePhaseMs = emptyFramePhaseMs();
@@ -3853,9 +3881,12 @@ export class Renderer {
       this.lastSelfId = p.id;
       this.selfRenderPositionReady = false;
       this.selfFacingOverride = null;
+      // A still-decaying predictor-handoff offset belongs to the previous
+      // character; leaking it would displace the new one for a few frames.
+      this.selfMotionOffset.set(0, 0, 0);
     }
     const now = performance.now();
-    const selfPos = this.updateSelfRenderPosition(alpha, dt, selfAlphaLead);
+    const selfPos = this.updateSelfRenderPosition(alpha, dt, selfAlphaLead, selfMotion);
     markPhase('setup');
 
     // dynamic worlds: create nearby views lazily and drop views for leavers or
@@ -3992,10 +4023,18 @@ export class Renderer {
       }
       // online, entities beyond nameplate range stream below snapshot rate;
       // each interpolates on its own clock so they move smoothly instead of
-      // freezing and dashing once per update (self keeps the global alpha
-      // the camera follow uses)
+      // freezing and dashing once per update. The self position comes from
+      // selfPos below, so the self `ea` drives only the model FACING: cap it
+      // at 1 like the camera follow does (extrapolating angles past the
+      // snapshot oscillates, and a lead-extrapolated yaw target overshoots
+      // every mirrored facing step and yanks a locally-held model out and
+      // back). Facing needs no latency lead anyway: every self-driven heading
+      // change is covered at zero latency by the local layers (the keyboard
+      // turn stream, mouselook, click-move via the sent facing). Remote
+      // entities interpolate on their own measured cadence via
+      // remoteEntityAlpha (unknown-cadence fallback).
       const ea = isSelf
-        ? selfSnapshotAlpha(alpha, selfAlphaLead)
+        ? Math.min(1, alpha)
         : remoteEntityAlpha(now, e.netUpdatedAt, e.netInterval, alpha);
       const x = isSelf ? selfPos.x : e.prevPos.x + (e.pos.x - e.prevPos.x) * ea;
       const y = isSelf ? selfPos.y : e.prevPos.y + (e.pos.y - e.prevPos.y) * ea;
@@ -4158,15 +4197,20 @@ export class Renderer {
 
       // animation state machine inputs, derived from render-space motion with
       // hysteresis so a one-frame speed dip can't reset the walk clip.
-      // For the local player online, sample the *plain* interpolated sim motion
-      // (ax/ay/az), never the smoothed/predicted self render position (selfPos):
-      // the online self predictor freezes-then-jumps within each snapshot
-      // interval, and feeding that jitter to the cadence/airborne logic
-      // intermittently flips the base state and resets the walk clip. The
-      // predictor moves only the mesh. Offline, ax==x so this is a no-op.
-      const ax = isSelf ? e.prevPos.x + (e.pos.x - e.prevPos.x) * alpha : x;
-      const ay = isSelf ? e.prevPos.y + (e.pos.y - e.prevPos.y) * alpha : y;
-      const az = isSelf ? e.prevPos.z + (e.pos.z - e.prevPos.z) * alpha : z;
+      // The local player's anim samples whatever pose the MESH shows. While
+      // the self-motion predictor is active that is the predicted display pose
+      // (x/y/z = selfPos): it is continuous by construction, it starts and
+      // stops the run clip the same frame the mesh moves, and under load
+      // hitches (bursty snapshots at world entry) it stays smooth while the
+      // authoritative interp stair-steps, which used to feed the cadence
+      // erratic velocities and reset the walk clip. On the lead-smoothing
+      // fallback path the plain interpolated sim motion is still sampled
+      // instead (that path's smoothed selfPos stutters within a snapshot
+      // interval). Offline, all of these are the same value.
+      const animFromDisplay = isSelf && this.selfMotionActive;
+      const ax = isSelf && !animFromDisplay ? e.prevPos.x + (e.pos.x - e.prevPos.x) * alpha : x;
+      const ay = isSelf && !animFromDisplay ? e.prevPos.y + (e.pos.y - e.prevPos.y) * alpha : y;
+      const az = isSelf && !animFromDisplay ? e.prevPos.z + (e.pos.z - e.prevPos.z) * alpha : z;
       const vx = ax - v.lastX,
         vz = az - v.lastZ;
       v.lastX = ax;
@@ -4181,14 +4225,32 @@ export class Renderer {
       // airborne state from foot height vs terrain — keeps the jump pose working in
       // both worlds without a wire change. Gated to players (only they jump) to keep
       // the extra groundHeight sample off the hot path for mobs/NPCs.
+      // The local player uses the predictor's kernel onGround when it is active:
+      // exact physics state, coherent with the displayed pose by construction.
+      // The heuristic is debounced over 2 frames: snapshot bursts during load
+      // hitches transiently lift the sampled pose off the terrain, and a
+      // single-frame false positive flips the base state to `jump` and back,
+      // replaying the jump clip's crouch (the world-entry anim glitch).
+      if (
+        e.kind === 'player' &&
+        e.onGround &&
+        !swimming &&
+        ay - groundHeight(ax, az, this.sim.cfg.seed) > AIRBORNE_EPS
+      ) {
+        v.airborneHeurFrames++;
+      } else {
+        v.airborneHeurFrames = 0;
+      }
       const airborne =
         !visuallyDead &&
         !swimming &&
-        (!e.onGround ||
-          (e.kind === 'player' && ay - groundHeight(ax, az, this.sim.cfg.seed) > AIRBORNE_EPS));
+        (animFromDisplay && this.selfMotionPredictor
+          ? !this.selfMotionPredictor.onGround
+          : !e.onGround || v.airborneHeurFrames >= 2);
       const st = this.animScratch;
       st.speed = loco.speed;
       st.moving = moving;
+      st.running = loco.running;
       st.airborne = airborne;
       st.backwards = loco.backwards;
       st.reverseBackpedal = ghostWolf;
@@ -4766,8 +4828,43 @@ export class Renderer {
     alpha: number,
     dt: number,
     selfAlphaLead: number,
+    selfMotion: SelfMotionFrame | null = null,
   ): THREE.Vector3 {
     const p = this.sim.player;
+    // Online intent-driven extrapolation: when active it owns the position and
+    // the lead-smoothing path below becomes the fallback (both write the same
+    // selfRenderPosition, so enable/disable hands off without a pop, absorbed
+    // by the snap/smooth rules on the next frame).
+    if (selfMotion) {
+      if (!this.selfMotionPredictor) {
+        this.selfMotionPredictor = new SelfMotionPredictor(this.sim.cfg.seed);
+      }
+      const predicted = this.selfMotionPredictor.step(p, selfMotion);
+      if (predicted) {
+        // Follow the predictor output exactly (it is already continuous;
+        // smoothing it again would re-add the display lag this exists to
+        // remove). The only discontinuity is the handoff frame from the
+        // lead-smoothing path below: capture that gap once as an offset and
+        // decay it, so the camera glides instead of stepping.
+        if (this.selfRenderPositionReady && !this.selfMotionActive) {
+          this.selfMotionOffset.set(
+            this.selfRenderPosition.x - predicted.x,
+            this.selfRenderPosition.y - predicted.y,
+            this.selfRenderPosition.z - predicted.z,
+          );
+        }
+        this.selfMotionOffset.multiplyScalar(Math.exp(-SELF_MOTION_HANDOFF_RATE * Math.max(0, dt)));
+        this.selfRenderPosition.set(
+          predicted.x + this.selfMotionOffset.x,
+          predicted.y + this.selfMotionOffset.y,
+          predicted.z + this.selfMotionOffset.z,
+        );
+        this.selfRenderPositionReady = true;
+        this.selfMotionActive = true;
+        return this.selfRenderPosition;
+      }
+    }
+    this.selfMotionActive = false;
     const playerAlpha = selfSnapshotAlpha(alpha, selfAlphaLead);
     const px = p.prevPos.x + (p.pos.x - p.prevPos.x) * playerAlpha;
     const py = p.prevPos.y + (p.pos.y - p.prevPos.y) * playerAlpha;

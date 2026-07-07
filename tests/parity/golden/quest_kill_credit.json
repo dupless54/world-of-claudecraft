@@ -15,8 +15,8 @@
     {
       "tick": 0,
       "time": 0,
-      "nextId": 404,
-      "state": "1b0e5f7f",
+      "nextId": 405,
+      "state": "b8bf8150",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -43,12 +43,13 @@
           "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 403,
+          "entityId": 404,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
+          "heroicDaily": {},
           "inventory": [
             {
               "count": 5,
@@ -75,7 +76,7 @@
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 90,
-          "id": 403,
+          "id": 404,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
@@ -118,9 +119,9 @@
     {
       "tick": 0,
       "time": 0,
-      "nextId": 404,
-      "state": "c22c8cfc",
-      "events": "25be69e9",
+      "nextId": 405,
+      "state": "94c9a7cb",
+      "events": "790d3d07",
       "rng": {
         "draws": 0,
         "digest": "811c9dc5"
@@ -146,12 +147,13 @@
           "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 403,
+          "entityId": 404,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
+          "heroicDaily": {},
           "inventory": [
             {
               "count": 5,
@@ -191,7 +193,7 @@
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 50000,
-          "id": 403,
+          "id": 404,
           "kind": "player",
           "level": 10,
           "lootFfaTimer": "Infinity",
@@ -234,9 +236,9 @@
     {
       "tick": 8,
       "time": 0.4,
-      "nextId": 412,
-      "state": "ee63e4d3",
-      "events": "ea19444c",
+      "nextId": 413,
+      "state": "ab9387a2",
+      "events": "e43fdf52",
       "rng": {
         "draws": 40,
         "digest": "0e96c13c"
@@ -266,12 +268,13 @@
           "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 403,
+          "entityId": 404,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
+          "heroicDaily": {},
           "inventory": [
             {
               "count": 5,
@@ -311,7 +314,7 @@
           "fallStartY": 1.5,
           "fiveSecondRule": 99.4,
           "hp": 50000,
-          "id": 403,
+          "id": 404,
           "inCombat": true,
           "kind": "player",
           "level": 10,
@@ -355,9 +358,9 @@
     {
       "tick": 8,
       "time": 0.4,
-      "nextId": 412,
-      "state": "e0ebcee8",
-      "events": "b8023cdb",
+      "nextId": 413,
+      "state": "14ca97b3",
+      "events": "89157113",
       "rng": {
         "draws": 40,
         "digest": "0e96c13c"
@@ -390,12 +393,13 @@
           "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 403,
+          "entityId": 404,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
+          "heroicDaily": {},
           "inventory": [
             {
               "count": 5,
@@ -427,7 +431,7 @@
           "fallStartY": 1.5,
           "fiveSecondRule": 99.4,
           "hp": 50000,
-          "id": 403,
+          "id": 404,
           "inCombat": true,
           "kind": "player",
           "level": 10,
@@ -471,8 +475,8 @@
     {
       "tick": 10,
       "time": 0.5,
-      "nextId": 412,
-      "state": "64f43ad0",
+      "nextId": 413,
+      "state": "9c05f3ab",
       "events": "741638a5",
       "rng": {
         "draws": 40,
@@ -506,12 +510,13 @@
           "craftSkills": {},
           "delveClears": {},
           "delveDaily": {},
-          "entityId": 403,
+          "entityId": 404,
           "equipment": {
             "chest": "recruit_tunic",
             "mainhand": "worn_sword"
           },
           "gatheringProficiency": {},
+          "heroicDaily": {},
           "inventory": [
             {
               "count": 5,
@@ -543,7 +548,7 @@
           "fallStartY": 1.5,
           "fiveSecondRule": 99.5,
           "hp": 50000,
-          "id": 403,
+          "id": 404,
           "inCombat": true,
           "kind": "player",
           "level": 10,
