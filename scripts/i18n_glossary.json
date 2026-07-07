@@ -35,7 +35,12 @@
     },
     "bankHouse": {
       "note": "The bank house proper name 'The Gilded Strongbox' and the 'Bank' window label. Reuse the established localized form already coined for the Bursar NPC titles (entities.npcs.bursar_*.title); keep it identical wherever the bank is named. The bank concept renders as zh_CN 银行, zh_TW 銀行, ja 銀行, ko 은행, ru банк.",
-      "keyPatterns": ["hudChrome.bank.title", "hudChrome.bank.subtitle"]
+      "keyPatterns": [
+        "hudChrome.bank.title",
+        "hudChrome.bank.subtitle",
+        "guide.economy.bankTitle",
+        "guide.economy.bankBody"
+      ]
     }
   }
 }
