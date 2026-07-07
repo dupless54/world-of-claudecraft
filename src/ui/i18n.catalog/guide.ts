@@ -1116,7 +1116,7 @@ export const guideStrings = {
     // The ten crafts overview.
     craftTitle: 'The ten crafts',
     craftIntro:
-      'Ten crafting trades turn gathered materials into finished gear and goods: Armorcrafting, Weaponcrafting, and Jewelcrafting shape raw matter into wearable gear; Alchemy and Engineering are driven by trial and error; Cooking, Inscription, and Enchanting each touch other crafts output; Tailoring and Leatherworking work from exact patterns. Together they form a wheel, with each craft sitting next to two neighbors and opposite one other.',
+      "Ten crafting trades turn gathered materials into finished gear and goods: Armorcrafting, Weaponcrafting, and Jewelcrafting shape raw matter into wearable gear; Alchemy and Engineering are driven by trial and error; Cooking, Inscription, and Enchanting each touch other crafts' output; Tailoring and Leatherworking work from exact patterns. Together they form a wheel, with each craft sitting next to two neighbors and opposite one other.",
 
     craftRingTitle: 'A wheel of specialties',
     craftRingBody:
@@ -1132,7 +1132,7 @@ export const guideStrings = {
 
     craftComboTitle: 'Combination recipes',
     craftComboBody:
-      'Beyond a single crafts own recipe list, the wheel also supports combination recipes that call on two neighboring crafts at once, rewarding a character (or a pair of trading partners) who has invested in adjacent trades on the ring rather than one in isolation.',
+      "Beyond a single craft's own recipe list, the wheel also supports combination recipes that call on two neighboring crafts at once, rewarding a character (or a pair of trading partners) who has invested in adjacent trades on the ring rather than one in isolation.",
 
     // Archetypes overview.
     archetypeTitle: 'The ten archetypes',

@@ -835,7 +835,6 @@ export interface PlayerMeta {
   // MARKET_WIRE_LIMIT listings per snapshot to bound wire cost, so this
   // server-side substring filter (matched against item names) is how a player
   // reaches goods past the cap. Never persisted: resets on login.
-  // reaches goods past the cap. Never persisted, resets on login.
   marketFilter: string;
   // Flat per-craft skill tracking (#1126): one independent, additive-only skill
   // value per craft on the ten-craft ring (see professions/wheel.ts). Persisted
@@ -1559,8 +1558,6 @@ export class Sim {
       meta.lifetimeXp = s.lifetimeXp ?? xpToReachLevel(player.level) + Math.max(0, s.xp);
       meta.prestigeRank = s.prestigeRank ?? 0;
       meta.restedXp = Math.max(0, s.restedXp ?? 0);
-      meta.gatheringProficiency = normalizeGatheringProficiency(s.professions);
-      meta.gatheringProficiency = normalizeGatheringProficiency(s.gatheringProficiency);
       // `s.professions` is the legacy pre-rename field (#1119); `s.gatheringProficiency`
       // is the current one. Prefer the current field, fall back to the legacy one so
       // saves from before the rename still load correctly.
@@ -6736,7 +6733,6 @@ export class Sim {
     return this.craftSkillsFor(this.primaryId);
   }
 
-  // Read-only gathering-profession proficiency surface for IWorld.
   /** The active-archetype craft id, or null before the zone-1 acceptance quest has
    *  ever been completed (see professions/archetype.ts). */
   activeArchetypeFor(pid: number): string | null {
