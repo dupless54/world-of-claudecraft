@@ -238,8 +238,12 @@ describe('bank_window: Phase 6 search / sort / deposit-all', () => {
     expect(painter).toMatch(/addEventListener\('input',[\s\S]{0,140}this\.refreshGrid\(\)/);
     const refreshBody = painter.slice(
       painter.indexOf('private refreshGrid(): void {'),
-      painter.indexOf('private buildFilterBar(): HTMLElement {'),
+      painter.indexOf('private buildFilterBar(bankEmpty: boolean): HTMLElement {'),
     );
+    // Guard the slice itself: a renamed anchor would silently widen the body to EOF.
+    expect(refreshBody.length).toBeGreaterThan(0);
+    expect(refreshBody).toContain('private refreshGrid');
+    expect(refreshBody).not.toContain('private buildBuyRow');
     expect(refreshBody).toContain(".bank-grid')");
     expect(refreshBody).toContain('grid.scrollTop = prevScrollTop');
   });
