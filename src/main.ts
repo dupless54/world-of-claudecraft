@@ -37,8 +37,8 @@ import {
   hoverCursorKind,
   isAttackableEntity,
 } from './game/interactions';
-import { applyMobileKeyboardViewport } from './game/keyboard_viewport_applier';
 import { Keybinds } from './game/keybinds';
+import { applyMobileKeyboardViewport } from './game/keyboard_viewport_applier';
 import { shouldUseStaticBackdrop } from './game/landing_backdrop';
 import {
   interfaceModeFromSetting,

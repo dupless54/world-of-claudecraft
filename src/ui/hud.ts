@@ -5581,7 +5581,8 @@ export class Hud {
     // The mobile More-tray entry is a menu row, not floating chrome: it stays
     // reachable whenever the feature itself is on, regardless of the
     // showDailyRewardsChestButton preference (which only declutters the rail).
-    if (!this.dailyRewardsEnabled()) this.mobileDailyRewardsButtonEl?.classList.remove('spin-ready');
+    if (!this.dailyRewardsEnabled())
+      this.mobileDailyRewardsButtonEl?.classList.remove('spin-ready');
   }
 
   private setDailyRewardsChestButtonPreference(show: boolean): void {
