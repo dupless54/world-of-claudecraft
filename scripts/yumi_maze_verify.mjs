@@ -255,6 +255,30 @@ check(
   engaged.armed && swung.hp < engaged.hpBefore,
   JSON.stringify({ engaged, swung }),
 );
+// Catch the cat mid block-react (the hit clip) while swings continue.
+await page.evaluate(() => {
+  const sim = window.__game.sim;
+  sim.startAutoAttack();
+});
+await sleep(1200);
+await page.screenshot({ path: 'tmp/yumi_cat_block.png' });
+// Decisive: the cat's ACTIVE animation action while being struck must be the
+// Meshy block clip (playHit maps landed damage to the hit-react slot).
+const blockAnim = await page.evaluate((id) => {
+  const view = window.__game.renderer.views.get(id);
+  const visual = view && view.visual;
+  const current = visual && visual.current;
+  const clip = current && current.getClip ? current.getClip().name : null;
+  return { clip, running: !!(current && current.isRunning && current.isRunning()) };
+}, engaged.id);
+check(
+  'block animation plays while attacked',
+  blockAnim.clip === 'Armature|Block5|baselayer',
+  JSON.stringify(blockAnim),
+);
+await page.evaluate(() => {
+  window.__game.sim.stopAutoAttack();
+});
 
 // Force the 60s teleport: jump the match clock to just before the boundary.
 const beforeTp = await page.evaluate(() => {

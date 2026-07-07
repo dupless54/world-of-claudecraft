@@ -22,10 +22,14 @@ mode; each swap is a drop-in behind an existing seam.
 - Verify in game with clear sightlines (teleport to open ground) before
   concluding a model is broken or invisible.
 
-## 1. Yumi, the cat familiar (REQUIRED, the one real gap)
+## 1. Yumi, the cat familiar (DELIVERED)
 
-- Today: PLACEHOLDER on the fox rig (`yumi_cat: 'mob_critter'` in
-  `src/render/characters/manifest.ts`, cream entity tint at `scale: 0.6`).
+- DONE: `public/models/creatures/yumi_cat.glb` (Meshy export, scale baked via
+  `scripts/_bake_meshy_scale.mjs`, emissive cleared, meshopt + 1024 webp:
+  28.3 MB source to 479 KB shipped). The one authored clip (the block,
+  `Armature|Block5|baselayer`) is mapped as the HIT reaction, so Yumi blocks
+  whenever she is struck; no idle clip on purpose (rest pose, she only
+  teleports). Wired as `mob_yumi_cat` in the manifest.
 - Want: a chibi magical cat familiar, sitting upright, faintly glowing collar
   or rune charm, readable at 0.6-1.0yd tall, low-poly stylized to match the
   KayKit/Quaternius look of the game.
