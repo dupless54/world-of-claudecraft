@@ -483,6 +483,7 @@ export const tr_TR: EnTranslations = {
         "fps01Low": "%0,1 Düşük",
         "ping": "Ping",
         "jitter": "Titreme",
+        "predLead": "Prediction Lead",
         "snapshot": "Anlık Görüntü Hızı",
         "connection": "Bağlantı",
         "drawCalls": "Çizim Çağrıları",

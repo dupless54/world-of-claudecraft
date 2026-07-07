@@ -315,6 +315,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.perf.labels.fps01Low': '0.1% 최저',
   'hudChrome.perf.labels.ping': '핑',
   'hudChrome.perf.labels.jitter': '지터',
+  'hudChrome.perf.labels.predLead': '예측 리드',
   'hudChrome.perf.labels.snapshot': '스냅샷 전송률',
   'hudChrome.perf.labels.connection': '연결',
   'hudChrome.perf.labels.drawCalls': '드로우 콜',

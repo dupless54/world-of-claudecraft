@@ -483,6 +483,7 @@ export const vi_VN: EnTranslations = {
         "fps01Low": "0.1% Thấp",
         "ping": "Ping",
         "jitter": "Nhiễu Động",
+        "predLead": "Prediction Lead",
         "snapshot": "Tốc Độ Ảnh Chụp",
         "connection": "Kết Nối",
         "drawCalls": "Lệnh Vẽ",

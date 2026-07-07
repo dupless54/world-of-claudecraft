@@ -483,6 +483,7 @@ export const nl_NL: EnTranslations = {
         "fps01Low": "0,1% Laag",
         "ping": "Ping",
         "jitter": "Jitter",
+        "predLead": "Prediction Lead",
         "snapshot": "Snapshotfrequentie",
         "connection": "Verbinding",
         "drawCalls": "Draw Calls",

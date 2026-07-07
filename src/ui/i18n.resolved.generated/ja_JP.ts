@@ -483,6 +483,7 @@ export const ja_JP: EnTranslations = {
         "fps01Low": "下位0.1%",
         "ping": "Ping",
         "jitter": "ジッター",
+        "predLead": "予測リード",
         "snapshot": "スナップショットレート",
         "connection": "接続",
         "drawCalls": "ドローコール",

@@ -483,6 +483,7 @@ export const ko_KR: EnTranslations = {
         "fps01Low": "0.1% 최저",
         "ping": "핑",
         "jitter": "지터",
+        "predLead": "예측 리드",
         "snapshot": "스냅샷 전송률",
         "connection": "연결",
         "drawCalls": "드로우 콜",

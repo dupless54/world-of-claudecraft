@@ -483,6 +483,7 @@ export const id_ID: EnTranslations = {
         "fps01Low": "0,1% Terendah",
         "ping": "Ping",
         "jitter": "Jitter",
+        "predLead": "Prediction Lead",
         "snapshot": "Laju Snapshot",
         "connection": "Koneksi",
         "drawCalls": "Panggilan Gambar",

@@ -483,6 +483,7 @@ export const sv_SE: EnTranslations = {
         "fps01Low": "0,1 % lägsta",
         "ping": "Ping",
         "jitter": "Jitter",
+        "predLead": "Prediction Lead",
         "snapshot": "Ögonblicksfrekvens",
         "connection": "Anslutning",
         "drawCalls": "Ritanrop",

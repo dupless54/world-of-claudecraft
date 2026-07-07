@@ -483,6 +483,7 @@ export const zh_CN: EnTranslations = {
         "fps01Low": "0.1% 低帧",
         "ping": "延迟",
         "jitter": "抖动",
+        "predLead": "预测提前量",
         "snapshot": "快照频率",
         "connection": "连接",
         "drawCalls": "绘制调用",

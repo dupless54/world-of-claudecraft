@@ -483,6 +483,7 @@ export const ru_RU: EnTranslations = {
         "fps01Low": "0,1% мин.",
         "ping": "Пинг",
         "jitter": "Джиттер",
+        "predLead": "Упреждение прогноза",
         "snapshot": "Частота снимков",
         "connection": "Соединение",
         "drawCalls": "Вызовы отрисовки",
