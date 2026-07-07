@@ -251,8 +251,11 @@ describe('yumi: teleports', () => {
     for (let i = 0; i < 20 && events.filter((e) => e.type === 'yumiTeleport').length < 2; i++) {
       events = events.concat(sim.tick());
     }
+    // Personal per participant: one event per cat per fighter (2 x 6).
     const tps = events.filter((e) => e.type === 'yumiTeleport');
-    expect(tps.length).toBe(2);
+    expect(tps.length).toBe(12);
+    expect(new Set(tps.map((e) => (e as any).catId)).size).toBe(2);
+    expect(tps.every((e) => e.pid !== undefined)).toBe(true);
     expect(catA.pos.x !== before.ax || catA.pos.z !== before.az).toBe(true);
     expect(catB.pos.x !== before.bx || catB.pos.z !== before.bz).toBe(true);
     // both landed on real teleport points of the maze
@@ -384,6 +387,37 @@ describe('yumi: win and cleanup', () => {
     });
     sim.tick();
     expect(sim.arenaMatchFor(pids[0])).toBeTruthy();
+  });
+});
+
+describe('yumi: IWorld surface', () => {
+  it('arenaInfoFor carries the yumi match snapshot for both teams', () => {
+    const { sim, match } = startYumi3();
+    const a0 = match.teamA[0];
+    const b0 = match.teamB[0];
+    const infoA = sim.arenaInfoFor(a0)!;
+    const infoB = sim.arenaInfoFor(b0)!;
+    expect(infoA.match?.format).toBe('yumi3');
+    const ya = infoA.match?.yumi;
+    const yb = infoB.match?.yumi;
+    expect(ya).toBeTruthy();
+    expect(ya!.team).toBe('A');
+    expect(yb!.team).toBe('B');
+    expect(ya!.size).toBe(3);
+    expect(ya!.phase).toBe('active');
+    // BOTH cats always present with live hp/coords (fairness invariant)
+    expect(ya!.yumiA.hp).toBe(5000);
+    expect(ya!.yumiB.hp).toBe(5000);
+    expect(ya!.yumiA.alive).toBe(true);
+    expect(ya!.teleportIn).toBeGreaterThan(0);
+    expect(ya!.suddenDeathIn).toBeGreaterThan(0);
+    expect(ya!.damageTakenMult).toBe(1);
+    expect(ya!.teamA.length).toBe(3);
+    expect(ya!.teamB.length).toBe(3);
+    expect(ya!.teamA.find((p) => p.pid === a0)?.me).toBe(true);
+    // queue readout formats resolve without a match too
+    expect(infoA.standings.yumi3).toBeTruthy();
+    expect(infoA.ladders.yumi5).toEqual([]);
   });
 });
 

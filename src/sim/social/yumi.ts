@@ -325,7 +325,20 @@ function teleportYumis(ctx: SimContext, match: ArenaMatch): void {
     cat.pos = ctx.groundPos(origin.x + p.x, origin.z + p.z);
     cat.prevPos = { ...cat.pos }; // a teleport, not a walk: no interpolation source
     ctx.rebucket(cat);
-    ctx.emit({ type: 'yumiTeleport', catId, fromX, fromZ, toX: cat.pos.x, toZ: cat.pos.z });
+    // Personal per participant: an anchor-less world event would broadcast
+    // realm-wide (server eventAnchor returns null for it), and only the ten
+    // fighters can see the maze anyway.
+    for (const mPid of ctx.arenaAllPids(match)) {
+      ctx.emit({
+        type: 'yumiTeleport',
+        catId,
+        fromX,
+        fromZ,
+        toX: cat.pos.x,
+        toZ: cat.pos.z,
+        pid: mPid,
+      });
+    }
   }
 }
 
@@ -538,6 +551,71 @@ function emitYumiStatus(ctx: SimContext, match: ArenaMatch): void {
       pid: mPid,
     });
   }
+}
+
+// The ArenaInfo.match.yumi presentation snapshot (IWorld YumiMatchInfo shape,
+// checked structurally at the arenaInfoFor assignment site; no world_api
+// import here, the sim -> world_api type edge is reserved for sim.ts).
+// Offline the HUD polls this per frame; online it rides the rate-limited
+// arena wire for STRUCTURE while the live per-second numbers ride the
+// yumiStatus/yumiDown/yumiTeleport events.
+export function yumiMatchInfo(ctx: SimContext, match: ArenaMatch, pid: number, myTeam: 'A' | 'B') {
+  const y = match.yumi!;
+  const catView = (catId: number) => {
+    const cat = ctx.entities.get(catId);
+    const alive = !!cat && !cat.dead;
+    return {
+      entityId: catId,
+      hp: alive ? cat.hp : 0,
+      maxHp: YUMI_HP,
+      x: cat?.pos.x ?? 0,
+      z: cat?.pos.z ?? 0,
+      alive,
+    };
+  };
+  const scoreboard = (pids: number[]) =>
+    pids.map((mPid) => {
+      const meta = ctx.players.get(mPid);
+      return {
+        pid: mPid,
+        name: meta?.name ?? '?',
+        cls: meta?.cls ?? ('warrior' as const),
+        kills: y.kills.get(mPid) ?? 0,
+        deaths: y.deaths.get(mPid) ?? 0,
+        down: y.respawn.has(mPid),
+        me: mPid === pid,
+      };
+    });
+  const active = match.state === 'active';
+  const phase =
+    match.state === 'over'
+      ? ('over' as const)
+      : match.state === 'countdown'
+        ? ('countdown' as const)
+        : y.suddenDeath
+          ? ('sudden' as const)
+          : ('active' as const);
+  const myRespawn = y.respawn.get(pid);
+  return {
+    team: myTeam,
+    size: y.teamSize,
+    phase,
+    matchElapsed: active ? Math.floor(match.timer) : 0,
+    teleportIn:
+      active && !y.suddenDeath ? Math.max(0, Math.ceil(y.nextTeleportAt - match.timer)) : 0,
+    suddenDeathIn:
+      active && !y.suddenDeath ? Math.max(0, Math.ceil(YUMI_SUDDEN_AT - match.timer)) : 0,
+    damageTakenMult: yumiTakenMult(active ? match.timer : 0),
+    down: y.respawn.has(pid),
+    // A disconnected teammate benches at Infinity: show 0 (no ETA) rather
+    // than a non-finite number that would not survive JSON.
+    respawnIn:
+      myRespawn === undefined || myRespawn === Infinity ? 0 : Math.max(0, Math.ceil(myRespawn)),
+    yumiA: catView(y.yumiA),
+    yumiB: catView(y.yumiB),
+    teamA: scoreboard(match.teamA),
+    teamB: scoreboard(match.teamB),
+  };
 }
 
 // Torn down from returnFromArena: drop both cat entities and clear the index.
