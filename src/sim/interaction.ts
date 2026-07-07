@@ -265,13 +265,16 @@ export function harvestCorpse(
   for (const y of yields) {
     const itemId = HARVEST_COMPONENT_ITEMS[y.component];
     if (!itemId) continue;
-    const qty = harvestTierQuantity(y.tier);
+    // #1145: a rare-or-better monster material is stamped with the harvester's
+    // name (a non-fungible instance slot); anything below that rarity stays a
+    // plain fungible grant at the yield's rolled tier quantity, same as before
+    // this issue. One rarity roll per yielded component, independent of that
+    // component's tier roll above (resolveCorpseFocusHarvest).
     const rarity = rollCorpseMaterialRarity(ctx.rng);
     if (isSignableMaterialRarity(rarity)) {
       ctx.addItemInstance(itemId, { signer: meta.name }, meta.entityId);
-      if (qty > 1) ctx.addItem(itemId, qty - 1, meta.entityId);
     } else {
-      ctx.addItem(itemId, qty, meta.entityId);
+      ctx.addItem(itemId, harvestTierQuantity(y.tier), meta.entityId);
     }
   }
 }
