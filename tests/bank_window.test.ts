@@ -348,18 +348,28 @@ describe('bank_window: Phase 7 touch peek suppression', () => {
   });
 
   it('hud wires consumePeek to the shared TouchPeekGuard at the BANK construction site', () => {
-    // Slice to the bank construction block (bounded by the next window) so this pins the
-    // BANK wiring specifically, not the identically-worded bags one.
-    const bankSite = hud.slice(hud.indexOf('new BankWindow({'), hud.indexOf('new CalendarWindow('));
-    expect(bankSite.length).toBeGreaterThan(0);
+    // Slice to the bank construction block (its own `});` terminator, robust to a
+    // constructor reorder) so this pins the BANK wiring specifically, not the
+    // identically-worded bags one.
+    const start = hud.indexOf('new BankWindow({');
+    const bankSite = hud.slice(start, hud.indexOf('});', start));
+    expect(start).toBeGreaterThan(0);
     expect(bankSite).toContain('consumePeek: () => this.peekGuard.consume(),');
   });
 });
 
 describe('bank_window: Phase 7 mobile pairing (hud.mobile.css)', () => {
-  it('pairs the bank cluster 50/50, mirroring the vendor (bank right:50vw, bags left:50vw)', () => {
-    expect(mobileCss).toMatch(/body\.mobile-touch\.bank-open #bank-window \{[^}]*right: 50vw/);
-    expect(mobileCss).toMatch(/body\.mobile-touch\.bank-open #bags \{[^}]*left: 50vw/);
+  it('pairs the bank cluster 50/50 at a SCALE-AWARE split point, mirroring the vendor', () => {
+    // #ui's zoom multiplies author lengths, so a raw 50vw split only tiles at
+    // uiScale 1 (halves gap above 1, overlap below 1; the 2026-07-07 QA finding).
+    // The split must divide the shared --app-vw box by the live scale.
+    const split = 'calc(var(--app-vw) / var(--ui-scale, 1) / 2)';
+    expect(mobileCss).toContain(
+      `body.mobile-touch.bank-open #bank-window {\n    left: max(10px, env(safe-area-inset-left));\n    right: ${split};`,
+    );
+    expect(mobileCss).toContain(
+      `body.mobile-touch.bank-open #bags {\n    left: ${split};\n    right: max(10px, env(safe-area-inset-right));`,
+    );
   });
 
   it('standalone mobile block neutralizes the desktop dock (transform:none, max-height:none, safe-area)', () => {
@@ -368,6 +378,9 @@ describe('bank_window: Phase 7 mobile pairing (hud.mobile.css)', () => {
     expect(start).toBeGreaterThan(0);
     expect(block).toContain('transform: none');
     expect(block).toContain('max-height: none');
+    // Full-screen is inset-driven: the base .window max-width clamp divides by
+    // --window-scale, not --ui-scale, and under-fills below uiScale 1 without this.
+    expect(block).toContain('max-width: none');
     expect(block).toContain('top: max(10px, env(safe-area-inset-top))');
     expect(block).toContain('bottom: calc(72px + env(safe-area-inset-bottom))');
   });
@@ -400,7 +413,21 @@ describe('bank_window: Phase 7 mobile pairing (hud.mobile.css)', () => {
     // beats the docking CSS and breaks the 50/50 pairing. The bank cluster must be
     // exempted exactly as the vendor cluster is, or the mobile pairing silently regresses.
     expect(hud).toMatch(
-      /classList\.contains\('bank-open'\)\s*&&\s*\(el\.id === 'bank-window' \|\| el\.id === 'bags'\)/,
+      /classList\.contains\('bank-open'\)\s*&&\s*\(el\.id === 'bank-window' \|\| el\.id === 'bags'\)\s*\)\s*return;/,
+    );
+  });
+
+  it('keeps the bank-cluster chips one scrollable row (no two-row wrap eating the grid)', () => {
+    // At 360px-tall landscape phones a wrapped chip row squeezes the paired grid to a
+    // sub-row sliver; the cluster-scoped rule keeps ONE horizontally scrollable row
+    // (bank chips docked AND undocked, bags chips only inside the bank cluster; the
+    // vendor cluster and standalone bags keep the family two-row wrap). Reverting
+    // flex-wrap to wrap, or dropping the scoped rule, reds this.
+    expect(mobileCss).toMatch(
+      /body\.mobile-touch #bank-window \.bag-chips,\s*body\.mobile-touch\.bank-open #bags \.bag-chips \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/,
+    );
+    expect(mobileCss).toMatch(
+      /body\.mobile-touch #bank-window \.bag-chip,\s*body\.mobile-touch\.bank-open #bags \.bag-chip \{\s*flex: 0 0 auto;/,
     );
   });
 });

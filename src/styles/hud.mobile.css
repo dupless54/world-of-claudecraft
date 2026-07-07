@@ -1791,6 +1791,11 @@
     width: auto;
     transform: none;
     max-height: none;
+    /* The base .window max-width clamp divides by --window-scale, not --ui-scale,
+       so it under-fills this inset-driven full-screen state below uiScale 1
+       (~83% width at 0.85). Full-screen is the insets' job; drop the clamp, as
+       the paired group rules already do. */
+    max-width: none;
     box-sizing: border-box;
     overflow: hidden;
     z-index: 95;
@@ -1957,9 +1962,13 @@
     box-sizing: border-box;
     z-index: 95;
   }
+  /* The 50/50 split point: #ui's zoom multiplies every author length, so a raw
+     50vw only lands on the real viewport centre at uiScale 1 (the halves gap
+     above 1, overlap below 1). Divide the shared --app-vw box by the live scale
+     so both halves tile at any uiScale (the window-shell coordinate model). */
   body.mobile-touch.vendor-open #vendor-window {
     left: max(10px, env(safe-area-inset-left));
-    right: 50vw;
+    right: calc(var(--app-vw) / var(--ui-scale, 1) / 2);
     display: block;
     overflow-y: auto;
     border-top-right-radius: 0;
@@ -1967,7 +1976,7 @@
     border-right-width: 1px;
   }
   body.mobile-touch.vendor-open #bags {
-    left: 50vw;
+    left: calc(var(--app-vw) / var(--ui-scale, 1) / 2);
     right: max(10px, env(safe-area-inset-right));
     overflow: hidden;
     border-top-left-radius: 0;
@@ -1999,6 +2008,9 @@
     width: auto;
     transform: none;
     max-height: none;
+    /* Drop the base .window max-width clamp (it divides by --window-scale, not
+       --ui-scale, and under-fills this full-screen state below uiScale 1). */
+    max-width: none;
     box-sizing: border-box;
     overflow: hidden;
     z-index: 95;
@@ -2020,14 +2032,14 @@
      so the panel itself stays overflow:hidden and the grid scrolls, mirroring #bags. */
   body.mobile-touch.bank-open #bank-window {
     left: max(10px, env(safe-area-inset-left));
-    right: 50vw;
+    right: calc(var(--app-vw) / var(--ui-scale, 1) / 2);
     overflow: hidden;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     border-right-width: 1px;
   }
   body.mobile-touch.bank-open #bags {
-    left: 50vw;
+    left: calc(var(--app-vw) / var(--ui-scale, 1) / 2);
     right: max(10px, env(safe-area-inset-right));
     overflow: hidden;
     border-top-left-radius: 0;

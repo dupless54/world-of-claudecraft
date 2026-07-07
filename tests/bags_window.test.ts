@@ -124,7 +124,13 @@ describe('bags_window: Phase 7 touch peek + bank-cluster close', () => {
     expect(painter).toMatch(
       /row\.addEventListener\('click', \(ev\) => \{[\s\S]{0,320}?if \(this\.deps\.consumePeek\(\)\) \{\s*this\.deps\.hideTooltip\(\);\s*return;\s*\}\s*if \(ev\.shiftKey && bagShiftLinks/,
     );
-    expect(hud).toContain('consumePeek: () => this.peekGuard.consume(),');
+    // Slice to the BAGS construction block (its own `});` terminator) so this pins
+    // the bags-side guard wiring specifically; an unsliced scan would stay green off
+    // the identically-worded bank site alone.
+    const start = hud.indexOf('new BagsWindow({');
+    const bagsSite = hud.slice(start, hud.indexOf('});', start));
+    expect(start).toBeGreaterThan(0);
+    expect(bagsSite).toContain('consumePeek: () => this.peekGuard.consume(),');
   });
 
   it('the bags x-btn closes the whole bank cluster on touch (mirrors the vendor close)', () => {
