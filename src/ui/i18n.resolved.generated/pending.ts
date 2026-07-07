@@ -351,7 +351,17 @@ export const pending: Record<string, readonly string[]> = {
     "hudChrome.bank.withdrawQuantityConfirm",
     "hudChrome.bank.withdrawQuantityInput",
     "hudChrome.bank.withdrawQuantityTitle",
-    "hudChrome.discord.roleTag.coredevs"
+    "hudChrome.discord.roleTag.coredevs",
+    "hudChrome.mobile.actionPageIndicator",
+    "hudChrome.mobile.actionPageToggle",
+    "hudChrome.mobile.actionRing",
+    "hudChrome.mobile.hotbarPage",
+    "hudChrome.mobile.hotbarPageAria",
+    "hudChrome.mobile.spellbookPageLabel",
+    "hudChrome.mobile.targetCycle",
+    "hudChrome.mobile.targetCycleShort",
+    "hudChrome.options.mobileCameraJoystick",
+    "hudChrome.options.mobileLeftHanded"
   ],
   "nl_NL": [
     "entities.npcs.bursar_aldous_crane.greeting",
