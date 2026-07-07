@@ -87,6 +87,31 @@ describe('harvestCorpse + town focus: additive bonus, baseline never lowered', (
     expect(focusedTotal).toBeGreaterThan(unfocusedTotal);
   });
 
+  it('below the 5-point tier-shift threshold, the per-point yield bonus still raises the total', () => {
+    // Below POINTS_PER_TIER_BONUS (5) applyFocusTierBonus is a no-op, so this
+    // is decisive for applyFocusBonus actually being wired into the granted
+    // quantity (regression for it being computed but never applied to the
+    // harvest path).
+    const trials = 300;
+    const belowTierThreshold = POINTS_PER_TIER_BONUS - 1;
+
+    function harvestTotal(points: number) {
+      const { sim, internals, a } = setup();
+      if (points > 0) sim.setTownFocus({ hide: points }, a);
+      let total = 0;
+      for (let i = 0; i < trials; i++) {
+        const mob = spawnHideWolf(internals, 30000 + i, ZONE1.hub);
+        sim.harvestCorpse(mob.id, undefined, a);
+        total = sim.countItem('boar_hide', a);
+      }
+      return total;
+    }
+
+    const unfocusedTotal = harvestTotal(0);
+    const focusedTotal = harvestTotal(belowTierThreshold);
+    expect(focusedTotal).toBeGreaterThan(unfocusedTotal);
+  });
+
   it("an unfocused component's yield is unaffected by heavy focus spent on another component", () => {
     const { sim, internals, a } = setup();
     // spend the whole budget on 'fang'; 'hide' stays unfocused throughout.

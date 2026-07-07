@@ -38,10 +38,11 @@ import {
   lootSlotVisibleTo,
   pruneCorpseLoot,
 } from './loot/loot_roll';
-import { applyFocusTierBonus } from './professions/focus';
+import { applyFocusBonus, applyFocusTierBonus, type FocusAllocation } from './professions/focus';
 import {
   effectiveFocusComponents,
   HARVEST_COMPONENT_ITEMS,
+  type HarvestTier,
   harvestTierQuantity,
   isHarvestableCorpse,
   isSignableMaterialRarity,
@@ -240,17 +241,18 @@ export function harvestCorpse(
   // the corpse unclaimed for the next harvester. The gate runs on the
   // deterministic pre-roll focus set so a refused command draws NO rng, and it
   // reserves the MAXIMUM the tier roll can add per component
-  // (harvestTierQuantity of the top tier, fit cumulatively): a gate on less
+  // (harvestTierQuantity of the top tier, focus-boosted by the player's
+  // persistent town focus per component, fit cumulatively): a gate on less
   // could pass on a nearly-full stack and let the uncapped addItem spill past
   // capacity.
-  const maxTierQty = harvestTierQuantity('legendary');
   const wanted: InvSlot[] = [];
   for (const component of effectiveFocusComponents(componentTags ?? [], components ?? [])) {
     const wantedItemId = HARVEST_COMPONENT_ITEMS[component];
     if (!wantedItemId) continue;
+    const maxQty = focusedHarvestQuantity('legendary', component, meta.townFocus);
     const existing = wanted.find((w) => w.itemId === wantedItemId);
-    if (existing) existing.count += maxTierQty;
-    else wanted.push({ itemId: wantedItemId, count: maxTierQty });
+    if (existing) existing.count += maxQty;
+    else wanted.push({ itemId: wantedItemId, count: maxQty });
   }
   if (wanted.length > 0 && !fitsAll(meta.inventory, bagCapacity(meta.bags), wanted)) {
     ctx.error(meta.entityId, 'Your bags are full.');
@@ -274,9 +276,25 @@ export function harvestCorpse(
     if (isSignableMaterialRarity(rarity)) {
       ctx.addItemInstance(itemId, { signer: meta.name }, meta.entityId);
     } else {
-      ctx.addItem(itemId, harvestTierQuantity(tier), meta.entityId);
+      // #1143: the same per-point yield bonus applied to the tier's base
+      // quantity, on top of the tier shift above, so focus below the
+      // 5-point tier-shift threshold still does something.
+      ctx.addItem(itemId, focusedHarvestQuantity(tier, y.component, meta.townFocus), meta.entityId);
     }
   }
+}
+
+/**
+ * `harvestTierQuantity(tier)` with the player's persistent town focus (#1143)
+ * yield bonus applied on top, rounded to the nearest whole item. Never
+ * negative and never below the tier's unfocused quantity.
+ */
+function focusedHarvestQuantity(
+  tier: HarvestTier,
+  component: string,
+  focus: FocusAllocation,
+): number {
+  return Math.round(applyFocusBonus(harvestTierQuantity(tier), component, focus));
 }
 
 export function pickUpObject(ctx: SimContext, objId: number, pid?: number): void {
