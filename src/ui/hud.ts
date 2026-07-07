@@ -127,7 +127,7 @@ import { AurasPainter, type AurasPainterDeps } from './auras_painter';
 import { type AurasDeps, createAurasView } from './auras_view';
 import { attachAvatarFallback } from './avatar_fallback';
 import { bagsWindowShown } from './bags_view';
-import { BagsWindow } from './bags_window';
+import { BagsWindow, dismissBagPrompts } from './bags_window';
 import { BankWindow } from './bank_window';
 import { CalendarWindow } from './calendar_window';
 import { CastBarPainter } from './cast_bar_painter';
@@ -10125,6 +10125,10 @@ export class Hud {
 
   openVendor(npcId: number): void {
     this.closeOtherWindows(['#vendor-window', '#bags']);
+    // The bags companion is exclusive (see openBank): close the bank cluster
+    // through the painter so onBankClosed clears body.bank-open before the
+    // vendor pairing takes over.
+    if (this.bankWindowOpen) this.closeBank();
     this.openVendorNpcId = npcId;
     document.body.classList.add('vendor-open');
     this.renderVendor();
@@ -10184,8 +10188,11 @@ export class Hud {
     if (closeMobileBags) {
       // Mirror BagsWindow.close()'s teardown backstop: a discard/sell prompt may hold
       // #bags inert (installPromptDialog) and this mobile path hides the grid without
-      // running the prompt's dismiss(), so clear inert here too or the next open shows a
-      // dead grid (invariant: a hidden #bags is never inert).
+      // running the prompt's dismiss(), so clear inert AND remove the prompt node or
+      // it survives as a visible orphaned aria-modal in #prompt-stack that
+      // promptModalOpen() keeps gating game keys on (invariant: a hidden #bags is
+      // never inert and never owns a live prompt).
+      dismissBagPrompts();
       const bags = $('#bags');
       bags.style.display = 'none';
       bags.inert = false;
@@ -10273,6 +10280,11 @@ export class Hud {
   // so items can be withdrawn into it. closeBank routes through the painter (which
   // fires onClosed) so focus returns to the opener (WCAG 2.4.3).
   openBank(): void {
+    // The bags companion is exclusive: every hub has a vendor within simultaneous
+    // interact range of its banker, and vendor-open + bank-open together overlap
+    // the two windows on the same side of #bags (and on mobile the cluster-close
+    // precedence would strand the bank at half-width with its x-btn hidden).
+    if (this.vendorOpen) this.closeVendor();
     document.body.classList.add('bank-open');
     this.bankWindow.open();
     this.renderBags();
@@ -10288,9 +10300,12 @@ export class Hud {
       document.body.classList.contains('mobile-touch') && $('#bags').style.display !== 'none';
     document.body.classList.remove('bank-open'); // bags (if still open) re-centres
     if (closeMobileBags) {
-      // Mirror closeVendor's teardown backstop: a discard/sell prompt may hold #bags
-      // inert (installPromptDialog) and this mobile path hides the grid without running
-      // the prompt's dismiss(), so clear inert here too (a hidden #bags is never inert).
+      // Mirror closeVendor's teardown backstop: a discard/sell/deposit prompt may hold
+      // #bags inert (installPromptDialog) and this mobile path hides the grid without
+      // running the prompt's dismiss(), so clear inert AND remove the prompt node too
+      // (a hidden #bags is never inert and never owns a live prompt; an orphan would
+      // keep promptModalOpen() gating game keys).
+      dismissBagPrompts();
       const bags = $('#bags');
       bags.style.display = 'none';
       bags.inert = false;

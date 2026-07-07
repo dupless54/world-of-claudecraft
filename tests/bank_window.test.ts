@@ -185,6 +185,29 @@ describe('bank_window: hud.ts wiring', () => {
     expect(hud).toContain('captureFocus: () => this.focusManager.activeFocusable(),');
     expect(hud).not.toMatch(/this\.windowFocus\('#bank-window'\)/);
   });
+
+  it('the bags companion is exclusive: bank and vendor close each other on open', () => {
+    // Every hub has a vendor within simultaneous interact range of its banker
+    // (quartermaster_bree is 8.6yd from Bursar Crane), and both companions dock
+    // on the same side of #bags: without the mutual close, mobile cluster-close
+    // precedence (vendor first) strands the bank at half-width with its x-btn
+    // hidden and no touch close affordance.
+    expect(hud).toMatch(
+      /openBank\(\): void \{[\s\S]{0,600}?if \(this\.vendorOpen\) this\.closeVendor\(\);[\s\S]{0,600}?classList\.add\('bank-open'\)/,
+    );
+    expect(hud).toMatch(
+      /openVendor\(npcId: number\): void \{[\s\S]{0,600}?if \(this\.bankWindowOpen\) this\.closeBank\(\);/,
+    );
+  });
+
+  it('both mobile cluster-close paths dismiss orphaned bag prompts before hiding #bags', () => {
+    // The mobile branches hide #bags without running BagsWindow.close(), so a live
+    // discard/sell/deposit prompt would survive as a visible orphaned aria-modal in
+    // #prompt-stack that promptModalOpen() keeps gating game keys on. Both sites
+    // (closeVendor and onBankClosed) must remove the prompt node, not just clear inert.
+    const sites = hud.match(/dismissBagPrompts\(\);\s*const bags = \$\('#bags'\);/g) ?? [];
+    expect(sites.length).toBe(2);
+  });
 });
 
 describe('bank_window: static window element is wired in both game entries', () => {

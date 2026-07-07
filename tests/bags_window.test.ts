@@ -133,6 +133,22 @@ describe('bags_window: Phase 7 touch peek + bank-cluster close', () => {
     expect(bagsSite).toContain('consumePeek: () => this.peekGuard.consume(),');
   });
 
+  it('a touch-sourced contextmenu inspects and never reaches the sell/destroy arms', () => {
+    // Chromium fires contextmenu at ~500ms on a touch hold, BEFORE the 950ms
+    // tooltip peek timer, so without this gate a long-press meant to inspect a
+    // destroyable item opened the destroy prompt out from under the peek (the
+    // release/v0.23.0 destroy affordance meeting the Phase 7 peek model). The
+    // gate sits at the TOP of the handler, preventDefaults (the row is not in
+    // the document-level native-menu suppress set), and fails safe to inspect
+    // when a mobile-touch browser reports no pointerType (Firefox Android).
+    expect(painter).toMatch(
+      /row\.addEventListener\('contextmenu', \(ev\) => \{[\s\S]{0,700}?pointerType === 'touch'[\s\S]{0,200}?ev\.preventDefault\(\);\s*return;\s*\}\s*\/\/ At a vendor/,
+    );
+    expect(painter).toContain(
+      "(document.body.classList.contains('mobile-touch') && pointerType !== 'mouse')",
+    );
+  });
+
   it('the bags x-btn closes the whole bank cluster on touch (mirrors the vendor close)', () => {
     // On mobile the bank hides its own x-btn under the pairing, so the bags x-btn is
     // the cluster's single close control: it must close the bank companion too, never

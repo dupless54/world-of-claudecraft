@@ -66,7 +66,10 @@ let promptDialogSeq = 0;
 // an orphaned aria-modal dialog floating over the closed window (the show* paths
 // already clear a prior same-type prompt with these classes).
 const BAG_PROMPT_SELECTOR = '.discard-item-prompt, .sell-quantity-prompt, .bank-deposit-prompt';
-function dismissBagPrompts(): void {
+// Exported for the HUD's mobile cluster-close paths (closeVendor / onBankClosed),
+// which hide #bags without running close(): they must not strand a still-visible
+// prompt in #prompt-stack (promptModalOpen() would keep gating game keys on it).
+export function dismissBagPrompts(): void {
   for (const p of document.querySelectorAll(BAG_PROMPT_SELECTOR)) p.remove();
 }
 
@@ -527,6 +530,21 @@ export class BagsWindow {
         }
       });
       row.addEventListener('contextmenu', (ev) => {
+        // A touch long-press belongs to the tooltip peek (the TouchPeekGuard
+        // family): Chromium synthesizes contextmenu at ~500ms on a touch hold,
+        // beating the 950ms peek timer, so a touch-sourced right-click inspects
+        // and never sells or destroys. Desktop mouse right-click keeps both
+        // affordances; an undefined pointerType on a mobile-touch device fails
+        // safe to inspect (Firefox Android fires contextmenu as a MouseEvent).
+        const pointerType = (ev as PointerEvent).pointerType;
+        if (
+          pointerType === 'touch' ||
+          pointerType === 'pen' ||
+          (document.body.classList.contains('mobile-touch') && pointerType !== 'mouse')
+        ) {
+          ev.preventDefault();
+          return;
+        }
         // At a vendor, Ctrl/Meta right-click owns the split-stack sell prompt.
         if (this.deps.vendorOpen()) {
           if (!ev.ctrlKey && !ev.metaKey) return;
