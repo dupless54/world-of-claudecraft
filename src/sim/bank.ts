@@ -33,9 +33,22 @@ export const BANK_EXPANSION_PRICES: readonly number[] = [
   500, 1000, 2500, 5000, 10000, 20000, 40000, 80000, 150000, 300000, 600000, 1200000,
 ];
 
+/** The most bonus slots the server's entitlement registry can grant: +2 email,
+ *  +2 Discord, +2 wallet, +2 per qualified referral capped at 5 (+10), so 16.
+ *  This is the load-path clamp for `bonusSlots` (a tampered save must not mint
+ *  capacity the registry cannot grant). The server-side registry ceiling is pinned
+ *  equal to this constant (tests/bank_entitlements.test.ts), so a future source
+ *  (X, Twitch) bumps BOTH in the same change or that tripwire goes red. */
+export const BANK_MAX_BONUS_SLOTS = 16;
+
+/** Coerce a persisted/stamped bonus-slot value into [0, BANK_MAX_BONUS_SLOTS]. */
+export function clampBonusSlots(raw: unknown): number {
+  return Math.max(0, Math.min(BANK_MAX_BONUS_SLOTS, Math.floor(Number(raw)) || 0));
+}
+
 /** A character's bank: a pooled item list plus its two slot-budget contributions.
  *  `purchasedSlots` is always a multiple of BANK_EXPANSION_SLOTS in [0, 72];
- *  `bonusSlots` stays 0 until a later phase stamps server-granted bonus space. */
+ *  `bonusSlots` is server-stamped at join (0 offline and until Phase 8's registry). */
 export interface BankState {
   inventory: InvSlot[];
   purchasedSlots: number;
@@ -238,6 +251,9 @@ export function bankInfoFor(ctx: SimContext, pid: number): BankInfo | null {
     purchasedSlots: bank.purchasedSlots,
     bonusSlots: bank.bonusSlots,
     nextExpansionCost,
+    // Boundary clone, like slots: rows are server-stamped at join and read-only
+    // display data, but a caller must never hold a live sim reference.
+    bonusSources: meta.bankBonusSources.map((s) => ({ ...s })),
   };
 }
 
@@ -272,8 +288,8 @@ export function sanitizeBankState(raw: unknown): BankState {
     Math.min(maxPurchased, Math.floor(Number(r.purchasedSlots)) || 0),
   );
   purchasedSlots -= purchasedSlots % BANK_EXPANSION_SLOTS;
-  // No upper clamp: the bonus ceiling is unknown until Phase 8 defines the source
-  // registry (email/Discord/wallet/referrals); Phase 8 adds the clamp with the registry.
-  const bonusSlots = Math.max(0, Math.floor(Number(r.bonusSlots)) || 0);
+  // Clamped to the entitlement-registry ceiling: a tampered save must not mint more
+  // capacity than the server can grant. Online joins re-stamp the real value anyway.
+  const bonusSlots = clampBonusSlots(r.bonusSlots);
   return { inventory, purchasedSlots, bonusSlots };
 }

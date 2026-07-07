@@ -132,6 +132,7 @@ describe('bank wire round-trip', () => {
     expect(snap.self.bank.purchasedSlots).toBe(0);
     expect(snap.self.bank.bonusSlots).toBe(0);
     expect(snap.self.bank.nextExpansionCost).toBe(500); // first expansion price
+    expect(snap.self.bank.bonusSources).toEqual([]); // no bankBonus stamped on this join
   });
 
   it('deposit, withdraw, and buy-slots resolve over the wire and the snapshot mirrors each step', () => {

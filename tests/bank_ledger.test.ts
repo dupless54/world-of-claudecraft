@@ -31,7 +31,14 @@ function info(
   purchasedSlots = 0,
   nextExpansionCost: number | null = 500,
 ): BankInfo {
-  return { slots, capacity: 24 + purchasedSlots, purchasedSlots, bonusSlots: 0, nextExpansionCost };
+  return {
+    slots,
+    capacity: 24 + purchasedSlots,
+    purchasedSlots,
+    bonusSlots: 0,
+    nextExpansionCost,
+    bonusSources: [],
+  };
 }
 
 describe('diffBankOp (pure)', () => {

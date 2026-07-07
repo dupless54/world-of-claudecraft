@@ -41,6 +41,7 @@ function bankInfo(over: Partial<BankInfo> = {}): BankInfo {
     purchasedSlots: 0,
     bonusSlots: 0,
     nextExpansionCost: 500,
+    bonusSources: [],
     ...over,
   };
 }
@@ -173,6 +174,10 @@ describe('ClientWorld-vs-Sim parity', () => {
       purchasedSlots: 6,
       bonusSlots: 6,
       nextExpansionCost: 2500,
+      bonusSources: [
+        { id: 'email', slots: 2, maxSlots: 2 },
+        { id: 'referral', slots: 4, maxSlots: 10, count: 2, cap: 5 },
+      ],
     };
     const cliInfo = JSON.parse(JSON.stringify(simInfo)) as BankInfo;
     expect(buildBankView(simInfo, lookup)).toEqual(buildBankView(cliInfo, lookup));

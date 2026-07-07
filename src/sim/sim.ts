@@ -1,5 +1,6 @@
 import type {
   AccountCosmetics,
+  BankBonusSource,
   DailyRewardHistory,
   DailyRewardLeaderboardPage,
   DailyRewardSpinResult,
@@ -12,7 +13,7 @@ import type {
 import * as bagsMod from './bags';
 import { addStacked, BAG_SOCKETS, bagCapacity, canAddItem, migrationBagsFor } from './bags';
 import * as bankMod from './bank';
-import { type BankState, sanitizeBankState } from './bank';
+import { type BankState, clampBonusSlots, sanitizeBankState } from './bank';
 import { lineOfSightClear, resolveMovement, resolvePosition } from './colliders';
 import { auraAffectsStats, removeCancelableAura } from './combat/aura_cancel';
 import {
@@ -738,6 +739,11 @@ export interface PlayerMeta {
   // slot budget. Capacity/move math lives in bank.ts. Persisted (inside the
   // character save, exactly like inventory/bags).
   bank: BankState;
+  // The per-source breakdown behind bank.bonusSlots, stamped by the host at join
+  // alongside the total (addPlayer's bankBonus opt). Display-only session state:
+  // never persisted, never sim-mutated, always [] offline; capacity itself rides
+  // bank.bonusSlots. Excluded from the parity meta sample (tests/parity/trace.ts).
+  bankBonusSources: BankBonusSource[];
   vendorBuyback: InvSlot[];
   copper: number;
   equipment: PlayerEquipment;
@@ -1432,7 +1438,18 @@ export class Sim {
   addPlayer(
     cls: PlayerClass,
     name: string,
-    opts?: { autoEquip?: boolean; state?: CharacterState; characterId?: number },
+    opts?: {
+      autoEquip?: boolean;
+      state?: CharacterState;
+      characterId?: number;
+      // Server-stamped bank bonus slots, recomputed from account facts at every
+      // join (email/Discord/wallet/referrals). Overrides the persisted value so
+      // unlinking lowers capacity at the next login; a shrink below the used slot
+      // count leaves the bank over-capacity in the tolerated bags.ts sense (new
+      // deposits refuse, nothing is destroyed). Never passed offline (bonusSlots
+      // stays the sanitized save value, [] breakdown).
+      bankBonus?: { bonusSlots: number; sources: BankBonusSource[] };
+    },
   ): number {
     const savedState = opts?.state ? sanitizeRemovedZone1Content(opts.state).state : undefined;
     // Characters saved inside a dungeon instance rejoin at its entrance —
@@ -1482,6 +1499,7 @@ export class Sim {
       inventory: [],
       bags: Array<string | null>(BAG_SOCKETS).fill(null),
       bank: { inventory: [], purchasedSlots: 0, bonusSlots: 0 },
+      bankBonusSources: [],
       vendorBuyback: [],
       copper: 0,
       equipment: { mainhand: classDef.startWeapon, chest: classDef.startChest },
@@ -1635,6 +1653,15 @@ export class Sim {
           markClears: s.delveDaily.markClears,
         };
       }
+    }
+
+    // Host-stamped bank bonus slots (see the opt doc above). Applied on BOTH the
+    // saved-state and brand-new-character arms: a first-ever join can already have
+    // earned account bonuses. Values are host-trusted but clamped to the registry
+    // ceiling anyway; the breakdown rows are cloned at this write boundary.
+    if (opts?.bankBonus) {
+      meta.bank.bonusSlots = clampBonusSlots(opts.bankBonus.bonusSlots);
+      meta.bankBonusSources = opts.bankBonus.sources.map((s) => ({ ...s }));
     }
 
     // Resolve the flat talent struct once, before the stat pass + ability

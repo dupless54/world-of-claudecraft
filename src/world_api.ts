@@ -87,7 +87,7 @@ export type {
 export type { ArenaCombatant, ArenaFormat, ArenaStanding, OverheadEmoteId } from './sim/types';
 
 // --- facet aux-type + value re-exports (each travels with its facet file) ---
-export type { BankInfo } from './world_api/bank';
+export type { BankBonusSource, BankInfo } from './world_api/bank';
 export { isOverheadEmoteId, OVERHEAD_EMOTES } from './world_api/chat';
 export type { AccountCosmetics } from './world_api/cosmetics';
 export type {

@@ -10,13 +10,28 @@ import type { InvSlot } from '../sim/types';
 // later phase's server-stamped bonus slots.
 // ---------------------------------------------------------------------------
 
+/** One row of the server-computed bonus-slot breakdown: which account action grants
+ *  (or could grant) bonus bank slots, and how far along it is. Earned status is
+ *  derived (slots > 0); rows for unearned sources advertise what linking would grant.
+ *  The list is append-only data: a future source (X, Twitch) is a new row with a new
+ *  id, never a shape change. Offline worlds always carry an empty list. */
+export interface BankBonusSource {
+  id: string; // stable source id ('email' | 'discord' | 'wallet' | 'referral'; future sources append)
+  slots: number; // slots this source grants right now
+  maxSlots: number; // slots it grants when fully earned
+  count?: number; // progress numerator (referral: qualified referees, capped for display)
+  cap?: number; // progress denominator (referral: the referral cap)
+}
+
 export interface BankInfo {
   slots: InvSlot[]; // the pooled bank contents (a boundary clone, never a live sim reference)
   capacity: number; // total slot budget: base + purchased + bonus
   purchasedSlots: number; // copper-bought slots, always a multiple of the 6-slot block
-  bonusSlots: number; // server-granted bonus slots (0 until a later phase stamps them)
+  bonusSlots: number; // server-granted bonus slots, recomputed and stamped at every join
   // Copper price of the NEXT expansion, null once purchased slots are maxed.
   nextExpansionCost: number | null;
+  // The per-source breakdown behind bonusSlots (server-stamped at join; [] offline).
+  bonusSources: BankBonusSource[];
 }
 
 export interface IWorldBank {

@@ -13,8 +13,10 @@ import {
   BANK_BASE_SLOTS,
   BANK_EXPANSION_PRICES,
   BANK_EXPANSION_SLOTS,
+  BANK_MAX_BONUS_SLOTS,
   type BankState,
   bankCapacity,
+  clampBonusSlots,
   moveBetweenContainers,
   sanitizeBankState,
 } from '../src/sim/bank';
@@ -888,11 +890,16 @@ describe('sanitizeBankState', () => {
     expect(ps(72)).toBe(72);
   });
 
-  it('clamps bonusSlots to >= 0', () => {
+  it('clamps bonusSlots into [0, BANK_MAX_BONUS_SLOTS] (the Phase 8 registry ceiling)', () => {
     const bs = (n: number) =>
       sanitizeBankState({ inventory: [], purchasedSlots: 0, bonusSlots: n }).bonusSlots;
     expect(bs(-4)).toBe(0);
     expect(bs(5)).toBe(5);
+    expect(bs(16)).toBe(16); // the ceiling itself is admitted...
+    expect(bs(17)).toBe(16); // ...and anything past it clamps (tampered-save capacity mint)
+    expect(bs(9999)).toBe(16);
+    expect(bs(7.9)).toBe(7); // floored, like purchasedSlots
+    expect(BANK_MAX_BONUS_SLOTS).toBe(16); // 2 email + 2 discord + 2 wallet + 10 referral
   });
 });
 
@@ -1188,5 +1195,147 @@ describe('bankInfoFor read boundary (Phase 3)', () => {
 
     moveFarFromBankers(sim);
     expect(sim.bankInfo).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 8: the server-stamped bank bonus (addPlayer's bankBonus opt). The HOST
+// recomputes the total + per-source breakdown from account facts at every join
+// and stamps both; the sim only stores, clamps, and serves them. Offline worlds
+// never pass the opt, so the save's own (clamped) value and an empty breakdown
+// are the no-stamp arm.
+describe('server-stamped bank bonus (Phase 8)', () => {
+  const SOURCES = [
+    { id: 'email', slots: 2, maxSlots: 2 },
+    { id: 'discord', slots: 0, maxSlots: 2 },
+    { id: 'wallet', slots: 2, maxSlots: 2 },
+    { id: 'referral', slots: 6, maxSlots: 10, count: 3, cap: 5 },
+  ];
+
+  it('clampBonusSlots pins the [0, 16] registry ceiling as literals', () => {
+    expect(clampBonusSlots(-3)).toBe(0);
+    expect(clampBonusSlots(0)).toBe(0);
+    expect(clampBonusSlots(10.9)).toBe(10);
+    expect(clampBonusSlots(16)).toBe(16);
+    expect(clampBonusSlots(17)).toBe(16);
+    expect(clampBonusSlots(Number.NaN)).toBe(0);
+    expect(clampBonusSlots(Number.POSITIVE_INFINITY)).toBe(16);
+    expect(clampBonusSlots('junk')).toBe(0);
+  });
+
+  it('stamps a brand-new (stateless) character: first-ever join already gets its bonus', () => {
+    const sim = makeBankWorld();
+    const pid = sim.addPlayer('warrior', 'Fresh', {
+      bankBonus: { bonusSlots: 10, sources: SOURCES },
+    });
+    const m = meta(sim, pid);
+    expect(m.bank.bonusSlots).toBe(10);
+    expect(bankCapacity(m.bank)).toBe(34); // 24 base + 10 stamped bonus
+    expect(m.bankBonusSources).toEqual(SOURCES);
+    // Cloned at the write boundary: the sim must never alias the host's array/rows.
+    expect(m.bankBonusSources).not.toBe(SOURCES);
+    expect(m.bankBonusSources[0]).not.toBe(SOURCES[0]);
+  });
+
+  it('the stamp overrides the persisted value in BOTH directions (recompute-at-join)', () => {
+    const sim = makeSim();
+    meta(sim).bank.bonusSlots = 6;
+    const saved = sim.serializeCharacter(sim.playerId)!;
+
+    const up = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
+    const upPid = up.addPlayer('warrior', 'Linked', {
+      state: saved,
+      bankBonus: { bonusSlots: 16, sources: SOURCES },
+    });
+    expect(meta(up, upPid).bank.bonusSlots).toBe(16);
+
+    const down = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
+    const downPid = down.addPlayer('warrior', 'Unlinked', {
+      state: saved,
+      bankBonus: { bonusSlots: 2, sources: [] },
+    });
+    expect(meta(down, downPid).bank.bonusSlots).toBe(2); // unlinking lowered it at login
+  });
+
+  it('the stamp itself is clamped to the registry ceiling', () => {
+    const sim = makeBankWorld();
+    const pid = sim.addPlayer('warrior', 'Greedy', {
+      bankBonus: { bonusSlots: 40, sources: [] },
+    });
+    expect(meta(sim, pid).bank.bonusSlots).toBe(BANK_MAX_BONUS_SLOTS);
+  });
+
+  it('no stamp (the offline arm) keeps the sanitized save value and an empty breakdown', () => {
+    const sim = makeSim();
+    meta(sim).bank.bonusSlots = 5;
+    const saved = sim.serializeCharacter(sim.playerId)!;
+    const sim2 = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
+    const pid2 = sim2.addPlayer('warrior', 'Offline', { state: saved });
+    expect(meta(sim2, pid2).bank.bonusSlots).toBe(5);
+    expect(meta(sim2, pid2).bankBonusSources).toEqual([]);
+  });
+
+  it('a pre-bonusSlots save loads clean under the stamp path', () => {
+    const sim = makeSim();
+    const saved = sim.serializeCharacter(sim.playerId)!;
+    delete (saved as { bank?: unknown }).bank; // a save from before the bank existed
+    const sim2 = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
+    const pid2 = sim2.addPlayer('warrior', 'Ancient', {
+      state: saved,
+      bankBonus: { bonusSlots: 4, sources: SOURCES.slice(0, 2) },
+    });
+    const m2 = meta(sim2, pid2);
+    expect(m2.bank.inventory).toEqual([]);
+    expect(m2.bank.bonusSlots).toBe(4);
+    expect(m2.bankBonusSources).toEqual(SOURCES.slice(0, 2));
+  });
+
+  it('a shrink below the used slot count goes over-capacity without losing items', () => {
+    const sim = makeSim();
+    const m = meta(sim);
+    m.bank.bonusSlots = 16; // capacity 40
+    for (let i = 0; i < 30; i++) m.bank.inventory.push({ itemId: 'wolf_fang', count: 1 });
+    const saved = sim.serializeCharacter(sim.playerId)!;
+
+    // Rejoin after every account fact was unlinked: the stamp drops to 0, so the
+    // 30 banked stacks now sit over the 24-slot capacity. Tolerated, never trimmed.
+    const sim2 = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
+    const pid2 = sim2.addPlayer('warrior', 'Shrunk', {
+      state: saved,
+      bankBonus: { bonusSlots: 0, sources: [] },
+    });
+    const m2 = meta(sim2, pid2);
+    expect(m2.bank.inventory).toHaveLength(30);
+    expect(bankCapacity(m2.bank)).toBe(24);
+
+    // New deposits refuse with the standard full line and move nothing...
+    moveToBanker(sim2, pid2);
+    sim2.addItem('linen_scrap', 1, pid2);
+    const idx = m2.inventory.findIndex((s) => s.itemId === 'linen_scrap');
+    sim2.bankDeposit(idx, undefined, pid2);
+    expect(hasErr(sim2.drainEvents(), 'Your bank is full.')).toBe(true);
+    expect(m2.bank.inventory).toHaveLength(30);
+    expect(m2.inventory.some((s) => s.itemId === 'linen_scrap')).toBe(true);
+
+    // ...while withdrawing out of the over-full bank still works.
+    sim2.bankWithdraw(0, undefined, pid2);
+    expect(m2.bank.inventory).toHaveLength(29);
+  });
+
+  it('bankInfoFor serves the stamped breakdown as boundary clones', () => {
+    const sim = makeBankWorld();
+    const pid = sim.addPlayer('warrior', 'Reader', {
+      bankBonus: { bonusSlots: 10, sources: SOURCES },
+    });
+    moveToBanker(sim, pid);
+    const info = sim.bankInfoFor(pid);
+    expect(info).not.toBeNull();
+    expect(info!.bonusSlots).toBe(10);
+    expect(info!.bonusSources).toEqual(SOURCES);
+    // Mutating the returned rows must never touch sim state (the read boundary).
+    info!.bonusSources[0].slots = 99;
+    info!.bonusSources.push({ id: 'fake', slots: 2, maxSlots: 2 });
+    const m = meta(sim, pid);
+    expect(m.bankBonusSources).toEqual(SOURCES);
   });
 });
