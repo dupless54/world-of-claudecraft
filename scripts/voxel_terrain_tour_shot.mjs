@@ -25,8 +25,26 @@ page.on('console', (msg) => {
   if (t.includes('voxel_terrain')) console.log('BROWSER:', t);
 });
 
+// Turn on the performance overlay (FPS visible in every capture) before boot.
+// game/settings.ts `showFps` is the master on/off; leaving ui/perf_overlay's
+// own layout/metrics store untouched keeps the default metric set (fps,
+// frame time, ping) rather than risking an unsupported metric (e.g. `gpu`
+// timer queries) stalling boot under headless swiftshader.
+await page.evaluateOnNewDocument(() => {
+  localStorage.setItem('woc_settings', JSON.stringify({ showFps: true }));
+});
 await page.goto(URL, { waitUntil: 'networkidle0', timeout: 60000 });
 await enterOfflineGame(page, { charClass: 'warrior', charName: 'Tour', settleMs: 4000 });
+// The overlay only paints once the FrameMeter has accumulated a frame or two
+// after settings apply; wait for real text instead of guessing a fixed delay.
+await page
+  .waitForFunction(
+    () => (document.getElementById('perf-overlay')?.textContent ?? '').includes('FPS'),
+    {
+      timeout: 15000,
+    },
+  )
+  .catch(() => console.log('WARN: perf overlay text never appeared'));
 
 // 10 spread locations: vale hub/lake area, marsh, peaks, rim, ridge pass.
 const LOCATIONS = [

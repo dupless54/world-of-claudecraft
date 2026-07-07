@@ -35,10 +35,13 @@ function gradientNormal(
   y: number,
   z: number,
 ): [number, number, number] {
+  // Outward normal points from solid (negative density) toward air (positive
+  // density), i.e. in the direction density INCREASES: the forward
+  // difference (x+e) - (x-e), not the reverse.
   const e = NORMAL_EPS;
-  const nx = density(x - e, y, z) - density(x + e, y, z);
-  const ny = density(x, y - e, z) - density(x, y + e, z);
-  const nz = density(x, y, z - e) - density(x, y, z + e);
+  const nx = density(x + e, y, z) - density(x - e, y, z);
+  const ny = density(x, y + e, z) - density(x, y - e, z);
+  const nz = density(x, y, z + e) - density(x, y, z - e);
   const len = Math.hypot(nx, ny, nz) || 1;
   return [nx / len, ny / len, nz / len];
 }
