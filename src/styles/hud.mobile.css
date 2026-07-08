@@ -1530,9 +1530,11 @@
      seats -- which the keyboard would otherwise cover -- and re-lay as ONE
      non-overlapping column above the keyboard. The wrap becomes a flex COLUMN anchored
      from the safe-area top down to a bottom that RESERVES the docked composer's box:
-     the composer docks at (100vh - visible-vh + 8px) and grows to an 84px reply
-     min-height, so the wrap bottom sits that 84px + an 8px gap above the composer =
-     +100px above the keyboard line. The tab strip keeps its natural height at the TOP
+     the composer docks at (100vh - visible-vh + 8px) and autosizes while typing up to
+     the 110px CHAT_INPUT_MAX_H cap (main.ts autosizeChatInput; the 84px reply
+     min-height sits under that cap), so the wrap bottom sits that full 110px + an 8px
+     gap above the composer = +126px above the keyboard line. The tab strip keeps its
+     natural height at the TOP
      of the column and the log frame FLEXES to fill only the space between the tabs and
      the reserved composer, so neither the tabs nor the log can grow into the composer.
      (The bug this fixes: the old height:100% frame plus the 40px tab strip overflowed
@@ -1542,13 +1544,14 @@
     bottom: auto;
     /* A DEFINITE height (not top+bottom auto-stretch, which needs a full-height
        positioned ancestor #chatlog-wrap does not have): the visible area above the
-       keyboard is --mobile-keyboard-visible-vh; subtract the top inset and the 100px
-       composer reservation (84px reply box + 8px gap + 8px dock) so the wrap bottom stops
-       a clear gap above the composer. */
+       keyboard is --mobile-keyboard-visible-vh; subtract the top inset and the 126px
+       composer reservation (the 110px autosize cap + 8px gap + 8px dock; reserving
+       only the 84px reply min-height let a long multi-line draft grow the composer
+       up into the log) so the wrap bottom stops a clear gap above the composer. */
     height: calc(
       var(--mobile-keyboard-visible-vh, 100vh) -
       max(6px, env(safe-area-inset-top)) -
-      100px
+      126px
     );
     display: flex;
     flex-direction: column;

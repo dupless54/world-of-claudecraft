@@ -5358,17 +5358,17 @@ export class Hud {
     // picks the closest enemy and starts swinging instead of erroring. Slot
     // buttons -> castSlot(the resolved source slot for the CURRENT page at
     // click time, not a captured page). Mirrors the desktop action-btn click
-    // pattern exactly (peek-guard consume, audio.click, blur) so
-    // long-press-to-inspect on touch behaves the same way.
+    // pattern (audio.click, blur), EXCEPT the peek guard: the ring has no
+    // tooltip of its own (see the no-tooltip note below), so a set peek flag
+    // here is always STALE cross-talk from some other control's long-press.
+    // Each handler clears it and dismisses any lingering tooltip box but never
+    // early-returns on it (an early return here ate the player's next cast).
     // bindTouchTap, not 'click': the browser only synthesizes click for the
     // PRIMARY pointer, so click-bound ring buttons went dead the moment the
     // other thumb held the joystick, which is how combat is actually played.
     bindTouchTap(attackBtn, () => {
-      if (this.peekGuard.consume()) {
-        this.hideTooltip();
-        attackBtn.blur();
-        return;
-      }
+      this.peekGuard.consume();
+      this.hideTooltip();
       audio.click();
       const p = this.sim.player;
       const target = p.targetId !== null ? this.sim.entities.get(p.targetId) : null;
@@ -5390,11 +5390,8 @@ export class Hud {
           btn.blur();
           return;
         }
-        if (this.peekGuard.consume()) {
-          this.hideTooltip();
-          btn.blur();
-          return;
-        }
+        this.peekGuard.consume();
+        this.hideTooltip();
         audio.click();
         this.castSlot(sourceSlotForMobileButton(this.mobileActionPage, i));
         btn.blur();
@@ -5402,11 +5399,8 @@ export class Hud {
       this.bindMobileRingDrag(btn, i);
     });
     bindTouchTap(pageToggle, () => {
-      if (this.peekGuard.consume()) {
-        this.hideTooltip();
-        (pageToggle as HTMLElement).blur();
-        return;
-      }
+      this.peekGuard.consume();
+      this.hideTooltip();
       audio.click();
       this.cycleMobileActionPage();
       (pageToggle as HTMLElement).blur();
@@ -5415,9 +5409,10 @@ export class Hud {
     // No tooltip on the mobile ring: a long-press-to-inspect wiring lived here
     // (mirroring the desktop bar's attachTooltip), but it read as a stray
     // popup box appearing over the world on an ordinary tap/hold rather than a
-    // deliberate inspect gesture, so it is removed entirely on touch. The tap
-    // handlers above no longer need a peek guard armed by attachTooltip's
-    // showAt (nothing to peek at), so a long hold just casts like a normal tap.
+    // deliberate inspect gesture, so it is removed entirely on touch. With
+    // nothing arming the shared peek guard FROM the ring, a long hold just
+    // casts like a normal tap, and the handlers above only ever CLEAR the
+    // guard (stale cross-talk from another control), never gate on it.
 
     this.mobileActionRingView = createActionBarView(
       {

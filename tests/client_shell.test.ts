@@ -476,24 +476,22 @@ describe('client HTML shell', () => {
     // Real-device chat-overlap fix: while the on-screen keyboard is up the chat log used to
     // overflow DOWN into the composer (the log's lower lines rendered under the typed text).
     // The wrap is now a flex COLUMN with a DEFINITE height that reserves the docked composer:
-    // it subtracts the top inset and a 100px composer reservation (84px reply box + gaps) from
-    // the visible-above-keyboard height, so the log frame can only fill the space ABOVE the
-    // composer, never over it.
+    // it subtracts the top inset and a 126px composer reservation (the 110px autosize cap
+    // CHAT_INPUT_MAX_H + 8px gap + 8px dock) from the visible-above-keyboard height, so the
+    // log frame can only fill the space ABOVE the composer, never over it, even when a long
+    // multi-line draft grows the composer to its cap.
     const wrapRule =
       hudMobileCss.match(
         /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #chatlog-wrap \{([^}]*)\}/,
       )?.[1] ?? '';
     expect(wrapRule).toMatch(/display:\s*flex/);
     expect(wrapRule).toMatch(/flex-direction:\s*column/);
-    // The height RESERVES the composer: visible-vh minus the top inset minus the 100px
-    // composer box. The literal 100px reservation is load-bearing (a regression that drops it
+    // The height RESERVES the composer: visible-vh minus the top inset minus the 126px
+    // composer box. The literal 126px reservation is load-bearing (a regression that drops it
     // re-introduces the overlap), so pin it alongside the var.
     expect(wrapRule).toMatch(/var\(--mobile-keyboard-visible-vh, 100vh\)/);
     // Whitespace-tolerant: biome breaks the long calc across lines.
-    expect(wrapRule).toMatch(/-\s+100px/);
-    expect(wrapRule).not.toMatch(
-      /height:\s*calc\(var\(--mobile-keyboard-visible-vh, 100vh\) - 84px\)/,
-    );
+    expect(wrapRule).toMatch(/-\s+126px/);
     // The log frame FLEXES to fill only the tabs-to-composer gap (not height:100%, the old bug
     // that made the frame overflow past the wrap by the tab strip's height).
     const frameRule =
@@ -1805,6 +1803,11 @@ describe('client HTML shell', () => {
     expect(hudMobileCss).toContain(
       '--mobile-ring-radius: calc(190px * var(--mobile-chrome-scale, 1));',
     );
+    // The token VALUE is the whole chrome-scale feature: every consumer falls
+    // back to 1 (`var(--mobile-chrome-scale, 1)`), so deleting or resetting the
+    // one declaration silently reverts the entire 0.85 shrink with every usage
+    // pin above still green. Only a literal value pin catches it.
+    expect(hudMobileCss).toContain('--mobile-chrome-scale: 0.85;');
     expect(hudMobileCss).not.toContain('calc(0px -');
     // The equal-chord arc factors (cos/sin of 157.5 and 112.5 deg) on the two
     // asymmetric slots, right-handed and mirrored: corrupting one angle breaks
@@ -2038,6 +2041,18 @@ describe('client HTML shell', () => {
     // panel's .panel-title is pressed, same as any desktop window).
     expect(hudMobileCss).toContain(
       'top: max(8px, env(safe-area-inset-top)) !important;\n      bottom: auto !important;\n      transform: translateX(-50%) !important;',
+    );
+  });
+
+  it('shrinks the landscape map window to the room above the fixed bottom control row', () => {
+    // Same overlap class as the More tray: the base min(46vw, 330px) square map,
+    // vertically centered, dips into Jump/Interact on a short landscape phone (the
+    // map-canvas keeps a 1:1 aspect ratio, so width IS height). The landscape rule
+    // top-anchors it and caps the width against the free room above that row
+    // (var(--app-vh) - 140px). No !important needed: #map-window has no
+    // .panel-title, so the shared drag code never stamps an inline seat on it.
+    expect(hudMobileCss).toContain(
+      'body.mobile-touch #map-window {\n      top: max(10px, env(safe-area-inset-top));\n      transform: translateX(-50%);\n      width: min(46vw, 300px, calc(var(--app-vh) - 140px));',
     );
   });
 

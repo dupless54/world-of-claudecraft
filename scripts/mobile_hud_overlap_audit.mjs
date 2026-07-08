@@ -1010,14 +1010,16 @@ try {
       // wrap; landscape lifted the seat 233px -> 250px). This is the resting half of the
       // owner's overlap report.
       if (chat.log && chat.input) {
+        // Counted on MEASUREMENT, not on pass: the zero-floor below means "the
+        // pair was never even measured", and a measured-but-failing pair already
+        // fails loudly on its own.
+        chatRestingPairsChecked++;
         const gap = controlGap('chatlog-wrap', chat.log, 'chat-input', chat.input, CIRCLE_IDS);
         if (gap < MIN_GAP_INTERACTIVE) {
           fail(
             `${prof.name}: resting chat log/composer gap ${gap.toFixed(1)}px < ${MIN_GAP_INTERACTIVE}px ` +
               `(the composer must clear the log wrap by the readability floor while chat is open)`,
           );
-        } else {
-          chatRestingPairsChecked++;
         }
         // Column order: the tab strip sits at the TOP of the wrap, above the log frame, so
         // the two never meaningfully overlap. The tabs carry a deliberate margin-bottom of
@@ -1248,10 +1250,17 @@ try {
     await simulateKeyboardOpen(page, kp.kbvh);
     // Type a real value so the composer carries text over the log lines, exactly like the
     // owner's screenshot (the overlap only reads as "interleaved text" with content in both).
+    // The message is long enough to SATURATE the autosize cap (main.ts CHAT_INPUT_MAX_H,
+    // 110px) on every profile and font, so the measured geometry is deterministic (the
+    // composer is exactly cap-height) and the check exercises the worst case the CSS
+    // reservation (126px = cap + gap + dock) must absorb, not a font-metric-dependent
+    // partial wrap.
     await page.evaluate(() => {
       const i = document.getElementById('chat-input');
       if (i) {
-        i.value = 'typing a long message that would ride over the chat log lines below it';
+        i.value = 'typing a long message that would ride over the chat log lines below it '.repeat(
+          6,
+        );
         i.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });

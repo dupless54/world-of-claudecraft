@@ -150,6 +150,18 @@ describe('bindTouchDoubleTap', () => {
     vi.useRealTimers();
   });
 
+  it('fires at exactly the window boundary (inclusive <=, pinning the off-by-one)', () => {
+    vi.useFakeTimers();
+    const el = fakeButton();
+    const cb = vi.fn();
+    bindTouchDoubleTap(el, cb);
+    tap(el, 1);
+    vi.advanceTimersByTime(DOUBLE_TAP_MS);
+    tap(el, 2);
+    expect(cb).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
   it('does NOT fire when the second tap slid past the slop (a frame drag)', () => {
     vi.useFakeTimers();
     const el = fakeButton();
