@@ -361,6 +361,10 @@ describe('tiered mastery gating (#1128)', () => {
   it('crafting two or more tiers below capability grants zero skill progress', () => {
     const sim = makeSim();
     const pid = sim.playerId;
+    // Set weaponcrafting as the active archetype so its empowerment ceiling (#1129/#1203) is
+    // unlimited: this isolates the raw tier-capability curve from the separate pre-archetype
+    // "uncapped-to-rare" (tier 2) ceiling that would otherwise also clamp a tier-3 raw skill.
+    sim.acceptArchetypeQuest('weaponcrafting');
     setSkill(sim, pid, 'weaponcrafting', 75); // tier-3 capability, recipe is tier-1
     grantItem(sim, 'bone_fragments', 1, pid);
 

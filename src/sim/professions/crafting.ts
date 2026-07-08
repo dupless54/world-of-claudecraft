@@ -57,6 +57,7 @@
 import { recipeById } from '../content/recipes';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
+import { craftCeiling } from './archetype';
 import { isSignableMaterialRarity, type MaterialRarity, rollMaterialRarity } from './gathering';
 import type { ProfessionReagent, ProfessionRecipeRecord } from './types';
 import {
@@ -64,7 +65,6 @@ import {
   type CraftSkills,
   gainCraftSkill,
   materialCostMultiplier,
-  tierCapability,
   tierForSkill,
   tierProgressMultiplier,
 } from './wheel';
@@ -152,19 +152,24 @@ export function hasRecipeMaterials(
 
 /** Whether the given player's craft skills satisfy a recipe's dual-craft
  *  combo requirement (issue #1132): true if the recipe carries no
- *  `comboRequirement` at all, otherwise true only when the player's tier
- *  capability (wheel.ts tierCapability) in BOTH named crafts is at or above
- *  `minTier`. Deliberately does not fall back to any other craft: a high
- *  skill in a craft outside the required pair never satisfies this check. */
+ *  `comboRequirement` at all, otherwise true only when the player's
+ *  archetype-gated tier ceiling (archetype.ts `craftCeiling`, which composes
+ *  wheel.ts `tierCapability` with the #1129 empowerment ceiling) in BOTH
+ *  named crafts is at or above `minTier`. Deliberately does not fall back to
+ *  any other craft: a high skill in a craft outside the required pair never
+ *  satisfies this check. `activeArchetype` defaults to `null` (the
+ *  uncapped-to-rare pre-archetype state) so existing raw-skills callers keep
+ *  working unchanged. */
 export function meetsComboRequirement(
   skills: CraftSkills,
   recipe: ProfessionRecipeRecord,
+  activeArchetype: string | null = null,
 ): boolean {
   const combo = recipe.comboRequirement;
   if (!combo) return true;
   return (
-    tierCapability(skills, combo.craftA) >= combo.minTier &&
-    tierCapability(skills, combo.craftB) >= combo.minTier
+    craftCeiling(skills, activeArchetype, combo.craftA) >= combo.minTier &&
+    craftCeiling(skills, activeArchetype, combo.craftB) >= combo.minTier
   );
 }
 
@@ -178,9 +183,10 @@ export function meetsComboRequirement(
  *  player's current skill in the recipe's craft, grants the output item
  *  (signing a rare-or-better single-copy output for #1149 Battlefield
  *  Experience attribution), and grants craft skill scaled by tier mastery:
- *  full at or above the player's tier capability (including always-full for
- *  the common tier, regardless of capability), reduced one tier below, zero
- *  two or more tiers below. Exported separately from `resolveCraft` so tests
+ *  full at or above the player's archetype-gated tier ceiling (archetype.ts
+ *  `craftCeiling`, including always-full for the common tier, regardless of
+ *  capability), reduced one tier below, zero two or more tiers below.
+ *  Exported separately from `resolveCraft` so tests
  *  can exercise the tier curve against a synthetic recipe without needing
  *  higher-tier content in `content/recipes.ts`. */
 export function resolveCraftForRecipe(
@@ -189,7 +195,14 @@ export function resolveCraftForRecipe(
   recipe: ProfessionRecipeRecord,
 ): CraftResult {
   const meta = ctx.players.get(pid);
-  if (recipe.comboRequirement && !meetsComboRequirement(meta ? meta.craftSkills : {}, recipe)) {
+  if (
+    recipe.comboRequirement &&
+    !meetsComboRequirement(
+      meta ? meta.craftSkills : {},
+      recipe,
+      meta ? meta.archetype.activeArchetype : null,
+    )
+  ) {
     return { ok: false, recipeId: recipe.id, reason: 'combo_requirement_unmet' };
   }
   if (!hasRecipeMaterials(ctx, recipe, pid)) {
@@ -214,7 +227,11 @@ export function resolveCraftForRecipe(
     ctx.addItem(recipe.resultItemId, recipe.resultCount, pid);
   }
   if (meta) {
-    const capabilityTier = tierCapability(meta.craftSkills, recipe.professionId);
+    const capabilityTier = craftCeiling(
+      meta.craftSkills,
+      meta.archetype.activeArchetype,
+      recipe.professionId,
+    );
     const recipeTier = tierForSkill(recipe.skillReq);
     const multiplier = tierProgressMultiplier(capabilityTier, recipeTier);
     gainCraftSkill(meta.craftSkills, recipe.professionId, CRAFT_SKILL_GAIN * multiplier);

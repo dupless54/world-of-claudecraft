@@ -90,12 +90,16 @@ export function battlefieldExperienceTrickle(
   // TODO(#1149/#1205): the manifesto scopes Battlefield Experience to the
   // observer's ACTIVE archetype/specialty only ("a potion drunk or meal
   // eaten feeds nothing unless alchemy or cooking is your specialty"), the
-  // anti alt/breadth lever. That active-specialty state lives on #1205's
-  // branch and is not available here; whichever of this module / #1205
-  // merges second must add a gate here (recipe.professionId must be one of
-  // the observer's currently-active/empowered crafts) before this trickle
-  // fires for a non-specialty craft. Not gating today is a known gap, not a
-  // design decision: no such gate exists ANYWHERE in this stack yet.
+  // anti alt/breadth lever. The active-archetype state and its empowerment
+  // ceiling landed in professions/archetype.ts (#1129/#1203:
+  // `archetypeStateFor`/`archetypeCeilingFor`/`craftCeiling`), but this
+  // module still has no gate wired: whoever picks this up next must thread
+  // the observer's `activeArchetype` in here and deny the trickle unless
+  // `recipe.professionId` is that active archetype (this is a narrower,
+  // binary "is this THE specialty" check per the manifesto quote above, not
+  // the three-tier common/rare/unlimited ceiling `craftCeiling` composes for
+  // ordinary crafting). Not gating today is a known gap, not a design
+  // decision: no such gate exists ANYWHERE in this stack yet.
   gainCraftSkill(craftSkills, recipe.professionId, BATTLEFIELD_XP_TRICKLE);
   return BATTLEFIELD_XP_TRICKLE;
 }

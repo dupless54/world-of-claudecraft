@@ -28,8 +28,9 @@
 // imports, no Math.random/Date.now, host-agnostic so it runs offline, on the
 // server, and in the headless RL env unchanged.
 
-import { CRAFT_RING } from '../content/professions';
+import { CRAFT_RING, oppositeCraft } from '../content/professions';
 import type { SimContext } from '../sim_context';
+import { type CraftSkills, tierCapability } from './wheel';
 
 /** A character's active-archetype progression, persisted in CharacterState. */
 export interface ArchetypeState {
@@ -128,19 +129,54 @@ export function archetypeTitleFor(ctx: SimContext, pid: number): string | null {
   return getArchetypeTitle(archetypeStateFor(ctx, pid).activeArchetype);
 }
 
-// TODO(#1129/#1203): this module only tracks WHICH craft is the active archetype,
-// not the empowerment ceiling that makes it matter. Per #1129's revised acceptance
-// criteria, the reachable ceiling for a craft is
-// min(tierCapability from #1128/#1203, archetypeCapability derived from this state:
-// unlimited for the two active-archetype majors, capped at "rare" for the hobby
-// (the opposite craft on CRAFT_RING), capped at "common" for every other craft once
-// an archetype is set, uncapped-to-rare before any archetype is set at all). That
-// composition point does not exist yet: crafting.ts is still common-tier only
-// (#1127 scope) and wheel.ts's gainCraftSkill has no ceiling at all. Whichever of
-// #1203 (tier capability) or this module lands second should wire this in, so the
-// archetype gate does not silently slip. #1281's Battlefield Experience trickle
-// calls the same gainCraftSkill primitive and will compose automatically once the
-// ceiling lands there (see its own TODO(#1149/#1205)).
+// #1129/#1203 empowerment ceiling: this is the composition point that makes the
+// active archetype matter, not just track it. The reachable ceiling for a craft
+// is min(tierCapability from #1128/#1203, archetypeCapability derived from this
+// state below): unlimited for the active-archetype major, capped at "rare" for
+// the hobby (the opposite craft on CRAFT_RING), capped at "common" for every
+// other craft once an archetype is set, uncapped-to-rare before any archetype
+// is set at all. `archetypeCeilingFor` computes the archetype-derived half of
+// that min; `craftCeiling` composes it with wheel.ts's `tierCapability` for a
+// given player's flat skill state. Consumers: crafting.ts's tier-progress
+// multiplier (the gainCraftSkill call site) and `meetsComboRequirement`'s
+// dual-craft tier gate, both of which now read the ceiling instead of the raw
+// tier capability. #1281's Battlefield Experience trickle calls the same
+// gainCraftSkill primitive; its own narrower "active specialty only" gate
+// (see battlefield_xp.ts's TODO) is a separate, not-yet-landed acceptance
+// criterion and is unaffected by this change.
+
+// Ceiling tiers, expressed in wheel.ts's tier-index units (see tierForSkill):
+// tier 0 is the "common" free floor per wheel.ts's own naming; tier 2 is
+// "rare" under the same five-rung ladder crafting.ts already reuses for
+// output quality (gathering.ts's MaterialRarity: common=0, uncommon=1,
+// rare=2, epic=3, legendary=4).
+const COMMON_CEILING_TIER = 0;
+const RARE_CEILING_TIER = 2;
+
+/** The archetype-derived half of the empowerment ceiling for one craft: no
+ *  cap (Infinity) for the player's active archetype craft, capped at "rare"
+ *  for the hobby (the opposite craft on CRAFT_RING) and, before any archetype
+ *  has ever been chosen, for every craft; capped at "common" for every other
+ *  craft once an archetype is set. */
+export function archetypeCeilingFor(activeArchetype: string | null, craftId: string): number {
+  if (activeArchetype === null) return RARE_CEILING_TIER;
+  if (craftId === activeArchetype) return Infinity;
+  if (craftId === oppositeCraft(activeArchetype).id) return RARE_CEILING_TIER;
+  return COMMON_CEILING_TIER;
+}
+
+/** The actually-reachable tier ceiling for one craft: the lesser of the raw
+ *  flat-skill tier capability (wheel.ts `tierCapability`) and the
+ *  archetype-derived ceiling above. This is what a crafting/skill-gain call
+ *  site should read instead of raw `tierCapability` once archetype state is
+ *  in play. */
+export function craftCeiling(
+  skills: CraftSkills,
+  activeArchetype: string | null,
+  craftId: string,
+): number {
+  return Math.min(tierCapability(skills, craftId), archetypeCeilingFor(activeArchetype, craftId));
+}
 
 /** The zone-1 acceptance quest's stubbed completion hook: on FIRST completion only,
  *  sets the chosen craft as the character's active archetype. A no-op (does not
