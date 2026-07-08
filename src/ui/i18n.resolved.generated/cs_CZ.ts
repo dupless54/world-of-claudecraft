@@ -7044,6 +7044,9 @@ export const cs_CZ: EnTranslations = {
       "deacon_voss": {
         "name": "Diákon Voss"
       },
+      "training_dummy": {
+        "name": "Training Dummy"
+      },
       "ridge_stalker": {
         "name": "Hřebenový slídil"
       },

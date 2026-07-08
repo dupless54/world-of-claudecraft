@@ -7044,6 +7044,9 @@ export const zh_CN: EnTranslations = {
       "deacon_voss": {
         "name": "执事沃斯"
       },
+      "training_dummy": {
+        "name": "训练假人"
+      },
       "ridge_stalker": {
         "name": "山脊潜猎者"
       },

@@ -11,6 +11,7 @@
 export const pending: Record<string, readonly string[]> = {
   "es": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -48,6 +49,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "es_ES": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -85,6 +87,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "fr_FR": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -122,6 +125,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "fr_CA": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -160,6 +164,7 @@ export const pending: Record<string, readonly string[]> = {
   "en_CA": [],
   "it_IT": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -197,6 +202,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "de_DE": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -246,6 +252,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "pt_BR": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -291,6 +298,7 @@ export const pending: Record<string, readonly string[]> = {
     "entities.items.goldleaf_herb.name",
     "entities.items.sunpetal_herb.name",
     "entities.items.thorium_ore.name",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -328,6 +336,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "nl_NL": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -365,6 +374,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "pl_PL": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -402,6 +412,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "id_ID": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -439,6 +450,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "tr_TR": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -476,6 +488,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "sv_SE": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -513,6 +526,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "vi_VN": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",
@@ -550,6 +564,7 @@ export const pending: Record<string, readonly string[]> = {
   ],
   "da_DK": [
     "entities.abilities.sunder_armor.description",
+    "entities.mobs.training_dummy.name",
     "entities.mobs.yumi_cat.name",
     "guide.arenaPage.yumiBody",
     "guide.arenaPage.yumiHeading",

@@ -1314,6 +1314,22 @@ export class Sim {
       // still spawns on dry land even though combat movement can enter water.
       const minHeight = this.mobCanSpawnInWater(template) ? waterLevel() - 0.5 : waterLevel() + 0.4;
       for (let i = 0; i < camp.count; i++) {
+        if (template.dummy) {
+          // A practice dummy is a fixed, deterministic prop (no scatter, fixed level,
+          // never wanders): spawn it WITHOUT drawing any RNG so adding one never
+          // perturbs the world's seed-stable spawns and rolls.
+          const safe = this.findSafePos(camp.center.x, camp.center.z, minHeight);
+          const mob = createMob(
+            this.nextId++,
+            template,
+            template.maxLevel,
+            this.groundPos(safe.x, safe.z),
+          );
+          mob.facing = 0;
+          mob.prevFacing = 0;
+          this.addEntity(mob);
+          continue;
+        }
         const ang = this.rng.range(0, Math.PI * 2);
         const r = Math.sqrt(this.rng.next()) * camp.radius;
         const safe = this.findSafePos(
@@ -4167,7 +4183,14 @@ export class Sim {
     b.inCombat = true;
     // players and their pets pull wild mobs; pets never run wild-mob AI
     const aAttacker = a.kind === 'player' || (a.kind === 'mob' && a.ownerId !== null);
-    if (b.kind === 'mob' && b.ownerId === null && !b.dead && aAttacker && b.aiState !== 'evade') {
+    if (
+      b.kind === 'mob' &&
+      b.ownerId === null &&
+      !b.dead &&
+      aAttacker &&
+      b.aiState !== 'evade' &&
+      !MOBS[b.templateId]?.dummy // a training dummy never retaliates
+    ) {
       if (b.aiState === 'idle') this.aggroMob(b, a, true);
       else if (b.aggroTargetId === null) b.aggroTargetId = a.id;
     }
@@ -4176,7 +4199,8 @@ export class Sim {
       a.ownerId === null &&
       !a.dead &&
       b.kind === 'player' &&
-      a.aiState === 'idle'
+      a.aiState === 'idle' &&
+      !MOBS[a.templateId]?.dummy // a training dummy never aggros
     ) {
       this.aggroMob(a, b, false);
     }
@@ -4536,9 +4560,11 @@ export class Sim {
   }
 
   // Step `e` one tick toward `dest`. With `ignoreObstacles`, the mover phases
-  // straight through props — used to free a stuck evader, never for normal
-  // locomotion. Returns true on arrival.
+  // straight through props — used to free a stuck evader, and forced on for
+  // templates flagged `phasesThroughObstacles` (mountain-sized world bosses
+  // that must never wedge on a collider mid-chase). Returns true on arrival.
   private moveToward(e: Entity, dest: Vec3, speed: number, ignoreObstacles = false): boolean {
+    if (!ignoreObstacles && MOBS[e.templateId]?.phasesThroughObstacles) ignoreObstacles = true;
     const d = dist2d(e.pos, dest);
     if (d < 0.3) return true;
     const desired = angleTo(e.pos, dest);
