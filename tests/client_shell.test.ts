@@ -1918,7 +1918,18 @@ describe('client HTML shell', () => {
       'body.mobile-touch.mobile-left-handed #mobile-extra-controls {\n    left: 50%;\n    right: auto;',
     );
     expect(hudMobileCss).toContain(
-      'max-height: calc(\n        var(--app-vh) -\n        28px -\n        env(safe-area-inset-top) -\n        env(safe-area-inset-bottom)\n      );',
+      'max-height: calc(\n        var(--app-vh) -\n        120px -\n        env(safe-area-inset-top) -\n        env(safe-area-inset-bottom)\n      );',
+    );
+  });
+
+  it('anchors the landscape More tray above the fixed bottom control row, not screen-centered', () => {
+    // The 4-row/16-pill grid centered on a short landscape viewport could grow
+    // tall enough to overlap Autorun/Jump/the combat cluster, which reserve no
+    // layout space of their own. !important beats the shared window-drag
+    // freeze (hud.ts stamps an inline inset/transform the first time this
+    // panel's .panel-title is pressed, same as any desktop window).
+    expect(hudMobileCss).toContain(
+      "top: max(8px, env(safe-area-inset-top)) !important;\n      bottom: auto !important;\n      transform: translateX(-50%) !important;",
     );
   });
 

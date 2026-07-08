@@ -3086,13 +3086,31 @@
     }
     body.mobile-touch #mobile-extra-controls {
       left: 50%;
-      top: 50%;
-      bottom: auto;
+      /* True vertical centering (the base rule's top:50%/translate(-50%,-50%))
+         let this 4-row, 16-pill grid grow tall enough on a short landscape
+         viewport to overlap the fixed bottom control row (Autorun/Jump/combat
+         cluster), which reserves no layout space of its own. Anchor from the
+         top instead so the drawer's height is measured against the space
+         actually free above that row, not the whole viewport.
+         !important: the shared window-drag code (hud.ts, pointerdown on any
+         .panel-title) freezes a window's CURRENT computed inset/transform into
+         an inline style the first time its title bar is pressed, same as any
+         desktop window; that inline style otherwise wins over this rule and
+         reintroduces the overlap it exists to prevent. This panel is not meant
+         to be draggable on mobile at all (it is excluded from the resize grip
+         via window_resize.ts's NON_RESIZABLE_WINDOW_IDS), so pinning its
+         landscape position here is correct regardless. */
+      top: max(8px, env(safe-area-inset-top)) !important;
+      bottom: auto !important;
+      transform: translateX(-50%) !important;
       --window-pad: 8px;
-      /* No --ui-scale division: body-level window outside the zoomed #ui. */
+      /* No --ui-scale division: body-level window outside the zoomed #ui.
+         120px clears the bottom control row (Autorun/Jump/combat cluster +
+         labels), which sits outside normal layout flow so nothing else
+         reserves space for it. */
       max-height: calc(
         var(--app-vh) -
-        28px -
+        120px -
         env(safe-area-inset-top) -
         env(safe-area-inset-bottom)
       );
