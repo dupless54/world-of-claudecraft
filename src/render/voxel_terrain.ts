@@ -10,8 +10,8 @@ import { groundDetailTexture, stoneTexture } from './textures';
 // heightfield mesh (terrain.ts) so the voxel engine's output can be checked
 // against the real world in-game, not just via unit tests.
 //
-// Three things keep this tractable at whole-map scale while closing the
-// gaps a reviewer saw on the steepest terraced ridge walls:
+// Two things keep this tractable at whole-map scale while closing the gaps
+// a reviewer saw on the steepest terraced ridge walls:
 //  - Per-column height culling: most of a naive world-spanning y-chunk grid
 //    is either deep underground (uniformly solid) or high in the sky
 //    (uniformly air) and would waste a full corner-density sample grid for
@@ -20,13 +20,19 @@ import { groundDetailTexture, stoneTexture } from './textures';
 //    well outside that local height band, with a generous margin so a
 //    steep local rise inside one footprint can't silently drop a needed
 //    y-chunk (that dropped chunk is exactly what read as a "LOD gap").
-//  - A fine per-chunk voxel resolution (1 world unit/voxel) so a terraced
-//    near-vertical riser has enough samples to mesh as a continuous wall
-//    instead of a thin gap Surface Nets can't resolve.
+//  - A fine, UNIFORM per-chunk voxel resolution. An earlier pass varied this
+//    per column by local steepness; that is exactly what produced the
+//    visible seam/crack lines a reviewer saw: two neighboring chunk columns
+//    at different resolutions use different step sizes, so their shared
+//    boundary face's edge-crossing points land at different world
+//    positions and Surface Nets can't stitch them, showing sky through the
+//    gap. Every chunk now shares one step size, so any two neighbors always
+//    agree exactly on their shared boundary, the same seam-free guarantee
+//    voxel_mesh.ts documents for same-resolution neighbors.
 //  - A generous world-edge margin so the mesh doesn't stop short of the
 //    map boundary and show a gap to the skybox.
 const CHUNK_SIZE = 16; // world units per chunk cube
-const CHUNK_RESOLUTION = 16; // voxels per axis per chunk (1 world unit/voxel)
+const CHUNK_RESOLUTION = 16; // voxels per axis per chunk, uniform across every chunk (1 world unit/voxel)
 const HEIGHT_MARGIN = 48; // yd of slack around the sampled local height band
 const WORLD_MARGIN = 80; // yd padding so the mesh doesn't stop short of the map edge
 
@@ -124,16 +130,6 @@ export function buildVoxelTerrain(seed: number): VoxelTerrainView {
       const band = localHeightBand(seed, cx, cz);
       const cy0 = Math.floor((band.min - HEIGHT_MARGIN) / CHUNK_SIZE);
       const cy1 = Math.ceil((band.max + HEIGHT_MARGIN) / CHUNK_SIZE);
-      // The game's zone-ridge/rim walls are DESIGNED steeper than the climb
-      // limit (near-vertical, terraced). A heightfield mesh can never have a
-      // hole on an arbitrarily steep single-valued surface (it is one
-      // triangle strip per grid cell, always connected); a 3D isosurface
-      // mesh like this one can, if the surface's local slope outruns the
-      // voxel resolution (a terrace riser thinner than one voxel cell can
-      // fall between corner samples). Steep columns get a finer resolution
-      // to close that specific gap; flat/rolling ground keeps the cheaper one.
-      const steepness = (band.max - band.min) / CHUNK_SIZE;
-      const resolution = steepness > 1.5 ? CHUNK_RESOLUTION * 2 : CHUNK_RESOLUTION;
 
       for (let cy = cy0; cy < cy1; cy++) {
         const mesh = meshVoxelChunk(density, {
@@ -141,7 +137,7 @@ export function buildVoxelTerrain(seed: number): VoxelTerrainView {
           y0: cy * CHUNK_SIZE,
           z0: cz * CHUNK_SIZE,
           size: CHUNK_SIZE,
-          resolution,
+          resolution: CHUNK_RESOLUTION,
         });
         if (mesh.positions.length === 0) continue;
         const geo = new THREE.BufferGeometry();
