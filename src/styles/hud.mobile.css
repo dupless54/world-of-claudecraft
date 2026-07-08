@@ -1379,11 +1379,19 @@
     touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
   }
+  /* The composer used to inherit the log's left-edge seat (left: max(10px,
+     ...)), which read as parked in the corner rather than the centered
+     typing box a player expects when they actually tap Chat to type (the log
+     itself stays left-anchored above the world nameplates; only the active
+     composer centers). Centered horizontally instead, independent of the
+     safe-area inset the left-anchored log still needs. */
   body.mobile-touch #chat-input {
-    left: max(10px, env(safe-area-inset-left));
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     /* Shifted up to match the log's new resting position above (was 296px). */
     bottom: calc(316px + env(safe-area-inset-bottom));
-    width: min(360px, calc(100vw - 20px));
+    width: min(360px, calc(100vw - 40px));
     min-height: 40px;
     box-sizing: border-box;
     font-size: 16px;
@@ -1404,11 +1412,11 @@
     justify-content: center;
     right: auto;
     /* Seated at the COMPOSER's right corner (not the screen edge): the composer is
-       left max(10px,...) wide min(360px, 100vw-20px), so its right edge is
-       (left + width); park the 40px chevron just inside that, vertically aligned with
-       the composer's resting bottom (316px). It reads as the composer's own dismiss
-       affordance rather than a disconnected far-right button. */
-    left: calc(max(10px, env(safe-area-inset-left)) + min(360px, 100vw - 20px) - 40px);
+       now centered (left:50%, translateX(-50%)) at width min(360px, 100vw-40px), so
+       its right edge is 50% + half that width; park the 40px chevron just inside
+       that, vertically aligned with the composer's resting bottom (316px). It reads
+       as the composer's own dismiss affordance rather than a disconnected button. */
+    left: calc(50% + min(360px, 100vw - 40px) / 2 - 40px);
     bottom: calc(316px + env(safe-area-inset-bottom));
     width: 40px;
     height: 40px;
@@ -3163,10 +3171,20 @@
       height: calc(11px * var(--chat-font-scale, 1) * 1.4 * 4 + 8px);
     }
     body.mobile-touch #chat-input {
-      left: max(10px, env(safe-area-inset-left));
+      /* Centered horizontally, same rationale as the portrait rule above:
+         the log stays left-anchored, only the active composer centers. */
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
       /* Shifted up to match the log's new resting position (was 213px). */
       bottom: calc(233px + env(safe-area-inset-bottom));
       width: min(330px, 44vw);
+    }
+    /* Follows the landscape composer's own centered width/position (330px/44vw,
+       bottom 233px), same seating rationale as the portrait rule above. */
+    body.mobile-touch.mobile-chat-open #chat-dismiss {
+      left: calc(50% + min(330px, 44vw) / 2 - 40px);
+      bottom: calc(233px + env(safe-area-inset-bottom));
     }
     body.mobile-touch #player-frame {
       left: 50%;

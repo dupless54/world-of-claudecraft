@@ -706,6 +706,46 @@ describe('MobileControls pointer lifecycle', () => {
     expect(lastMove).toEqual({ forward: false, back: false, strafeLeft: false, strafeRight: true });
   });
 
+  it('clamps the drawn wheel near its resting spot on a far touchdown, without drifting input', () => {
+    const { moveZone, moveJoystick } = installMobileControlDom();
+    let lastMove: TouchMoveInput | null = null;
+    const input = {
+      setTouchMove: (move: TouchMoveInput) => {
+        lastMove = move;
+      },
+      clearTouchMove: () => {},
+      setTouchLook: () => {},
+      setTouchLookVector: () => {},
+    } as unknown as Input;
+
+    new MobileControls(input, mobileCallbacks()).start();
+
+    // The wheel's resting rect (installMobileControlDom's FakeElement default)
+    // is {left:0,top:0,width:100,height:100}, centered at (50,50). A touchdown
+    // far from that center (deep in the zone's bottom-left corner) must still
+    // read zero deflection at touchdown (the input origin is the raw touch
+    // point, unclamped: the #1229 drift contract above), even though the wheel
+    // is only DRAWN a small distance toward the thumb.
+    moveZone.dispatchEvent(pointerEvent('pointerdown', { pointerId: 9, clientX: 8, clientY: 232 }));
+    expect(lastMove).toEqual({
+      forward: false,
+      back: false,
+      strafeLeft: false,
+      strafeRight: false,
+    });
+    // The drawn wheel leans toward the thumb but stays within
+    // MOVE_JOYSTICK_FLOAT_RADIUS of its resting center (50,50), nowhere near
+    // the far-off touch point (8,232): it must not have teleported there.
+    const left = Number.parseFloat(moveJoystick.style.left);
+    const top = Number.parseFloat(moveJoystick.style.top);
+    const layoutRadius = moveJoystick.offsetWidth / 2;
+    const drawnCenterX = left + layoutRadius;
+    const drawnCenterY = top + layoutRadius;
+    const distFromRest = Math.hypot(drawnCenterX - 50, drawnCenterY - 50);
+    expect(distFromRest).toBeLessThanOrEqual(48 + 0.5);
+    expect(Math.hypot(drawnCenterX - 8, drawnCenterY - 232)).toBeGreaterThan(distFromRest);
+  });
+
   it('a window opening mid-drag releases the joystick instead of walking blind', () => {
     const { moveZone } = installMobileControlDom();
     let lastMove: TouchMoveInput | null = null;

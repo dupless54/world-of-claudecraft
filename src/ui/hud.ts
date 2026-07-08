@@ -3758,6 +3758,22 @@ export class Hud {
       const rect = el.getBoundingClientRect();
       showAt(rect.right, rect.top + rect.height / 2, 'focus');
     };
+    // A mouse click or a tap focuses the button as a side effect (the browser
+    // moves focus to whatever was pressed), which used to fire showNearElement
+    // on EVERY action-bar press, not just real keyboard (Tab) navigation. Flag
+    // the pointer press so the very next focusin it causes is skipped; Tab
+    // never fires pointerdown first, so keyboard users still get the tooltip.
+    let pointerFocusPending = false;
+    el.addEventListener('pointerdown', () => {
+      pointerFocusPending = true;
+    });
+    el.addEventListener('focusin', () => {
+      if (pointerFocusPending) {
+        pointerFocusPending = false;
+        return;
+      }
+      showNearElement();
+    });
     el.addEventListener('mouseenter', () => {
       if (mobile()) return;
       const rect = el.getBoundingClientRect();
@@ -3776,7 +3792,6 @@ export class Hud {
       clearTouchTimer();
       this.tooltipEl.style.display = 'none';
     });
-    el.addEventListener('focusin', showNearElement);
     el.addEventListener('focusout', () => {
       clearTouchTimer();
       this.tooltipEl.style.display = 'none';
@@ -3791,8 +3806,17 @@ export class Hud {
         y = e.clientY;
       touchTimer = window.setTimeout(() => showAt(x, y, 'touch'), TOOLTIP_PEEK_MS);
     });
-    el.addEventListener('pointerup', clearTouchTimer);
-    el.addEventListener('pointercancel', clearTouchTimer);
+    el.addEventListener('pointerup', () => {
+      clearTouchTimer();
+      // Safari desktop never focuses a button on click, so pointerdown's flag
+      // above would otherwise never get consumed by a focusin and could wrongly
+      // swallow a later, real keyboard-focus tooltip; drop it once the press ends.
+      pointerFocusPending = false;
+    });
+    el.addEventListener('pointercancel', () => {
+      clearTouchTimer();
+      pointerFocusPending = false;
+    });
   }
 
   hideTooltip(): void {
@@ -6617,7 +6641,7 @@ export class Hud {
       this.updateFiestaHud();
       // Vale Cup surfaces (mediumHud like the arena/fiesta ones): the indicator
       // button, the in-match strip, and the open window redraw.
-      this.vcupIndicator.update(buildVcupIndicatorView(this.sim.cupInfo));
+      this.vcupIndicator.update(buildVcupIndicatorView(this.sim.cupInfo, atSowfield));
       this.vcupMatchHud.update(buildVcupHudView(this.sim.cupInfo));
       this.vcupBriefing.update(buildVcupBriefingView(this.sim.cupInfo));
       this.vcupBetting.update(buildVcupBettingView(this.sim.cupInfo));

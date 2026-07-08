@@ -26,6 +26,11 @@ import {
 export const PHONE_TOUCH_QUERY =
   '(pointer: coarse) and (hover: none), (pointer: coarse) and (max-width: 940px), (pointer: coarse) and (max-height: 760px)';
 const DEADZONE = 0.22;
+// How far the move wheel's DRAWN position may lean from its resting spot
+// toward the thumb (px), so a touch anywhere in the (much larger) move zone
+// leans the visible wheel toward it without teleporting it clear across the
+// screen. Cosmetic only: never fed into the input math (see onMoveDown).
+const MOVE_JOYSTICK_FLOAT_RADIUS = 48;
 const CAMERA_SENSITIVITY = 0.8;
 // TODO: a dedicated deadzone/smoothing setting for swipe-look is deferred (plan
 // decision 7); touchLookSpeed already covers sensitivity for both the camera
@@ -709,12 +714,19 @@ export class MobileControls {
     if (!this.active || this.joyPointer !== null || !this.moveJoystick) return;
     if (this.classifyTouch(e) !== 'movement') return;
     e.preventDefault();
+    // The wheel's RESTING center, read before any style.left/top override this
+    // touch may apply (releaseMove clears both back to the CSS-authored rest
+    // spot, so a fresh touchdown always reads it here). Used only to clamp
+    // where the wheel is DRAWN below; never fed into the input math.
+    const restRect = this.moveJoystick.getBoundingClientRect();
+    const restCenterX = restRect.left + restRect.width / 2;
+    const restCenterY = restRect.top + restRect.height / 2;
     this.joyPointer = e.pointerId;
     triggerHaptic(HAPTIC_JOYSTICK, this.hapticsOn);
-    // Spawn the joystick base CENTERED under the thumb (see the origin note
-    // above mapJoystickVector): the input origin IS the touch point, so a
-    // touchdown alone can never produce movement intent. layoutRadius is the
-    // untransformed box (what style.left/top position, with .floating's
+    // The input origin IS the raw touch point, unclamped (see the origin note
+    // above mapJoystickVector): a touchdown alone can never produce movement
+    // intent, or it re-creates the v0.22.0 #1229 drift regression. layoutRadius
+    // is the untransformed box (what style.left/top position, with .floating's
     // transform-origin: center keeping the scaled wheel centered on it);
     // renderedRadius includes the --joy-scale transform and drives the input
     // throw, so a resized wheel reaches full deflection exactly at its rim.
@@ -727,8 +739,19 @@ export class MobileControls {
     this.moveOriginY = e.clientY;
     this.moveRadius = renderedRadius;
     this.moveStickRadius = layoutRadius;
-    this.moveJoystick.style.left = `${(e.clientX - layoutRadius).toFixed(1)}px`;
-    this.moveJoystick.style.top = `${(e.clientY - layoutRadius).toFixed(1)}px`;
+    // The wheel's DRAWN position floats toward the thumb but is clamped to stay
+    // within MOVE_JOYSTICK_FLOAT_RADIUS of its resting spot, so a touch anywhere
+    // in the (much larger) move zone no longer teleports the visible wheel clear
+    // across the screen; it just leans toward the thumb within a small radius.
+    // Purely cosmetic: moveOriginX/Y above (the input math) is untouched.
+    const floatDx = e.clientX - restCenterX;
+    const floatDy = e.clientY - restCenterY;
+    const floatDist = Math.hypot(floatDx, floatDy);
+    const floatScale = floatDist > MOVE_JOYSTICK_FLOAT_RADIUS ? MOVE_JOYSTICK_FLOAT_RADIUS / floatDist : 1;
+    const drawnCenterX = restCenterX + floatDx * floatScale;
+    const drawnCenterY = restCenterY + floatDy * floatScale;
+    this.moveJoystick.style.left = `${(drawnCenterX - layoutRadius).toFixed(1)}px`;
+    this.moveJoystick.style.top = `${(drawnCenterY - layoutRadius).toFixed(1)}px`;
     this.moveJoystick.classList.add('floating', 'active');
     try {
       (this.moveZone ?? this.moveJoystick).setPointerCapture(e.pointerId);

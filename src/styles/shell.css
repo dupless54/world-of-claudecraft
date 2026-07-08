@@ -6217,7 +6217,18 @@
     body.mobile-touch #offline-select .charselect-col-right {
       min-height: 0;
       height: 100%;
-      overflow: hidden;
+      /* The left column's flow (name, 9-class grid, appearance swatches,
+         Enter World/Back) does not always fit the panel's height clamp on the
+         shortest landscape phones. .skin-row is the one child below with an
+         explicit min-height:0 (it needs to collapse to 0 when empty), so
+         under overflow:hidden the shrink algorithm pushed ALL the missing
+         space onto it instead of the roster/actions, collapsing its box to a
+         sliver while its overflow:visible portrait swatches kept their full
+         size and visually spilled onto the Enter World/Back row beneath
+         (unclickable and unreadable, blocking character creation entirely).
+         Scroll instead of clipping, matching the charcreate-panel columns
+         above: every row keeps its natural size and reachable actions. */
+      overflow-y: auto;
     }
     body.mobile-touch #offline-select .char-create {
       display: flex;
@@ -6225,6 +6236,9 @@
       height: 100%;
       min-height: 0;
       gap: 3px;
+    }
+    body.mobile-touch #offline-select .char-create > * {
+      flex-shrink: 0;
     }
     body.mobile-touch #offline-select .auth-label {
       font-size: 11px;
