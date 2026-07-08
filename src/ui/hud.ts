@@ -124,6 +124,7 @@ import {
   abilityPrimaryEffect,
   abilitySecondaryEffect,
 } from './ability_damage';
+import { isSelfOnlyAbility } from './ability_self_only';
 import { ActionBarPainter, type ActionBarSlotElements } from './action_bar_painter';
 import {
   ABILITY_ICON_PREFIX,
@@ -14227,28 +14228,6 @@ function abilityCastLine(known: ResolvedAbility, spellHaste = 0): string {
     return t('abilityUi.tooltip.castSeconds', { seconds: formatAbilityNumber(known.castTime / h) });
   }
   return t('abilityUi.tooltip.instant');
-}
-
-// Effect types that only ever act on the caster (a beneficial self-buff, a
-// self-inflicted cost, a weapon imbue, a pet summon/dismiss). Distinguishing
-// these from a hostile self-centered AoE (Thunder Clap, Frost Nova, Arcane
-// Explosion) is why this can't be inferred from `requiresTarget` alone: both
-// shapes leave it false. A ground-targeted cast (`targetMode: 'position'`) is
-// never self-only even if its effect types would otherwise qualify.
-const SELF_ONLY_EFFECT_TYPES = new Set<AbilityEffect['type']>([
-  'selfBuff',
-  'absorb',
-  'imbue',
-  'lifeTap',
-  'gainResource',
-  'selfDamagePctMax',
-  'summonDemon',
-  'dismissPet',
-]);
-
-export function isSelfOnlyAbility(def: AbilityDef): boolean {
-  if (def.requiresTarget || def.targetMode === 'position') return false;
-  return def.effects.every((eff) => SELF_ONLY_EFFECT_TYPES.has(eff.type));
 }
 
 export function abilityRequirementLines(def: AbilityDef): string[] {
