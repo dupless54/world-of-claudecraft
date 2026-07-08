@@ -1508,28 +1508,72 @@
     height: 13px;
     transform: rotate(90deg);
   }
-  /* Issue 1577 (5): once the on-screen keyboard opens (mobile-keyboard-open,
-     toggled by keyboard_viewport_applier.ts off the visualViewport resize
-     event, the same signal main.ts/renderer.ts already use for the stable
-     game viewport), the log + input abandon their normal bottom-anchored seats
-     -- which the keyboard would otherwise cover. The whole chatbox (log AND
-     composer, not just the composer) now expands to fill the space left above
-     the keyboard (--mobile-keyboard-visible-vh): the log docks near the top of
-     that visible area and grows to fill it, the input docks just above the
-     keyboard's top edge, so the player reads and types in a comfortably large
-     window instead of a small recentered strip. */
+  /* Reply mode grows the composer to an 84px min-height; centre the 40px chevron on that
+     taller box so it reads as an attached part of the composer row (one unit) instead of
+     a button parked at the composer's bottom-right corner (the owner's "chevron floats
+     detached" report). It shares the composer's docked bottom (both keyed on
+     visible-vh), so the pair moves as one when the keyboard opens. The +30px is the base
+     +8px composer dock plus (84 - 40) / 2 = 22px to lift the chevron to the composer's
+     vertical centre. */
+  body.mobile-touch.mobile-chat-open.mobile-chat-reply.mobile-keyboard-open #chat-dismiss {
+    bottom: calc(100vh - var(--mobile-keyboard-visible-vh, 100vh) + 30px);
+  }
+  /* Issue 1577 (5) + the real-device chat-overlap fix: once the on-screen keyboard
+     opens (mobile-keyboard-open, toggled by keyboard_viewport_applier.ts off the
+     visualViewport resize event, the same signal main.ts/renderer.ts already use for
+     the stable game viewport), the log + composer abandon their normal bottom-anchored
+     seats -- which the keyboard would otherwise cover -- and re-lay as ONE
+     non-overlapping column above the keyboard. The wrap becomes a flex COLUMN anchored
+     from the safe-area top down to a bottom that RESERVES the docked composer's box:
+     the composer docks at (100vh - visible-vh + 8px) and grows to an 84px reply
+     min-height, so the wrap bottom sits that 84px + an 8px gap above the composer =
+     +100px above the keyboard line. The tab strip keeps its natural height at the TOP
+     of the column and the log frame FLEXES to fill only the space between the tabs and
+     the reserved composer, so neither the tabs nor the log can grow into the composer.
+     (The bug this fixes: the old height:100% frame plus the 40px tab strip overflowed
+     ~53px DOWN into the composer, interleaving the log text with the typed text.) */
   body.mobile-touch.mobile-keyboard-open.mobile-chat-open #chatlog-wrap {
     top: max(6px, env(safe-area-inset-top));
     bottom: auto;
-    height: calc(var(--mobile-keyboard-visible-vh, 100vh) - 84px);
+    /* A DEFINITE height (not top+bottom auto-stretch, which needs a full-height
+       positioned ancestor #chatlog-wrap does not have): the visible area above the
+       keyboard is --mobile-keyboard-visible-vh; subtract the top inset and the 100px
+       composer reservation (84px reply box + 8px gap + 8px dock) so the wrap bottom stops
+       a clear gap above the composer. */
+    height: calc(
+      var(--mobile-keyboard-visible-vh, 100vh) -
+      max(6px, env(safe-area-inset-top)) -
+      100px
+    );
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  body.mobile-touch.mobile-keyboard-open.mobile-chat-open #chatlog-tabs {
+    /* Natural height at the top of the column; never shrunk or clipped into the log. */
+    flex: 0 0 auto;
   }
   body.mobile-touch.mobile-keyboard-open.mobile-chat-open #chatlog-frame {
-    height: 100%;
+    /* Fill ONLY the gap between the tabs and the reserved composer; scroll internally. */
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
     max-height: none;
   }
   body.mobile-touch.mobile-keyboard-open.mobile-chat-open #chat-input {
     top: auto;
     bottom: calc(100vh - var(--mobile-keyboard-visible-vh, 100vh) + 8px);
+  }
+  /* The low-priority Chat/Social/More trio yields while the keyboard is up so the
+     docked tab strip owns a clean top-left instead of a strip layered over the round
+     buttons (the owner's "tabs at the absolute top edge, badly positioned" report).
+     Keeping the trio would either crowd the tabs at every size or, if the column were
+     pushed below it, starve the log to a couple of unreadable pixels on a realistic
+     keyboard-open viewport. The trio is fairness-neutral chrome (menu buttons, never
+     actionable combat info) and returns the instant the keyboard drops via the dismiss
+     chevron, from where a Chat tap closes chat. */
+  body.mobile-touch.mobile-keyboard-open.mobile-chat-open #mobile-combat-controls {
+    display: none;
   }
   /* Issue 1577 round 2 (8): while actively replying with the keyboard open,
      expand the composer to a comfortable multi-line box within the now-expanded
@@ -3320,8 +3364,12 @@
     }
     body.mobile-touch #chat-input {
       left: max(10px, env(safe-area-inset-left));
-      /* Shifted up to match the log's new resting position (was 213px). */
-      bottom: calc(233px + env(safe-area-inset-bottom));
+      /* Seated a clear gap ABOVE the resting log (the composer stacks over the log on
+         mobile). The log wrap here docks at bottom 132px and stands ~110px tall (40px
+         tab strip + the 4-line frame), so its top edge is ~242px up; 250px keeps the
+         composer's bottom edge a ~8px gap clear of it (was 233px, which dipped ~8px into
+         the tab strip). The compact tier raises the log further and re-seats this below. */
+      bottom: calc(250px + env(safe-area-inset-bottom));
       width: min(calc(330px * var(--mobile-chrome-scale, 1)), 44vw);
     }
     body.mobile-touch #player-frame {
@@ -3500,6 +3548,16 @@
   body.mobile-touch.hud-mobile-compact #chatlog-frame {
     /* 4-line cap on compact phones too (issue 1577 round 2 (6)). */
     height: calc(11px * var(--chat-font-scale, 1) * 1.4 * 4 + 6px);
+  }
+  /* Compact re-seats the composer to clear its own (higher) log wrap: the wrap docks at
+     bottom 160px and stands ~108px tall (40px tabs + the 4-line frame), so its top edge
+     is ~268px up. The landscape composer's 250px seat above would dip ~18px into the tab
+     strip here, and the older 233px seat overlapped it by ~34px (the resting half of the
+     owner's overlap report). 276px keeps the composer's bottom edge a ~8px gap above the
+     log; on the shortest phones that lifts it over the target-frame band, a pre-existing
+     short-viewport constraint the overlap audit still notes (never a hard fail). */
+  body.mobile-touch.hud-mobile-compact #chat-input {
+    bottom: calc(276px + env(safe-area-inset-bottom));
   }
   body.mobile-touch.hud-mobile-compact #right-tracker-stack {
     width: calc(148px * var(--mobile-chrome-scale, 1));

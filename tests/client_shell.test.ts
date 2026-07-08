@@ -472,6 +472,67 @@ describe('client HTML shell', () => {
     );
   });
 
+  it('docks the keyboard-open chat as a non-overlapping column that reserves the composer', () => {
+    // Real-device chat-overlap fix: while the on-screen keyboard is up the chat log used to
+    // overflow DOWN into the composer (the log's lower lines rendered under the typed text).
+    // The wrap is now a flex COLUMN with a DEFINITE height that reserves the docked composer:
+    // it subtracts the top inset and a 100px composer reservation (84px reply box + gaps) from
+    // the visible-above-keyboard height, so the log frame can only fill the space ABOVE the
+    // composer, never over it.
+    const wrapRule =
+      hudMobileCss.match(
+        /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #chatlog-wrap \{([^}]*)\}/,
+      )?.[1] ?? '';
+    expect(wrapRule).toMatch(/display:\s*flex/);
+    expect(wrapRule).toMatch(/flex-direction:\s*column/);
+    // The height RESERVES the composer: visible-vh minus the top inset minus the 100px
+    // composer box. The literal 100px reservation is load-bearing (a regression that drops it
+    // re-introduces the overlap), so pin it alongside the var.
+    expect(wrapRule).toMatch(/var\(--mobile-keyboard-visible-vh, 100vh\)/);
+    // Whitespace-tolerant: biome breaks the long calc across lines.
+    expect(wrapRule).toMatch(/-\s+100px/);
+    expect(wrapRule).not.toMatch(
+      /height:\s*calc\(var\(--mobile-keyboard-visible-vh, 100vh\) - 84px\)/,
+    );
+    // The log frame FLEXES to fill only the tabs-to-composer gap (not height:100%, the old bug
+    // that made the frame overflow past the wrap by the tab strip's height).
+    const frameRule =
+      hudMobileCss.match(
+        /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #chatlog-frame \{([^}]*)\}/,
+      )?.[1] ?? '';
+    expect(frameRule).toMatch(/flex:\s*1 1 auto/);
+    expect(frameRule).toMatch(/min-height:\s*0/);
+    expect(frameRule).not.toMatch(/height:\s*100%/);
+    // The tab strip keeps its natural height at the top of the column (never shrunk).
+    const tabsRule =
+      hudMobileCss.match(
+        /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #chatlog-tabs \{([^}]*)\}/,
+      )?.[1] ?? '';
+    expect(tabsRule).toMatch(/flex:\s*0 0 auto/);
+    // The composer still docks just above the keyboard's top edge.
+    const inputRule =
+      hudMobileCss.match(
+        /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #chat-input \{([^}]*)\}/,
+      )?.[1] ?? '';
+    expect(inputRule).toMatch(
+      /bottom:\s*calc\(100vh - var\(--mobile-keyboard-visible-vh, 100vh\) \+ 8px\)/,
+    );
+    // The low-priority Chat/Social/More trio yields while the keyboard is up so the docked tab
+    // strip owns a clean top-left (fairness-neutral menu chrome, restored on keyboard dismiss).
+    expect(hudMobileCss).toMatch(
+      /body\.mobile-touch\.mobile-keyboard-open\.mobile-chat-open #mobile-combat-controls \{\s*display:\s*none;/,
+    );
+    // The dismiss chevron is CENTERED in the 84px reply composer's row (an attached part of the
+    // composer, not a corner button): base dock (+8px) plus (84 - 40) / 2 = 22px => +30px.
+    const chevronReplyRule =
+      hudMobileCss.match(
+        /body\.mobile-touch\.mobile-chat-open\.mobile-chat-reply\.mobile-keyboard-open #chat-dismiss \{([^}]*)\}/,
+      )?.[1] ?? '';
+    expect(chevronReplyRule).toMatch(
+      /bottom:\s*calc\(100vh - var\(--mobile-keyboard-visible-vh, 100vh\) \+ 30px\)/,
+    );
+  });
+
   it('ships the mobile party-chip CSS with a 40px touch floor, scoped to body.mobile-touch', () => {
     // The chip meets the mobile touch floor and reveals the frames only under the
     // painter-driven .party-expanded class (collapsed by default hides the rows + Leave).

@@ -565,6 +565,8 @@ async function readChatBoxes(page) {
     return {
       chatOpen: document.body.classList.contains('mobile-chat-open'),
       log: box('chatlog-wrap'),
+      tabs: box('chatlog-tabs'),
+      frame: box('chatlog-frame'),
       input: box('chat-input'),
       dismiss: box('chat-dismiss'),
       inputFocused: document.activeElement === document.getElementById('chat-input'),
@@ -675,6 +677,10 @@ try {
   // Count the profiles where the full open -> yield -> close -> restore cycle actually ran,
   // and fail() below if that count is zero.
   let chatCyclesCompleted = 0;
+  // Count the resting chat-open profiles where the promoted HARD log-vs-composer pair was
+  // actually measured (not skipped because chat failed to open), so the run can prove the
+  // pair was exercised rather than silently absent.
+  let chatRestingPairsChecked = 0;
 
   for (const prof of PROFILES) {
     await flipViewport(page, media, prof.w, prof.h, prof.dsf, prof.tier);
@@ -997,15 +1003,41 @@ try {
           }
         }
       }
-      // The log and composer clearance (siblings in the chat overlay). NOTE-only for the
-      // same reason: their seats are pre-existing chat layout, not this PR's change.
+      // HARD (real-device chat-overlap fix): the RESTING chat log and composer must not
+      // overlap. The composer stacks ABOVE the log on mobile, so its bottom edge must
+      // clear the log wrap's top edge. Promoted from a NOTE now that the resting seats
+      // reserve the composer (the compact tier re-seats #chat-input to clear its higher
+      // wrap; landscape lifted the seat 233px -> 250px). This is the resting half of the
+      // owner's overlap report.
       if (chat.log && chat.input) {
         const gap = controlGap('chatlog-wrap', chat.log, 'chat-input', chat.input, CIRCLE_IDS);
-        if (gap < MIN_GAP_CHROME) {
-          note(
-            `${prof.name}: chat log overlaps composer by ${(-gap).toFixed(1)}px ` +
-              `(pre-existing chat seat; not changed by this PR)`,
+        if (gap < MIN_GAP_INTERACTIVE) {
+          fail(
+            `${prof.name}: resting chat log/composer gap ${gap.toFixed(1)}px < ${MIN_GAP_INTERACTIVE}px ` +
+              `(the composer must clear the log wrap by the readability floor while chat is open)`,
           );
+        } else {
+          chatRestingPairsChecked++;
+        }
+        // Column order: the tab strip sits at the TOP of the wrap, above the log frame, so
+        // the two never meaningfully overlap. The tabs carry a deliberate margin-bottom of
+        // -1px (a classic border-merge with the frame's top edge), so tolerate ~1px; a real
+        // overflow (the old keyboard-open bug rode the frame tens of px up over the tabs) is
+        // gated.
+        if (chat.tabs && chat.frame) {
+          const tabsGap = controlGap(
+            'chatlog-tabs',
+            chat.tabs,
+            'chatlog-frame',
+            chat.frame,
+            CIRCLE_IDS,
+          );
+          if (tabsGap < -2) {
+            fail(
+              `${prof.name}: resting chat tab strip overlaps the log frame by ` +
+                `${(-tabsGap).toFixed(1)}px (tabs must sit above the log, never over it)`,
+            );
+          }
         }
       }
       // Screenshot the yield state on the primary profile (wake the chrome first so the
@@ -1068,6 +1100,17 @@ try {
         '-- a total mobile-chat-tap regression',
     );
   }
+  // Prove the promoted RESTING log-vs-composer HARD pair was actually measured on at least
+  // one profile (else the "hard" check is vacuously passing because chat never opened).
+  if (chatRestingPairsChecked === 0) {
+    fail(
+      'resting chat log-vs-composer pair was never measured on ANY profile ' +
+        '(the promoted hard check would pass vacuously)',
+    );
+  }
+  console.log(
+    `resting chat log-vs-composer HARD pair measured on ${chatRestingPairsChecked} profile(s)`,
+  );
 
   // ---- Chat keyboard-dismiss: drop the keyboard WITHOUT closing chat. ----
   // On the primary 844 profile: open chat, simulate the on-screen keyboard rising (the
@@ -1093,12 +1136,14 @@ try {
     // real applier writes (body). Its docked bottom sits at the keyboard's top edge
     // (viewport bottom - visibleVh), i.e. measured from the top rect.bottom ~= visibleVh.
     // If the var were shadowed off body (the pre-fix bug), the seat would fall back to
-    // 100vh and the composer would sit at rect.bottom ~= 8, at the very bottom UNDER the
-    // keyboard. Require it both moved from its resting seat AND docked at the keyboard line.
+    // 100vh and the composer would sit at rect.bottom ~= vh - 8, at the very bottom UNDER
+    // the keyboard. So the docked bottom clearing the keyboard line (<= visibleVh) is itself
+    // the proof the var landed on body: a shadowed seat sits FAR below it. (A separate
+    // "moved from the resting seat" heuristic used to back this up, but the resting composer
+    // now seats near the keyboard line too, so the docked-bottom test carries it alone.)
     if (restingChat.input && beforeDismiss.input) {
-      const moved = Math.abs(beforeDismiss.input.top - restingChat.input.top) > 20;
       const docked = beforeDismiss.input.bottom <= KBD_VH + 2;
-      if (!moved || !docked) {
+      if (!docked) {
         fail(
           `chat keyboard-dismiss: composer did not dock above the keyboard on open ` +
             `(resting top=${restingChat.input.top.toFixed(1)}, open top=${beforeDismiss.input.top.toFixed(1)}, ` +
@@ -1173,6 +1218,160 @@ try {
     });
     await sleep(120);
   }
+
+  // ---- Chat keyboard-OPEN docked layout (real-device overlap fix). ----
+  // The owner's screenshot bug: while typing with the on-screen keyboard up, the docked
+  // chat log's lower lines rendered UNDER the composer (two texts interleaved). The fix
+  // re-lays the keyboard-open chat as one non-overlapping column: tab strip at the top,
+  // the log frame flexing to fill only the space between the tabs and a RESERVED composer,
+  // the composer docked just above the keyboard line with the dismiss chevron centred in
+  // its row. This section drives the REAL chat toggle (so the log frame is populated), then
+  // simulates the keyboard rising (the proven body-class + --mobile-keyboard-visible-vh
+  // recipe) and HARD-checks the column at three landscape sizes. These pairs were NOTE-only
+  // (or unmeasured) before the fix; they are gated now.
+  console.log('\n=== Chat keyboard-open docked column (log/composer/tabs/chevron) ===');
+  const KB_PROFILES = [
+    { w: 844, h: 390, dsf: 3, tier: 'hud-mobile-compact', kbvh: 195 },
+    { w: 740, h: 360, dsf: 3, tier: 'hud-mobile-compact', kbvh: 180 },
+    { w: 932, h: 430, dsf: 3, tier: 'hud-mobile-compact', kbvh: 215 },
+  ];
+  let kbLayoutChecked = 0;
+  for (const kp of KB_PROFILES) {
+    await flipViewport(page, media, kp.w, kp.h, kp.dsf, kp.tier);
+    const opened = await toggleMobileChat(page);
+    if (!opened) {
+      note(`chat keyboard-open @${kp.w}: chat did not open; NOT COVERED`);
+      continue;
+    }
+    await page.evaluate(() => document.getElementById('chat-input')?.focus());
+    await sleep(120);
+    await simulateKeyboardOpen(page, kp.kbvh);
+    // Type a real value so the composer carries text over the log lines, exactly like the
+    // owner's screenshot (the overlap only reads as "interleaved text" with content in both).
+    await page.evaluate(() => {
+      const i = document.getElementById('chat-input');
+      if (i) {
+        i.value = 'typing a long message that would ride over the chat log lines below it';
+        i.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    await sleep(120);
+    const c = await readChatBoxes(page);
+    const kbLine = kp.kbvh; // the keyboard's top edge (visible-vh from the top)
+    // Guard the docked state actually engaged (the composer moved up to the keyboard line);
+    // if the simulated keyboard did not take (var shadowing etc.), skip rather than false-pass.
+    if (!c.input || c.input.bottom > kbLine + 3) {
+      note(
+        `chat keyboard-open @${kp.w}: composer did not dock above the keyboard ` +
+          `(input.bottom=${c.input ? c.input.bottom.toFixed(1) : 'n/a'} vs kbLine=${kbLine}); NOT COVERED`,
+      );
+    } else if (!c.log || !c.frame) {
+      // The composer docked but the log box did not render: the overlap pair cannot be
+      // measured, so this size is NOT COVERED (fail loudly rather than pass vacuously if it
+      // happens on ALL sizes, via the kbLayoutChecked floor below).
+      note(
+        `chat keyboard-open @${kp.w}: docked composer but log wrap/frame not measurable ` +
+          `(log=${!!c.log} frame=${!!c.frame}); NOT COVERED`,
+      );
+    } else {
+      kbLayoutChecked++;
+      // (1) HARD: the log frame must not overlap the composer. This is the exact bug: the
+      // old height:100% frame plus the tab strip overflowed ~53px DOWN into the composer.
+      {
+        const gap = controlGap('chatlog-frame', c.frame, 'chat-input', c.input, CIRCLE_IDS);
+        if (gap < MIN_GAP_INTERACTIVE) {
+          fail(
+            `chat keyboard-open @${kp.w}: docked log frame/composer gap ${gap.toFixed(1)}px ` +
+              `< ${MIN_GAP_INTERACTIVE}px (the log must reserve the composer, not overlap it)`,
+          );
+        }
+      }
+      // Also gate the wrap (the whole log box) vs the composer, belt and suspenders.
+      {
+        const gap = controlGap('chatlog-wrap', c.log, 'chat-input', c.input, CIRCLE_IDS);
+        if (gap < MIN_GAP_INTERACTIVE) {
+          fail(
+            `chat keyboard-open @${kp.w}: docked log wrap/composer gap ${gap.toFixed(1)}px ` +
+              `< ${MIN_GAP_INTERACTIVE}px`,
+          );
+        }
+      }
+      // (2) HARD: the tab strip sits above the log frame (column order), never over it
+      // (tolerating the tabs' deliberate -1px border-merge margin), and is not cut off the
+      // top of the viewport (respecting safe-area-inset-top; horizontal scroll is fine).
+      if (c.tabs && c.frame) {
+        const tabsGap = controlGap('chatlog-tabs', c.tabs, 'chatlog-frame', c.frame, CIRCLE_IDS);
+        if (tabsGap < -2) {
+          fail(
+            `chat keyboard-open @${kp.w}: docked tab strip overlaps the log by ` +
+              `${(-tabsGap).toFixed(1)}px (tabs must sit above the log frame)`,
+          );
+        }
+        if (c.tabs.top < -0.5) {
+          fail(
+            `chat keyboard-open @${kp.w}: tab strip cut off the top of the viewport ` +
+              `(tabs top=${c.tabs.top.toFixed(1)}, must respect safe-area-inset-top)`,
+          );
+        }
+      }
+      // (3) HARD: the dismiss chevron sits INSIDE the composer's vertical band (an attached
+      // part of the composer row, not a detached button below/above it).
+      if (c.dismiss) {
+        if (c.dismiss.top < c.input.top - 0.5 || c.dismiss.bottom > c.input.bottom + 0.5) {
+          fail(
+            `chat keyboard-open @${kp.w}: dismiss chevron outside the composer row ` +
+              `(chevron top=${c.dismiss.top.toFixed(1)} bottom=${c.dismiss.bottom.toFixed(1)}, ` +
+              `composer top=${c.input.top.toFixed(1)} bottom=${c.input.bottom.toFixed(1)})`,
+          );
+        }
+      } else {
+        fail(`chat keyboard-open @${kp.w}: dismiss chevron not visible while typing`);
+      }
+      // (4) HARD: nothing in the docked column dips below the keyboard's top edge (which
+      // the keyboard would cover). The composer bottom is the lowest element.
+      for (const [id, r] of [
+        ['chatlog-wrap', c.log],
+        ['chat-input', c.input],
+        ['chat-dismiss', c.dismiss],
+      ]) {
+        if (r && r.bottom > kbLine + 3) {
+          fail(
+            `chat keyboard-open @${kp.w}: #${id} bottom ${r.bottom.toFixed(1)} dips below the ` +
+              `keyboard line ${kbLine} (would be hidden under the keyboard)`,
+          );
+        }
+      }
+    }
+    if (kp.w === 844) {
+      await page.evaluate(() => window.dispatchEvent(new Event('touchstart')));
+      await sleep(120);
+      await page.screenshot({ path: `${SHOT_DIR}/passA_chat_keyboard_open_844.png` });
+    }
+    // Clean state for the next size: drop the keyboard sim + close chat (force the classes
+    // off if the pointer tap missed, matching the other chat sections).
+    await simulateKeyboardClose(page);
+    if (await page.evaluate(() => document.body.classList.contains('mobile-chat-open'))) {
+      await toggleMobileChat(page);
+      await sleep(120);
+    }
+    await page.evaluate(() => {
+      document.body.classList.remove(
+        'mobile-chat-open',
+        'mobile-chat-reply',
+        'mobile-keyboard-open',
+      );
+      document.body.style.removeProperty('--mobile-keyboard-visible-vh');
+      window.__game.hud?.update?.(0.05);
+    });
+    await sleep(120);
+  }
+  if (kbLayoutChecked === 0) {
+    fail(
+      'chat keyboard-open docked column was never measured on ANY size ' +
+        '(the promoted hard checks would pass vacuously)',
+    );
+  }
+  console.log(`chat keyboard-open docked column HARD-checked on ${kbLayoutChecked} size(s)`);
 
   // Close the meters overlay before Pass B: it is a toggled panel (not a .window),
   // so Pass B's closeAll() would leave it open and its own toggleMeters check would
