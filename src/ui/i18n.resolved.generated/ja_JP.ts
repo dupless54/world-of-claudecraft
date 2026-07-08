@@ -7043,6 +7043,9 @@ export const ja_JP: EnTranslations = {
       "deacon_voss": {
         "name": "助祭ヴォス"
       },
+      "training_dummy": {
+        "name": "訓練用ダミー"
+      },
       "ridge_stalker": {
         "name": "尾根の追跡者"
       },

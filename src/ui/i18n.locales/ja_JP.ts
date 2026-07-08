@@ -2504,6 +2504,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.mobs.gravecaller_cultist.name': 'グレイブコーラーの信徒',
   'entities.mobs.gravecaller_summoner.name': 'グレイブコーラーの召喚師',
   'entities.mobs.deacon_voss.name': '助祭ヴォス',
+  'entities.mobs.training_dummy.name': '訓練用ダミー',
   'entities.mobs.ridge_stalker.name': '尾根の追跡者',
   'entities.mobs.deeprock_kobold.name': 'ディープロックの坑夫',
   'entities.mobs.thornpeak_ogre.name': 'ソーンピーク・オーガ',

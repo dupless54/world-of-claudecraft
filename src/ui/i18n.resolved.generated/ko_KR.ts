@@ -7043,6 +7043,9 @@ export const ko_KR: EnTranslations = {
       "deacon_voss": {
         "name": "부제 보스"
       },
+      "training_dummy": {
+        "name": "훈련용 허수아비"
+      },
       "ridge_stalker": {
         "name": "산등성이 추적자"
       },
