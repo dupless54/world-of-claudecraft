@@ -2895,7 +2895,14 @@
   }
 
   /* ---------- vendor ---------- */
-  /* vendor */
+  /* LEGACY vendor rules: still LOAD-BEARING. The copper vendor no longer emits
+     these classes (it uses the AAA grammar further down), but two live
+     consumers do: heroic_vendor_window.ts (.vendor-item, .vi-name, .vi-price,
+     .vendor-section-title, the :disabled arm) and crafting_window.ts
+     (.vendor-item, .vi-name, .vi-sub, .vi-price, .vendor-section-title,
+     .vendor-empty). Only .vendor-sell-junk and .vendor-hint are truly
+     unmatched. The deferred cleanup chore must migrate BOTH consumers before
+     removing anything here. */
   #vendor-window {
     width: 400px;
   }
@@ -2985,9 +2992,10 @@
   }
 
   /* Redesigned vendor: adopts the shared .window-frame chrome plus the
-     .list-rows / .item-cell grammar (spec 6.1 to 6.3). The legacy vendor rules
-     above are now unmatched (the painter emits the grammar classes below) and
-     stay only as a later removal chore. The frame mounts on an INNER container
+     .list-rows / .item-cell grammar (spec 6.1 to 6.3). The copper vendor no
+     longer emits the legacy classes above, but heroic_vendor_window.ts and
+     crafting_window.ts still do (see the section-top comment); the legacy rules
+     stay load-bearing. The frame mounts on an INNER container
      (vendor_window.ts ensureFrame), so the shared #vendor-window root never
      carries builder classes or aria; the root overrides below are scoped with
      :has(> .window-frame) (part of the documented engine floor, .browserslistrc),

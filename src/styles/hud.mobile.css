@@ -2421,6 +2421,15 @@
     min-height: 40px;
     font-size: 16px;
   }
+  /* The redesigned vendor rows (.vendor-row, vendor_window.ts) mirror the
+     .vendor-item guarantee above: an explicit tap floor (the 44px .item-cell
+     usually clears it, but the floor must not depend on row content) and the
+     16px text that stops iOS focus-zoom. Tokenized floor; 16px mirrors the
+     legacy literal above (no 16px text token exists). */
+  body.mobile-touch .vendor-row {
+    min-height: var(--touch-min);
+    font-size: 16px;
+  }
   body.mobile-touch .soc-add input,
   body.mobile-touch .trade-money input {
     min-height: 40px;
@@ -2677,6 +2686,20 @@
     box-sizing: border-box;
   }
   body.mobile-touch.vendor-open #vendor-window .panel-title .x-btn {
+    display: none;
+  }
+  /* Redesigned vendor chrome (.window-titlebar / .window-close, the inner
+     window-frame mount from vendor_window.ts): mirror the two legacy panel-title
+     rules above for the docked cluster. The header pins to the same 47px as the
+     #bags .panel-title half so the 50/50 split lines up, and the vendor's own
+     close control hides because the cluster closes as one unit through the bags
+     close (hud.ts closeVendor pairing), exactly like the legacy x-btn. */
+  body.mobile-touch.vendor-open #vendor-window .window-titlebar {
+    height: 47px;
+    min-height: 47px;
+    box-sizing: border-box;
+  }
+  body.mobile-touch.vendor-open #vendor-window .window-close {
     display: none;
   }
   /* The bank docks its bags companion side by side on touch exactly like the
