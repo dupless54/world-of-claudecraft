@@ -15,7 +15,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 406,
-      "state": "02f46b7b",
+      "state": "c34f2af6",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -46,7 +46,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -82,6 +83,7 @@
           "critChance": 0.0625,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0625,
+          "dualWielding": true,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 62,
@@ -92,6 +94,12 @@
           "maxHp": 62,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0585,
@@ -132,7 +140,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 416,
-      "state": "5e6b7196",
+      "state": "fa3c4a21",
       "events": "652092ee",
       "rng": {
         "draws": 1,
@@ -163,7 +171,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -200,6 +209,7 @@
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
+          "dualWielding": true,
           "fallStartY": 2.077747,
           "fiveSecondRule": 99,
           "hp": 93,
@@ -210,6 +220,12 @@
           "maxHp": 185,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0615,
@@ -249,7 +265,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 416,
-      "state": "d6d50661",
+      "state": "9ebf138c",
       "events": "84c4e002",
       "rng": {
         "draws": 1,
@@ -280,7 +296,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -317,6 +334,7 @@
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
+          "dualWielding": true,
           "fallStartY": 2.353205,
           "fiveSecondRule": 99.1,
           "hp": 185,
@@ -327,6 +345,12 @@
           "maxHp": 185,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0615,
@@ -367,7 +391,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 416,
-      "state": "d6d50661",
+      "state": "9ebf138c",
       "events": "741638a5",
       "rng": {
         "draws": 1,
@@ -398,7 +422,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -435,6 +460,7 @@
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
+          "dualWielding": true,
           "fallStartY": 2.353205,
           "fiveSecondRule": 99.1,
           "hp": 185,
@@ -445,6 +471,12 @@
           "maxHp": 185,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0615,

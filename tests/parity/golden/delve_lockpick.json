@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 406,
-      "state": "02f46b7b",
+      "state": "c34f2af6",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -47,7 +47,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -83,6 +84,7 @@
           "critChance": 0.0625,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0625,
+          "dualWielding": true,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
           "hp": 62,
@@ -93,6 +95,12 @@
           "maxHp": 62,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0585,
@@ -133,7 +141,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 419,
-      "state": "d01f4088",
+      "state": "96251199",
       "events": "d9e43221",
       "rng": {
         "draws": 4,
@@ -144,7 +152,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 419,
-      "state": "b1d01495",
+      "state": "ee8bd1ec",
       "events": "9cfda0e2",
       "rng": {
         "draws": 4,
@@ -155,7 +163,7 @@
       "tick": 30,
       "time": 1.5,
       "nextId": 419,
-      "state": "13ea0d6a",
+      "state": "c12363c9",
       "events": "356a26ae",
       "rng": {
         "draws": 5,
@@ -166,7 +174,7 @@
       "tick": 38,
       "time": 1.9,
       "nextId": 421,
-      "state": "a5a42394",
+      "state": "de0e5fdd",
       "events": "13255c68",
       "rng": {
         "draws": 8,
@@ -213,7 +221,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -251,6 +260,7 @@
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
+          "dualWielding": true,
           "fiveSecondRule": 100.9,
           "hp": 50000,
           "id": 405,
@@ -261,6 +271,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0615,
@@ -439,7 +455,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 421,
-      "state": "3003a59b",
+      "state": "b23c422c",
       "events": "741638a5",
       "rng": {
         "draws": 8,
@@ -450,7 +466,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 421,
-      "state": "3003a59b",
+      "state": "b23c422c",
       "events": "741638a5",
       "rng": {
         "draws": 8,
@@ -497,7 +513,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -535,6 +552,7 @@
           "critChance": 0.0715,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0715,
+          "dualWielding": true,
           "fiveSecondRule": 101,
           "hp": 50000,
           "id": 405,
@@ -545,6 +563,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.0615,

@@ -32,7 +32,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "b85875bb",
+      "state": "c8d84b24",
       "events": "84c5f94d",
       "rng": {
         "draws": 0,
@@ -62,7 +62,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -161,6 +162,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -168,12 +171,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -195,10 +198,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -264,7 +267,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "4e83a5e5",
+      "state": "78dca26a",
       "events": "252eb0c9",
       "rng": {
         "draws": 0,
@@ -294,7 +297,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -393,6 +397,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -400,12 +406,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -427,10 +433,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -496,7 +502,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "4e83a5e5",
+      "state": "78dca26a",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -526,7 +532,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -625,6 +632,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -632,12 +641,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -659,10 +668,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -728,7 +737,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "4e83a5e5",
+      "state": "78dca26a",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -758,7 +767,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -857,6 +867,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -864,12 +876,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -891,10 +903,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -960,7 +972,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "71b12f6d",
+      "state": "ab0891b4",
       "events": "80c5cba6",
       "rng": {
         "draws": 0,
@@ -990,7 +1002,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1093,6 +1106,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1100,12 +1115,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1127,10 +1142,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1196,7 +1211,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 407,
-      "state": "71b12f6d",
+      "state": "ab0891b4",
       "events": "8ce3d8c8",
       "rng": {
         "draws": 0,
@@ -1226,7 +1241,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1329,6 +1345,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1336,12 +1354,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1363,10 +1381,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1432,7 +1450,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 407,
-      "state": "ccd16245",
+      "state": "8d6fead8",
       "events": "6a0cdba1",
       "rng": {
         "draws": 0,
@@ -1443,7 +1461,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 407,
-      "state": "ccd16245",
+      "state": "8d6fead8",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -1473,7 +1491,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1576,6 +1595,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1583,12 +1604,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 100,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1610,10 +1631,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1679,7 +1700,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 407,
-      "state": "c1a0cdc4",
+      "state": "0037a309",
       "events": "baa14029",
       "rng": {
         "draws": 0,
@@ -1710,7 +1731,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1813,6 +1835,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1820,12 +1844,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 100,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1847,10 +1871,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1916,7 +1940,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 407,
-      "state": "c1a0cdc4",
+      "state": "0037a309",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -1947,7 +1971,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2050,6 +2075,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -2057,12 +2084,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 100,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -2084,10 +2111,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",

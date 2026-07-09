@@ -2992,13 +2992,16 @@
       font-size: 14px;
     }
     body.mobile-touch #talents-window .ts-det-desc {
-      font-size: 12px;
-      line-height: 1.3;
-      margin-bottom: 5px;
+      font-size: 13px;
+      line-height: 1.35;
+      margin-bottom: 6px;
     }
-    body.mobile-touch #talents-window .ts-det-row {
-      margin-bottom: 4px;
-      padding: 5px 8px;
+    body.mobile-touch #talents-window .ts-det-meta {
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    body.mobile-touch #talents-window .ts-det-attr {
+      padding: 3px 8px;
     }
     body.mobile-touch #talents-window .ts-det-mastery {
       margin-bottom: 5px;
@@ -3019,13 +3022,17 @@
        drop the two SECONDARY blocks here (mastery + the example-abilities strip)
        and keep the decision info (role, description, primary attribute,
        complexity) with the View talents action visible without scrolling.
-       Portrait and desktop keep mastery and examples. The standalone examples
-       label is a direct child of the panel; the stat-row labels (also
-       .ts-det-label) live inside .ts-det-row and are untouched. */
+       Portrait and desktop keep mastery and examples. The example strip (label +
+       icons) is one .ts-ex-block; the primary attribute and complexity use
+       .ts-det-attr / .ts-det-cx and are untouched. */
     body.mobile-touch #talents-window .ts-det-mastery,
-    body.mobile-touch #talents-window .ts-ex-list,
-    body.mobile-touch #talents-window .ts-panel > .ts-det-label {
+    body.mobile-touch #talents-window .ts-ex-block {
       display: none;
+    }
+    /* With the example block hidden, it can no longer pin the bottom group, so the
+       action button reclaims its auto top margin to stay at the card's bottom. */
+    body.mobile-touch #talents-window .ts-view-talents.has-ex {
+      margin-top: auto;
     }
   }
   body.mobile-touch #spellbook [data-close] {

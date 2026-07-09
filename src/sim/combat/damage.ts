@@ -22,9 +22,10 @@
 // `src/sim`-pure: no DOM/Three/render/ui/game/net imports, no Math.random/Date.now
 // (enforced by tests/architecture.test.ts).
 
-import { ABILITIES, DELVES, GROUP_XP_BONUS, MOBS } from '../data';
+import { ABILITIES, DELVES, GROUP_XP_BONUS, ITEMS, MOBS } from '../data';
 import { recalcPlayerStats } from '../entity';
 import { DAMAGE_IDLE_DESPAWN_MOB_IDS, DAMAGE_IDLE_DESPAWN_SECONDS } from '../entity_roster';
+import { weaponHand } from '../equipment_rules';
 import { aurasSurvivingDeath } from '../resurrection';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
@@ -99,6 +100,22 @@ export function dealDamage(
   // wild-mob leash recovery, and must not inherit this immunity from stale state.
   if (target.kind === 'mob' && target.aiState === 'evade' && target.ownerId === null) return;
   amount = Math.max(0, amount);
+
+  // Master Armorer (Arms mastery): extra physical damage you deal WHILE wielding a
+  // two-handed weapon. The magnitude lives on the mastery's talent effect
+  // (global.masteryTwoHandDmgPct, so the tooltip is effect-backed), but is applied
+  // ONLY here so it keys off the LIVE equipped mainhand (equip-time state the
+  // precomputed talent mods cannot see) and never folds into the generic
+  // meleeDmgPct path. Short-circuits when the bonus is 0, so every non-arms spec's
+  // damage is byte-identical.
+  if (source && source.kind === 'player' && school === 'physical' && source.id !== target.id) {
+    const srcMeta = ctx.players.get(source.id);
+    const twoHandPct = srcMeta ? ctx.playerMods(srcMeta).global.masteryTwoHandDmgPct : 0;
+    const mh = srcMeta?.equipment.mainhand ? ITEMS[srcMeta.equipment.mainhand] : undefined;
+    if (twoHandPct > 0 && mh?.kind === 'weapon' && weaponHand(mh) === 'twohand') {
+      amount = Math.round(amount * (1 + twoHandPct));
+    }
+  }
 
   // Defensive Stance, classic: deal 10% less, take 10% less (and +30% threat below)
   if (
@@ -488,8 +505,20 @@ export function dealDamage(
       // Auto-attack rage, scaled by the choice-row talent multiplier (Anger
       // Management's autoRagePct) and the aura-driven bonus (Recklessness).
       // Both are exactly 1 for everyone else, leaving the classic mint.
+      // Seasoned Soldier (Arms passive): a CRIT auto mints 10% more rage. Gated on
+      // the passive being known AND committed arms, so every non-arms mint is
+      // byte-identical (mirrors Measured Fury's cost hook).
+      const seasonedCrit =
+        crit &&
+        meta &&
+        ctx.playerMods(meta).spec === 'arms' &&
+        meta.known.some((k) => k.def.passive && k.def.id === 'seasoned_soldier')
+          ? 1.1
+          : 1;
       const autoMult =
-        (1 + (meta ? ctx.playerMods(meta).global.autoRagePct : 0)) * rageGenAuraMult(source);
+        (1 + (meta ? ctx.playerMods(meta).global.autoRagePct : 0)) *
+        rageGenAuraMult(source) *
+        seasonedCrit;
       source.resource = Math.min(
         source.maxResource,
         source.resource + rageFromDealing(amount, source.level) * autoMult,

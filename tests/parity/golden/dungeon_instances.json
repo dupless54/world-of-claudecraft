@@ -31,7 +31,7 @@
       "tick": 2,
       "time": 0.1,
       "nextId": 421,
-      "state": "88e7ec22",
+      "state": "e91532b9",
       "events": "c93030c3",
       "rng": {
         "draws": 35,
@@ -61,7 +61,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -155,6 +156,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99.1,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -188,10 +191,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -879,7 +882,7 @@
       "tick": 4,
       "time": 0.2,
       "nextId": 421,
-      "state": "7ce6a353",
+      "state": "31bd6c8c",
       "events": "c84afa4b",
       "rng": {
         "draws": 49,
@@ -912,7 +915,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -995,6 +999,8 @@
         {
           "aiState": "idle",
           "attackPower": 46,
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99.2,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1029,10 +1035,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1698,7 +1704,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 421,
-      "state": "fde66892",
+      "state": "77fcb677",
       "events": "a21b62ff",
       "rng": {
         "draws": 49,
@@ -1709,7 +1715,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 421,
-      "state": "b8ab0492",
+      "state": "3b27f2ff",
       "events": "741638a5",
       "rng": {
         "draws": 49,
@@ -1720,7 +1726,7 @@
       "tick": 15,
       "time": 0.75,
       "nextId": 421,
-      "state": "4019c828",
+      "state": "45fbc025",
       "events": "741638a5",
       "rng": {
         "draws": 49,
@@ -1731,7 +1737,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 421,
-      "state": "f2a17b11",
+      "state": "b580f6f4",
       "events": "64b4e648",
       "rng": {
         "draws": 49,
@@ -1742,7 +1748,7 @@
       "tick": 24,
       "time": 1.2,
       "nextId": 421,
-      "state": "47fb61b1",
+      "state": "a6cca9d4",
       "events": "741638a5",
       "rng": {
         "draws": 49,
@@ -1775,7 +1781,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1861,6 +1868,8 @@
         {
           "aiState": "idle",
           "attackPower": 46,
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100.2,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -1895,10 +1904,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -1964,7 +1973,7 @@
       "tick": 24,
       "time": 1.2,
       "nextId": 421,
-      "state": "47fb61b1",
+      "state": "a6cca9d4",
       "events": "741638a5",
       "rng": {
         "draws": 49,
@@ -1997,7 +2006,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2083,6 +2093,8 @@
         {
           "aiState": "idle",
           "attackPower": 46,
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100.2,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -2117,10 +2129,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",

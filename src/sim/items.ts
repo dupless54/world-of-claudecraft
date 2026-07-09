@@ -46,7 +46,7 @@ import { vendorStackSize } from './vendor_stack';
 const VENDOR_BUYBACK_LIMIT = 12;
 
 function shouldAutoRouteToOffhand(meta: PlayerMeta, spec: string | null | undefined): boolean {
-  return meta.cls === 'warrior' && spec === 'fury';
+  return meta.cls === 'rogue' || (meta.cls === 'warrior' && spec === 'fury');
 }
 
 function desiredEquipSlot(
@@ -79,7 +79,8 @@ function desiredEquipSlot(
     meta.equipment.offhand
   ) {
     const offhand = ITEMS[meta.equipment.offhand];
-    if (offhand?.kind === 'weapon') return 'offhand';
+    if (!offhand || offhand.kind !== 'weapon' || weaponHand(offhand) !== 'twohand')
+      return 'offhand';
   }
   return 'mainhand';
 }

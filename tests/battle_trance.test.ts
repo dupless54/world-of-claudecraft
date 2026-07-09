@@ -8,23 +8,13 @@ import { describe, expect, it } from 'vitest';
 import { freeCostAuraActive } from '../src/sim/combat/empower_next';
 import { MOBS } from '../src/sim/data';
 import { Sim } from '../src/sim/sim';
-import { dist2d, MAX_LEVEL, STANCE_RAGE_GEN } from '../src/sim/types';
+import { dist2d, MAX_LEVEL } from '../src/sim/types';
 import { terrainHeight } from '../src/sim/world';
 
 function warriorAtCap(seed = 7): Sim {
   const sim = new Sim({ seed, playerClass: 'warrior' });
   sim.setPlayerLevel(MAX_LEVEL);
   return sim;
-}
-
-// Grant a spec-gated ability to a no-spec warrior for a base-mechanic test: the
-// grant bypasses the spec filter (spec-gating 2026-07-07) WITHOUT applying any
-// spec mastery, so the isolated rage numbers stay the pristine base values (arms
-// mastery would otherwise inflate Redhand's rage generation by 10%).
-function grantAbility(sim: Sim, abilityId: string, pid: number) {
-  const meta = (sim as any).players.get(pid);
-  meta.talentMods.grants.push({ ability: abilityId, rank: 1 });
-  (sim as any).refreshKnownAbilities(meta, false);
 }
 
 function nearestMob(sim: Sim, opts: { thornless?: boolean } = {}) {
@@ -81,6 +71,22 @@ describe('Battle Trance: arming', () => {
     expect(auras).toHaveLength(1);
     expect(auras[0].duration).toBe(10);
     expect(auras[0].remaining).toBeGreaterThan(0);
+  });
+
+  it('never arms for a Fury warrior (it owns none of the consuming abilities)', () => {
+    const sim = warriorAtCap(61);
+    expect(sim.setSpec('fury')).toBe(true);
+    const mob = nearestMob(sim);
+    mob.hp = 1_000_000;
+    mob.maxHp = 1_000_000;
+    standOff(sim, mob, 2);
+    sim.targetEntity(mob.id);
+    sim.startAutoAttack();
+    for (let i = 0; i < 20 * 120; i++) {
+      sim.tick();
+      sim.player.hp = sim.player.maxHp;
+    }
+    expect(hasTrance(sim)).toBe(false);
   });
 
   it('never arms for a non-warrior melee', () => {
@@ -147,40 +153,44 @@ describe('Battle Trance: consumption scope', () => {
     // The generic fiesta-style charge stays ability-agnostic.
     expect(freeCostAuraActive([{ kind: 'next_cast_free' }], 'hamstring')).toBe(true);
     expect(freeCostAuraActive([], 'slam')).toBe(false);
+    // Sudden Death (Arms): the same predicate frees Early Grave (execute) ONLY, so
+    // the action bar lights the execute proc glow (procGlow = freeByProc) exactly
+    // when the sim lets it fire free.
+    expect(freeCostAuraActive([{ kind: 'sudden_death' }], 'execute')).toBe(true);
+    expect(freeCostAuraActive([{ kind: 'sudden_death' }], 'heroic_strike')).toBe(false);
   });
 });
 
-describe('Redhand (overpower): the active rage builder', () => {
-  it('casts with no dodge proc required and generates 10 rage on a 5s cooldown', () => {
-    const sim = warriorAtCap(65);
-    grantAbility(sim, 'overpower', sim.playerId); // Redhand is arms-gated; grant to isolate base rage
+// Redhand (overpower) was reworked 2026-07-09 from an Arms rage BUILDER into a
+// BASELINE early rage SPENDER (all specs, level 2, 20 rage). Its Anger Management
+// interaction is covered by the talent suites (it is no longer a rage source).
+describe('Redhand (overpower): the baseline rage spender', () => {
+  it('deals damage, empowers the next Maiming Strike, and goes on a 5s cooldown', () => {
+    const sim = warriorAtCap(65); // no-spec: overpower is baseline (level 2), no grant needed
     const p = sim.player;
     const mob = nearestMob(sim, { thornless: true });
     standOff(sim, mob, 2);
     sim.targetEntity(mob.id);
-    p.resource = 0;
-    expect(p.overpowerUntil).toBeLessThan(sim.time); // no dodge window active
+    p.resource = 50;
+    const hp0 = mob.hp;
     sim.castAbility('overpower');
-    // No-spec warrior stands in Battle Stance: +STANCE_RAGE_GEN (10%) at the mint.
-    expect(p.resource).toBeCloseTo(10 * (1 + STANCE_RAGE_GEN));
+    expect(mob.hp).toBeLessThan(hp0); // dealt weapon damage
+    expect(p.auras.some((a: any) => a.kind === 'overpower_charge')).toBe(true); // empowers Maiming Strike
     expect(p.cooldowns.get('overpower')).toBe(5);
   });
 
-  it('scales with Anger Management like every ability rage source', () => {
+  it('is a 20-rage spender: refuses to cast below 20 rage', () => {
     const sim = warriorAtCap(66);
-    expect(sim.pickRowTalent(3, 'war_row_anger_management')).toBe(true);
-    // Grant AFTER the row pick: pickRowTalent recomputes talentMods (which would
-    // drop an earlier grant). Redhand is arms-gated; grant to isolate base rage.
-    grantAbility(sim, 'overpower', sim.playerId);
     const p = sim.player;
     const mob = nearestMob(sim, { thornless: true });
     standOff(sim, mob, 2);
     sim.targetEntity(mob.id);
-    p.resource = 0;
+    p.resource = 10; // below the 20 cost
+    const hp0 = mob.hp;
     sim.castAbility('overpower');
-    // No-spec warrior stands in Battle Stance: +STANCE_RAGE_GEN (10%) on top of
-    // Anger Management's 1.15x ability-rage scaling (both mints multiply).
-    expect(p.resource).toBeCloseTo(10 * 1.15 * (1 + STANCE_RAGE_GEN));
+    expect(p.resource).toBe(10); // nothing spent
+    expect(mob.hp).toBe(hp0); // no strike landed
+    expect(p.cooldowns.get('overpower')).toBeUndefined(); // no cooldown started
   });
 });
 

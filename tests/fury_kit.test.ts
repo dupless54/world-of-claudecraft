@@ -73,7 +73,7 @@ describe('fury kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Twinstrike');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(10);
+    expect(def.learnLevel).toBe(7);
     expect(def.cost).toBe(0);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(8);
@@ -90,7 +90,7 @@ describe('fury kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Red Harvest');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(16);
+    expect(def.learnLevel).toBe(10);
     expect(def.cost).toBe(80);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(0);

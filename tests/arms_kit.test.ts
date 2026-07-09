@@ -94,7 +94,7 @@ describe('(a) arms kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Breachmaker');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(16);
+    expect(def.learnLevel).toBe(12);
     expect(def.cost).toBe(10);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(45);
@@ -116,12 +116,12 @@ describe('(a) arms kit content defs', () => {
     ]);
   });
 
-  it('pins Measured Fury: free passive, level 12, arms only, no cooldown', () => {
+  it('pins Measured Fury: free passive, level 5, arms only, no cooldown', () => {
     const def = ABILITIES.measured_fury;
     expect(def).toBeDefined();
     expect(def.name).toBe('Measured Fury');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(12);
+    expect(def.learnLevel).toBe(5);
     expect(def.cost).toBe(0);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(0);

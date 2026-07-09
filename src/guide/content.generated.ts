@@ -257,6 +257,22 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
         "name": "Measured Fury"
       },
       {
+        "id": "seasoned_soldier",
+        "name": "Seasoned Soldier"
+      },
+      {
+        "id": "sudden_death",
+        "name": "Sudden Death"
+      },
+      {
+        "id": "diabolical_twinstrike",
+        "name": "Diabolical Twinstrike"
+      },
+      {
+        "id": "cleaving_blows",
+        "name": "Cleaving Blows"
+      },
+      {
         "id": "breachmaker",
         "name": "Breachmaker"
       },
@@ -274,7 +290,7 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
       },
       {
         "id": "enrage_passive",
-        "name": "Stoke"
+        "name": "Mayhem"
       }
     ],
     "model": "player_warrior",

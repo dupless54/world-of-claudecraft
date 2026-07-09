@@ -2408,8 +2408,9 @@
   }
   .ts-panel-head {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 9px;
+    gap: 6px;
     margin-bottom: 8px;
   }
   .ts-panel .ts-icon {
@@ -2442,7 +2443,7 @@
     box-shadow: 0 0 8px #ffd10066;
   }
   .ts-panel-title {
-    text-align: left;
+    text-align: center;
     min-width: 0;
   }
   .ts-panel .ts-name {
@@ -2540,49 +2541,63 @@
     margin: 2px 2px 4px;
   }
   .ts-det-desc {
-    font-size: 12px;
-    color: #d8c9a0;
-    line-height: 1.45;
-    margin-bottom: 8px;
+    font-size: 14px;
+    color: #e8d6a0;
+    line-height: 1.5;
+    margin-bottom: 11px;
+    text-align: center;
   }
-  .ts-det-rows {
+  /* Compact meta: primary attribute as a small content-hugging chip, complexity as a
+     lone colored line (no heavy box), matching the WoW-style spec screen reference. */
+  .ts-det-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .ts-det-row {
-    flex: 1;
-    min-width: 120px;
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 5px;
-    padding: 7px 10px;
-    border: 1px solid #463a1c;
-    border-radius: 4px;
-    background: #14100a;
+    gap: 6px;
+    margin-bottom: 11px;
   }
+  .ts-det-attr {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 4px 10px;
+    border: 1px solid #5a4a22;
+    border-radius: 5px;
+    background: #191207;
+  }
+  .ts-det-attr-cap,
+  .ts-det-cx-cap {
+    font-size: 10px;
+    color: #9a8a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+  .ts-det-attr-val {
+    font-size: 14px;
+    color: #ffd97a;
+    font-weight: 700;
+  }
+  .ts-det-cx {
+    font-size: 13px;
+    font-weight: 700;
+    padding-left: 2px;
+  }
+  .ts-cx-low {
+    color: #7fc77f;
+  }
+  .ts-cx-medium {
+    color: var(--gold);
+  }
+  .ts-cx-high {
+    color: #e07a5a;
+  }
+  /* Standalone section heading (the example-abilities strip). */
   .ts-det-label {
     font-size: 12px;
     color: #9a8a5a;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-  }
-  .ts-det-val {
-    font-size: 14px;
-    color: #fff;
-    font-weight: 600;
-  }
-  .ts-det-val.ts-cx-low {
-    color: #7fc77f;
-  }
-  .ts-det-val.ts-cx-medium {
-    color: var(--gold);
-  }
-  .ts-det-val.ts-cx-high {
-    color: #e07a5a;
   }
   .ts-det-mastery {
     font-size: 11px;
@@ -2596,9 +2611,17 @@
   .ts-det-mastery b {
     color: var(--gold);
   }
+  /* The example strip + the primary action are the card's bottom group: push them
+     together to the bottom (margin-top:auto on the block) so the empty space is one
+     gap ABOVE them, not a big gap between the examples and the button. Centered. */
+  .ts-ex-block {
+    margin-top: auto;
+    text-align: center;
+  }
   .ts-ex-list {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 8px;
     margin: 4px 0 10px;
   }
@@ -2643,6 +2666,11 @@
     width: 100%;
     margin-top: auto;
     margin-right: 0;
+  }
+  /* When the example strip is present it already pins the bottom group, so the button
+     sits directly under it instead of taking its own auto gap. */
+  .ts-view-talents.has-ex {
+    margin-top: 0;
   }
   /* The currently-selected spec's button reads as the primary/committed action. */
   .ts-view-talents.primary {

@@ -35,12 +35,12 @@
 import { computeModifiersWithRows, rowTreeFor } from '../content/talent_rows';
 import {
   cloneAllocation,
-  FIRST_TALENT_LEVEL,
   MAX_LOADOUTS,
   pointsSpent,
   repairAllocation,
   SAVED_LOADOUT_BAR_SLOTS,
   type SavedLoadout,
+  SPEC_UNLOCK_LEVEL,
   type TalentAllocation,
   talentPointsAtLevel,
   talentsFor,
@@ -101,8 +101,8 @@ export function applyTalentAllocation(
     return false;
   }
   const sanitized = sanitizeTalentAllocation(alloc);
-  if (sanitized.spec && r.e.level < FIRST_TALENT_LEVEL) {
-    ctx.error(r.e.id, `You may choose a specialization at level ${FIRST_TALENT_LEVEL}.`);
+  if (sanitized.spec && r.e.level < SPEC_UNLOCK_LEVEL) {
+    ctx.error(r.e.id, `You may choose a specialization at level ${SPEC_UNLOCK_LEVEL}.`);
     return false;
   }
   const check = validateAllocation(r.meta.cls, sanitized, talentPointsAtLevel(r.e.level));
@@ -221,8 +221,8 @@ export function saveTalentLoadout(
       return -1;
     }
     const sanitized = sanitizeTalentAllocation(alloc);
-    if (sanitized.spec && r.e.level < FIRST_TALENT_LEVEL) {
-      ctx.error(r.e.id, `You may choose a specialization at level ${FIRST_TALENT_LEVEL}.`);
+    if (sanitized.spec && r.e.level < SPEC_UNLOCK_LEVEL) {
+      ctx.error(r.e.id, `You may choose a specialization at level ${SPEC_UNLOCK_LEVEL}.`);
       return -1;
     }
     const check = validateAllocation(r.meta.cls, sanitized, talentPointsAtLevel(r.e.level));
@@ -270,7 +270,7 @@ export function switchTalentLoadout(ctx: SimContext, index: number, pid?: number
     ctx.error(r.e.id, 'No such loadout.');
     return false;
   }
-  if (lo.alloc.spec && r.e.level < FIRST_TALENT_LEVEL) {
+  if (lo.alloc.spec && r.e.level < SPEC_UNLOCK_LEVEL) {
     ctx.error(r.e.id, 'That loadout needs a higher level.');
     return false;
   }
@@ -305,7 +305,12 @@ export function deleteTalentLoadout(ctx: SimContext, index: number, pid?: number
       // This is an AUTO-apply (no user gate), so repair against the level budget
       // first: switchTalentLoadout validates on its path, but here a stale or
       // tampered next loadout would otherwise be baked into live mods wholesale.
-      r.meta.talents = repairAllocation(r.meta.cls, next.alloc, talentPointsAtLevel(r.e.level));
+      r.meta.talents = repairAllocation(
+        r.meta.cls,
+        next.alloc,
+        talentPointsAtLevel(r.e.level),
+        r.e.level >= SPEC_UNLOCK_LEVEL,
+      );
       recomputeTalents(ctx, r.meta);
     }
   } else if (r.meta.activeLoadout > index) r.meta.activeLoadout -= 1;

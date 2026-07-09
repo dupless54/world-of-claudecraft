@@ -29,11 +29,11 @@ function spawnDummy(sim: Sim, target: Entity): Entity {
 }
 
 describe('warrior Direhowl (reworked)', () => {
-  it('is a level-14, 45s-cooldown area damage-dealt debuff (20% for 20s)', () => {
+  it('is a level-12, 45s-cooldown area damage-dealt debuff (20% for 20s)', () => {
     const def = ABILITIES.demoralizing_shout;
     expect(def).toBeTruthy();
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(14);
+    expect(def.learnLevel).toBe(12);
     expect(def.requiresTarget).toBe(false);
     expect(def.cooldown).toBe(45);
     expect(def.effects[0]).toMatchObject({
@@ -48,12 +48,12 @@ describe('warrior Direhowl (reworked)', () => {
   it('sits in the warrior learn order and gates on level', () => {
     expect(CLASSES.warrior.abilities).toContain('demoralizing_shout');
     expect(
-      abilitiesKnownAt('warrior', 13, protMods()).some((k) => k.def.id === 'demoralizing_shout'),
+      abilitiesKnownAt('warrior', 11, protMods()).some((k) => k.def.id === 'demoralizing_shout'),
     ).toBe(false);
-    const at14 = abilitiesKnownAt('warrior', 14, protMods()).find(
+    const at12 = abilitiesKnownAt('warrior', 12, protMods()).find(
       (k) => k.def.id === 'demoralizing_shout',
     );
-    expect(at14?.rank).toBe(1);
+    expect(at12?.rank).toBe(1);
   });
 
   it('lands the negative damage-dealt aura on nearby enemies and arms the cooldown', () => {

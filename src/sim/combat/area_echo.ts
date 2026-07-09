@@ -27,6 +27,10 @@ import type { AbilityDef, AbilityEffect, Entity } from '../types';
 // How far around the PRIMARY target the echo reaches (yards).
 export const AOE_ECHO_RADIUS = 8;
 
+// Fraction of the primary hit each ECHOED target takes (owner 2026-07-09: the echo
+// used to replay the full 100%; the extra targets now take 65%, like a cleave).
+export const AOE_ECHO_MULT = 0.65;
+
 /** Does this cast's resolved effect list make it a single-target damaging
  *  ability? Needs at least one weaponStrike/directDamage and no area damage
  *  effect (an already-AoE ability neither echoes nor consumes); heals and
@@ -57,10 +61,11 @@ export function echoAreaDamage(
   abilityName: string,
   threatOpts: { flat?: number; mult?: number },
 ): void {
+  const scaled = Math.max(1, Math.round(amount * AOE_ECHO_MULT));
   for (const m of ctx.hostilesInRadius(p, primary.pos, AOE_ECHO_RADIUS)) {
     if (m.id === primary.id) continue; // never onto the primary target twice
     if (!ctx.hasLineOfSight(p, m)) continue; // mirror the aoeDamage LoS gate
-    ctx.dealDamage(p, m, amount, false, school, abilityName, 'hit', false, threatOpts);
+    ctx.dealDamage(p, m, scaled, false, school, abilityName, 'hit', false, threatOpts);
   }
 }
 

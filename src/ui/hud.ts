@@ -35,7 +35,12 @@ import {
   type SkinTier,
   skinRankOrder,
 } from '../sim/content/skins';
-import { FIRST_TALENT_LEVEL, type TalentAllocation, talentsFor } from '../sim/content/talents';
+import {
+  FIRST_TALENT_LEVEL,
+  SPEC_UNLOCK_LEVEL,
+  type TalentAllocation,
+  talentsFor,
+} from '../sim/content/talents';
 import { SPORT_ABILITIES } from '../sim/content/vale_cup';
 import type { ZoneDef } from '../sim/data';
 import {
@@ -8860,7 +8865,13 @@ export class Hud {
               characterId ? { eventID: `lvl5_${characterId}` } : undefined,
             );
           }
-          // First talent point (and spec) unlock — nudge the player to the panel.
+          // Specialization unlocks at SPEC_UNLOCK_LEVEL, before talent POINTS at
+          // FIRST_TALENT_LEVEL, nudge the player to choose a spec.
+          if (ev.level === SPEC_UNLOCK_LEVEL && talentsFor(this.sim.cfg.playerClass)) {
+            this.showBanner(t('hudChrome.specPanel.specUnlockBanner'));
+            this.log(t('hudChrome.specPanel.specUnlockHint'), '#ffd100');
+          }
+          // First talent POINT unlock, nudge the player to the panel.
           if (ev.level === FIRST_TALENT_LEVEL && talentsFor(this.sim.cfg.playerClass)) {
             this.showBanner(t('game.talents.unlockBanner'));
             this.log(t('game.talents.unlockHint'), '#ffd100');
@@ -9966,6 +9977,7 @@ export class Hud {
       'Too close!': 'hud.errors.tooClose',
       'You must be facing your target.': 'hud.errors.facing',
       'You must wield a dagger.': 'hud.errors.dagger',
+      'You must have a shield equipped.': 'hud.errors.needShield',
       'You must be behind your target.': 'hud.errors.behindTarget',
       'This creature cannot be polymorphed.': 'hud.errors.polymorph',
       'You have no active Seal.': 'hud.errors.noSeal',
@@ -14687,6 +14699,12 @@ function abilityEffectText(res: ResolvedAbility, scaling?: AbilityScaling): stri
       case 'groundAoE':
       case 'drainTick':
         return abilityAmountRange(primary.min, primary.max) + suffix(primary);
+      case 'repositionToAim':
+        // Heroic Leap: the touchdown blast lives in landingAoe (guaranteed
+        // present here, since the picker only selects repositionToAim with one).
+        return primary.landingAoe
+          ? abilityAmountRange(primary.landingAoe.min, primary.landingAoe.max)
+          : '';
       case 'consumeAura':
         if (primary.deal) {
           return abilityAmountRange(primary.deal.min, primary.deal.max) + suffix(primary);

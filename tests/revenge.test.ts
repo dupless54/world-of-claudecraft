@@ -59,12 +59,12 @@ const knownIds = (spec: string | null): Set<string> =>
   );
 
 describe('(a) Revenge content def + Reaver Strike exclusion', () => {
-  it('pins Revenge: prot-only, cost 20, learnLevel 1, frontal aoe with softCap 5', () => {
+  it('pins Revenge: prot-only, cost 20, learnLevel 7, frontal aoe with softCap 5', () => {
     const def = ABILITIES.revenge;
     expect(def).toBeDefined();
     expect(def.name).toBe('Revenge');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(1);
+    expect(def.learnLevel).toBe(7);
     expect(def.cost).toBe(20);
     expect(def.cooldown).toBe(0);
     expect(def.castTime).toBe(0);

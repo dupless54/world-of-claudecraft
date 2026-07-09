@@ -61,6 +61,30 @@ function spawnDummy(sim: TestSim, p: Entity, level = 1): Entity {
 }
 
 describe('offhand equip routing', () => {
+  it('a fresh warrior starts with a basic shield equipped', () => {
+    const sim = new Sim({ seed: 7, playerClass: 'warrior', autoEquip: true });
+    expect(sim.equipment.mainhand).toBe('worn_sword');
+    expect(sim.equipment.offhand).toBe('eastbrook_buckler');
+    expect(sim.player.mainhandItemId).toBe('worn_sword');
+    expect(sim.player.offhandItemId).toBe('eastbrook_buckler');
+  });
+
+  it('a fresh rogue starts with a real offhand weapon equipped', () => {
+    const sim = new Sim({ seed: 7, playerClass: 'rogue', autoEquip: true });
+    expect(sim.equipment.mainhand).toBe('rusty_dagger');
+    expect(sim.equipment.offhand).toBe('rusty_dagger');
+    expect(sim.player.mainhandItemId).toBe('rusty_dagger');
+    expect(sim.player.offhandItemId).toBe('rusty_dagger');
+  });
+
+  it('a rogue equips a second one-hand weapon into offhand', () => {
+    const sim = new Sim({ seed: 7, playerClass: 'rogue', autoEquip: true });
+    sim.addItem('keen_dirk', 1);
+    sim.equipItem('keen_dirk');
+    expect(sim.equipment.mainhand).toBe('rusty_dagger');
+    expect(sim.equipment.offhand).toBe('keen_dirk');
+  });
+
   it('a Fury warrior equips a second one-hand weapon into offhand', () => {
     const sim = new Sim({ seed: 7, playerClass: 'warrior', autoEquip: true });
     sim.setPlayerLevel(10);
@@ -78,7 +102,7 @@ describe('offhand equip routing', () => {
     sim.addItem('redbrook_blade', 1);
     sim.equipItem('redbrook_blade');
     expect(sim.equipment.mainhand).toBe('redbrook_blade');
-    expect(sim.equipment.offhand).toBeUndefined();
+    expect(sim.equipment.offhand).toBe('eastbrook_buckler');
   });
 });
 
@@ -116,7 +140,7 @@ describe('offhand combat rules', () => {
     p.attackPower = 0;
     target.stats.armor = 0;
     target.dodgeChance = 0;
-    sim.rng.next = () => 0.1;
+    sim.rng.next = () => 0.12;
     const events = capture(sim);
     expect(meleeSwing(sim.ctx, p, target, 0, null, { cannotBeDodged: true })).toBe(true);
     expect(

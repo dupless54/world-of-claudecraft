@@ -2437,6 +2437,19 @@ const ABILITY_RECIPES: Record<string, IconRecipe> = {
   // an extra target); Deep Wounds = a bleeding gash on blood.
   sweeping_strikes: r('fury', 'steel', ['claw_slash', { p: 'sword', ...BR }], ['arcs', 'motion']),
   deep_wounds: r('blood', 'blood', ['claw_slash', { p: 'droplet', ...BR }], ['drips']),
+  // Warrior passives 2026-07-09. Each hints its mechanic with a distinct combo:
+  // Seasoned Soldier = a veteran's helm and mailed fist on steel/gold (a rage
+  // economy passive; distinct from measured_fury's steel/steel helm+heart);
+  // Sudden Death = a skull crowning a bared blade (a free Execute proc; distinct
+  // from intimidating_shout's roar+skull and recklessness's axe+sunburst);
+  // Diabolical Twinstrike = crossed twin daggers on shadow/blood (an Enrage
+  // damage passive; distinct from any single-blade warrior recipe); Cleaving
+  // Blows = twin axes in motion (a Twinstrike refund; distinct from cleave and
+  // recklessness's single axe).
+  seasoned_soldier: r('steel', 'gold', ['helm', { p: 'fist', ...BR }], ['glow']),
+  sudden_death: r('shadow', 'bone', ['skull', { p: 'sword', ...BR }], ['glow']),
+  diabolical_twinstrike: r('shadow', 'blood', ['dagger', { p: 'dagger', ...TR }], ['glow']),
+  cleaving_blows: r('blood', 'steel', ['axe', { p: 'axe', ...BR }], ['arcs', 'motion']),
   // warrior (Talents 2.0 rows): each hints the mechanic with an existing primitive combo
   pummel: r('steel', 'steel', ['fist', { p: 'bolt', ...BR }], ['arcs']), // fist smashing a cast
   heroic_leap: r('earth', 'steel', [{ p: 'sunburst', ...BIG }, 'boot'], ['crack']), // downward impact

@@ -31,7 +31,7 @@
       "tick": 25,
       "time": 1.25,
       "nextId": 409,
-      "state": "737146d3",
+      "state": "f4f59613",
       "events": "b8e63708",
       "rng": {
         "draws": 0,
@@ -42,7 +42,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 409,
-      "state": "327636ea",
+      "state": "4369556a",
       "events": "90b217f1",
       "rng": {
         "draws": 28,
@@ -53,7 +53,7 @@
       "tick": 75,
       "time": 3.75,
       "nextId": 409,
-      "state": "450719b4",
+      "state": "776f203e",
       "events": "d13b86f9",
       "rng": {
         "draws": 138,
@@ -64,7 +64,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 409,
-      "state": "7b7b8ac7",
+      "state": "6ecc3e29",
       "events": "669c1069",
       "rng": {
         "draws": 294,
@@ -75,7 +75,7 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 409,
-      "state": "bb543549",
+      "state": "ec964119",
       "events": "21143105",
       "rng": {
         "draws": 300,
@@ -107,7 +107,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "fiestaRestore": {
             "level": 1,
@@ -237,7 +238,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "fiestaRestore": {
             "level": 1,
@@ -359,18 +361,20 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0995,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0795,
           "fiveSecondRule": 104.05,
-          "hp": 812,
+          "hp": 822,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -382,7 +386,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 13.653289,
+          "resource": 6.826645,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -392,10 +396,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 421,
+            "armor": 459,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -463,6 +467,7 @@
           "critChance": 0.1545,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.1345,
+          "dualWielding": true,
           "facing": 3.141593,
           "fiveSecondRule": 104.05,
           "hp": 4950,
@@ -474,6 +479,12 @@
           "maxHp": 5000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -564,7 +575,7 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 409,
-      "state": "9885f465",
+      "state": "3024310e",
       "events": "09d8010d",
       "rng": {
         "draws": 300,
@@ -596,7 +607,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "fiestaRestore": {
             "level": 1,
@@ -726,7 +738,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "fiestaRestore": {
             "level": 1,
@@ -848,18 +861,20 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0995,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0795,
           "fiveSecondRule": 104.05,
-          "hp": 812,
+          "hp": 822,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -871,7 +886,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 27.306578,
+          "resource": 13.653289,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -881,10 +896,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 421,
+            "armor": 459,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -950,6 +965,7 @@
           "critChance": 0.1545,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.1345,
+          "dualWielding": true,
           "facing": 3.141593,
           "fiveSecondRule": 104.05,
           "hp": 4900,
@@ -961,6 +977,12 @@
           "maxHp": 5000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -1051,7 +1073,7 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 409,
-      "state": "6dd3ba51",
+      "state": "a1e088c4",
       "events": "a5541b1d",
       "rng": {
         "draws": 300,
@@ -1084,7 +1106,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "fiestaRestore": {
             "level": 1,
@@ -1215,7 +1238,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "fiestaRestore": {
             "level": 1,
@@ -1337,18 +1361,20 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0995,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0795,
           "fiveSecondRule": 104.05,
-          "hp": 812,
+          "hp": 822,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1360,7 +1386,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 27.306578,
+          "resource": 13.653289,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -1370,10 +1396,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 421,
+            "armor": 459,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -1440,6 +1466,7 @@
           "dead": true,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.1345,
+          "dualWielding": true,
           "facing": 3.141593,
           "fiveSecondRule": 104.05,
           "id": 407,
@@ -1450,6 +1477,12 @@
           "maxHp": 5000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -1540,7 +1573,7 @@
       "tick": 125,
       "time": 6.25,
       "nextId": 409,
-      "state": "870a06e9",
+      "state": "f2bed706",
       "events": "741638a5",
       "rng": {
         "draws": 429,
@@ -1551,7 +1584,7 @@
       "tick": 142,
       "time": 7.1,
       "nextId": 409,
-      "state": "c0cd8312",
+      "state": "3bd91a7d",
       "events": "741638a5",
       "rng": {
         "draws": 524,
@@ -1584,7 +1617,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "fiestaRestore": {
             "level": 1,
@@ -1715,7 +1749,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "fiestaRestore": {
             "level": 1,
@@ -1837,19 +1872,21 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 2.05,
           "comboUntil": -1,
           "critChance": 0.0995,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.0795,
           "fiveSecondRule": 106.1,
-          "hp": 812,
+          "hp": 822,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1861,7 +1898,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 27.306578,
+          "resource": 13.653289,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -1871,10 +1908,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 421,
+            "armor": 459,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -1942,6 +1979,7 @@
           "dead": true,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.1345,
+          "dualWielding": true,
           "facing": 3.141593,
           "fiveSecondRule": 106.1,
           "id": 407,
@@ -1952,6 +1990,12 @@
           "maxHp": 5000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,

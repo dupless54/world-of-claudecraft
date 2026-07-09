@@ -319,13 +319,15 @@ describe('Combat Mech held weapon over the wire', () => {
     sim.addItem('keen_dirk', 1, pid);
     sim.equipItem('keen_dirk', pid);
     const e = sim.entities.get(pid)!;
-    expect(e.mainhandItemId).toBe('keen_dirk'); // recalcPlayerStats set the held-weapon id
+    expect(e.mainhandItemId).toBe('rusty_dagger');
+    expect(e.offhandItemId).toBe('keen_dirk');
 
     // server emit
     const w = wireEntity(e);
     expect(w.tid).toBe('rogue'); // class drives visualKeyFor + the dual-wield override
     expect(w.cat).toBe('mech'); // cosmetic body
-    expect(w.mh).toBe('keen_dirk'); // equipped mainhand -> held weapon model
+    expect(w.mh).toBe('rusty_dagger');
+    expect(w.oh).toBe('keen_dirk');
 
     // client mirror: a DIFFERENT local player seeing this rogue-mech in the world
     const client = bareClient(pid + 1000);
@@ -333,7 +335,8 @@ describe('Combat Mech held weapon over the wire', () => {
     const mirrored = client.entities.get(e.id)!;
     expect(mirrored.templateId).toBe('rogue');
     expect(mirrored.skinCatalog).toBe('mech');
-    expect(mirrored.mainhandItemId).toBe('keen_dirk');
+    expect(mirrored.mainhandItemId).toBe('rusty_dagger');
+    expect(mirrored.offhandItemId).toBe('keen_dirk');
 
     // what the renderer derives from the mirrored entity
     expect(visualKeyFor(mirrored)).toBe('player_mech');
@@ -1718,11 +1721,11 @@ describe('held item wire (mainhandItemId/offhandItemId)', () => {
     const sim = new Sim({ seed: 1, playerClass: 'warrior', noPlayer: true });
     const pid = sim.addPlayer('warrior', 'Thaldrin');
     const e = sim.entities.get(pid)!;
-    // a fresh warrior starts holding its class startWeapon
+    // a fresh warrior starts holding its class startWeapon plus starter shield
     expect(e.mainhandItemId).toBe('worn_sword');
-    expect(e.offhandItemId).toBeNull();
+    expect(e.offhandItemId).toBe('eastbrook_buckler');
     expect(wireEntity(e).mh).toBe('worn_sword');
-    expect(wireEntity(e).oh).toBeUndefined();
+    expect(wireEntity(e).oh).toBe('eastbrook_buckler');
   });
 
   it('restores held item ids on the client from a full record', () => {

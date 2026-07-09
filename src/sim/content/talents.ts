@@ -101,6 +101,12 @@ export interface GlobalModEffect {
   // Lingering Dread: fraction of the target's max health a fear the player
   // applies can soak before breaking (0 = classic break on any damage).
   fearBreakPct?: number;
+  // Master Armorer (Arms mastery): fraction of extra physical damage dealt WHILE
+  // wielding a two-handed weapon. Declares the magnitude so the tooltip is
+  // effect-backed, but is applied only by the 2H-gated hook in combat/damage.ts
+  // (never folded into the generic meleeDmgPct path), so it never double-counts
+  // and never leaks to one-handed builds.
+  masteryTwoHandDmgPct?: number;
 }
 
 export interface TalentEffect {
@@ -234,6 +240,12 @@ function nodeIndex(ct: ClassTalents): Map<string, TalentNode> {
 // ---------------------------------------------------------------------------
 
 export const FIRST_TALENT_LEVEL = 10;
+
+// Spec identity (the signature ability + mastery + spec-gated kit) unlocks EARLIER
+// than talent POINTS: a specialization may be committed from SPEC_UNLOCK_LEVEL, but
+// points still accrue from FIRST_TALENT_LEVEL (talentPointsAtLevel is unchanged), so
+// the talent tree and point economy are untouched. A spec below this level is illegal.
+export const SPEC_UNLOCK_LEVEL = 5;
 
 export function talentPointsAtLevel(level: number): number {
   return Math.max(0, Math.min(level, MAX_LEVEL) - (FIRST_TALENT_LEVEL - 1));
@@ -480,14 +492,19 @@ export function repairAllocation(
   cls: PlayerClass,
   alloc: TalentAllocation,
   availablePoints: number,
+  // Spec unlock is DECOUPLED from talent points: a spec is legal from SPEC_UNLOCK_LEVEL
+  // even with zero points. Callers that know the level pass `level >= SPEC_UNLOCK_LEVEL`;
+  // the default (`availablePoints > 0`, the pre-decoupling proxy) is a conservative
+  // fallback for callers that only have the point budget.
+  specUnlocked: boolean = availablePoints > 0,
 ): TalentAllocation {
   const ct = talentsFor(cls);
   if (!ct) return emptyAllocation();
-  // A spec needs a known id AND at least one talent point available; below
-  // FIRST_TALENT_LEVEL (availablePoints === 0) a spec is illegal (it would still
-  // grant the signature ability + mastery passive), matching the apply-time gate.
+  // A spec needs a known id AND the wearer to be spec-unlocked (specUnlocked); below
+  // SPEC_UNLOCK_LEVEL a spec is illegal (it would still grant the signature ability +
+  // mastery passive), matching the apply-time gate.
   const spec =
-    alloc.spec !== null && availablePoints > 0 && ct.specs.some((s) => s.id === alloc.spec)
+    alloc.spec !== null && specUnlocked && ct.specs.some((s) => s.id === alloc.spec)
       ? alloc.spec
       : null;
   const out: TalentAllocation = { spec, ranks: {}, choices: {} };
@@ -565,6 +582,7 @@ function zeroGlobal(): Required<GlobalModEffect> {
     bloodbathPct: 0,
     cdrPerRage: 0,
     fearBreakPct: 0,
+    masteryTwoHandDmgPct: 0,
   };
 }
 function zeroAbilityMod(): ResolvedAbilityMod {
@@ -636,6 +654,7 @@ export function accumulate(
     g.bloodbathPct += (e.bloodbathPct ?? 0) * mult;
     g.cdrPerRage += (e.cdrPerRage ?? 0) * mult;
     g.fearBreakPct += (e.fearBreakPct ?? 0) * mult;
+    g.masteryTwoHandDmgPct += (e.masteryTwoHandDmgPct ?? 0) * mult;
   }
   for (const am of eff.ability ?? []) {
     let cur = mods.abilities[am.ability];

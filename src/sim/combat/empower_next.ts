@@ -17,10 +17,11 @@ export function consumeNextCastFree(ctx: SimContext, e: Entity): boolean {
   return consumeAuraKind(ctx, e, 'next_cast_free');
 }
 
-// Battle Trance (warrior baseline): the ability-SCOPED sibling of
-// next_cast_free. Connected auto swings arm the aura (auto_attack.ts); only
-// these abilities may spend it. The action bar imports the same predicate for
-// its proc glow / usable state, so sim and UI can never disagree on scope.
+// Battle Trance (warrior baseline, excluding Fury): the ability-SCOPED sibling
+// of next_cast_free. Connected auto swings arm the aura (auto_attack.ts), but
+// NOT for Fury, which owns none of the consuming abilities below; only these
+// abilities may spend it. The action bar imports the same predicate for its
+// proc glow / usable state, so sim and UI can never disagree on scope.
 // Maiming Strike is Arms-granted, so it only participates for committed Arms
 // (its owner restructure 2026-07-08 free-proc), never for Fury / no-spec.
 export const BATTLE_TRANCE_ABILITIES: ReadonlySet<string> = new Set([
@@ -42,6 +43,9 @@ export function freeCostAuraActive(auras: readonly { kind: string }[], abilityId
     if (a.kind === 'next_cast_free') return true;
     if (a.kind === 'battle_trance' && BATTLE_TRANCE_ABILITIES.has(abilityId)) return true;
     if (a.kind === 'revenge_free' && REVENGE_FREE_ABILITIES.has(abilityId)) return true;
+    // Sudden Death (Arms): a free Early Grave (execute); the HP gate is bypassed
+    // in casting_lifecycle when this aura is worn.
+    if (a.kind === 'sudden_death' && abilityId === 'execute') return true;
   }
   return false;
 }
@@ -56,6 +60,7 @@ export function consumeFreeCostFor(ctx: SimContext, e: Entity, abilityId: string
   if (consumeNextCastFree(ctx, e)) return true;
   if (BATTLE_TRANCE_ABILITIES.has(abilityId) && consumeAuraKind(ctx, e, 'battle_trance'))
     return true;
+  if (abilityId === 'execute' && consumeAuraKind(ctx, e, 'sudden_death')) return true;
   return REVENGE_FREE_ABILITIES.has(abilityId) && consumeAuraKind(ctx, e, 'revenge_free');
 }
 

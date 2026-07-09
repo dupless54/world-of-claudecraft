@@ -1,6 +1,6 @@
 // The three base-kit abilities the owner rescued from PR #1348 (his design
-// moved them OUT of talents into the baseline warrior): Pummel (level 12
-// interrupt), Heroic Leap (level 16 ground-targeted swept relocation + area
+// moved them OUT of talents into the baseline warrior): Pummel (level 8
+// interrupt), Heroic Leap (level 6 ground-targeted swept relocation + area
 // damage, the new repositionToAim effect), and Rallying Cry (level 18 party
 // attack-power horn, the new aoeAllyAttackPower effect).
 
@@ -44,11 +44,11 @@ describe('base kit membership', () => {
     for (const id of ['pummel', 'heroic_leap', 'rallying_cry']) {
       expect(CLASSES.warrior.abilities, id).toContain(id);
     }
-    expect(ABILITIES.pummel.learnLevel).toBe(12);
-    expect(ABILITIES.heroic_leap.learnLevel).toBe(16);
+    expect(ABILITIES.pummel.learnLevel).toBe(8);
+    expect(ABILITIES.heroic_leap.learnLevel).toBe(6);
     expect(ABILITIES.rallying_cry.learnLevel).toBe(18);
-    const at11 = abilitiesKnownAt('warrior', 11).map((k) => k.def.id);
-    expect(at11).not.toContain('pummel');
+    const at7 = abilitiesKnownAt('warrior', 7).map((k) => k.def.id);
+    expect(at7).not.toContain('pummel');
     const at20 = abilitiesKnownAt('warrior', 20).map((k) => k.def.id);
     for (const id of ['pummel', 'heroic_leap', 'rallying_cry']) expect(at20).toContain(id);
   });
@@ -103,11 +103,18 @@ describe('Heroic Leap', () => {
     const aim = { x: mob.pos.x - 2, z: mob.pos.z };
     const hp0 = mob.hp;
     sim.castAbilityAt('heroic_leap', aim);
-    // Landed at (or swept up to) the aim: far from the start, near the aim.
+    // Cast ARMS the arc and puts the ability on its 20s cooldown; the caster has
+    // not swept to the aim yet and no landing blast has fired.
+    expect(p.leap).not.toBeNull();
+    expect(p.cooldowns.get('heroic_leap')).toBe(20);
+    expect(mob.hp).toBe(hp0);
+    // Fly the ~0.6s arc to touchdown; the flight owns movement until it lands.
+    for (let i = 0; i < 30 && p.leap; i++) sim.tick();
+    expect(p.leap).toBeNull();
+    // Landed near the aim (swept up to it), far from the start.
     expect(Math.hypot(p.pos.x - aim.x, p.pos.z - aim.z)).toBeLessThan(3);
     // The landing blast caught the adjacent mob.
     expect(mob.hp).toBeLessThan(hp0);
-    expect(p.cooldowns.get('heroic_leap')).toBe(20);
   });
 
   it('never tunnels: the swept landing is collision-resolved ground', () => {

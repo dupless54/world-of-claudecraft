@@ -16,7 +16,7 @@
       "tick": 0,
       "time": 0,
       "nextId": 406,
-      "state": "a3818b44",
+      "state": "1969f633",
       "events": "741638a5",
       "rng": {
         "draws": 0,
@@ -47,7 +47,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -89,6 +90,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 99,
           "comboUntil": -1,
           "critChance": 0.06,
@@ -96,12 +99,12 @@
           "dodgeChance": 0.06,
           "fallStartY": 1.5,
           "fiveSecondRule": 99,
-          "hp": 90,
+          "hp": 100,
           "id": 405,
           "kind": "player",
           "level": 1,
           "lootFfaTimer": "Infinity",
-          "maxHp": 90,
+          "maxHp": 100,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -123,10 +126,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 20,
-            "armor": 110,
+            "armor": 144,
             "int": 10,
             "spi": 11,
-            "sta": 22,
+            "sta": 23,
             "str": 23
           },
           "templateId": "warrior",
@@ -142,7 +145,7 @@
       "tick": 4,
       "time": 0.2,
       "nextId": 408,
-      "state": "90bcfff8",
+      "state": "1734cd71",
       "events": "4fb9824e",
       "rng": {
         "draws": 0,
@@ -153,7 +156,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 408,
-      "state": "a48472e8",
+      "state": "fb0caf45",
       "events": "5480a741",
       "rng": {
         "draws": 2,
@@ -164,7 +167,7 @@
       "tick": 8,
       "time": 0.4,
       "nextId": 408,
-      "state": "3d5bf1cb",
+      "state": "ba2d9496",
       "events": "f49ade8d",
       "rng": {
         "draws": 2,
@@ -195,7 +198,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -238,6 +242,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "chargePath": [
             {
               "x": 6.631762,
@@ -297,10 +303,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "targetId": 407,
@@ -448,7 +454,7 @@
       "tick": 12,
       "time": 0.6,
       "nextId": 408,
-      "state": "8e0c0289",
+      "state": "6e5ad07c",
       "events": "741638a5",
       "rng": {
         "draws": 2,
@@ -459,7 +465,7 @@
       "tick": 16,
       "time": 0.8,
       "nextId": 408,
-      "state": "b9f89c3b",
+      "state": "26f46b8a",
       "events": "741638a5",
       "rng": {
         "draws": 2,
@@ -470,7 +476,7 @@
       "tick": 16,
       "time": 0.8,
       "nextId": 408,
-      "state": "1b66f8cf",
+      "state": "80883e5a",
       "events": "3a529d8a",
       "rng": {
         "draws": 5,
@@ -501,7 +507,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -544,6 +551,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "chargePath": [
             {
               "x": 6.631762,
@@ -608,10 +617,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "targetId": 407,
@@ -782,7 +791,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 408,
-      "state": "ce15b33a",
+      "state": "a73c98be",
       "events": "af1bc05d",
       "rng": {
         "draws": 9,
@@ -793,7 +802,7 @@
       "tick": 24,
       "time": 1.2,
       "nextId": 408,
-      "state": "d1d49989",
+      "state": "173e12eb",
       "events": "741638a5",
       "rng": {
         "draws": 9,
@@ -804,8 +813,8 @@
       "tick": 24,
       "time": 1.2,
       "nextId": 410,
-      "state": "7e115988",
-      "events": "89f463e3",
+      "state": "6e6f9bf0",
+      "events": "5174e3a5",
       "rng": {
         "draws": 18,
         "digest": "e122dc22"
@@ -838,7 +847,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -881,6 +891,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "chargeTimeLeft": 2.55,
           "charges": [
             [
@@ -909,13 +921,13 @@
           "fallStartY": -2.570818,
           "fiveSecondRule": 100.2,
           "gcdRemaining": 1.5,
-          "hp": 649,
+          "hp": 657,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -928,7 +940,7 @@
             "z": 54.896638
           },
           "potionCooldownUntil": -1,
-          "resource": 55.18825,
+          "resource": 52.594125,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -938,10 +950,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "swingTimer": 1.65,
@@ -1023,7 +1035,7 @@
           "threat": [
             [
               405,
-              31.25
+              31.5
             ]
           ],
           "weapon": {
@@ -1113,7 +1125,7 @@
           "threat": [
             [
               405,
-              51.25
+              51.5
             ]
           ],
           "weapon": {
@@ -1223,7 +1235,7 @@
           "threat": [
             [
               405,
-              52.25
+              52.5
             ]
           ],
           "weapon": {
@@ -1238,8 +1250,8 @@
       "tick": 28,
       "time": 1.4,
       "nextId": 410,
-      "state": "4f17167d",
-      "events": "7f1fbe61",
+      "state": "3dd3a64a",
+      "events": "57be9d5c",
       "rng": {
         "draws": 21,
         "digest": "f8002f39"
@@ -1249,7 +1261,7 @@
       "tick": 32,
       "time": 1.6,
       "nextId": 410,
-      "state": "fb121d06",
+      "state": "beac6513",
       "events": "741638a5",
       "rng": {
         "draws": 21,
@@ -1260,7 +1272,7 @@
       "tick": 36,
       "time": 1.8,
       "nextId": 410,
-      "state": "829acf83",
+      "state": "68a4ad7a",
       "events": "741638a5",
       "rng": {
         "draws": 21,
@@ -1271,7 +1283,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 410,
-      "state": "f57331a3",
+      "state": "71a9b3ba",
       "events": "741638a5",
       "rng": {
         "draws": 21,
@@ -1282,7 +1294,7 @@
       "tick": 44,
       "time": 2.2,
       "nextId": 410,
-      "state": "56438572",
+      "state": "fe59dbd1",
       "events": "595baf34",
       "rng": {
         "draws": 36,
@@ -1293,7 +1305,7 @@
       "tick": 48,
       "time": 2.4,
       "nextId": 410,
-      "state": "a3c2783f",
+      "state": "66e92416",
       "events": "741638a5",
       "rng": {
         "draws": 54,
@@ -1304,7 +1316,7 @@
       "tick": 52,
       "time": 2.6,
       "nextId": 410,
-      "state": "806eba5e",
+      "state": "5113c999",
       "events": "741638a5",
       "rng": {
         "draws": 64,
@@ -1315,7 +1327,7 @@
       "tick": 56,
       "time": 2.8,
       "nextId": 410,
-      "state": "17255ac1",
+      "state": "ab0fa13a",
       "events": "741638a5",
       "rng": {
         "draws": 79,
@@ -1326,7 +1338,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 410,
-      "state": "384a4772",
+      "state": "237c6681",
       "events": "741638a5",
       "rng": {
         "draws": 96,
@@ -1337,7 +1349,7 @@
       "tick": 64,
       "time": 3.2,
       "nextId": 410,
-      "state": "0848744c",
+      "state": "3f2e295d",
       "events": "c06b8feb",
       "rng": {
         "draws": 126,
@@ -1348,7 +1360,7 @@
       "tick": 68,
       "time": 3.4,
       "nextId": 410,
-      "state": "f305c14a",
+      "state": "e27ffcc1",
       "events": "4922a139",
       "rng": {
         "draws": 142,
@@ -1359,7 +1371,7 @@
       "tick": 72,
       "time": 3.6,
       "nextId": 410,
-      "state": "35b06949",
+      "state": "dd576b70",
       "events": "741638a5",
       "rng": {
         "draws": 156,
@@ -1370,7 +1382,7 @@
       "tick": 76,
       "time": 3.8,
       "nextId": 410,
-      "state": "32cfc5e6",
+      "state": "0742204f",
       "events": "741638a5",
       "rng": {
         "draws": 172,
@@ -1381,7 +1393,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 410,
-      "state": "d7197b65",
+      "state": "c715f7e8",
       "events": "741638a5",
       "rng": {
         "draws": 187,
@@ -1392,7 +1404,7 @@
       "tick": 84,
       "time": 4.2,
       "nextId": 410,
-      "state": "6fb4670c",
+      "state": "3edbd9e5",
       "events": "efb81753",
       "rng": {
         "draws": 199,
@@ -1403,7 +1415,7 @@
       "tick": 88,
       "time": 4.4,
       "nextId": 410,
-      "state": "b8320ceb",
+      "state": "535e59ae",
       "events": "741638a5",
       "rng": {
         "draws": 223,
@@ -1414,7 +1426,7 @@
       "tick": 92,
       "time": 4.6,
       "nextId": 410,
-      "state": "d5745557",
+      "state": "af8c523a",
       "events": "741638a5",
       "rng": {
         "draws": 251,
@@ -1425,7 +1437,7 @@
       "tick": 96,
       "time": 4.8,
       "nextId": 410,
-      "state": "7f82344e",
+      "state": "30711851",
       "events": "59623564",
       "rng": {
         "draws": 280,
@@ -1436,7 +1448,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 410,
-      "state": "64ab109d",
+      "state": "00bde622",
       "events": "741638a5",
       "rng": {
         "draws": 303,
@@ -1447,7 +1459,7 @@
       "tick": 104,
       "time": 5.2,
       "nextId": 410,
-      "state": "3d91693f",
+      "state": "b02c312a",
       "events": "2d146614",
       "rng": {
         "draws": 320,
@@ -1458,7 +1470,7 @@
       "tick": 108,
       "time": 5.4,
       "nextId": 410,
-      "state": "4bb224e7",
+      "state": "4b802124",
       "events": "741638a5",
       "rng": {
         "draws": 346,
@@ -1469,7 +1481,7 @@
       "tick": 112,
       "time": 5.6,
       "nextId": 410,
-      "state": "2a8cb5db",
+      "state": "622263ee",
       "events": "741638a5",
       "rng": {
         "draws": 367,
@@ -1480,7 +1492,7 @@
       "tick": 116,
       "time": 5.8,
       "nextId": 410,
-      "state": "dd66d0fd",
+      "state": "a54b39ca",
       "events": "741638a5",
       "rng": {
         "draws": 397,
@@ -1491,7 +1503,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 410,
-      "state": "8ea046bb",
+      "state": "742026ae",
       "events": "741638a5",
       "rng": {
         "draws": 410,
@@ -1502,7 +1514,7 @@
       "tick": 124,
       "time": 6.2,
       "nextId": 410,
-      "state": "259f9732",
+      "state": "ce58e0d1",
       "events": "741638a5",
       "rng": {
         "draws": 435,
@@ -1513,7 +1525,7 @@
       "tick": 124,
       "time": 6.2,
       "nextId": 410,
-      "state": "259f9732",
+      "state": "ce58e0d1",
       "events": "741638a5",
       "rng": {
         "draws": 435,
@@ -1538,7 +1550,7 @@
           "companionUpgrades": {},
           "counters": {
             "damageDealt": 1288,
-            "damageTaken": 19,
+            "damageTaken": 13,
             "kills": 2
           },
           "craftSkills": {},
@@ -1548,7 +1560,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1600,6 +1613,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "castTotal": 4,
           "channelTickEvery": 1,
           "channelTickTimer": 1,
@@ -1635,13 +1650,13 @@
           "facing": 1.570796,
           "fallStartY": -2.570818,
           "fiveSecondRule": 105.2,
-          "hp": 630,
+          "hp": 644,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -1654,7 +1669,7 @@
             "z": 54.896638
           },
           "potionCooldownUntil": -1,
-          "resource": 77.6125,
+          "resource": 76.7875,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -1664,10 +1679,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "targetId": 409,
@@ -1749,7 +1764,7 @@
           "threat": [
             [
               405,
-              75.25
+              75.5
             ]
           ],
           "weapon": {
@@ -1830,7 +1845,7 @@
           "threat": [
             [
               405,
-              51.25
+              51.5
             ]
           ],
           "weapon": {
@@ -1955,7 +1970,7 @@
           "threat": [
             [
               405,
-              147.25
+              147.5
             ]
           ],
           "weapon": {
@@ -1970,7 +1985,7 @@
       "tick": 128,
       "time": 6.4,
       "nextId": 410,
-      "state": "9fba8dd2",
+      "state": "c4e0cd37",
       "events": "fd49e585",
       "rng": {
         "draws": 460,
@@ -1981,7 +1996,7 @@
       "tick": 128,
       "time": 6.4,
       "nextId": 410,
-      "state": "9fba8dd2",
+      "state": "c4e0cd37",
       "events": "741638a5",
       "rng": {
         "draws": 460,
@@ -2006,7 +2021,7 @@
           "companionUpgrades": {},
           "counters": {
             "damageDealt": 1288,
-            "damageTaken": 19,
+            "damageTaken": 13,
             "kills": 2
           },
           "craftSkills": {},
@@ -2016,7 +2031,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2068,6 +2084,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "castTotal": 4,
           "channelTickEvery": 1,
           "channelTickTimer": 1,
@@ -2103,13 +2121,13 @@
           "facing": 1.570796,
           "fallStartY": -2.570818,
           "fiveSecondRule": 105.4,
-          "hp": 630,
+          "hp": 644,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 812,
+          "maxHp": 822,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -2122,7 +2140,7 @@
             "z": 54.896638
           },
           "potionCooldownUntil": -1,
-          "resource": 77.6125,
+          "resource": 76.7875,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -2132,10 +2150,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "targetId": 409,
@@ -2217,7 +2235,7 @@
           "threat": [
             [
               405,
-              75.25
+              75.5
             ]
           ],
           "weapon": {
@@ -2298,7 +2316,7 @@
           "threat": [
             [
               405,
-              51.25
+              51.5
             ]
           ],
           "weapon": {
@@ -2423,7 +2441,7 @@
           "threat": [
             [
               405,
-              147.25
+              147.5
             ]
           ],
           "weapon": {

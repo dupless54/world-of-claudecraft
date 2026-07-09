@@ -16,8 +16,9 @@ import { absorbBarView, absorbTotal } from '../src/ui/absorb_bar';
 // 6 sec 50% PHYSICAL damage cut (the buff_dr_phys sibling of Furious Mending's
 // buff_dr, read at the same combat/damage.ts fold but gated on the school);
 // Iron Resolve (iron_resolve), the first spendsAllResource ability: cost is
-// the 20-rage minimum, casting drains the whole bar and grants a priest-style
-// 'absorb' shield of 4 damage per rage spent for up to 10 sec; Faultline
+// the 20-rage minimum, casting spends up to 40 rage (its spendResourceCap) and
+// grants a priest-style 'absorb' shield of 4 damage per rage spent for up to
+// 10 sec; Faultline
 // (faultline), a frontal-arc (MELEE_ARC) 8 yd aoe slam that also stuns for
 // 3 sec; Defiant Bellow (defiant_bellow), an aoe taunt fanning the SHARED
 // applyTaunt entry over every hostile mob within 10 yd. All four are
@@ -45,6 +46,7 @@ function makeSim(seed = 4242, level = 20): { sim: TestSim; p: Entity } {
   const sim = new Sim({ seed, playerClass: 'warrior', autoEquip: true }) as unknown as TestSim;
   sim.setPlayerLevel(level);
   expect(sim.setSpec('prot')).toBe(true);
+  sim.player.equippedItems.offhand = 'eastbrook_buckler'; // shield abilities now require one
   return { sim, p: sim.player };
 }
 
@@ -90,7 +92,7 @@ describe('(a) prot kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Raised Guard');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(10);
+    expect(def.learnLevel).toBe(8);
     expect(def.cost).toBe(15);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(12);
@@ -117,10 +119,11 @@ describe('(a) prot kit content defs', () => {
     expect(def.name).toBe('Iron Resolve');
     expect(def.class).toBe('warrior');
     expect(def.learnLevel).toBe(14);
-    // `cost` is the MINIMUM cast gate; spendsAllResource makes the actual
-    // bill the caster's entire rage bar (casting_lifecycle snapshot).
+    // `cost` is the MINIMUM cast gate; spendsAllResource bills the bar up to
+    // spendResourceCap (40 rage), snapshotted in casting_lifecycle.
     expect(def.cost).toBe(20);
     expect(def.spendsAllResource).toBe(true);
+    expect(def.spendResourceCap).toBe(40);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(15);
     expect(def.school).toBe('physical');
@@ -134,7 +137,7 @@ describe('(a) prot kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Faultline');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(16);
+    expect(def.learnLevel).toBe(14);
     expect(def.cost).toBe(15);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(30);
@@ -151,7 +154,7 @@ describe('(a) prot kit content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Defiant Bellow');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(18);
+    expect(def.learnLevel).toBe(12);
     expect(def.cost).toBe(0);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(60);
@@ -197,7 +200,7 @@ describe('(b) Raised Guard halves physical damage only, for 6 sec', () => {
   });
 });
 
-describe('(c) Iron Resolve drains all rage into a damage-absorb shield', () => {
+describe('(c) Iron Resolve spends up to 40 rage into a damage-absorb shield', () => {
   it('refuses to cast below the 20 rage minimum', () => {
     const { sim, p } = makeSim();
     p.resource = 10;
@@ -209,42 +212,51 @@ describe('(c) Iron Resolve drains all rage into a damage-absorb shield', () => {
     expect(p.resource).toBe(10); // nothing spent on the refused cast
   });
 
-  it('spends ALL current rage and absorbs exactly rage x 4, then overflow damage lands', () => {
+  it('caps the spend at 40 rage (leaving the rest) and absorbs spent x 4, then overflow lands', () => {
     const { sim, p } = makeSim();
     const mob = spawnMob(sim, p, 5);
-    p.resource = 60;
+    p.resource = 60; // above the 40 cap
     sim.drainEvents();
     sim.castAbility('iron_resolve');
 
-    expect(p.resource).toBe(0); // the whole bar, not just the 20 minimum
+    expect(p.resource).toBe(20); // 60 - 40 cap, NOT drained to 0
     const shield = p.auras.find((a) => a.kind === 'absorb');
     expect(shield).toBeDefined();
     expect(shield?.id).toBe('iron_resolve');
     expect(shield?.name).toBe('Iron Resolve');
-    expect(shield?.value).toBe(240); // 60 rage x 4
+    expect(shield?.value).toBe(160); // 40 rage (the cap) x 4
     expect(shield?.duration).toBe(10);
 
     // The shield rides the existing absorb-bar plumbing (tests/absorb_bar.test.ts).
-    expect(absorbTotal(p.auras)).toBe(240);
+    expect(absorbTotal(p.auras)).toBe(160);
     const view = absorbBarView({ hp: p.hp, maxHp: p.maxHp, auras: p.auras });
-    expect(view.total).toBe(240);
+    expect(view.total).toBe(160);
 
     // A 100 hit is fully soaked; the shield shrinks by exactly that amount.
     p.hp = p.maxHp;
     hit(sim, mob, p, 100, 'physical');
     expect(p.maxHp - p.hp).toBe(0);
-    expect(p.auras.find((a) => a.kind === 'absorb')?.value).toBe(140);
+    expect(p.auras.find((a) => a.kind === 'absorb')?.value).toBe(60);
 
-    // A 300 hit drains the remaining 140 and the 160 overflow lands on health.
+    // A 200 hit drains the remaining 60 and the 140 overflow lands on health.
     sim.drainEvents();
-    hit(sim, mob, p, 300, 'physical');
-    expect(p.maxHp - p.hp).toBe(160);
+    hit(sim, mob, p, 200, 'physical');
+    expect(p.maxHp - p.hp).toBe(140);
     expect(p.auras.some((a) => a.kind === 'absorb')).toBe(false);
     expect(
       sim
         .drainEvents()
         .some((e) => e.type === 'aura' && e.name === 'Iron Resolve' && e.gained === false),
     ).toBe(true);
+  });
+
+  it('below the 40 cap it spends everything it has (30 rage absorbs 120)', () => {
+    const { sim, p } = makeSim();
+    p.resource = 30; // under the cap
+    sim.drainEvents();
+    sim.castAbility('iron_resolve');
+    expect(p.resource).toBe(0); // whole bar, since 30 < 40 cap
+    expect(p.auras.find((a) => a.kind === 'absorb')?.value).toBe(120); // 30 x 4
   });
 
   it('casting at exactly the 20 rage minimum absorbs 80', () => {

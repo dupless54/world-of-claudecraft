@@ -19,6 +19,7 @@ export interface ClassDef {
   manaPerLevel: number;
   resourceType: 'rage' | 'mana' | 'energy';
   startWeapon: string;
+  startOffhand?: string;
   startChest: string;
   // Consumables in a fresh character's bags: every class carries food; the
   // mana classes also carry water. Saved characters load their own bags.
@@ -55,6 +56,7 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
     manaPerLevel: 0,
     resourceType: 'rage',
     startWeapon: 'worn_sword',
+    startOffhand: 'eastbrook_buckler',
     startChest: 'recruit_tunic',
     startItems: START_RATIONS,
     abilities: [
@@ -88,6 +90,10 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
       'sunder_armor',
       'taunt',
       'measured_fury',
+      'seasoned_soldier',
+      'sudden_death',
+      'diabolical_twinstrike',
+      'cleaving_blows',
       'breachmaker',
       // Arms restructure 2026-07-08: its own defensive cooldown, a cleave window,
       // and the Deep Wounds bleed passive (replacing the retired Deep Gash).
@@ -142,6 +148,7 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
     manaPerLevel: 0,
     resourceType: 'energy',
     startWeapon: 'rusty_dagger',
+    startOffhand: 'rusty_dagger',
     startChest: 'footpad_jerkin',
     startItems: START_RATIONS,
     abilities: [
@@ -470,7 +477,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'demoralizing_shout',
     name: 'Direhowl',
     class: 'warrior',
-    learnLevel: 14,
+    learnLevel: 12,
     specs: ['prot'],
     cost: 10,
     castTime: 0,
@@ -489,7 +496,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'charge',
     name: 'Onrush',
     class: 'warrior',
-    learnLevel: 4,
+    learnLevel: 3,
     cost: 0,
     castTime: 0,
     cooldown: 15,
@@ -534,7 +541,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'thunder_clap',
     name: 'Quaking Blow',
     class: 'warrior',
-    learnLevel: 6,
+    learnLevel: 5,
     // Protection-only now (owner restructure 2026-07-08): the seismic AoE belongs
     // to the tank; Arms dropped it to declutter its bar.
     specs: ['prot'],
@@ -575,7 +582,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'hamstring',
     name: 'Hobbling Cut',
     class: 'warrior',
-    learnLevel: 8,
+    learnLevel: 5,
     cost: 10,
     castTime: 0,
     cooldown: 0,
@@ -603,7 +610,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'bloodrage',
     name: 'Blood Toll',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 6,
     specs: ['arms', 'prot'],
     cost: 0,
     castTime: 0,
@@ -625,9 +632,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'overpower',
     name: 'Redhand',
     class: 'warrior',
-    learnLevel: 10,
-    specs: ['arms'],
-    cost: 0,
+    learnLevel: 2,
+    cost: 20,
     castTime: 0,
     cooldown: 5,
     // Two charges (owner 2026-07-08, like Twinstrike): usable twice back to back,
@@ -636,30 +642,29 @@ export const ABILITIES: Record<string, AbilityDef> = {
     range: 0,
     school: 'physical',
     requiresTarget: true,
-    // Reworked by owner decision into the kit's active rage BUILDER: no cost,
-    // generates 10 rage, and the classic dodge-proc gate is gone (too RNG).
-    // The requiresDodgeProc machinery itself stays (hunter mongoose_bite).
+    // Owner decision 2026-07-09: baseline early rage SPENDER (all specs, learned at
+    // level 2), costing 20 rage per use. The classic dodge-proc gate stays gone (too
+    // RNG); the requiresDodgeProc machinery itself remains for hunter mongoose_bite.
     effects: [
       { type: 'weaponStrike', bonus: 5, cannotBeDodged: true },
-      { type: 'gainResource', amount: 10 },
-      // Redhand empowers the next Maiming Strike (+20% per stack, up to 2):
-      // consumed in effect_dispatch's weaponStrike case (Arms restructure).
+      // Empowers the next Maiming Strike (+20% per stack, up to 2), consumed in
+      // effect_dispatch's weaponStrike case. Only Arms owns Maiming Strike, so the
+      // stack is a no-op for other specs (harmless).
       { type: 'selfBuff', kind: 'overpower_charge', value: 0.2, duration: 15 },
     ],
     ranks: [
       {
         rank: 2,
         level: 16,
-        cost: 0,
+        cost: 20,
         effects: [
           { type: 'weaponStrike', bonus: 15, cannotBeDodged: true },
-          { type: 'gainResource', amount: 10 },
           { type: 'selfBuff', kind: 'overpower_charge', value: 0.2, duration: 15 },
         ],
       },
     ],
     description:
-      'Instant attack (2 charges) for weapon damage plus $d that generates 10 rage and empowers your next Maiming Strike by 20% (stacks twice). Cannot be dodged.',
+      'Instant attack (2 charges) for weapon damage plus $d that empowers your next Maiming Strike by 20% (stacks twice). Cannot be dodged.',
   },
   // Fury's active rage builder (operator design, Arremetida Enfurecida): two
   // 60%-weapon hits so the pair lands slightly more than one signature
@@ -670,7 +675,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'raging_gale',
     name: 'Twinstrike',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 7,
     specs: ['fury'],
     cost: 0,
     castTime: 0,
@@ -691,7 +696,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'execute',
     name: 'Early Grave',
     class: 'warrior',
-    learnLevel: 14,
+    learnLevel: 12,
     cost: 15,
     castTime: 0,
     cooldown: 0,
@@ -707,7 +712,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'slam',
     name: 'Brute Swing',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 5,
     // Arms-only (owner 2026-07-08): Protection dropped Brute Swing since Revenge
     // is already its filler; a generic mandoble adds nothing for a tank.
     specs: ['arms'],
@@ -729,7 +734,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'red_harvest',
     name: 'Red Harvest',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 10,
     specs: ['fury'],
     cost: 80,
     castTime: 0,
@@ -752,9 +757,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
   // effect + the 'enrage' aura). No effects of its own; never castable.
   enrage_passive: {
     id: 'enrage_passive',
-    name: 'Stoke',
+    name: 'Mayhem',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     specs: ['fury'],
     passive: true,
     cost: 0,
@@ -777,7 +782,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'furious_mending',
     name: 'Furious Mending',
     class: 'warrior',
-    learnLevel: 14,
+    learnLevel: 10,
     specs: ['fury'],
     cost: 0,
     castTime: 0,
@@ -806,7 +811,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'emboldening_roar',
     name: 'Emboldening Roar',
     class: 'warrior',
-    learnLevel: 18,
+    learnLevel: 16,
     specs: ['fury'],
     cost: 0,
     castTime: 0,
@@ -826,8 +831,9 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'raised_guard',
     name: 'Raised Guard',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 8,
     specs: ['prot'],
+    requiresShield: true,
     cost: 15,
     castTime: 0,
     cooldown: 12,
@@ -850,10 +856,10 @@ export const ABILITIES: Record<string, AbilityDef> = {
       'Brace behind your shield: you take 50% reduced Physical damage for 6 sec. Stores up to 2 charges. (Protection)',
   },
   // Protection's rage-dump survival wall (operator design, Ignorar Dolor): the
-  // FIRST spendsAllResource ability. `cost` is the 20-rage minimum gate;
-  // casting drains the whole bar and grants a damage-absorb shield (the
-  // priest-style 'absorb' aura kind, drained by dealDamage and read by the HUD
-  // absorb bar) soaking 4 damage per rage actually spent, up to 10 sec.
+  // FIRST spendsAllResource ability. `cost` is the 20-rage minimum gate; casting
+  // spends up to spendResourceCap (40) rage from the bar and grants a damage-absorb
+  // shield (the priest-style 'absorb' aura kind, drained by dealDamage and read by
+  // the HUD absorb bar) soaking 4 damage per rage actually spent, up to 10 sec.
   iron_resolve: {
     id: 'iron_resolve',
     name: 'Iron Resolve',
@@ -862,6 +868,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     specs: ['prot'],
     cost: 20,
     spendsAllResource: true,
+    spendResourceCap: 40,
     castTime: 0,
     cooldown: 15,
     range: 0,
@@ -869,7 +876,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     requiresTarget: false,
     effects: [{ type: 'absorbSpentResource', mult: 4, duration: 10 }],
     description:
-      'Grit your teeth and ignore the pain: consumes all of your rage (20 minimum) to absorb 4 damage per rage spent, lasting up to 10 sec. (Protection)',
+      'Grit your teeth and ignore the pain: spends up to 40 rage (20 minimum) to absorb 4 damage per rage spent, lasting up to 10 sec. (Protection)',
   },
   // Protection's frontal control slam (operator design, Ola de Choque): modest
   // aoe damage plus a 3 sec stun, restricted to enemies in the MELEE_ARC
@@ -878,7 +885,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'faultline',
     name: 'Faultline',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 14,
     specs: ['prot'],
     cost: 15,
     castTime: 0,
@@ -897,7 +904,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'defiant_bellow',
     name: 'Defiant Bellow',
     class: 'warrior',
-    learnLevel: 18,
+    learnLevel: 12,
     specs: ['prot'],
     cost: 0,
     castTime: 0,
@@ -918,7 +925,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'breachmaker',
     name: 'Breachmaker',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 12,
     specs: ['arms'],
     cost: 10,
     castTime: 0,
@@ -948,7 +955,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'measured_fury',
     name: 'Measured Fury',
     class: 'warrior',
-    learnLevel: 12,
+    learnLevel: 5,
     specs: ['arms'],
     passive: true,
     cost: 0,
@@ -961,6 +968,82 @@ export const ABILITIES: Record<string, AbilityDef> = {
     description:
       'Your measured fury sharpens your economy: your abilities cost 10% less rage. (Arms)',
   },
+  // Seasoned Soldier (Arms passive, owner 2026-07-09): critical auto-attacks mint
+  // 10% more rage. Wired in combat/damage.ts's auto-attack rage block, gated on the
+  // passive being known AND committed arms (mirrors Measured Fury's cost hook).
+  seasoned_soldier: {
+    id: 'seasoned_soldier',
+    name: 'Seasoned Soldier',
+    class: 'warrior',
+    learnLevel: 5,
+    specs: ['arms'],
+    passive: true,
+    cost: 0,
+    castTime: 0,
+    cooldown: 0,
+    range: 0,
+    school: 'physical',
+    requiresTarget: false,
+    effects: [],
+    description: 'Your critical auto-attacks generate 10% more rage. (Arms)',
+  },
+  // Diabolical Twinstrike (Fury passive, owner 2026-07-09): Twinstrike hits 15%
+  // harder while Enraged. Wired in effect_dispatch's weaponStrike case.
+  diabolical_twinstrike: {
+    id: 'diabolical_twinstrike',
+    name: 'Diabolical Twinstrike',
+    class: 'warrior',
+    learnLevel: 5,
+    specs: ['fury'],
+    passive: true,
+    cost: 0,
+    castTime: 0,
+    cooldown: 0,
+    range: 0,
+    school: 'physical',
+    requiresTarget: false,
+    effects: [],
+    description: 'While Enraged, your Twinstrike deals 15% more damage. (Fury)',
+  },
+  // Cleaving Blows (Fury passive, owner 2026-07-09): Red Harvest always refunds a
+  // charge of Twinstrike. Wired in effect_dispatch's runEffects red_harvest path.
+  cleaving_blows: {
+    id: 'cleaving_blows',
+    name: 'Cleaving Blows',
+    class: 'warrior',
+    learnLevel: 5,
+    specs: ['fury'],
+    passive: true,
+    cost: 0,
+    castTime: 0,
+    cooldown: 0,
+    range: 0,
+    school: 'physical',
+    requiresTarget: false,
+    effects: [],
+    description: 'Red Harvest always refunds a charge of Twinstrike. (Fury)',
+  },
+  // Sudden Death (Arms passive, owner 2026-07-09): a connected auto swing has a
+  // chance to let you cast Early Grave on a target at ANY health, for no rage.
+  // Proc in auto_attack.ts; the free cost + HP-gate bypass ride the 'sudden_death'
+  // aura (empower_next.ts + casting_lifecycle).
+  sudden_death: {
+    id: 'sudden_death',
+    name: 'Sudden Death',
+    class: 'warrior',
+    learnLevel: 5,
+    specs: ['arms'],
+    passive: true,
+    cost: 0,
+    castTime: 0,
+    cooldown: 0,
+    range: 0,
+    school: 'physical',
+    requiresTarget: false,
+    effects: [],
+    description:
+      'Your auto-attacks have a chance to let you cast Early Grave on a target at any health, costing no rage. (Arms)',
+  },
   // Arms restructure 2026-07-08. Sweeping Strikes: a 12s window where your
   // single-target strikes also clip one nearby enemy (75%). Deep Wounds: a
   // passive marker; the bleed itself rides Maiming Strike's effects.
@@ -968,7 +1051,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'sweeping_strikes',
     name: 'Widening Arc',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 18,
     specs: ['arms'],
     cost: 0,
     castTime: 0,
@@ -985,7 +1068,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'deep_wounds',
     name: 'Gaping Wounds',
     class: 'warrior',
-    learnLevel: 5,
+    learnLevel: 9,
     specs: ['arms'],
     passive: true,
     cost: 0,
@@ -1002,7 +1085,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'cleave',
     name: 'Reaping Arc',
     class: 'warrior',
-    learnLevel: 18,
+    learnLevel: 14,
     specs: ['arms'],
     cost: 20,
     castTime: 0,
@@ -1023,7 +1106,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'revenge',
     name: 'Revenge',
     class: 'warrior',
-    learnLevel: 1,
+    learnLevel: 7,
     specs: ['prot'],
     cost: 20,
     castTime: 0,
@@ -1063,7 +1146,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'berserker_stance',
     name: 'Berserker Stance',
     class: 'warrior',
-    learnLevel: 1,
+    learnLevel: 5,
     specs: ['fury'],
     cost: 0,
     castTime: 0,
@@ -1081,7 +1164,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'defensive_stance',
     name: 'Guarded Stance',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     specs: ['arms', 'prot'],
     cost: 0,
     castTime: 0,
@@ -1099,7 +1182,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'sunder_armor',
     name: 'Armor Shear',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     // Protection-only now (owner restructure 2026-07-08): Arms dropped armor
     // shred to declutter its bar.
     specs: ['prot'],
@@ -1127,7 +1210,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'taunt',
     name: 'Goad',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     cost: 0,
     castTime: 0,
     cooldown: 10,
@@ -3906,7 +3989,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'mortal_strike',
     name: 'Maiming Strike',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     cost: 30,
     castTime: 0,
     cooldown: 6,
@@ -3929,7 +4012,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'bloodthirst',
     name: 'Bloodletting',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
     cost: 0,
     castTime: 0,
     cooldown: 6,
@@ -3950,7 +4033,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'shield_slam',
     name: 'Shieldcrack',
     class: 'warrior',
-    learnLevel: 10,
+    learnLevel: 5,
+    requiresShield: true,
     // Protection's active rage BUILDER (owner 2026-07-08): no cost, and it
     // GENERATES 15 rage on a short cooldown, so the tank loop is take-hits +
     // Shieldcrack to build, then spend on Revenge / Armor Shear. Prot-only
@@ -4027,7 +4111,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'pummel',
     name: 'Pummel',
     class: 'warrior',
-    learnLevel: 12,
+    learnLevel: 8,
     // Owner design: free, and stopping a cast GENERATES 10 rage (the reward
     // makes the interrupt a play, not a tax).
     cost: 0,
@@ -4045,7 +4129,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     id: 'heroic_leap',
     name: 'Heroic Leap',
     class: 'warrior',
-    learnLevel: 16,
+    learnLevel: 6,
     cost: 0,
     castTime: 0,
     cooldown: 20,
@@ -4053,8 +4137,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
     school: 'physical',
     requiresTarget: false,
     targetMode: 'position',
-    effects: [{ type: 'repositionToAim' }, { type: 'aoeDamage', min: 24, max: 32, radius: 6 }],
-    description: 'Leap to the target area, dealing $d damage to nearby enemies.',
+    effects: [{ type: 'repositionToAim', landingAoe: { min: 24, max: 32, radius: 6 } }],
+    description: 'Leap to the target area, dealing $d damage to nearby enemies on landing.',
   },
   rallying_cry: {
     id: 'rallying_cry',
@@ -4182,6 +4266,7 @@ export const ABILITIES: Record<string, AbilityDef> = {
     // Arms base-kit defensive cooldown (owner restructure 2026-07-08): Arms had
     // no defensive of its own. Also still reachable as a choice-row grant.
     specs: ['arms'],
+    requiresShield: true,
     cost: 0,
     castTime: 0,
     cooldown: 120,

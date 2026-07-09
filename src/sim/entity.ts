@@ -98,6 +98,7 @@ function baseEntity(id: number, pos: Vec3): Entity {
     chargeTargetId: null,
     chargeTimeLeft: 0,
     chargePath: [],
+    leap: null,
     followTargetId: null,
     sitting: false,
     eating: null,

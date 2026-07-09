@@ -305,6 +305,14 @@ export function castAbility(
     );
     return;
   }
+  // Shield abilities (Protection): require a shield in the offhand slot.
+  if (ability.requiresShield) {
+    const off = p.equippedItems.offhand;
+    if (!off || ITEMS[off]?.kind !== 'shield') {
+      ctx.error(p.id, 'You must have a shield equipped.');
+      return;
+    }
+  }
   // casting is deliberate action — drop any active follow so you don't drift
   ctx.stopFollow(p);
   if (ability.requiresDodgeProc && ctx.time > p.overpowerUntil) {
@@ -384,10 +392,12 @@ export function castAbility(
       ctx.error(p.id, 'You must be facing your target.');
       return;
     }
-    // execute-style gate: only usable while the target is nearly dead
+    // execute-style gate: only usable while the target is nearly dead. Sudden
+    // Death (Arms passive) bypasses it for Early Grave while its aura is worn.
     if (
       ability.requiresTargetHpBelow !== undefined &&
-      target.hp > target.maxHp * ability.requiresTargetHpBelow
+      target.hp > target.maxHp * ability.requiresTargetHpBelow &&
+      !(ability.id === 'execute' && p.auras.some((a) => a.kind === 'sudden_death'))
     ) {
       ctx.error(
         p.id,
@@ -841,7 +851,13 @@ function applyAbility(
   // snapshotted into the resolved cost here so spendAbilityCost drains it and
   // the effects read the true spent amount (the finisher path's spentCombo
   // precedent, carried on the ResolvedAbility instead of the entity).
-  if (ability.spendsAllResource && !togglingOff) res = { ...res, cost: p.resource };
+  if (ability.spendsAllResource && !togglingOff) {
+    const spend =
+      ability.spendResourceCap !== undefined
+        ? Math.min(p.resource, ability.spendResourceCap)
+        : p.resource;
+    res = { ...res, cost: spend };
+  }
 
   // helpful spells never miss
   if (ability.targetType === 'friendly') {

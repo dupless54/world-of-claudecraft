@@ -589,7 +589,9 @@ export const pl_PL: EnTranslations = {
       "complexityMedium": "Medium",
       "complexityHigh": "High",
       "exampleAbilities": "Example abilities",
-      "viewTalents": "View talents"
+      "viewTalents": "View talents",
+      "specUnlockBanner": "Specialization Unlocked!",
+      "specUnlockHint": "Press N to choose your specialization."
     },
     "controller": {
       "title": "Kontroler",
@@ -4467,6 +4469,7 @@ export const pl_PL: EnTranslations = {
       "facing": "Musisz być zwrócony przodem do celu.",
       "targetHealthBelow": "Ta umiejętność wymaga, by cel miał poniżej {percent}% zdrowia.",
       "dagger": "Musisz dzierżyć sztylet.",
+      "needShield": "You must have a shield equipped.",
       "behindTarget": "Musisz znajdować się za swoim celem.",
       "polymorph": "Tego stworzenia nie można poddać polimorfii.",
       "noSeal": "Nie masz aktywnej Pieczęci.",
@@ -5684,7 +5687,7 @@ export const pl_PL: EnTranslations = {
         "description": "Passive: your Maiming Strike leaves the target bleeding for Physical damage over 6 sec. (Arms)"
       },
       "enrage_passive": {
-        "name": "Stoke",
+        "name": "Mayhem",
         "description": "Passive: while Enraged you deal 11% more damage, attack 25% faster and move 10% faster for 4 sec. Bloodletting has a 30% chance to Enrage you; Red Harvest always does. (Fury)"
       },
       "bloodthirst": {
@@ -5730,6 +5733,22 @@ export const pl_PL: EnTranslations = {
       "measured_fury": {
         "name": "Measured Fury",
         "description": "Your measured fury sharpens your economy: your abilities cost 10% less rage. (Arms)"
+      },
+      "seasoned_soldier": {
+        "name": "Seasoned Soldier",
+        "description": "Your critical auto-attacks generate 10% more rage. (Arms)"
+      },
+      "diabolical_twinstrike": {
+        "name": "Diabolical Twinstrike",
+        "description": "While Enraged, your Twinstrike deals 15% more damage. (Fury)"
+      },
+      "cleaving_blows": {
+        "name": "Cleaving Blows",
+        "description": "Red Harvest always refunds a charge of Twinstrike. (Fury)"
+      },
+      "sudden_death": {
+        "name": "Sudden Death",
+        "description": "Your auto-attacks have a chance to let you cast Early Grave on a target at any health, costing no rage. (Arms)"
       },
       "shield_slam": {
         "name": "Trzask tarczy",

@@ -68,6 +68,12 @@ const CHARGE_MAX_DURATION = 3; // seconds before a blocked charge gives up
 const TELEPORT_SWEEP_STEP = 0.5;
 const TELEPORT_MAX_CLIMB_SLOPE = PLAYER_MAX_CLIMB_SLOPE;
 const TELEPORT_MIN_GROUND = WATER_LEVEL - PLAYER_SWIM_DEPTH;
+// Heroic Leap flight (owner 2026-07-09): the caster ARCS to the landing over this
+// long instead of teleporting, cresting LEAP_APEX yards up at the midpoint, so it
+// reads as a real jump. updateLeapMovement (sim.ts) drives it and fires the AoE on
+// touchdown.
+const LEAP_DURATION = 0.6;
+const LEAP_APEX = 3.2;
 
 function isStealthToggle(ability: AbilityDef): boolean {
   return ability.effects.some((e) => e.type === 'selfBuff' && e.kind === 'stealth');
@@ -102,7 +108,12 @@ function removeRootAuras(ctx: SimContext, p: Entity): void {
 // step against the colliders and bailing at cliffs/deep water, then land at
 // the last safe point. Adapted from PR #1348's sweptReposition onto our
 // point-resolution seam (resolveMovePoint).
-function sweptReposition(ctx: SimContext, p: Entity, destX: number, destZ: number): void {
+function computeSweptLanding(
+  ctx: SimContext,
+  p: Entity,
+  destX: number,
+  destZ: number,
+): { x: number; z: number } {
   const fromX = p.pos.x;
   const fromZ = p.pos.z;
   const dx = destX - fromX;
@@ -137,14 +148,7 @@ function sweptReposition(ctx: SimContext, p: Entity, destX: number, destZ: numbe
       prevGround = groundHeight(safeX, safeZ, ctx.cfg.seed);
     }
   }
-  p.pos.x = safeX;
-  p.pos.z = safeZ;
-  p.pos.y = groundHeight(safeX, safeZ, ctx.cfg.seed);
-  p.vy = 0;
-  p.onGround = true;
-  p.fallStartY = p.pos.y;
-  p.chargeTargetId = null;
-  p.chargePath = [];
+  return { x: safeX, z: safeZ };
 }
 
 function consumeMatchingAura(
@@ -207,6 +211,20 @@ export function runEffects(
   if (!preservesStealth(ability)) ctx.breakStealth(p);
   const threatOpts = { flat: res.threatFlat, mult: res.threatMult };
 
+  // Cleaving Blows (Fury passive): casting Red Harvest refunds one charge of
+  // Twinstrike (raging_gale). Gated on the passive being known; a no-op when no
+  // charge is spent. Draws no rng, so the shared stream position is unchanged.
+  if (
+    ability.id === 'red_harvest' &&
+    meta.known.some((k) => k.def.passive && k.def.id === 'cleaving_blows')
+  ) {
+    const cs = p.charges?.get('raging_gale');
+    if (cs && cs.spent > 0) {
+      cs.spent -= 1;
+      if (cs.spent <= 0) p.cooldowns.delete('raging_gale');
+    }
+  }
+
   // Battle Rhythm (warrior choice row): every third ability is empowered. The
   // counter advances once per cast; on the third, two one-tick micro-auras ride
   // this cast's effects through the EXISTING generic reads (buff_dmg_done's amp
@@ -249,6 +267,7 @@ export function runEffects(
         // Redhand empowers the next Maiming Strike: consume the charge and
         // amplify this strike (Arms restructure 2026-07-08).
         let strikeMult = eff.weaponMult ?? 1;
+        let strikeBonus = eff.bonus;
         if (ability.id === 'mortal_strike') {
           const idx = p.auras.findIndex((a) => a.kind === 'overpower_charge');
           if (idx >= 0) {
@@ -258,7 +277,18 @@ export function runEffects(
             ctx.emit({ type: 'aura', targetId: p.id, name: charge.name, gained: false });
           }
         }
-        const hit = ctx.meleeSwing(p, strikeTarget, eff.bonus, ability.name, {
+        // Diabolical Twinstrike (Fury passive): Twinstrike hits 15% harder while you
+        // are Enraged. Gated on the passive being known (owner 2026-07-09).
+        if (ability.id === 'raging_gale' && p.auras.some((a) => a.kind === 'enrage')) {
+          const dm = ctx.players.get(p.id);
+          if (dm?.known.some((k) => k.def.passive && k.def.id === 'diabolical_twinstrike')) {
+            // +15% to the WHOLE strike (weapon portion AND the flat bonus), so the
+            // ability's total damage rises 15%, not just its weapon-scaled part.
+            strikeMult *= 1.15;
+            strikeBonus = Math.round(strikeBonus * 1.15);
+          }
+        }
+        const hit = ctx.meleeSwing(p, strikeTarget, strikeBonus, ability.name, {
           cannotBeDodged: eff.cannotBeDodged,
           weaponMult: strikeMult,
           threatFlat: res.threatFlat,
@@ -268,7 +298,7 @@ export function runEffects(
           forceCrit: sureCrit,
           // Bladed Echo (charge) and Sweeping Strikes (window) both replay this
           // swing's RESOLVED damage (post crit/armor) onto nearby enemies with
-          // no re-roll: the echo hits all for 100%, the sweep one for 75%.
+          // no re-roll: the echo hits all for 65%, the sweep one for 75%.
           onDealt:
             opts?.areaEcho || sweeping
               ? (amount) => {
@@ -1136,12 +1166,24 @@ export function runEffects(
         break;
       }
       case 'repositionToAim': {
-        // Heroic Leap: relocate to the (server-clamped) aimed point through
-        // the swept resolver; any aoeDamage on the same ability then blasts
-        // castAim, which is exactly where the caster just landed.
+        // Heroic Leap: resolve the (server-clamped) aimed point through the swept
+        // resolver, then ARM the arc. updateLeapMovement (sim.ts) flies the caster
+        // there over LEAP_DURATION and fires the landing AoE on touchdown, so it
+        // reads as a real jump instead of an instant teleport.
         if (eff.breakRoots) removeRootAuras(ctx, p);
         const aim = p.castAim ?? p.pos;
-        sweptReposition(ctx, p, aim.x, aim.z);
+        const landing = computeSweptLanding(ctx, p, aim.x, aim.z);
+        p.chargeTargetId = null;
+        p.chargePath = [];
+        p.leap = {
+          from: { x: p.pos.x, y: p.pos.y, z: p.pos.z },
+          to: { x: landing.x, y: groundHeight(landing.x, landing.z, ctx.cfg.seed), z: landing.z },
+          elapsed: 0,
+          dur: LEAP_DURATION,
+          apex: LEAP_APEX,
+          aoe: eff.landingAoe ?? null,
+          ability: ability.name,
+        };
         break;
       }
       case 'aoeAllyAttackPower': {

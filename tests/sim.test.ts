@@ -142,10 +142,11 @@ describe('classic formulas', () => {
   it('rage conversion matches the vanilla constant', () => {
     expect(rageConversion(1)).toBeCloseTo(0.0091 + 3.23 + 4.27, 4);
     expect(rageConversion(10)).toBeCloseTo(0.91 + 32.3 + 4.27, 4);
-    // The outgoing-damage rage constant is 18 (was 7.5). Feeding the level-1
-    // conversion divisor as the damage cancels it, isolating the constant
-    // exactly: a revert to 7.5 makes this 7.5 and the test fails.
-    expect(rageFromDealing(rageConversion(1), 1)).toBeCloseTo(18, 5);
+    // The outgoing-damage rage constant is 9 (owner 2026-07-09, toned down from 18
+    // which roughly doubled classic rage income and flooded the bar at low levels).
+    // Feeding the level-1 conversion divisor as the damage cancels it, isolating the
+    // constant exactly.
+    expect(rageFromDealing(rageConversion(1), 1)).toBeCloseTo(9, 5);
   });
 
   it('rage from taking damage scales from attacker level', () => {
@@ -204,8 +205,8 @@ describe('classic formulas', () => {
   });
 
   it('ranks and new abilities carry the kit through the 10-20 band', () => {
-    // warrior: heroic strike rank 4 at 20; execute unlocks at 14, not before
-    expect(abilitiesKnownAt('warrior', 13).map((k) => k.def.id)).not.toContain('execute');
+    // warrior: heroic strike rank 4 at 20; execute unlocks at 12, not before
+    expect(abilitiesKnownAt('warrior', 11).map((k) => k.def.id)).not.toContain('execute');
     const w20 = abilitiesKnownAt('warrior', 20);
     expect(w20.map((k) => k.def.id)).toContain('execute');
     const hs20 = w20.find((k) => k.def.id === 'heroic_strike')!;
@@ -1456,19 +1457,18 @@ describe('leveling', () => {
     expect(sim.player.hp).toBe(sim.player.maxHp);
     expect(sim.known.map((k) => k.def.id)).toContain('charge');
     // Deep Gash (rend) was retired from the warrior kit 2026-07-08: no warrior
-    // learns it now (its ABILITIES def survives but is in no kit list). The Arms
-    // level-5 unlock is instead Gaping Wounds (deep_wounds), an arms-gated passive:
-    // hidden with no spec (a spec cannot be committed until level 10) and present
-    // under arms.
+    // learns it now (its ABILITIES def survives but is in no kit list). Gaping
+    // Wounds (deep_wounds) is an arms-gated passive at level 9: hidden with no
+    // spec, present under arms from level 9. (Spec itself unlocks at level 5.)
     expect(sim.known.map((k) => k.def.id)).not.toContain('rend');
     expect(sim.known.map((k) => k.def.id)).not.toContain('deep_wounds');
-    const armsAt5 = abilitiesKnownAt(
+    const armsAt9 = abilitiesKnownAt(
       'warrior',
-      5,
+      9,
       computeTalentModifiers('warrior', { ...emptyAllocation(), spec: 'arms' }),
     );
-    expect(armsAt5.map((k) => k.def.id)).not.toContain('rend');
-    expect(armsAt5.map((k) => k.def.id)).toContain('deep_wounds');
+    expect(armsAt9.map((k) => k.def.id)).not.toContain('rend');
+    expect(armsAt9.map((k) => k.def.id)).toContain('deep_wounds');
   });
 
   it('caps at max level', () => {

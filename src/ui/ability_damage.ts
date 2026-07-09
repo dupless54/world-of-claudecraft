@@ -126,6 +126,9 @@ export function abilityPrimaryEffect(res: ResolvedAbility): AbilityEffect | unde
       eff.type === 'aoeDamage' ||
       eff.type === 'aoeRoot' ||
       eff.type === 'groundAoE' ||
+      // Heroic Leap: the landing blast is nested in repositionToAim.landingAoe
+      // (fired on touchdown), so $d reads that when present.
+      (eff.type === 'repositionToAim' && eff.landingAoe != null) ||
       eff.type === 'finisherDamage' ||
       eff.type === 'drainTick' ||
       eff.type === 'sunder' ||

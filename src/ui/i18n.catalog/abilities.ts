@@ -1194,7 +1194,7 @@ const classAbilityNamesEn = {
       ],
       [
         'enrage_passive',
-        'Stoke',
+        'Mayhem',
         'Passive: while Enraged you deal 11% more damage, attack 25% faster and move 10% faster for 4 sec. Bloodletting has a 30% chance to Enrage you; Red Harvest always does. (Fury)',
       ],
       [
@@ -1251,6 +1251,26 @@ const classAbilityNamesEn = {
         'measured_fury',
         'Measured Fury',
         'Your measured fury sharpens your economy: your abilities cost 10% less rage. (Arms)',
+      ],
+      [
+        'seasoned_soldier',
+        'Seasoned Soldier',
+        'Your critical auto-attacks generate 10% more rage. (Arms)',
+      ],
+      [
+        'diabolical_twinstrike',
+        'Diabolical Twinstrike',
+        'While Enraged, your Twinstrike deals 15% more damage. (Fury)',
+      ],
+      [
+        'cleaving_blows',
+        'Cleaving Blows',
+        'Red Harvest always refunds a charge of Twinstrike. (Fury)',
+      ],
+      [
+        'sudden_death',
+        'Sudden Death',
+        'Your auto-attacks have a chance to let you cast Early Grave on a target at any health, costing no rage. (Arms)',
       ],
       [
         'shield_slam',

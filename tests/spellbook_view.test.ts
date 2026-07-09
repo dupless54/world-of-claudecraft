@@ -207,25 +207,30 @@ describe('spec-gated kit filtering', () => {
     expect(arms).not.toContain('sunder_armor');
     // Reaver Strike is excludeSpecs ['prot','arms'], so Arms does not see it.
     expect(arms).not.toContain('heroic_strike');
-    // Arms' own kit stays.
-    expect(arms).toContain('overpower');
+    // Arms' own spec-exclusive kit stays.
+    expect(arms).toContain('sweeping_strikes');
     expect(arms).toContain('die_by_sword');
+    // Redhand is now a baseline all-spec rage spender (owner 2026-07-09), so it is
+    // in every spec's book, not gated to Arms.
+    expect(arms).toContain('overpower');
   });
 
   it('hides Arms and Protection kit from a Fury warrior', () => {
     const fury = rowIds('fury');
     // Arms-only kit is hidden.
-    expect(fury).not.toContain('overpower');
     expect(fury).not.toContain('sweeping_strikes');
     expect(fury).not.toContain('die_by_sword');
+    expect(fury).not.toContain('deep_wounds');
     // Protection-only kit is hidden.
     expect(fury).not.toContain('thunder_clap');
     expect(fury).not.toContain('sunder_armor');
     // Reaver Strike is now excluded for Fury too (owner 2026-07-08).
     expect(fury).not.toContain('heroic_strike');
-    // Fury keeps its own kit (Twinstrike) plus ungated staples (execute).
+    // Fury keeps its own kit (Twinstrike) plus ungated staples (execute) and the
+    // baseline Redhand spender.
     expect(fury).toContain('raging_gale');
     expect(fury).toContain('execute');
+    expect(fury).toContain('overpower');
   });
 
   it('each spec sees only its own gated kit (no cross-spec leakage)', () => {
@@ -233,7 +238,11 @@ describe('spec-gated kit filtering', () => {
     const fury = new Set(rowIds('fury'));
     const prot = new Set(rowIds('prot'));
     // A spec-exclusive lands in exactly the intended spec's book.
-    expect(arms.has('overpower') && !fury.has('overpower') && !prot.has('overpower')).toBe(true);
+    expect(
+      arms.has('sweeping_strikes') &&
+        !fury.has('sweeping_strikes') &&
+        !prot.has('sweeping_strikes'),
+    ).toBe(true);
     expect(fury.has('raging_gale') && !arms.has('raging_gale') && !prot.has('raging_gale')).toBe(
       true,
     );

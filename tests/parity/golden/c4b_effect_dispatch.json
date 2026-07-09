@@ -35,7 +35,7 @@
       "tick": 5,
       "time": 0.25,
       "nextId": 412,
-      "state": "b1c42465",
+      "state": "911df491",
       "events": "cb3e7eb4",
       "rng": {
         "draws": 2,
@@ -46,7 +46,7 @@
       "tick": 10,
       "time": 0.5,
       "nextId": 412,
-      "state": "615a9056",
+      "state": "90b42c10",
       "events": "741638a5",
       "rng": {
         "draws": 2,
@@ -57,7 +57,7 @@
       "tick": 15,
       "time": 0.75,
       "nextId": 412,
-      "state": "7a769ce8",
+      "state": "c3ef5ba8",
       "events": "741638a5",
       "rng": {
         "draws": 2,
@@ -68,7 +68,7 @@
       "tick": 20,
       "time": 1,
       "nextId": 412,
-      "state": "2a7c1fed",
+      "state": "943152d5",
       "events": "83db7fc1",
       "rng": {
         "draws": 2,
@@ -79,7 +79,7 @@
       "tick": 25,
       "time": 1.25,
       "nextId": 412,
-      "state": "7ed8069d",
+      "state": "f3f5a417",
       "events": "741638a5",
       "rng": {
         "draws": 2,
@@ -90,7 +90,7 @@
       "tick": 30,
       "time": 1.5,
       "nextId": 412,
-      "state": "f459a676",
+      "state": "f55d300e",
       "events": "1d430444",
       "rng": {
         "draws": 2,
@@ -101,7 +101,7 @@
       "tick": 32,
       "time": 1.6,
       "nextId": 412,
-      "state": "dad7e2d9",
+      "state": "62daa4b5",
       "events": "b3b75a1c",
       "rng": {
         "draws": 4,
@@ -131,7 +131,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -233,7 +234,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -435,6 +437,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 100.6,
           "comboUntil": -1,
           "critChance": 0.0695,
@@ -469,10 +473,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -540,6 +544,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 100.6,
           "hp": 50000,
@@ -550,6 +555,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -818,7 +829,7 @@
       "tick": 35,
       "time": 1.75,
       "nextId": 412,
-      "state": "f90a3772",
+      "state": "11c9dbc0",
       "events": "fbe8fc0f",
       "rng": {
         "draws": 4,
@@ -829,7 +840,7 @@
       "tick": 40,
       "time": 2,
       "nextId": 412,
-      "state": "54890fb1",
+      "state": "1d9ea783",
       "events": "741638a5",
       "rng": {
         "draws": 4,
@@ -840,7 +851,7 @@
       "tick": 45,
       "time": 2.25,
       "nextId": 412,
-      "state": "8c9d338a",
+      "state": "c0b3db5e",
       "events": "741638a5",
       "rng": {
         "draws": 36,
@@ -851,7 +862,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 412,
-      "state": "20b5bd7e",
+      "state": "f56c524e",
       "events": "741638a5",
       "rng": {
         "draws": 50,
@@ -862,7 +873,7 @@
       "tick": 55,
       "time": 2.75,
       "nextId": 412,
-      "state": "0f0d454c",
+      "state": "eda19154",
       "events": "741638a5",
       "rng": {
         "draws": 66,
@@ -873,7 +884,7 @@
       "tick": 60,
       "time": 3,
       "nextId": 412,
-      "state": "e90cdf92",
+      "state": "a448d0be",
       "events": "741638a5",
       "rng": {
         "draws": 80,
@@ -884,7 +895,7 @@
       "tick": 65,
       "time": 3.25,
       "nextId": 412,
-      "state": "9a453df8",
+      "state": "c52399c6",
       "events": "741638a5",
       "rng": {
         "draws": 101,
@@ -895,7 +906,7 @@
       "tick": 70,
       "time": 3.5,
       "nextId": 412,
-      "state": "bbb2bafa",
+      "state": "a8a229d0",
       "events": "741638a5",
       "rng": {
         "draws": 127,
@@ -906,7 +917,7 @@
       "tick": 75,
       "time": 3.75,
       "nextId": 412,
-      "state": "b12344fd",
+      "state": "63c02fc9",
       "events": "741638a5",
       "rng": {
         "draws": 152,
@@ -917,7 +928,7 @@
       "tick": 80,
       "time": 4,
       "nextId": 412,
-      "state": "82dbff49",
+      "state": "8033aa2f",
       "events": "741638a5",
       "rng": {
         "draws": 174,
@@ -928,7 +939,7 @@
       "tick": 85,
       "time": 4.25,
       "nextId": 412,
-      "state": "9f61803c",
+      "state": "7f1738e6",
       "events": "741638a5",
       "rng": {
         "draws": 203,
@@ -939,7 +950,7 @@
       "tick": 90,
       "time": 4.5,
       "nextId": 412,
-      "state": "2f90cb86",
+      "state": "58353ec0",
       "events": "741638a5",
       "rng": {
         "draws": 230,
@@ -950,7 +961,7 @@
       "tick": 95,
       "time": 4.75,
       "nextId": 412,
-      "state": "db18db3e",
+      "state": "7dfe6764",
       "events": "741638a5",
       "rng": {
         "draws": 253,
@@ -961,7 +972,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 412,
-      "state": "e4a3f61e",
+      "state": "2eda6418",
       "events": "741638a5",
       "rng": {
         "draws": 276,
@@ -972,7 +983,7 @@
       "tick": 105,
       "time": 5.25,
       "nextId": 412,
-      "state": "6f4c5ea8",
+      "state": "f57fd1de",
       "events": "741638a5",
       "rng": {
         "draws": 304,
@@ -983,7 +994,7 @@
       "tick": 110,
       "time": 5.5,
       "nextId": 412,
-      "state": "4d33b26b",
+      "state": "8073169b",
       "events": "741638a5",
       "rng": {
         "draws": 328,
@@ -994,7 +1005,7 @@
       "tick": 115,
       "time": 5.75,
       "nextId": 412,
-      "state": "519665d4",
+      "state": "0ae18ef0",
       "events": "741638a5",
       "rng": {
         "draws": 360,
@@ -1005,7 +1016,7 @@
       "tick": 120,
       "time": 6,
       "nextId": 412,
-      "state": "48c4226e",
+      "state": "b78acf8e",
       "events": "741638a5",
       "rng": {
         "draws": 387,
@@ -1016,7 +1027,7 @@
       "tick": 125,
       "time": 6.25,
       "nextId": 412,
-      "state": "ae52072a",
+      "state": "43712556",
       "events": "741638a5",
       "rng": {
         "draws": 407,
@@ -1027,7 +1038,7 @@
       "tick": 130,
       "time": 6.5,
       "nextId": 412,
-      "state": "59c0f410",
+      "state": "ec1ffdd6",
       "events": "741638a5",
       "rng": {
         "draws": 434,
@@ -1038,7 +1049,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 413,
-      "state": "e065c020",
+      "state": "2df92ad2",
       "events": "e66f2234",
       "rng": {
         "draws": 444,
@@ -1068,7 +1079,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1170,7 +1182,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1372,6 +1385,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "combatTimer": 105.65,
           "comboUntil": -1,
           "critChance": 0.0695,
@@ -1406,10 +1421,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 376,
+            "armor": 410,
             "int": 10,
             "spi": 11,
-            "sta": 60,
+            "sta": 61,
             "str": 61
           },
           "templateId": "warrior",
@@ -1477,6 +1492,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "hp": 50000,
@@ -1487,6 +1503,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -1755,7 +1777,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 414,
-      "state": "f932bd13",
+      "state": "4ad2b780",
       "events": "5c77013d",
       "rng": {
         "draws": 445,
@@ -1785,7 +1807,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -1888,7 +1911,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2090,6 +2114,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -2097,13 +2123,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -2126,10 +2152,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -2198,6 +2224,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "hp": 50000,
@@ -2208,6 +2235,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -2542,7 +2575,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 416,
-      "state": "0d8bcc79",
+      "state": "c5ac8b9e",
       "events": "8c5072f1",
       "rng": {
         "draws": 447,
@@ -2572,7 +2605,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2677,7 +2711,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -2879,6 +2914,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -2886,13 +2923,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -2915,10 +2952,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -2987,6 +3024,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "hp": 50000,
@@ -2997,6 +3035,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -3439,7 +3483,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 417,
-      "state": "cfea2ddf",
+      "state": "e8e71f7c",
       "events": "96c6a170",
       "rng": {
         "draws": 452,
@@ -3469,7 +3513,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -3576,7 +3621,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -3778,6 +3824,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -3785,13 +3833,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -3814,10 +3862,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -3891,6 +3939,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1,
@@ -3903,6 +3952,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -4411,7 +4466,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 418,
-      "state": "c409c959",
+      "state": "4f01fd6c",
       "events": "3544bf86",
       "rng": {
         "draws": 453,
@@ -4441,7 +4496,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -4548,7 +4604,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -4752,6 +4809,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -4759,13 +4818,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -4788,10 +4847,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -4865,6 +4924,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1,
@@ -4877,6 +4937,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -5461,7 +5527,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 419,
-      "state": "7f357b2f",
+      "state": "caee225a",
       "events": "0dacb00e",
       "rng": {
         "draws": 453,
@@ -5491,7 +5557,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -5598,7 +5665,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -5802,6 +5870,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -5809,13 +5879,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -5838,10 +5908,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -5915,6 +5985,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1,
@@ -5927,6 +5998,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,
@@ -6565,7 +6642,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 419,
-      "state": "7f357b2f",
+      "state": "caee225a",
       "events": "741638a5",
       "rng": {
         "draws": 453,
@@ -6595,7 +6672,8 @@
           "entityId": 405,
           "equipment": {
             "chest": "recruit_tunic",
-            "mainhand": "worn_sword"
+            "mainhand": "worn_sword",
+            "offhand": "eastbrook_buckler"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -6702,7 +6780,8 @@
           "entityId": 407,
           "equipment": {
             "chest": "footpad_jerkin",
-            "mainhand": "rusty_dagger"
+            "mainhand": "rusty_dagger",
+            "offhand": "rusty_dagger"
           },
           "gatheringProficiency": {},
           "heroicDaily": {},
@@ -6906,6 +6985,8 @@
               "sourceId": 405
             }
           ],
+          "blockChance": 0.05,
+          "blockValue": 6,
           "comboUntil": -1,
           "critChance": 0.0695,
           "detonateTimer": "Infinity",
@@ -6913,13 +6994,13 @@
           "fallStartY": -3.409618,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1.5,
-          "hp": 1052,
+          "hp": 1062,
           "id": 405,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 1052,
+          "maxHp": 1062,
           "maxResource": 100,
           "moveSpeed": 7,
           "onGround": true,
@@ -6942,10 +7023,10 @@
           "spellPower": 5,
           "stats": {
             "agi": 39,
-            "armor": 461,
+            "armor": 498,
             "int": 10,
             "spi": 11,
-            "sta": 84,
+            "sta": 85,
             "str": 61
           },
           "targetId": 413,
@@ -7019,6 +7100,7 @@
           "critChance": 0.091,
           "detonateTimer": "Infinity",
           "dodgeChance": 0.091,
+          "dualWielding": true,
           "fallStartY": -3.065499,
           "fiveSecondRule": 105.65,
           "gcdRemaining": 1,
@@ -7031,6 +7113,12 @@
           "maxHp": 50000,
           "maxResource": 100,
           "moveSpeed": 7,
+          "offhandWeapon": {
+            "dagger": true,
+            "max": 4,
+            "min": 2,
+            "speed": 1.8
+          },
           "onGround": true,
           "overpowerUntil": -1,
           "parryChance": 0.068,

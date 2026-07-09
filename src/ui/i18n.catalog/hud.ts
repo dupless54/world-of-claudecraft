@@ -336,6 +336,7 @@ const hudStringsEn = {
       facing: 'You must be facing your target.',
       targetHealthBelow: 'That ability requires the target below {percent}% health.',
       dagger: 'You must wield a dagger.',
+      needShield: 'You must have a shield equipped.',
       behindTarget: 'You must be behind your target.',
       polymorph: 'This creature cannot be polymorphed.',
       noSeal: 'You have no active Seal.',

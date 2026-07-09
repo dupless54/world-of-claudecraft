@@ -322,6 +322,12 @@ export type AuraKind =
   // (only Revenge consumes it), applied in mobSwing and consumed by
   // combat/empower_next.ts; the action bar reads the same free-cost predicate.
   | 'revenge_free'
+  // Sudden Death (Arms passive): a connected auto swing has a chance to arm a
+  // window in which Early Grave (execute) may be cast on a target at ANY health
+  // and for no rage. Consumed by combat/empower_next.ts (free cost) and gates the
+  // execute HP requirement in casting_lifecycle; the action bar reads the same free
+  // predicate. Owner 2026-07-09.
+  | 'sudden_death'
   // Victory Rush's on-kill window: worn for VICTORY_RUSH_WINDOW seconds after
   // a credited kill; the granted strike requires it and consumes it on cast.
   | 'victory_rush'
@@ -874,7 +880,7 @@ export interface MobTemplate {
   // Fixed respawn delay in seconds, overriding respawnSeconds*respawnMult; also
   // caps corpse decay so the mob returns on schedule. (Training dummy: 10s.)
   respawnSeconds?: number;
-  // Training dummy: a stationary practice target — attackable (so it counts for
+  // Training dummy: a stationary practice target, attackable (so it counts for
   // damage and the combat meters) but never moves, aggros, or retaliates; drops
   // combat and heals to full a few seconds after the last hit. Guarded in
   // enterCombat (sim.ts) and updateMob (mob/locomotion.ts).
@@ -1595,7 +1601,13 @@ export type AbilityEffect =
   | { type: 'aoeFear'; duration: number; radius: number; maxTargets: number }
   // Heroic Leap: relocate the caster to the aimed point via a collision- and
   // cliff-checked sweep (harvested from PR #1348's movement primitive).
-  | { type: 'repositionToAim'; breakRoots?: boolean }
+  | {
+      type: 'repositionToAim';
+      breakRoots?: boolean;
+      // Heroic Leap: instead of aoeDamage firing at cast time, the leap defers this
+      // blast to touchdown (updateLeapMovement) so it slams down where you land.
+      landingAoe?: { min: number; max: number; radius: number };
+    }
   // An attack-power BUFF on the caster and party members within radius (the
   // friendly mirror of aoeAttackPower; PR #1348 harvest, Trueshot Aura).
   | { type: 'aoeAllyAttackPower'; amount: number; duration: number; radius: number }
@@ -1719,6 +1731,7 @@ export interface AbilityDef {
   spendsCombo?: boolean; // rogue finishers
   requiresDodgeProc?: boolean; // overpower
   requiresTargetHpBelow?: number; // execute-style (fraction)
+  requiresShield?: boolean; // Protection shield abilities: need a shield in the offhand
   // Classic threat riders: flat bonus threat on a successful use and/or a
   // multiplier on the damage-threat (both scale with stance/form modifiers).
   threat?: { flat?: number; mult?: number };
@@ -1734,10 +1747,13 @@ export interface AbilityDef {
   // on-kill window); runEffects consumes the enabling aura on a successful cast.
   requiresAuraKind?: AuraKind;
   // Spend-ALL ability (Iron Resolve): `cost` is only the MINIMUM gate; the
-  // actual bill is the caster's entire resource bar, snapshotted into the
-  // resolved cost at apply time so both the spend and the effects (e.g.
-  // absorbSpentResource) read the true spent amount.
+  // actual bill is the caster's resource bar (capped by spendResourceCap when
+  // set), snapshotted into the resolved cost at apply time so both the spend and
+  // the effects (e.g. absorbSpentResource) read the true spent amount.
   spendsAllResource?: boolean;
+  // Optional ceiling on a spendsAllResource bill: the ability spends at most this
+  // much resource (Iron Resolve caps at 40 rage), keeping the effect it feeds bounded.
+  spendResourceCap?: number;
   learnLevel: number;
   effects: AbilityEffect[];
   ranks?: AbilityRank[]; // later ranks (sorted by level)
@@ -1965,6 +1981,20 @@ export function isConsuming(e: { eating: Consuming | null; drinking: Consuming |
   return e.eating !== null || e.drinking !== null;
 }
 
+// Heroic Leap flight (owner 2026-07-09): the caster arcs from `from` to `to` over
+// `dur` seconds instead of teleporting. `elapsed` advances by DT each tick; at the
+// apex the entity is `apex` yards above the straight-line ground. On touchdown the
+// stored `aoe` fires at `to` (attributed to `ability`).
+export interface LeapFlight {
+  from: Vec3;
+  to: Vec3;
+  elapsed: number;
+  dur: number;
+  apex: number;
+  aoe: { min: number; max: number; radius: number } | null;
+  ability: string;
+}
+
 export interface Entity {
   id: number;
   kind: EntityKind;
@@ -2084,6 +2114,10 @@ export interface Entity {
   chargeTargetId: number | null;
   chargeTimeLeft: number; // seconds; failsafe so a blocked charge can't run forever
   chargePath: Vec3[]; // waypoints consumed front-to-back; last leg homes on the live target
+  // Heroic Leap flight: while non-null the entity is arcing from `from` to `to`
+  // over `dur` seconds (updateLeapMovement); the landing AoE fires on touchdown so
+  // the jump reads as a real leap, not an instant teleport.
+  leap: LeapFlight | null;
   followTargetId: number | null; // /follow: auto-walk after another player until interrupted
   savedMana: number; // druid forms: mana put aside while running on rage/energy
   sitting: boolean;
@@ -2998,7 +3032,9 @@ export function rageConversion(level: number): number {
 
 // Rage from dealing damage uses the classic outgoing-damage scale.
 export function rageFromDealing(damage: number, level: number): number {
-  return (18 * damage) / rageConversion(level);
+  // Coefficient tuned toward the classic-era ~7.5 to 9 range (was 18, which roughly
+  // doubled real classic rage income and flooded the bar at low levels).
+  return (9 * damage) / rageConversion(level);
 }
 
 // Rage from taking damage scales with the attacker's level so dungeon tanks get
@@ -3092,6 +3128,10 @@ export const AVATAR_SCALE = 1.15;
 // seconds. No stacking: a re-proc refreshes the one aura (applyAura by id).
 export const BATTLE_TRANCE_CHANCE = 0.2;
 export const BATTLE_TRANCE_DURATION = 10;
+// Sudden Death (Arms passive): a connected auto swing has this chance to arm the
+// free, no-health-requirement Early Grave (execute) window, lasting this long.
+export const SUDDEN_DEATH_CHANCE = 0.1;
+export const SUDDEN_DEATH_DURATION = 10;
 // Revenge (Protection): a dodge or parry against the warrior has this chance to
 // make the next Revenge free, for this many seconds. No stacking: a re-proc
 // refreshes the one aura (applyAura by id).

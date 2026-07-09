@@ -110,7 +110,7 @@ describe('Bladed Gyre arms the echo', () => {
 });
 
 describe('single-target casts echo onto enemies near the target', () => {
-  it('(b) a single strike also hits the second enemy for the same amount and spends one charge', () => {
+  it('(b) a single strike also hits the second enemy for 65% of the amount and spends one charge', () => {
     const { sim, p } = makeSim();
     const { primary, near, far } = arena(sim, p);
     p.resource = 100;
@@ -121,8 +121,10 @@ describe('single-target casts echo onto enemies near the target', () => {
     const primaryHits = hitsOn(events, 'Bloodletting', primary.id);
     expect(primaryHits).toHaveLength(1);
     expect(primaryHits[0]).toBeGreaterThan(0);
-    // The echo replays the RESOLVED amount: same number, no re-roll.
-    expect(hitsOn(events, 'Bloodletting', near.id)).toEqual(primaryHits);
+    // The echo replays the RESOLVED amount at 65% (owner 2026-07-09), no re-roll.
+    expect(hitsOn(events, 'Bloodletting', near.id)).toEqual([
+      Math.max(1, Math.round(primaryHits[0] * 0.65)),
+    ]);
     // Never onto the primary twice, never past the 8 yd ring.
     expect(hitsOn(events, 'Bloodletting', far.id)).toEqual([]);
     expect(echoAura(p)?.charges).toBe(1);
@@ -158,8 +160,10 @@ describe('single-target casts echo onto enemies near the target', () => {
     const events = recast(sim, p, 'red_harvest');
     const primaryHits = hitsOn(events, 'Red Harvest', primary.id);
     expect(primaryHits).toHaveLength(3);
-    // Each strike echoes its own resolved amount, in strike order.
-    expect(hitsOn(events, 'Red Harvest', near.id)).toEqual(primaryHits);
+    // Each strike echoes its own resolved amount at 65%, in strike order.
+    expect(hitsOn(events, 'Red Harvest', near.id)).toEqual(
+      primaryHits.map((h) => Math.max(1, Math.round(h * 0.65))),
+    );
     expect(hitsOn(events, 'Red Harvest', far.id)).toEqual([]);
     // One cast = one charge, no matter how many strikes it carries.
     expect(echoAura(p)?.charges).toBe(1);

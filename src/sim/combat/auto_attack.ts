@@ -43,6 +43,8 @@ import {
   MELEE_ARC,
   MELEE_RANGE,
   normAngle,
+  SUDDEN_DEATH_CHANCE,
+  SUDDEN_DEATH_DURATION,
   swingMissChance,
   type WeaponInfo,
 } from '../types';
@@ -61,7 +63,7 @@ import { applyThornsReaction } from './thorns_charge';
 // agility-driven ranged attack-power term is unaffected, and wands (the caster
 // sidearm, fixed class damage) are exempt.
 const RANGED_WEAPON_COEFF = 0.6;
-const DUAL_WIELD_WHITE_MISS_PENALTY = 0.19;
+const DUAL_WIELD_WHITE_MISS_PENALTY = 0.1;
 
 export function startAutoAttack(ctx: SimContext, pid?: number): void {
   const r = ctx.resolve(pid);
@@ -177,17 +179,47 @@ export function updatePlayerAutoAttack(ctx: SimContext, p: Entity, meta: PlayerM
       threatMult,
       whiteDualWieldPenalty: p.dualWielding && abilityName === null,
     });
-    // Battle Trance (warrior baseline): every CONNECTED auto swing has a chance
-    // to make the next Reaver Strike or Brute Swing free (empower_next.ts owns
-    // the consumption scope). Rolled AFTER the swing so the white-hit table's
-    // own rng draws keep their positions; only warriors draw here.
-    if (connected && meta.cls === 'warrior' && ctx.rng.chance(BATTLE_TRANCE_CHANCE)) {
+    // Battle Trance (warrior baseline, but NOT Fury): every CONNECTED auto swing
+    // has a chance to make the next Reaver Strike or Brute Swing free
+    // (empower_next.ts owns the consumption scope). Fury owns none of the
+    // consuming abilities (it dual wields for Bloodthirst, no Reaver Strike /
+    // Overpower), so it must never arm the proc. Rolled AFTER the swing so the
+    // white-hit table's own rng draws keep their positions; the chance is still
+    // DRAWN for every warrior (Fury just discards the result) so the shared rng
+    // draw order is unchanged and the parity goldens do not move.
+    if (
+      connected &&
+      meta.cls === 'warrior' &&
+      ctx.rng.chance(BATTLE_TRANCE_CHANCE) &&
+      ctx.playerMods(meta).spec !== 'fury'
+    ) {
       ctx.applyAura(p, {
         id: 'battle_trance',
         name: 'Battle Trance',
         kind: 'battle_trance',
         remaining: BATTLE_TRANCE_DURATION,
         duration: BATTLE_TRANCE_DURATION,
+        value: 0,
+        sourceId: p.id,
+        school: 'physical',
+      });
+    }
+    // Sudden Death (Arms passive): a connected auto has a chance to arm the free,
+    // any-health Early Grave window. Gated on the passive being known AND committed
+    // arms (the checks precede the roll, so only Arms-with-the-passive draws here).
+    if (
+      connected &&
+      meta.cls === 'warrior' &&
+      ctx.playerMods(meta).spec === 'arms' &&
+      meta.known.some((k) => k.def.passive && k.def.id === 'sudden_death') &&
+      ctx.rng.chance(SUDDEN_DEATH_CHANCE)
+    ) {
+      ctx.applyAura(p, {
+        id: 'sudden_death',
+        name: 'Sudden Death',
+        kind: 'sudden_death',
+        remaining: SUDDEN_DEATH_DURATION,
+        duration: SUDDEN_DEATH_DURATION,
         value: 0,
         sourceId: p.id,
         school: 'physical',
@@ -205,7 +237,12 @@ export function updatePlayerAutoAttack(ctx: SimContext, p: Entity, meta: PlayerM
       apSwingSpeed: p.offhandWeapon.speed,
       whiteDualWieldPenalty: true,
     });
-    if (connected && meta.cls === 'warrior' && ctx.rng.chance(BATTLE_TRANCE_CHANCE)) {
+    if (
+      connected &&
+      meta.cls === 'warrior' &&
+      ctx.rng.chance(BATTLE_TRANCE_CHANCE) &&
+      ctx.playerMods(meta).spec !== 'fury'
+    ) {
       ctx.applyAura(p, {
         id: 'battle_trance',
         name: 'Battle Trance',

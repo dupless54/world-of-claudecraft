@@ -42,7 +42,13 @@ describe('armor proficiencies', () => {
 
   it('allows warrior-style weapons for warriors, rogues, hunters, shamans, and paladins', () => {
     expect(equip('warrior', 'kingsbane_last_oath').equipment.mainhand).toBe('kingsbane_last_oath');
-    expect(equip('rogue', 'kingsbane_last_oath').equipment.mainhand).toBe('kingsbane_last_oath');
+    // Rogues dual-wield (owner 2026-07-09): a one-hand weapon auto-routes to the off
+    // hand when the main hand already holds the starter dagger, so the proficiency
+    // check verifies it lands in EITHER hand, not specifically the main hand.
+    const rogueEq = equip('rogue', 'kingsbane_last_oath').equipment;
+    expect(
+      rogueEq.mainhand === 'kingsbane_last_oath' || rogueEq.offhand === 'kingsbane_last_oath',
+    ).toBe(true);
     expect(equip('hunter', 'kingsbane_last_oath').equipment.mainhand).toBe('kingsbane_last_oath');
     expect(equip('shaman', 'kingsbane_last_oath').equipment.mainhand).toBe('kingsbane_last_oath');
     expect(equip('paladin', 'kingsbane_last_oath').equipment.mainhand).toBe('kingsbane_last_oath');

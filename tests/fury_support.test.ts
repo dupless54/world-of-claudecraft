@@ -102,7 +102,7 @@ describe('(a) warrior support content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Emboldening Roar');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(18);
+    expect(def.learnLevel).toBe(16);
     expect(def.cost).toBe(0);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(180);
@@ -119,7 +119,7 @@ describe('(a) warrior support content defs', () => {
     expect(def).toBeDefined();
     expect(def.name).toBe('Furious Mending');
     expect(def.class).toBe('warrior');
-    expect(def.learnLevel).toBe(14);
+    expect(def.learnLevel).toBe(10);
     expect(def.cost).toBe(0);
     expect(def.castTime).toBe(0);
     expect(def.cooldown).toBe(120);

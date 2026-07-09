@@ -688,6 +688,8 @@ export const hudChromeStrings = {
     complexityHigh: 'High',
     exampleAbilities: 'Example abilities',
     viewTalents: 'View talents',
+    specUnlockBanner: 'Specialization Unlocked!',
+    specUnlockHint: 'Press N to choose your specialization.',
   },
   // Controller / gamepad options panel (Options > Controller). Player-facing
   // chrome, so every label is a key here; the live numbers run through

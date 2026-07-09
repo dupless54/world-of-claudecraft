@@ -88,6 +88,7 @@ import {
   type Role,
   repairAllocation,
   type SavedLoadout,
+  SPEC_UNLOCK_LEVEL,
   type TalentAllocation,
   type TalentModifiers,
   talentPointsAtLevel,
@@ -1708,7 +1709,11 @@ export class Sim {
       bankBonusSources: [],
       vendorBuyback: [],
       copper: 0,
-      equipment: { mainhand: classDef.startWeapon, chest: classDef.startChest },
+      equipment: {
+        mainhand: classDef.startWeapon,
+        offhand: classDef.startOffhand,
+        chest: classDef.startChest,
+      },
       xp: 0,
       lifetimeXp: 0,
       prestigeRank: 0,
@@ -1847,6 +1852,7 @@ export class Sim {
             choices: { ...s.talents.choices },
           },
           talentPointsAtLevel(player.level),
+          player.level >= SPEC_UNLOCK_LEVEL,
         );
       // Choice-row picks are revalidated the same way: unknown option ids and
       // rows above the character's level are dropped before the bake below.
@@ -3562,6 +3568,48 @@ export class Sim {
     }));
   }
 
+  // Heroic Leap in flight: arc from `from` to `to` over `dur` seconds (parabolic
+  // rise cresting at the midpoint) instead of teleporting, then settle on the
+  // ground and fire the landing AoE. Returns true while it owns movement this tick.
+  private updateLeapMovement(p: Entity): boolean {
+    if (!p.leap) return false;
+    const leap = p.leap;
+    leap.elapsed += DT;
+    const t = Math.min(1, leap.elapsed / leap.dur);
+    const groundY = leap.from.y + (leap.to.y - leap.from.y) * t;
+    p.pos.x = leap.from.x + (leap.to.x - leap.from.x) * t;
+    p.pos.z = leap.from.z + (leap.to.z - leap.from.z) * t;
+    p.pos.y = groundY + leap.apex * 4 * t * (1 - t);
+    p.onGround = false;
+    p.vy = 0;
+    if (t >= 1) {
+      p.pos.x = leap.to.x;
+      p.pos.z = leap.to.z;
+      p.pos.y = leap.to.y;
+      p.onGround = true;
+      p.fallStartY = p.pos.y;
+      const aoe = leap.aoe;
+      const ability = leap.ability;
+      p.leap = null;
+      if (aoe) {
+        this.emit({
+          type: 'spellfxAt',
+          x: p.pos.x,
+          z: p.pos.z,
+          school: 'physical',
+          fx: 'nova',
+          radius: aoe.radius,
+        });
+        for (const target of this.hostilesInRadius(p, p.pos, aoe.radius)) {
+          if (!this.hasLineOfSight(p, target)) continue;
+          const dmg = Math.round(this.rng.range(aoe.min, aoe.max));
+          this.dealDamage(p, target, dmg, false, 'physical', ability, 'hit');
+        }
+      }
+    }
+    return true;
+  }
+
   // Charge in flight: forced movement toward the target along the pathfound
   // route. Returns true while it owns the player's movement this tick.
   private updateChargeMovement(p: Entity): boolean {
@@ -3692,6 +3740,7 @@ export class Sim {
     ) {
       meta.lastActiveTick = this.tickCount;
     }
+    if (this.updateLeapMovement(p)) return;
     if (this.updateChargeMovement(p)) return;
     if (this.updateFollowMovement(p, meta)) return;
     if (this.updateFearMovement(p)) return;
@@ -4736,7 +4785,7 @@ export class Sim {
   }
 
   // Step `e` one tick toward `dest`. With `ignoreObstacles`, the mover phases
-  // straight through props — used to free a stuck evader, and forced on for
+  // straight through props, used to free a stuck evader, and forced on for
   // templates flagged `phasesThroughObstacles` (mountain-sized world bosses
   // that must never wedge on a collider mid-chase). Returns true on arrival.
   private moveToward(e: Entity, dest: Vec3, speed: number, ignoreObstacles = false): boolean {

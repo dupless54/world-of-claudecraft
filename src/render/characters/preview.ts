@@ -107,18 +107,16 @@ export class CharacterPreview {
 
   /** Set the active character model by player class. Pass held item ids to mirror a
    *  live equipment state; omit them to default to the class start weapon. */
-  setClass(
-    cls: PlayerClass,
-    mainhandItemId?: string | null,
-    offhandItemId: string | null = null,
-  ): void {
+  setClass(cls: PlayerClass, mainhandItemId?: string | null, offhandItemId?: string | null): void {
     if (this.destroyed) return;
     // A class-driven selection (create/offline picker, or a panel switch) supersedes
     // any pending async mech re-apply, so invalidate the tracked appearance.
     this.appearanceSig = null;
     const weapon =
       mainhandItemId !== undefined ? mainhandItemId : (CLASSES[cls].startWeapon ?? null);
-    this.setVisualKey(`player_${cls}`, weapon, null, offhandItemId);
+    const offhand =
+      offhandItemId !== undefined ? offhandItemId : (CLASSES[cls].startOffhand ?? null);
+    this.setVisualKey(`player_${cls}`, weapon, null, offhand);
   }
 
   /** Show a character's real, in-world appearance: the class rig or the Combat Mech

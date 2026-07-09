@@ -96,6 +96,7 @@ import { isOwnedPetHostile } from './reaction';
 import { RenderBudgetGovernor, type RenderBudgetState } from './render_budget';
 import { downscaleDims } from './screenshot';
 import { drapeRingLocalY } from './selection_ring';
+import { advanceSelfLeapArc, createSelfLeapArc, type SelfLeapArc } from './self_leap_arc';
 import { type SelfMotionFrame, SelfMotionPredictor } from './self_motion';
 import { isSharedGeometry, isSharedMaterial } from './shared_resource';
 import { buildClouds, buildSky, type SkyView } from './sky';
@@ -897,6 +898,7 @@ export class Renderer {
       : null;
   }
 
+  private selfLeapArc: SelfLeapArc | null = null;
   private lastSelfId: number | null = null;
   // Last yaw applied to the local player while the camera was driving its facing
   // (mouselook / mouse-camera). Null when the override is disengaged, so the next
@@ -4189,6 +4191,7 @@ export class Renderer {
     if (this.lastSelfId !== p.id) {
       this.lastSelfId = p.id;
       this.selfRenderPositionReady = false;
+      this.selfLeapArc = null;
       this.selfFacingOverride = null;
       // A still-decaying predictor-handoff offset belongs to the previous
       // character; leaking it would displace the new one for a few frames.
@@ -5214,22 +5217,37 @@ export class Renderer {
     const px = p.prevPos.x + (p.pos.x - p.prevPos.x) * playerAlpha;
     const py = p.prevPos.y + (p.pos.y - p.prevPos.y) * playerAlpha;
     const pz = p.prevPos.z + (p.pos.z - p.prevPos.z) * playerAlpha;
-    if (selfAlphaLead > 0) {
-      const dx = px - this.selfRenderPosition.x;
-      const dy = py - this.selfRenderPosition.y;
-      const dz = pz - this.selfRenderPosition.z;
-      if (!this.selfRenderPositionReady || dx * dx + dy * dy + dz * dz > SELF_RENDER_SNAP_DIST_SQ) {
-        this.selfRenderPosition.set(px, py, pz);
+    const targetX = p.pos.x;
+    const targetY = p.pos.y;
+    const targetZ = p.pos.z;
+    if (this.selfLeapArc) {
+      const next = advanceSelfLeapArc(this.selfLeapArc, dt);
+      this.selfLeapArc = next.done ? null : next.arc;
+      this.selfRenderPosition.set(next.point.x, next.point.y, next.point.z);
+      this.selfRenderPositionReady = true;
+      return this.selfRenderPosition;
+    }
+    const dx = px - this.selfRenderPosition.x;
+    const dy = py - this.selfRenderPosition.y;
+    const dz = pz - this.selfRenderPosition.z;
+    if (!this.selfRenderPositionReady || dx * dx + dy * dy + dz * dz > SELF_RENDER_SNAP_DIST_SQ) {
+      const leapArc = this.selfRenderPositionReady
+        ? createSelfLeapArc(this.selfRenderPosition, { x: targetX, y: targetY, z: targetZ })
+        : null;
+      if (leapArc) {
+        const next = advanceSelfLeapArc(leapArc, dt);
+        this.selfLeapArc = next.done ? null : next.arc;
+        this.selfRenderPosition.set(next.point.x, next.point.y, next.point.z);
         this.selfRenderPositionReady = true;
       } else {
-        const t = 1 - Math.exp(-SELF_RENDER_SMOOTH_RATE * Math.max(0, dt));
-        this.selfRenderPosition.x += dx * t;
-        this.selfRenderPosition.y += dy * t;
-        this.selfRenderPosition.z += dz * t;
+        this.selfRenderPosition.set(px, py, pz);
+        this.selfRenderPositionReady = true;
       }
     } else {
-      this.selfRenderPosition.set(px, py, pz);
-      this.selfRenderPositionReady = true;
+      const t = 1 - Math.exp(-SELF_RENDER_SMOOTH_RATE * Math.max(0, dt));
+      this.selfRenderPosition.x += dx * t;
+      this.selfRenderPosition.y += dy * t;
+      this.selfRenderPosition.z += dz * t;
     }
     return this.selfRenderPosition;
   }

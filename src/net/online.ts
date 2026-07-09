@@ -855,6 +855,7 @@ function blankEntity(id: number): Entity {
     chargeTargetId: null,
     chargeTimeLeft: 0,
     chargePath: [],
+    leap: null,
     followTargetId: null,
     sitting: false,
     eating: null,

@@ -39,7 +39,8 @@ const GATED: Record<string, string[]> = {
   // still carries specs ['arms'], but no warrior learns it (it is in no kit list), so
   // it stays HIDDEN for every spec below.
   rend: ['arms'],
-  overpower: ['arms'],
+  // overpower (Redhand) became a BASELINE rage spender (all specs, level 2) on
+  // 2026-07-09, so it is no longer spec-gated and is not listed here.
   slam: ['arms'], // Brute Swing dropped from prot 2026-07-08 (prot uses Revenge)
   cleave: ['arms'], // removed from prot 2026-07-08; prot uses Revenge
   revenge: ['prot'], // prot-only, replaces Reaver Strike (heroic_strike) for prot
@@ -126,7 +127,7 @@ describe('abilitiesKnownAt spec filter', () => {
     // Reaver Strike (excludeSpecs prot), Reaping Arc (arms-only now), the arms-only
     // strikes, plus Bolstering Cry (commanding_shout) and Brute Swing (slam) which
     // prot dropped 2026-07-08, all stay out for committed prot.
-    for (const id of ['heroic_strike', 'cleave', 'rend', 'overpower', 'commanding_shout', 'slam']) {
+    for (const id of ['heroic_strike', 'cleave', 'rend', 'commanding_shout', 'slam']) {
       expect(ids.has(id), id).toBe(false);
     }
   });
@@ -185,11 +186,11 @@ describe('spec gating end to end in the sim', () => {
       return sim.known.map((k) => k.def.id).join(',');
     };
     const a = run();
-    // Tank staple present; retired Bolstering Cry (commanding_shout) and arms-only
-    // Redhand (overpower) both absent for committed prot.
+    // Tank staple present; retired Bolstering Cry (commanding_shout) absent, but
+    // Redhand (overpower) is now a baseline spender so prot has it too.
     expect(a).toContain('shield_slam');
     expect(a).not.toContain('commanding_shout');
-    expect(a).not.toContain('overpower');
+    expect(a).toContain('overpower');
     expect(run()).toBe(a);
   });
 });

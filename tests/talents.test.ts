@@ -428,7 +428,9 @@ describe('precomputed modifiers', () => {
     expect(mods.spec).toBe('arms');
     expect(mods.role).toBe('dps');
     expect(mods.grants.some((g) => g.ability === 'mortal_strike')).toBe(true);
-    expect(mods.global.meleeDmgPct).toBeCloseTo(0.1); // Sharpened Blades mastery
+    // Master Armorer applies its +10% at HIT time (2H-gated, combat/damage.ts), not
+    // as a baked ability mod, so the precomputed melee mult stays 0.
+    expect(mods.global.meleeDmgPct).toBe(0);
   });
 
   it('makes every chosen spec signature available at the first talent level', () => {
@@ -632,11 +634,15 @@ describe('Sim integration — active talents & ability modifiers', () => {
     expect(sim.known.some((k) => k.def.id === 'mortal_strike')).toBe(false); // Arms signature gone
   });
 
-  it('gates specialization choice to the first talent level', () => {
+  it('gates specialization to the spec-unlock level (5): blocked at 4, allowed at 5', () => {
     const sim = new Sim({ seed: 7, playerClass: 'warrior' });
-    sim.setPlayerLevel(5);
-    expect(sim.setSpec('arms')).toBe(false);
+    sim.setPlayerLevel(4);
+    expect(sim.setSpec('arms')).toBe(false); // below SPEC_UNLOCK_LEVEL
     expect(sim.known.some((k) => k.def.id === 'mortal_strike')).toBe(false);
+    // Spec unlocks at level 5, even though talent POINTS still start at 10.
+    sim.setPlayerLevel(5);
+    expect(sim.setSpec('arms')).toBe(true);
+    expect(sim.known.some((k) => k.def.id === 'mortal_strike')).toBe(true); // signature granted
   });
 
   it('snapshot-locks Overpower damage before/after Improved Overpower (+ Arms mastery)', () => {
@@ -652,8 +658,9 @@ describe('Sim integration — active talents & ability modifiers', () => {
       abilitiesKnownAt('warrior', 20, mods).find((k) => k.def.id === 'overpower'),
       'weaponStrike',
     ).bonus;
-    // Arms mastery (+10% melee) + Improved Overpower r2 (+50%) => x1.60
-    expect(buffed).toBe(Math.round(baseBonus * 1.6));
+    // Improved Overpower r2 (+50%) => x1.50. Master Armorer's +10% is now hit-time
+    // (2H-gated), so it no longer bakes into the precomputed ability bonus.
+    expect(buffed).toBe(Math.round(baseBonus * 1.5));
     expect(buffed).toBeGreaterThan(baseBonus);
     // shared content data must NOT be mutated by the modifier pass
     const baseAgain = effectOfType(
@@ -726,8 +733,10 @@ describe('Sim integration — active talents & ability modifiers', () => {
       ).find((k) => k.def.id === 'cleave'),
       'aoeDamage',
     ).min;
-    expect(sweeping).toBe(Math.round(baseMin * 1.4)); // arms mastery .10 + sweeping .30
-    expect(impale).toBe(Math.round(baseMin * 1.1)); // arms mastery only; impale is crit
+    // Master Armorer's +10% is now hit-time (2H-gated), so only the chosen row
+    // option's ability mod bakes into the precomputed damage here.
+    expect(sweeping).toBe(Math.round(baseMin * 1.3)); // sweeping .30
+    expect(impale).toBe(baseMin); // impale is a crit option, no damage mod
   });
 
   it('tank-role Vengeance Mastery multiplies generated threat (+30%)', () => {
@@ -989,6 +998,14 @@ describe('repairAllocation (load-time revalidation)', () => {
     expect(repaired.ranks.arms_imp_overpower).toBeUndefined();
   });
 
+  it('keeps a spec with zero points when spec-unlocked, strips it when not (decoupled from points)', () => {
+    const a = alloc({ spec: 'arms', ranks: {} });
+    // A level-4 load (specUnlocked=false): the spec is illegal and dropped.
+    expect(repairAllocation('warrior', a, 0, false).spec).toBeNull();
+    // Spec-unlocked (level >= 5) keeps the spec even with zero talent points.
+    expect(repairAllocation('warrior', a, 0, true).spec).toBe('arms');
+  });
+
   it('rolls back a choice node whose points-gate is no longer met', () => {
     // war_tactical_choice has pointsGate 5; persist it with a VALID option id but
     // only 2 points above its row, so the validate-then-rollback branch fires and
@@ -1054,10 +1071,12 @@ describe('persisted talents are revalidated on load (FR security)', () => {
     const sim2 = new Sim({ seed: 9, playerClass: 'warrior', noPlayer: true });
     const pid = sim2.addPlayer('warrior', 'Tampered', { state });
     const meta = requireMeta(sim2, pid);
-    // 0 points available at level 5 -> nothing survives.
+    // 0 points available at level 5 -> the over-budget RANKS are trimmed to nothing,
+    // but the spec itself is legal from level 5 (decoupled from talent points) so it
+    // is kept with its mastery. The tampered per-rank bonuses do NOT survive.
     expect(pointsSpent(meta.talents)).toBe(0);
     expect(meta.talentMods.abilities.overpower?.dmgPct ?? 0).toBe(0);
-    expect(meta.talentMods.spec).toBeNull();
+    expect(meta.talentMods.spec).toBe('arms');
   });
 
   it('deleting the active loadout never auto-applies an illegal next loadout', () => {
