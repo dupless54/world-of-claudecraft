@@ -51,21 +51,33 @@ export interface VendorWindowDeps extends PainterHostPresentation {
 }
 
 /**
- * Stamp the shared window frame cold at first open, then reuse it. The frame's
- * body being present is the marker; the Heroic Quartermaster shares this element
- * and replaces its innerHTML, so a missing body naturally forces a rebuild.
+ * Stamp the shared window frame cold at first open, then reuse it.
+ *
+ * The frame mounts on an INNER container, never on the shared #vendor-window
+ * root: the Heroic Quartermaster is a second tenant of that root and paints it
+ * with innerHTML only, so builder classes / role / aria set on the root itself
+ * would leak into the untouched heroic window. With the inner mount the root
+ * stays byte-identical to its pre-build state under every sequence, including
+ * the direct copper-to-heroic handoff (openHeroicVendor takes the container
+ * without ever calling closeVendor), and heroic's innerHTML wipe destroys the
+ * frame naturally. An intact mounted frame (its body present) is the reuse
+ * marker; anything else (first open, or heroic content) forces a cold rebuild.
  */
 function ensureFrame(el: HTMLElement, deps: VendorWindowDeps): WindowFrameParts {
-  const body = el.querySelector<HTMLElement>('.window-body');
-  if (body) {
+  const mounted = el.querySelector<HTMLElement>(':scope > .window-frame');
+  const body = mounted?.querySelector<HTMLElement>('.window-body');
+  if (mounted && body) {
     return {
-      root: el,
+      root: mounted,
       body,
-      footer: el.querySelector<HTMLElement>('.window-footer'),
+      footer: mounted.querySelector<HTMLElement>('.window-footer'),
       tabButtons: [],
     };
   }
-  return renderWindowFrame(el, VENDOR_FRAME, { onClose: () => deps.onClose() });
+  const mount = document.createElement('div');
+  const parts = renderWindowFrame(mount, VENDOR_FRAME, { onClose: () => deps.onClose() });
+  el.replaceChildren(mount);
+  return parts;
 }
 
 /** The rarity-bordered item cell: icon plus a count in the corner when stacked. */

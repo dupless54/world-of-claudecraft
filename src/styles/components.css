@@ -2987,13 +2987,23 @@
   /* Redesigned vendor: adopts the shared .window-frame chrome plus the
      .list-rows / .item-cell grammar (spec 6.1 to 6.3). The legacy vendor rules
      above are now unmatched (the painter emits the grammar classes below) and
-     stay only as a later removal chore. The .window layout overrides are scoped
-     to body.vendor-open so the Heroic Quartermaster, which shares #vendor-window
-     but never sets vendor-open, keeps its legacy shell untouched. Tokens only. */
-  body.vendor-open #vendor-window {
+     stay only as a later removal chore. The frame mounts on an INNER container
+     (vendor_window.ts ensureFrame), so the shared #vendor-window root never
+     carries builder classes or aria; the root overrides below are scoped with
+     :has(> .window-frame) (part of the documented engine floor, .browserslistrc),
+     which tracks the mounted frame exactly: the Heroic Quartermaster, the root's
+     second tenant, wipes the mount via innerHTML and instantly gets the legacy
+     .window.panel shell back, whatever the open/close sequence. Tokens only. */
+  #vendor-window:has(> .window-frame) {
+    /* Neutralize the legacy .panel chrome while the copper frame is mounted;
+       the inner .window-frame draws its own border, edge line, and background. */
     padding: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
   }
-  body.vendor-open #vendor-window .window-titlebar {
+  #vendor-window > .window-frame .window-titlebar {
     position: sticky;
     top: 0;
     z-index: 6;

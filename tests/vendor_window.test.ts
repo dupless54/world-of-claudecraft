@@ -55,15 +55,21 @@ function vendorEl(): HTMLElement {
 }
 
 describe('renderVendorWindow: frame adoption', () => {
-  it('stamps the shared window-frame chrome with a titlebar, body, footer, and close', () => {
+  it('stamps the window-frame chrome on an INNER mount with titlebar, body, footer, close', () => {
     const el = vendorEl();
     renderVendorWindow(el, 'Gorznak', { goods: [], buyback: [] }, fakeDeps());
-    expect(el.classList.contains('window-frame')).toBe(true);
-    expect(el.getAttribute('role')).toBe('dialog');
-    expect(el.querySelector('.window-titlebar')).not.toBeNull();
-    expect(el.querySelector('.window-body')).not.toBeNull();
-    expect(el.querySelector('.window-footer')).not.toBeNull();
-    expect(el.querySelector('[data-window-close]')).not.toBeNull();
+    // The shared root never carries builder state (the Heroic Quartermaster is
+    // a second tenant of #vendor-window); the frame lives on an inner mount.
+    expect(el.classList.contains('window-frame')).toBe(false);
+    expect(el.hasAttribute('role')).toBe(false);
+    const frame = el.querySelector<HTMLElement>(':scope > .window-frame');
+    expect(frame).not.toBeNull();
+    expect(frame?.getAttribute('role')).toBe('dialog');
+    expect(frame?.getAttribute('aria-labelledby')).toBe('vendor-window-title');
+    expect(frame?.querySelector('.window-titlebar')).not.toBeNull();
+    expect(frame?.querySelector('.window-body')).not.toBeNull();
+    expect(frame?.querySelector('.window-footer')).not.toBeNull();
+    expect(frame?.querySelector('[data-window-close]')).not.toBeNull();
     expect(el.style.display).toBe('block');
   });
 
@@ -80,6 +86,60 @@ describe('renderVendorWindow: frame adoption', () => {
     renderVendorWindow(el, 'V', { goods: [], buyback: [] }, fakeDeps());
     expect(el.querySelector('.window-body')).toBe(firstBody);
     expect(el.querySelectorAll('.window-titlebar').length).toBe(1);
+  });
+});
+
+describe('renderVendorWindow: shared-root handoff to the heroic vendor', () => {
+  // The Heroic Quartermaster paints the same #vendor-window root with a plain
+  // innerHTML replacement (renderHeroicVendorWindow's contract); model that.
+  function heroicPaint(root: HTMLElement): void {
+    root.innerHTML =
+      '<div class="panel-title"><span>Quartermaster</span></div>' +
+      '<button type="button" class="vendor-item">offer</button>';
+    root.style.display = 'block';
+  }
+
+  it('leaves the root pristine after open + close, so a heroic open renders as fresh', () => {
+    const el = vendorEl();
+    const pristineAttrs = el.getAttributeNames().sort();
+    const view: VendorView = {
+      goods: [{ itemId: 'blade', item: item('blade'), price: 5, quantity: 1 }],
+      buyback: [],
+    };
+    renderVendorWindow(el, 'V', view, fakeDeps());
+
+    // Even while OPEN the root carries no builder class/attributes: this also
+    // covers the direct copper-to-heroic handoff, which never closes the vendor.
+    expect(el.className).toBe('window panel');
+    expect(el.getAttributeNames().sort()).toEqual([...pristineAttrs, 'style'].sort());
+
+    // Teardown: Hud's closeVendor only hides the window.
+    el.style.display = 'none';
+    expect(el.className).toBe('window panel');
+    expect(el.hasAttribute('role')).toBe(false);
+    expect(el.hasAttribute('aria-labelledby')).toBe(false);
+    expect(el.hasAttribute('aria-modal')).toBe(false);
+
+    // Heroic takeover renders byte-identical to a fresh session.
+    heroicPaint(el);
+    const fresh = document.createElement('div');
+    fresh.id = 'vendor-window';
+    fresh.className = 'window panel';
+    heroicPaint(fresh);
+    expect(el.outerHTML).toBe(fresh.outerHTML);
+    expect(el.querySelector('.window-frame')).toBeNull();
+  });
+
+  it('rebuilds the frame cold after heroic content replaced the mount', () => {
+    const el = vendorEl();
+    renderVendorWindow(el, 'V', { goods: [], buyback: [] }, fakeDeps());
+    heroicPaint(el);
+    renderVendorWindow(el, 'V', { goods: [], buyback: [] }, fakeDeps());
+    const frame = el.querySelector<HTMLElement>(':scope > .window-frame');
+    expect(frame?.querySelector('.window-body')).not.toBeNull();
+    // The heroic leftovers are gone; the mount is the only child again.
+    expect(el.children.length).toBe(1);
+    expect(el.querySelector('.panel-title')).toBeNull();
   });
 });
 
