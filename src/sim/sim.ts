@@ -16,6 +16,7 @@ import * as bankMod from './bank';
 import { type BankState, clampBonusSlots, sanitizeBankState } from './bank';
 import { lineOfSightClear, resolveMovement, resolvePosition } from './colliders';
 import { auraAffectsStats, removeCancelableAura } from './combat/aura_cancel';
+import { auraReplacementConflicts } from './combat/aura_stacking';
 import {
   cleanseFriendlyNpcAuras,
   isRejectedFriendlyNpcAura,
@@ -3844,10 +3845,7 @@ export class Sim {
       aura.sourceId !== target.id
     )
       return;
-    const existing = target.auras.findIndex(
-      (a) => a.id === aura.id && a.sourceId === aura.sourceId,
-    );
-    if (existing >= 0) {
+    for (const existing of auraReplacementConflicts(target.auras, aura)) {
       this.applyNonPlayerStatAura(target, target.auras[existing], -1);
       target.auras.splice(existing, 1);
     }
