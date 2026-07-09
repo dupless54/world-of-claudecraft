@@ -228,9 +228,12 @@ describe('leaderboard_window: Renown (deeds) board tab', () => {
 
   it('escapes the server-supplied name, realm, and resolved title text', () => {
     // biome-ignore lint/suspicious/noTemplateCurlyInString: asserting the painter source literally contains this template expression
+    expect(code).toContain('${esc(r.name)}');
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: asserting the painter source literally contains this template expression
     expect(code).toContain('${esc(r.realm)}');
     // biome-ignore lint/suspicious/noTemplateCurlyInString: asserting the painter source literally contains this template expression
     expect(code).toContain('${esc(titleText)}');
+    expect(code).not.toMatch(/\$\{r\.name\}/);
     expect(code).not.toMatch(/\$\{r\.realm\}/);
     expect(code).not.toMatch(/\$\{titleText\}/);
   });
