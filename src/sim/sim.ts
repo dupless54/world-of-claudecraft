@@ -222,6 +222,12 @@ import {
   type CraftResult,
   craftItem as craftItemImpl,
 } from './professions/crafting';
+import {
+  type ApplyEnchantResult,
+  applyEnchant as applyEnchantImpl,
+  type DisenchantResult,
+  disenchantItem as disenchantItemImpl,
+} from './professions/enchanting';
 import * as professionsFocus from './professions/focus';
 import {
   drainGatheringGrants,
@@ -359,6 +365,7 @@ import {
   armorReduction,
   type CrowdControlDrCategory,
   cloneInvSlot,
+  cloneItemInstancePayload,
   DELVE_COMPANION_HEAL_INTERVAL,
   type DelveDef,
   type DelveModuleDef,
@@ -803,6 +810,10 @@ export interface PlayerMeta {
   vendorBuyback: InvSlot[];
   copper: number;
   equipment: PlayerEquipment;
+  // Per-slot ItemInstancePayload for whichever equipped piece carries one (an
+  // enchanted item's rolled.stats, see src/sim/professions/enchanting.ts).
+  // Sparse: a slot with a plain (unenchanted) piece has no entry.
+  equipmentInstance: Partial<Record<EquipSlot, ItemInstancePayload>>;
   xp: number;
   // Post-cap progression (Max-Level XP Overflow). `lifetimeXp` is the monotonic
   // 64-bit-safe total of all XP ever earned — it keeps growing at the cap and is
@@ -839,6 +850,11 @@ export interface PlayerMeta {
   // wire-up): a future issue extends IWorldProfessions + ClientWorld +
   // server/game.ts the way craft_item/harvest_node already are.
   lastSalvageResult: SalvageResult | null;
+  // Outcome of this player's most recent disenchantItem/applyEnchant command
+  // (Enchanting profession), same session-only, not-yet-wired-onto-IWorld
+  // status as lastSalvageResult above.
+  lastDisenchantResult: DisenchantResult | null;
+  lastEnchantResult: ApplyEnchantResult | null;
   known: ResolvedAbility[];
   questLog: Map<string, QuestProgress>;
   questsDone: Set<string>;
@@ -1000,6 +1016,10 @@ export interface CharacterState {
   pos: { x: number; z: number };
   facing: number;
   equipment: PlayerEquipment;
+  // Per-slot ItemInstancePayload for whichever equipped piece carries one (an
+  // enchanted item's rolled.stats, see src/sim/professions/enchanting.ts).
+  // Optional so pre-Enchanting saves load cleanly (defaults to no enchants).
+  equipmentInstance?: Partial<Record<EquipSlot, ItemInstancePayload>>;
   inventory: InvSlot[];
   // Equipped bag sockets. Optional so pre-bag saves load cleanly (defaults to
   // 4 empty sockets; an over-capacity legacy inventory is tolerated).
@@ -1684,6 +1704,7 @@ export class Sim {
       vendorBuyback: [],
       copper: 0,
       equipment: { mainhand: classDef.startWeapon, chest: classDef.startChest },
+      equipmentInstance: {},
       xp: 0,
       lifetimeXp: 0,
       prestigeRank: 0,
@@ -1694,6 +1715,8 @@ export class Sim {
       nodeHarvestReadyAt: {},
       lastCraftResult: null,
       lastSalvageResult: null,
+      lastDisenchantResult: null,
+      lastEnchantResult: null,
       known: [],
       questLog: new Map(),
       questsDone: new Set(),
@@ -1775,6 +1798,12 @@ export class Sim {
         for (const id of s.unlockedMilestones) meta.unlockedMilestones.add(id);
       meta.copper = s.copper;
       meta.equipment = { ...s.equipment };
+      meta.equipmentInstance = Object.fromEntries(
+        Object.entries(s.equipmentInstance ?? {}).map(([slot, inst]) => [
+          slot,
+          cloneItemInstancePayload(inst),
+        ]),
+      );
       meta.inventory = s.inventory.map(cloneInvSlot);
       if (s.bags === undefined) {
         // PRE-BAG save: the character earned this space under the infinite
@@ -1868,7 +1897,7 @@ export class Sim {
     // resolver below consume it (they only ever read these flat numbers).
     meta.talentMods = computeTalentModifiers(cls, meta.talents);
     this.refreshKnownAbilities(meta, false);
-    recalcPlayerStats(player, cls, meta.equipment, meta.talentMods);
+    recalcPlayerStats(player, cls, meta.equipment, meta.talentMods, meta.equipmentInstance);
     if (savedState) {
       player.hp = Math.max(1, Math.min(player.maxHp, savedState.hp));
       player.resource =
@@ -2078,6 +2107,12 @@ export class Sim {
       // The Keeper's Toll persists across logout (it cannot be shed by relogging).
       resSickness: e.auras.find((a) => a.id === RESURRECTION_SICKNESS_ID)?.remaining ?? null,
       equipment: { ...meta.equipment },
+      equipmentInstance: Object.fromEntries(
+        Object.entries(meta.equipmentInstance).map(([slot, inst]) => [
+          slot,
+          cloneItemInstancePayload(inst),
+        ]),
+      ),
       inventory: meta.inventory.map(cloneInvSlot),
       bags: [...meta.bags],
       bank: {
@@ -3068,7 +3103,13 @@ export class Sim {
     // from a sane baseline (virtualLevel never falls below the real level). Only
     // ever raises it — lifetimeXp is monotonic.
     r.meta.lifetimeXp = Math.max(r.meta.lifetimeXp, xpToReachLevel(r.e.level));
-    recalcPlayerStats(r.e, r.meta.cls, r.meta.equipment, this.playerMods(r.meta));
+    recalcPlayerStats(
+      r.e,
+      r.meta.cls,
+      r.meta.equipment,
+      this.playerMods(r.meta),
+      r.meta.equipmentInstance,
+    );
     r.e.hp = r.e.maxHp;
     if (r.e.resourceType === 'mana') r.e.resource = r.e.maxResource;
     this.refreshKnownAbilities(r.meta, false);
@@ -3760,7 +3801,7 @@ export class Sim {
     if (!removed) return;
     this.emit({ type: 'aura', targetId: e.id, name: removed.name, gained: false });
     if (auraAffectsStats(removed)) {
-      recalcPlayerStats(e, meta.cls, meta.equipment, this.playerMods(meta));
+      recalcPlayerStats(e, meta.cls, meta.equipment, this.playerMods(meta), meta.equipmentInstance);
     }
   }
 
@@ -3859,7 +3900,14 @@ export class Sim {
     this.refreshMobLeashFromAction(source ?? null, target);
     if (target.kind === 'player') {
       const meta = this.players.get(target.id);
-      if (meta) recalcPlayerStats(target, meta.cls, meta.equipment, this.playerMods(meta));
+      if (meta)
+        recalcPlayerStats(
+          target,
+          meta.cls,
+          meta.equipment,
+          this.playerMods(meta),
+          meta.equipmentInstance,
+        );
     }
   }
 
@@ -4507,7 +4555,8 @@ export class Sim {
   // module never reaches into the Sim players map directly.
   private recalcPlayer(target: Entity): void {
     const meta = this.players.get(target.id);
-    if (meta) recalcPlayerStats(target, meta.cls, meta.equipment, meta.talentMods);
+    if (meta)
+      recalcPlayerStats(target, meta.cls, meta.equipment, meta.talentMods, meta.equipmentInstance);
   }
 
   private updateRangedPetAttack(
@@ -5377,6 +5426,28 @@ export class Sim {
     return this.players.get(this.primaryId)?.lastSalvageResult ?? null;
   }
 
+  // Enchanting profession commands: same thin-delegate/stash-result/not-yet-
+  // wired-onto-IWorld shape as salvageItem/lastSalvageResult above.
+  disenchantItem(itemId: string, pid?: number): void {
+    const result = disenchantItemImpl(this.ctx, itemId, pid);
+    const meta = this.players.get(pid ?? this.primaryId);
+    if (meta) meta.lastDisenchantResult = result;
+  }
+
+  get lastDisenchantResult(): DisenchantResult | null {
+    return this.players.get(this.primaryId)?.lastDisenchantResult ?? null;
+  }
+
+  applyEnchant(itemId: string, enchantId: string, pid?: number): void {
+    const result = applyEnchantImpl(this.ctx, itemId, enchantId, pid);
+    const meta = this.players.get(pid ?? this.primaryId);
+    if (meta) meta.lastEnchantResult = result;
+  }
+
+  get lastEnchantResult(): ApplyEnchantResult | null {
+    return this.players.get(this.primaryId)?.lastEnchantResult ?? null;
+  }
+
   private maybeAutoEquip(itemId: string, meta: PlayerMeta): void {
     const def = ITEMS[itemId];
     if (!def?.slot) return;
@@ -5835,7 +5906,14 @@ export class Sim {
     }
     if (statsDirty && target.kind === 'player') {
       const meta = this.players.get(target.id);
-      if (meta) recalcPlayerStats(target, meta.cls, meta.equipment, this.playerMods(meta));
+      if (meta)
+        recalcPlayerStats(
+          target,
+          meta.cls,
+          meta.equipment,
+          this.playerMods(meta),
+          meta.equipmentInstance,
+        );
     }
   }
 

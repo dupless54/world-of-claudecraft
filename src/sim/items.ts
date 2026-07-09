@@ -81,10 +81,27 @@ export function equipItem(ctx: SimContext, itemId: string, pid?: number): void {
   const slot = resolveEquipSlot(def, meta.equipment);
   if (!slot) return;
   const old = meta.equipment[slot];
-  ctx.removeItem(itemId, 1, meta.entityId);
-  if (old) addItemSilent(old, 1, meta);
+  const oldInstance = meta.equipmentInstance?.[slot];
+  // removeItem scans from the highest inventory index down (sim.ts), so a
+  // freshly-enchanted copy (pushed onto the end by addItemInstance,
+  // src/sim/professions/enchanting.ts applyEnchant) is exactly what this picks
+  // up first when both a plain and an enchanted copy of the same item exist.
+  const consumed = ctx.removeItem(itemId, 1, meta.entityId);
+  if (old) {
+    // Return the piece that was worn: if it carried an enchant, give it back
+    // its own instanced slot (never merge it into a plain stack, which would
+    // silently drop the enchant), same non-merge rule addItemInstance follows.
+    if (oldInstance) meta.inventory.push({ itemId: old, count: 1, instance: oldInstance });
+    else addItemSilent(old, 1, meta);
+  }
   meta.equipment[slot] = itemId;
-  recalcPlayerStats(p, meta.cls, meta.equipment, ctx.playerMods(meta));
+  if (consumed[0]) {
+    meta.equipmentInstance ??= {};
+    meta.equipmentInstance[slot] = consumed[0];
+  } else if (meta.equipmentInstance) {
+    delete meta.equipmentInstance[slot];
+  }
+  recalcPlayerStats(p, meta.cls, meta.equipment, ctx.playerMods(meta), meta.equipmentInstance);
   ctx.emit({ type: 'log', text: `Equipped ${def.name}.`, color: '#8f8', pid: meta.entityId });
 }
 
@@ -102,12 +119,16 @@ export function unequipItem(ctx: SimContext, slot: EquipSlot, pid?: number): boo
     bagsFullError(ctx, meta.entityId);
     return false;
   }
+  const instance = meta.equipmentInstance?.[slot];
   delete meta.equipment[slot];
+  if (meta.equipmentInstance) delete meta.equipmentInstance[slot];
   // addItemSilent (not addItem): returning a piece you already owned to bags is
   // not a fresh acquisition, so it must not fire collect-quest credit. No quest
-  // today keys on an unequip, so there is nothing to award here regardless.
-  addItemSilent(itemId, 1, meta);
-  recalcPlayerStats(p, meta.cls, meta.equipment, ctx.playerMods(meta));
+  // today keys on an unequip, so there is nothing to award here regardless. An
+  // enchanted piece gets its own instanced slot instead, so its enchant survives.
+  if (instance) meta.inventory.push({ itemId, count: 1, instance });
+  else addItemSilent(itemId, 1, meta);
+  recalcPlayerStats(p, meta.cls, meta.equipment, ctx.playerMods(meta), meta.equipmentInstance);
   const def = ITEMS[itemId];
   ctx.emit({
     type: 'log',

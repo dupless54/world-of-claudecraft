@@ -1825,6 +1825,9 @@ const ITEM_ENTITY_IDS = [
   'spider_leg',
   'bone_fragments',
   'linen_scrap',
+  'arcane_dust',
+  'arcane_essence',
+  'arcane_shard',
   'fen_muster_order',
   'mire_prowler_pelt',
   'lost_caravan_goods',
@@ -2014,8 +2017,7 @@ const itemNamesEn = {
   },
   entities: {
     ...classAbilityNamesEn.entities,
-    items: itemTranslations([
-      'Pitted Shortsword',
+    items: itemTranslations([      'Pitted Shortsword',
       'Bogoak Staff',
       'Rusty Dagger',
       'Training Mace',
@@ -2070,6 +2072,9 @@ const itemNamesEn = {
       'Twitching Spider Leg',
       'Bone Fragments',
       'Linen Scrap',
+      'Arcane Dust',
+      'Arcane Essence',
+      'Arcane Shard',
       'Fenbridge Muster Order',
       'Mire Prowler Pelt',
       'Lost Caravan Goods',
@@ -2218,7 +2223,7 @@ const itemNamesEn = {
       'Elderwood Log',
       'Goldleaf Herb',
       'Sunpetal Herb',
-    ]),
+]),
   },
 };
 
@@ -2242,8 +2247,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.es.entities,
-      items: itemTranslations([
-        'Espada corta desgastada',
+      items: itemTranslations([        'Espada corta desgastada',
         'Bastón nudoso',
         'Daga oxidada',
         'Maza de entrenamiento',
@@ -2298,6 +2302,9 @@ export const itemNames = {
         'Pata de araña crispada',
         'Fragmentos de hueso',
         'Retal de lino',
+        'Polvo Arcano',
+        'Esencia Arcana',
+        'Fragmento Arcano',
         'Orden de alistamiento de Fenbridge',
         'Piel de merodeador del pantano',
         'Bienes de la caravana perdida',
@@ -2446,7 +2453,7 @@ export const itemNames = {
         'Tronco de Saúco',
         'Hierba Hoja de Oro',
         'Hierba Pétalo de Sol',
-      ]),
+]),
     },
   },
   es_ES: {} as typeof itemNamesEn,
@@ -2468,8 +2475,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.fr_FR.entities,
-      items: itemTranslations([
-        'Épée courte usée',
+      items: itemTranslations([        'Épée courte usée',
         'Bâton noueux',
         'Dague rouillée',
         "Masse d'entraînement",
@@ -2524,6 +2530,9 @@ export const itemNames = {
         "Patte d'araignée frémissante",
         "Fragments d'os",
         'Chute de lin',
+        'Poussière arcanique',
+        'Essence arcanique',
+        'Éclat arcanique',
         'Ordre de rassemblement de Fenbridge',
         'Peau de rôdeur du bourbier',
         'Marchandises de la caravane perdue',
@@ -2672,7 +2681,7 @@ export const itemNames = {
         'Bûche de Sureau Ancien',
         "Herbe Feuille d'Or",
         'Herbe Pétale de Soleil',
-      ]),
+]),
     },
   },
   fr_CA: {} as typeof itemNamesEn,
@@ -2695,8 +2704,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.it_IT.entities,
-      items: itemTranslations([
-        'Spada corta logora',
+      items: itemTranslations([        'Spada corta logora',
         'Bastone nodoso',
         'Pugnale arrugginito',
         'Mazza da addestramento',
@@ -2751,6 +2759,9 @@ export const itemNames = {
         'Zampa di ragno fremente',
         "Frammenti d'osso",
         'Ritaglio di lino',
+        'Polvere arcana',
+        'Essenza arcana',
+        'Scheggia arcana',
         'Ordine di raduno di Fenbridge',
         'Pelliccia di predatore del pantano',
         'Merci della carovana perduta',
@@ -2899,7 +2910,7 @@ export const itemNames = {
         'Tronco di Sambuco Antico',
         'Erba Fogliadoro',
         'Erba Petalosole',
-      ]),
+]),
     },
   },
   de_DE: {
@@ -2920,8 +2931,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.de_DE.entities,
-      items: itemTranslations([
-        'Abgenutztes Kurzschwert',
+      items: itemTranslations([        'Abgenutztes Kurzschwert',
         'Knorriger Stab',
         'Rostiger Dolch',
         'Übungsstreitkolben',
@@ -2976,6 +2986,9 @@ export const itemNames = {
         'Zuckendes Spinnenbein',
         'Knochenfragmente',
         'Leinenfetzen',
+        'Arkaner Staub',
+        'Arkane Essenz',
+        'Arkane Scherbe',
         'Musterungsbefehl von Fenbridge',
         'Balg eines Moorpirschers',
         'Waren der verlorenen Karawane',
@@ -3124,7 +3137,7 @@ export const itemNames = {
         'Altholunderscheit',
         'Goldblattkraut',
         'Sonnenblütenkraut',
-      ]),
+]),
     },
   },
   zh_CN: {
@@ -3145,8 +3158,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.zh_CN.entities,
-      items: itemTranslations([
-        '破旧短剑',
+      items: itemTranslations([        '破旧短剑',
         '多节法杖',
         '生锈匕首',
         '训练钉锤',
@@ -3201,6 +3213,9 @@ export const itemNames = {
         '抽搐的蜘蛛腿',
         '骨头碎片',
         '亚麻碎布',
+        '奥术之尘',
+        '奥术精华',
+        '奥术碎片',
         '芬桥集结令',
         '泥沼潜伏者毛皮',
         '遗失商队货物',
@@ -3349,7 +3364,7 @@ export const itemNames = {
         '古老接骨木原木',
         '金叶草',
         '阳瓣草',
-      ]),
+]),
     },
   },
   zh_TW: {
@@ -3370,8 +3385,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.zh_TW.entities,
-      items: itemTranslations([
-        '破舊短劍',
+      items: itemTranslations([        '破舊短劍',
         '多節法杖',
         '生鏽匕首',
         '訓練釘錘',
@@ -3426,6 +3440,9 @@ export const itemNames = {
         '抽搐的蜘蛛腿',
         '骨頭碎片',
         '亞麻碎布',
+        '奧術之塵',
+        '奧術精華',
+        '奧術碎片',
         '芬橋集結令',
         '泥沼潛伏者毛皮',
         '遺失商隊貨物',
@@ -3574,7 +3591,7 @@ export const itemNames = {
         '古老接骨木原木',
         '金葉草',
         '陽瓣草',
-      ]),
+]),
     },
   },
   ko_KR: {
@@ -3595,8 +3612,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.ko_KR.entities,
-      items: itemTranslations([
-        '낡은 쇼트소드',
+      items: itemTranslations([        '낡은 쇼트소드',
         '옹이진 지팡이',
         '녹슨 단검',
         '훈련용 철퇴',
@@ -3651,6 +3667,9 @@ export const itemNames = {
         '꿈틀대는 거미 다리',
         '뼈 조각',
         '아마포 조각',
+        '비전 가루',
+        '비전 정수',
+        '비전 파편',
         '펜브리지 소집 명령서',
         '수렁 배회자 가죽',
         '잃어버린 대상단 물품',
@@ -3799,7 +3818,7 @@ export const itemNames = {
         '고대 딱총나무 통나무',
         '금빛잎 약초',
         '태양꽃잎 약초',
-      ]),
+]),
     },
   },
   ja_JP: {
@@ -3820,8 +3839,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.ja_JP.entities,
-      items: itemTranslations([
-        '擦り切れたショートソード',
+      items: itemTranslations([        '擦り切れたショートソード',
         '節くれだった杖',
         '錆びたダガー',
         '訓練用メイス',
@@ -3876,6 +3894,9 @@ export const itemNames = {
         'ぴくつく蜘蛛の脚',
         '骨の破片',
         'リネンの切れ端',
+        '秘術の粉塵',
+        '秘術の精髄',
+        '秘術のかけら',
         'フェンブリッジ召集令',
         '沼の徘徊者の毛皮',
         '失われた隊商の物資',
@@ -4024,7 +4045,7 @@ export const itemNames = {
         'エルダーウッドの丸太',
         'ゴールドリーフ草',
         'サンペタル草',
-      ]),
+]),
     },
   },
   pt_BR: {
@@ -4045,8 +4066,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.pt_BR.entities,
-      items: itemTranslations([
-        'Espada curta gasta',
+      items: itemTranslations([        'Espada curta gasta',
         'Cajado nodoso',
         'Adaga enferrujada',
         'Maça de treino',
@@ -4101,6 +4121,9 @@ export const itemNames = {
         'Perna de aranha trêmula',
         'Fragmentos de osso',
         'Retalho de linho',
+        'Pó Arcano',
+        'Essência Arcana',
+        'Fragmento Arcano',
         'Ordem de convocação de Fenbridge',
         'Pele de espreitador do brejo',
         'Mercadorias da caravana perdida',
@@ -4249,7 +4272,7 @@ export const itemNames = {
         'Tora de Sabugueiro Antigo',
         'Erva Folha Dourada',
         'Erva Pétala Solar',
-      ]),
+]),
     },
   },
   ru_RU: {
@@ -4270,8 +4293,7 @@ export const itemNames = {
     },
     entities: {
       ...classAbilityNames.ru_RU.entities,
-      items: itemTranslations([
-        'Изношенный короткий меч',
+      items: itemTranslations([        'Изношенный короткий меч',
         'Сучковатый посох',
         'Ржавый кинжал',
         'Учебная булава',
@@ -4326,6 +4348,9 @@ export const itemNames = {
         'Дергающаяся нога паука',
         'Фрагменты костей',
         'Лоскут льна',
+        'Тайная пыль',
+        'Тайная эссенция',
+        'Тайный осколок',
         'Приказ о сборе в Фенбридже',
         'Шкура болотного хищника',
         'Товары пропавшего каравана',
@@ -4474,7 +4499,7 @@ export const itemNames = {
         'Бревно древней бузины',
         'Трава золотолист',
         'Трава солнцелепест',
-      ]),
+]),
     },
   },
 };
