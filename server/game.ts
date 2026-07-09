@@ -4325,24 +4325,32 @@ export class GameServer {
           .catch((err) => console.error('daily reward delve chest task failed:', err));
       } else if (ev.type === 'vcupResult' && !ev.draw && ev.pid !== undefined) {
         // A decided Vale Cup bout. The match record survives through the
-        // 'over' aftermath, so the rated gate reads from it: bot-backfilled
-        // and practice matches are unrated in the sim and earn no credit.
-        // Bots have no session, so this.clients.get filters them naturally.
+        // 'over' aftermath. Rated wins earn the full task value; bot-filled
+        // and practice wins earn the reduced bot-match value. Bots have no
+        // session, so this.clients.get filters bot result events naturally.
         const s = this.clients.get(ev.pid);
         if (!s) continue;
         const match = this.sim.vcupMatchOf(ev.pid);
-        if (!match || !match.rated) continue;
+        if (!match) continue;
+        const practice = Boolean(match.practice);
+        const matchHasBots =
+          practice || [...match.rosterA, ...match.rosterB].some((player) => player.bot);
+        if (!match.rated && !matchHasBots) continue;
         if (!ev.won) continue;
         void dailyRewardService
           .recordValeCupResult(s.accountId, {
             won: true,
             bracket: match.bracket,
             matchId: match.id,
+            rated: match.rated,
+            hasBots: matchHasBots,
+            practice,
           })
           .then((points) => {
             if (points > 0) this.sendDailyRewardPointsGained(s, points);
           })
           .catch((err) => console.error('daily reward vale cup task failed:', err));
+        if (!match.rated) continue;
         // One card per decided match: every winner's vcupResult lands on the
         // same tick and the match-id dedupe key collapses them, so the first
         // one enumerates the whole winning side (linked teammates get tagged
