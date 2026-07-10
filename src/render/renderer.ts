@@ -5232,6 +5232,7 @@ export class Renderer {
       this.terrainView.rebuildRegion(region.minX, region.minZ, region.maxX, region.maxZ);
       return;
     }
+    this.terrainView.cancelStreaming();
     const old = this.terrainView.group;
     this.scene.remove(old);
     const firstMesh = old.children.find((c) => (c as THREE.Mesh).isMesh) as THREE.Mesh | undefined;

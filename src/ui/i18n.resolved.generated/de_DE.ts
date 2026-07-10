@@ -3920,7 +3920,17 @@ export const de_DE: EnTranslations = {
     "enterTimeout": "Die Welt konnte nicht betreten werden. Die Verbindung ist abgelaufen. Läuft der Spielserver?",
     "connectionLost": "Die Verbindung zum Server wurde unterbrochen.",
     "reconnecting": "Verbindung verloren. Verbindung wird wieder hergestellt...",
-    "connectionRejected": "Der Server hat die Verbindung geschlossen."
+    "connectionRejected": "Der Server hat die Verbindung geschlossen.",
+    "tips": {
+      "classes": "Tip: each of the 9 classes plays differently. Try a few before committing to one.",
+      "talents": "Tip: talent points can be respecced at any trainer, so experimenting is never permanent.",
+      "dungeons": "Tip: dungeons scale to your party size. Bring friends for a faster, safer clear.",
+      "market": "Tip: the World Market lets you buy and sell with players across the whole realm.",
+      "guilds": "Tip: joining a guild unlocks group content and a shared chat channel.",
+      "professions": "Tip: gathering and crafting professions can be trained alongside your combat class.",
+      "mounts": "Tip: mounts unlock at higher levels and make travel between zones much faster.",
+      "pvp": "Tip: look for marked PvP areas if you want to test your build against other players."
+    }
   },
   "errors": {
     "nothingInteract": "Nichts zum Interagieren in Reichweite.",

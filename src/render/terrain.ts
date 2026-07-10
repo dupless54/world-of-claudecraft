@@ -6,6 +6,7 @@ import { biomeAt, roadDistance, terrainHeight, waterLevelAt, zoneBiomeAt } from 
 import { loadTexture } from './assets/loader';
 import { registerPreload } from './assets/preload';
 import { GFX } from './gfx';
+import { runIdleQueue } from './idle_queue';
 import { impactCraterTerrainBlend } from './impact_terrain';
 import { chunkIntersectsRegion, normalTexelBounds } from './terrain_region_core';
 import { groundDetailTexture, groundSplatMaps, macroNoiseTexture } from './textures';
@@ -939,7 +940,25 @@ export interface TerrainView {
   setBrush(x: number, z: number, radius: number, color?: THREE.ColorRepresentation): void;
   /** Editor-only: hide the brush ring. */
   clearBrush(): void;
+  /**
+   * Resolves once every streamed-in far chunk (see buildTerrain) has been
+   * added to `group`. Only the near ring around the world's zone hubs is
+   * built synchronously; everything else streams in across idle slots so
+   * first paint isn't gated on the whole map's geometry. Most callers don't
+   * need this - `chunks` is a live array shared with update()/rebuildRegion(),
+   * so those already see streamed chunks as they arrive. Use this only when a
+   * caller needs the FULL map built before doing something else (e.g. a
+   * screenshot tour), and call cancelStreaming() before discarding this view.
+   */
+  streamingDone: Promise<void>;
+  /** Stops any in-flight far-chunk streaming. Call before discarding this view (see rebuildTerrain). */
+  cancelStreaming(): void;
 }
+
+// Chunks farther than the near ring stream in this many at a time per idle
+// slot, forced forward even under sustained load by the timeout.
+const STREAM_BATCH_SIZE = 4;
+const STREAM_TIMEOUT_MS = 200;
 
 export function buildTerrain(seed: number): TerrainView {
   const lowGfx = !GFX.terrainSplat || !hasTerrainSplatAssets();
@@ -1021,6 +1040,20 @@ export function buildTerrain(seed: number): TerrainView {
     });
   };
 
+  // Collect every chunk to build as a job first, instead of building inline,
+  // so the near ring (around the zone hubs, i.e. where a fresh character
+  // actually stands) can build synchronously while the rest streams in
+  // across idle slots below. bandIndexAt returns 0 only for the densest,
+  // closest-to-a-hub band, which is what we treat as "near".
+  interface ChunkJob {
+    x0: number;
+    z0: number;
+    size: number;
+    spacing: number;
+    near: boolean;
+  }
+  const jobs: ChunkJob[] = [];
+
   // far-LOD cells merge 2x2 into super-chunks: the far field is where draw
   // count hurts and culling granularity matters least
   const farBand = bands.length - 1;
@@ -1046,26 +1079,49 @@ export function buildTerrain(seed: number): TerrainView {
         ]) {
           built.add((cz + dz) * chunksX + (cx + dx));
         }
-        addChunk(
-          -WORLD_MAX_X + cx * CHUNK_SIZE,
-          WORLD_MIN_Z + cz * CHUNK_SIZE,
-          CHUNK_SIZE * 2,
-          bands[farBand].spacing,
-        );
+        // a merged super-chunk only forms from four far-band cells, so it's
+        // never near
+        jobs.push({
+          x0: -WORLD_MAX_X + cx * CHUNK_SIZE,
+          z0: WORLD_MIN_Z + cz * CHUNK_SIZE,
+          size: CHUNK_SIZE * 2,
+          spacing: bands[farBand].spacing,
+          near: false,
+        });
       } else {
         built.add(cz * chunksX + cx);
-        const band = bands[bandIndexAt(cx, cz)];
-        addChunk(
-          -WORLD_MAX_X + cx * CHUNK_SIZE,
-          WORLD_MIN_Z + cz * CHUNK_SIZE,
-          CHUNK_SIZE,
-          band.spacing,
-        );
+        const bandIdx = bandIndexAt(cx, cz);
+        jobs.push({
+          x0: -WORLD_MAX_X + cx * CHUNK_SIZE,
+          z0: WORLD_MIN_Z + cz * CHUNK_SIZE,
+          size: CHUNK_SIZE,
+          spacing: bands[bandIdx].spacing,
+          near: bandIdx === 0,
+        });
       }
     }
   }
+
+  for (const job of jobs) {
+    if (job.near) addChunk(job.x0, job.z0, job.size, job.spacing);
+  }
+  const farJobs = jobs.filter((job) => !job.near);
+  let cancelled = false;
+  const streamingDone = runIdleQueue(
+    farJobs,
+    (job) => {
+      if (cancelled) return;
+      addChunk(job.x0, job.z0, job.size, job.spacing);
+    },
+    { batchSize: STREAM_BATCH_SIZE, timeoutMs: STREAM_TIMEOUT_MS },
+  );
+
   return {
     group,
+    streamingDone,
+    cancelStreaming(): void {
+      cancelled = true;
+    },
     update(camX: number, camZ: number, fogFar: number): void {
       // fully-fogged chunks are pure overdraw; drop them before the frustum
       for (const chunk of chunks) {

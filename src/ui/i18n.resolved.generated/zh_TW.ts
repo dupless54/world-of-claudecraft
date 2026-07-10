@@ -3920,7 +3920,17 @@ export const zh_TW: EnTranslations = {
     "enterTimeout": "無法進入世界。連線已逾時。遊戲伺服器是否正在執行？",
     "connectionLost": "與伺服器的連線已中斷。",
     "reconnecting": "連線已中斷。正在重新連線...",
-    "connectionRejected": "伺服器已關閉連線。"
+    "connectionRejected": "伺服器已關閉連線。",
+    "tips": {
+      "classes": "提示：9 個職業玩法各不相同，投入之前不妨都試一試。",
+      "talents": "提示：可以隨時在任意訓練師處重置天賦，嘗試新搭配不會造成損失。",
+      "dungeons": "提示：地下城會依隊伍人數調整難度，組隊挑戰更快更安全。",
+      "market": "提示：世界市場可以讓你與全服玩家進行買賣交易。",
+      "guilds": "提示：加入公會可解鎖團隊內容和專屬聊天頻道。",
+      "professions": "提示：採集與製造類生活技能可以與你的戰鬥職業同時培養。",
+      "mounts": "提示：坐騎在較高等級解鎖，能大幅加快區域間的移動速度。",
+      "pvp": "提示：如果想在實戰中檢驗配裝，可以留意標記出的 PvP 區域。"
+    }
   },
   "errors": {
     "nothingInteract": "附近沒有可互動目標。",

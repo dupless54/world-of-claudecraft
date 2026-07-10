@@ -6145,4 +6145,12 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
     '邀请好友：当好友升到 10 级，你们各获得 2 个格子，最多 5 位好友。',
   'hudChrome.bank.bonusSectionAria': '奖励银行格子及获取方式',
   'entities.mobs.yumi_cat.name': '由美',
+  'loading.tips.classes': '提示：9 个职业玩法各不相同，投入之前不妨都试一试。',
+  'loading.tips.talents': '提示：可以随时在任意训练师处重置天赋，尝试新搭配不会造成损失。',
+  'loading.tips.dungeons': '提示：地下城会根据队伍人数调整难度，组队挑战更快更安全。',
+  'loading.tips.market': '提示：世界市场可以让你与全服玩家进行买卖交易。',
+  'loading.tips.guilds': '提示：加入公会可解锁团队内容和专属聊天频道。',
+  'loading.tips.professions': '提示：采集与制造类生活技能可以与你的战斗职业同时培养。',
+  'loading.tips.mounts': '提示：坐骑在较高等级解锁，能大幅加快区域间的移动速度。',
+  'loading.tips.pvp': '提示：如果想在实战中检验配装，可以留意标记出的 PvP 区域。',
 };

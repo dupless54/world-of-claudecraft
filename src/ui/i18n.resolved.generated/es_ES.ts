@@ -3920,7 +3920,17 @@ export const es_ES: EnTranslations = {
     "enterTimeout": "No se pudo entrar en el mundo. La conexión agotó el tiempo de espera. ¿Está funcionando el servidor del juego?",
     "connectionLost": "Se perdió la conexión con el servidor.",
     "reconnecting": "Conexión perdida. Reconectando...",
-    "connectionRejected": "El servidor cerró la conexión."
+    "connectionRejected": "El servidor cerró la conexión.",
+    "tips": {
+      "classes": "Tip: each of the 9 classes plays differently. Try a few before committing to one.",
+      "talents": "Tip: talent points can be respecced at any trainer, so experimenting is never permanent.",
+      "dungeons": "Tip: dungeons scale to your party size. Bring friends for a faster, safer clear.",
+      "market": "Tip: the World Market lets you buy and sell with players across the whole realm.",
+      "guilds": "Tip: joining a guild unlocks group content and a shared chat channel.",
+      "professions": "Tip: gathering and crafting professions can be trained alongside your combat class.",
+      "mounts": "Tip: mounts unlock at higher levels and make travel between zones much faster.",
+      "pvp": "Tip: look for marked PvP areas if you want to test your build against other players."
+    }
   },
   "errors": {
     "nothingInteract": "No hay nada con lo que interactuar.",

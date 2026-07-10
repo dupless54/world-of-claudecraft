@@ -3920,7 +3920,17 @@ export const nl_NL: EnTranslations = {
     "enterTimeout": "Kon de wereld niet betreden. De verbinding is verlopen. Draait de gameserver?",
     "connectionLost": "De verbinding met de server is verbroken.",
     "reconnecting": "Verbinding verbroken. Opnieuw verbinding maken...",
-    "connectionRejected": "De server heeft de verbinding gesloten."
+    "connectionRejected": "De server heeft de verbinding gesloten.",
+    "tips": {
+      "classes": "Tip: each of the 9 classes plays differently. Try a few before committing to one.",
+      "talents": "Tip: talent points can be respecced at any trainer, so experimenting is never permanent.",
+      "dungeons": "Tip: dungeons scale to your party size. Bring friends for a faster, safer clear.",
+      "market": "Tip: the World Market lets you buy and sell with players across the whole realm.",
+      "guilds": "Tip: joining a guild unlocks group content and a shared chat channel.",
+      "professions": "Tip: gathering and crafting professions can be trained alongside your combat class.",
+      "mounts": "Tip: mounts unlock at higher levels and make travel between zones much faster.",
+      "pvp": "Tip: look for marked PvP areas if you want to test your build against other players."
+    }
   },
   "errors": {
     "nothingInteract": "Niets om mee te interacteren.",
