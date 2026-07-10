@@ -111,6 +111,29 @@
       0 0;
     background-repeat: no-repeat, repeat;
   }
+  /* AAA frame-mounted windows (vendor, options, the batch windows) neutralize the
+     root background via #<id>:has(> .window-frame), which wiped the diagonal grip
+     layer above, so a resizable framed window showed no visible grip affordance
+     even though the corner band still resized it. Restate the SAME token grip on
+     the inner .window-frame (the element that actually paints the panel) so the
+     affordance is visible on framed windows too. Hidden under body.mobile-touch,
+     where windows dock/full-screen and the grip would fight the dock chrome (the
+     touch corner band still resizes). */
+  .window.window-resizable > .window-frame {
+    background-image:
+      repeating-linear-gradient(135deg, transparent 0 3px, var(--gold-dim) 3px 4px),
+      var(--panel-l1-bg);
+    background-size:
+      12px 12px,
+      auto;
+    background-position:
+      right 3px bottom 3px,
+      0 0;
+    background-repeat: no-repeat, no-repeat;
+  }
+  body.mobile-touch .window.window-resizable > .window-frame {
+    background-image: var(--panel-l1-bg);
+  }
   .window.window-resize-hot,
   .window.window-resizing {
     cursor: nwse-resize;

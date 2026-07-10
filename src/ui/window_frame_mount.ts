@@ -14,6 +14,12 @@
 // vendor_window.ts keeps its OWN copy: its #vendor-window root is shared with the
 // Heroic Quartermaster tenant, so its reuse marker and cold-rebuild timing are
 // load-bearing for that handoff and must not be coupled to this helper.
+//
+// LEDGER (later consolidation, not this task): this helper (batch 3) and the inline
+// ensureFrame copies in options_window.ts + the batch 4/5 window painters + vendor
+// currently coexist. They share the ":scope > .window-frame with a live .window-body
+// is the reuse marker" contract but were not unified (risk/scope); a follow-up should
+// migrate the non-shared-root copies onto ensureWindowFrame and keep vendor bespoke.
 
 import { renderWindowFrame, type WindowFrameDeps, type WindowFrameParts } from './window_frame';
 import type { WindowFrameDescriptor } from './window_frame_view';

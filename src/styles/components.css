@@ -2517,6 +2517,18 @@
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);
   }
+  /* Restore the child flex rules the legacy .panel-title.char-title-portrait header
+     carried (shell.css): the portrait stays a fixed square and the text column
+     shrinks (min-width:0), so a long player name is bounded by the column instead
+     of pushing the portrait or overflowing the banner. Without these the renamed
+     .char-identity banner let long names break the row. */
+  #char-window .window-body > .char-identity > .char-title-text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  #char-window .window-body > .char-identity > .portrait-chip {
+    flex: 0 0 auto;
+  }
   /* Talents: the class-name subtitle (was the header's colored suffix) leads the
      body under the frame's static "Talents" title. */
   #talents-window .window-body > .tal-classname {
