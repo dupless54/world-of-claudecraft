@@ -4845,6 +4845,7 @@ export const ru_RU: EnTranslations = {
     },
     "slots": {
       "mainhand": "Правая рука",
+      "twoHand": "Two-Hand",
       "helmet": "Голова",
       "neck": "Шея",
       "shoulder": "Плечи",

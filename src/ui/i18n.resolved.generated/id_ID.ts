@@ -4845,6 +4845,7 @@ export const id_ID: EnTranslations = {
     },
     "slots": {
       "mainhand": "Tangan Utama",
+      "twoHand": "Two-Hand",
       "helmet": "Helm",
       "neck": "Leher",
       "shoulder": "Bahu",

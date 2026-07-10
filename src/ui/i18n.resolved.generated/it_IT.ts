@@ -4845,6 +4845,7 @@ export const it_IT: EnTranslations = {
     },
     "slots": {
       "mainhand": "Mano principale",
+      "twoHand": "Two-Hand",
       "helmet": "Testa",
       "neck": "Collo",
       "shoulder": "Spalle",

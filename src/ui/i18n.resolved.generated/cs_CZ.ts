@@ -4845,6 +4845,7 @@ export const cs_CZ: EnTranslations = {
     },
     "slots": {
       "mainhand": "Hlavní ruka",
+      "twoHand": "Two-Hand",
       "helmet": "Helma",
       "neck": "Krk",
       "shoulder": "Ramena",

@@ -4845,6 +4845,7 @@ export const nl_NL: EnTranslations = {
     },
     "slots": {
       "mainhand": "Hoofdhand",
+      "twoHand": "Two-Hand",
       "helmet": "Helm",
       "neck": "Hals",
       "shoulder": "Schouder",

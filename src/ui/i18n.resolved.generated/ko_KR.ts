@@ -4845,6 +4845,7 @@ export const ko_KR: EnTranslations = {
     },
     "slots": {
       "mainhand": "주장비",
+      "twoHand": "Two-Hand",
       "helmet": "머리",
       "neck": "목",
       "shoulder": "어깨",

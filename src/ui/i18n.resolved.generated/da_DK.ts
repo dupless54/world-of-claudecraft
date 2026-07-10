@@ -4845,6 +4845,7 @@ export const da_DK: EnTranslations = {
     },
     "slots": {
       "mainhand": "Hovedhånd",
+      "twoHand": "Two-Hand",
       "helmet": "Hjelm",
       "neck": "Hals",
       "shoulder": "Skulder",

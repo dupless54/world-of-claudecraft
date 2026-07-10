@@ -4845,6 +4845,7 @@ export const tr_TR: EnTranslations = {
     },
     "slots": {
       "mainhand": "Ana El",
+      "twoHand": "Two-Hand",
       "helmet": "Miğfer",
       "neck": "Boyun",
       "shoulder": "Omuzluk",

@@ -4845,6 +4845,7 @@ export const en_XA: EnTranslations = {
     },
     "slots": {
       "mainhand": "[Ɱáíñ Ĥáñð]",
+      "twoHand": "[Ţŵó-Ĥáñð]",
       "helmet": "[Ĥéļɱéţ]",
       "neck": "[Ñéçķ]",
       "shoulder": "[Šĥóúļðéŕ]",

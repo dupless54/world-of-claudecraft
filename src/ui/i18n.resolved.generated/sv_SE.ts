@@ -4845,6 +4845,7 @@ export const sv_SE: EnTranslations = {
     },
     "slots": {
       "mainhand": "Främre hand",
+      "twoHand": "Two-Hand",
       "helmet": "Hjälm",
       "neck": "Hals",
       "shoulder": "Axlar",
