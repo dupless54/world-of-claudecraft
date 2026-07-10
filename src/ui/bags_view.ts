@@ -48,6 +48,7 @@ export interface BagMode {
 /** What clicking a bag item does, given the item + modes. The *Blocked variants
  *  mean the click is rejected with an error toast (no dispatch). */
 export type BagAction =
+  | 'transferBlockedSoulbound'
   | 'trade'
   | 'mailAttach'
   | 'mailAttachBlocked'
@@ -65,6 +66,7 @@ export type BagAction =
 
 /** The tooltip hint sub-line i18n key for a bag item (or '' for no hint). */
 export type BagTooltipHintKey =
+  | 'hudChrome.itemSoulbound'
   | 'itemUi.tooltip.clickTradeOffer'
   | 'itemUi.tooltip.cannotMarket'
   | 'itemUi.tooltip.clickMarketList'
@@ -85,6 +87,8 @@ export type BagTooltipHintKey =
  *  priority order exactly: trade > mail-attach > market-sell > vendor > bank-deposit
  *  > pet-feed > quest > use. */
 export function bagItemAction(item: BagItemInfo, mode: BagMode): BagAction {
+  if (item.soulbound && (mode.tradeOpen || mode.mailAttach || mode.marketSell || mode.vendorOpen))
+    return 'transferBlockedSoulbound';
   if (mode.tradeOpen) return 'trade';
   if (mode.mailAttach) {
     // Mirrors the sim's mail escrow rule: quest and unmailable items refuse.
@@ -190,6 +194,8 @@ export function bagDestroyAction(item: BagItemInfo, mode: BagMode): BagDestroyAc
 /** The tooltip hint sub-line for a bag item, matching the original tooltip's
  *  mode-then-kind branch. Returns '' when no hint applies (e.g. a material). */
 export function bagTooltipHintKey(item: BagItemInfo, mode: BagMode): BagTooltipHintKey {
+  if (item.soulbound && (mode.tradeOpen || mode.mailAttach || mode.marketSell || mode.vendorOpen))
+    return 'hudChrome.itemSoulbound';
   if (mode.tradeOpen) return 'itemUi.tooltip.clickTradeOffer';
   if (mode.mailAttach) {
     return item.kind === 'quest' || item.noMarketList

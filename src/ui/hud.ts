@@ -575,6 +575,7 @@ const MAIL_RESULT_ERROR_KEYS: Record<MailResultCode, TranslationKey> = {
   noRecipient: 'hudChrome.mailbox.result.noRecipient',
   tooManyParcels: 'hudChrome.mailbox.result.tooManyParcels',
   noMailQuestItems: 'hudChrome.mailbox.result.noMailQuestItems',
+  noMailSoulbound: 'hudChrome.itemSoulbound',
   notEnoughItems: 'hudChrome.mailbox.result.notEnoughItems',
   cantAffordPostage: 'hudChrome.mailbox.result.cantAffordPostage',
   recipientBoxFull: 'hudChrome.mailbox.result.recipientBoxFull',
@@ -1166,7 +1167,9 @@ export class Hud {
   });
   private openGossipNpcId: number | null = null;
   private openQuestDetailId: string | null = null;
-  private pendingChatLinks = new Map<string, string>(); // display "[Name]" -> [[q:id]]/[[i:id]] token
+  // Ordered so two base/heroic items with the same display name retain their
+  // distinct tokens when the readable draft is converted for sending.
+  private pendingChatLinks: readonly { display: string; token: string }[] = [];
   private questDialogTrap: FocusTrapHandle | null = null;
   private questDialogOpenedAtMs = 0;
   // The NPC whose voice line is currently sounding, so update() can fade it by
@@ -2877,7 +2880,7 @@ export class Hud {
   // token it stands for, so applyPendingChatLinks can swap it back in on send.
   private insertChatLink(display: string, token: string): void {
     const input = $('#chat-input') as unknown as HTMLInputElement;
-    this.pendingChatLinks.set(display, token);
+    this.pendingChatLinks = [...this.pendingChatLinks, { display, token }];
     input.placeholder = this.activeChatPlaceholder();
     input.style.display = 'block';
     input.value =
@@ -2890,15 +2893,16 @@ export class Hud {
   // Drop any shift-click-inserted links that were never sent (chat closed/cleared),
   // so a stale [Name] entry can't silently rewrite a later message.
   clearPendingChatLinks(): void {
-    this.pendingChatLinks.clear();
+    this.pendingChatLinks = [];
   }
 
   // Replace any inserted readable [Name] with its [[q:id]]/[[i:id]] token, then forget them.
   private applyPendingChatLinks(typed: string): string {
-    if (this.pendingChatLinks.size === 0) return typed;
+    if (this.pendingChatLinks.length === 0) return typed;
+    const pending = this.pendingChatLinks;
+    this.pendingChatLinks = [];
     let out = typed;
-    for (const [display, token] of this.pendingChatLinks) out = out.split(display).join(token);
-    this.pendingChatLinks.clear();
+    for (const { display, token } of pending) out = out.replace(display, token);
     return out;
   }
 

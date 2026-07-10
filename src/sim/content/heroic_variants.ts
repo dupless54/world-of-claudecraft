@@ -15,6 +15,7 @@
 import {
   HEROIC_VARIANT_SOURCE_LEVEL,
   normalizePrimaryStats,
+  PRIMARY_STATS,
   primaryStatBudget,
   QUALITY_ILVL_BONUS,
   scaleWeaponDamage,
@@ -30,15 +31,19 @@ export function heroicVariantId(baseId: string): string {
 function makeHeroicVariant(base: ItemDef): ItemDef {
   const quality = base.quality ?? 'common';
   const targetLevel = HEROIC_VARIANT_SOURCE_LEVEL + (QUALITY_ILVL_BONUS[quality] ?? 0);
-  const budget = primaryStatBudget(targetLevel, base.quality, base.slot);
+  const targetBudget = primaryStatBudget(targetLevel, base.quality, base.slot);
+  const baseBudget = base.stats
+    ? PRIMARY_STATS.reduce((sum, stat) => sum + (base.stats?.[stat] ?? 0), 0)
+    : 0;
   // normalizePrimaryStats keeps the item's stat identity (its str/agi/int ratio)
   // and passes armor through untouched; only the primary-stat sum grows to the
-  // heroic budget. Weapon damage and armor stay at the base value, so the variant
-  // is never worse than its base.
-  const stats = base.stats ? normalizePrimaryStats(base.stats, budget) : base.stats;
+  // larger of the heroic target budget and the base item's realized budget.
+  const stats = base.stats
+    ? normalizePrimaryStats(base.stats, Math.max(targetBudget, baseBudget))
+    : base.stats;
   // Weapon damage tracks item level too: scale the base weapon to the heroic-tier
-  // dps for this variant's item level, keeping its swing speed and spread. armor is
-  // left at the base value, so the variant is never worse than its base.
+  // dps for this variant's item level, keeping its swing speed and spread. A base
+  // weapon already above that curve retains its realized dps.
   const variant = {
     ...base,
     id: heroicVariantId(base.id),
@@ -49,9 +54,10 @@ function makeHeroicVariant(base: ItemDef): ItemDef {
     stats,
   };
   if (base.weapon) {
+    const baseDps = (base.weapon.min + base.weapon.max) / 2 / base.weapon.speed;
     variant.weapon = {
       ...base.weapon,
-      ...scaleWeaponDamage(base.weapon, weaponDpsBudget(targetLevel)),
+      ...scaleWeaponDamage(base.weapon, Math.max(weaponDpsBudget(targetLevel), baseDps)),
     };
   }
   // The spread widens ItemDef's discriminated union; the transform preserves the

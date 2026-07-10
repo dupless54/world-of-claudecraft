@@ -2015,6 +2015,7 @@ export type MailResultCode =
   | 'noRecipient'
   | 'tooManyParcels'
   | 'noMailQuestItems'
+  | 'noMailSoulbound'
   | 'notEnoughItems'
   | 'cantAffordPostage'
   | 'recipientBoxFull'
