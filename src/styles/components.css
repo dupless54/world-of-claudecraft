@@ -8998,11 +8998,25 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    background: var(--panel-l1-bg);
+    /* Solid base UNDER the panel gradient: --panel-l1-bg is a ~0.95-alpha gradient,
+       so on its own the 3D world bleeds through a framed window, worst across the
+       empty area of a window resized taller than its content (live feedback: the
+       menu bottoms read as see-through). The gradient stays the visible surface
+       (subtle vertical shading) but now sits on an opaque --panel-base, so nothing
+       shows through. Frosted-panels mode drops this base back to transparent below
+       so its backdrop blur still reads. */
+    background-color: var(--panel-base);
+    background-image: var(--panel-l1-bg);
     border: 1px solid var(--window-border);
     box-shadow: inset 0 0 0 1px var(--panel-edge);
     border-radius: var(--radius-md);
     color: var(--color-text-light);
+  }
+  /* Frosted panels (opt-in): the blur lives on the .window root; let it read by
+     dropping the frame's opaque base back to transparent so the ~0.95 gradient
+     over the blurred backdrop is the frosted-glass surface (its prior look). */
+  body.frosted-panels .window-frame {
+    background-color: transparent;
   }
   /* The resize grip is now ONE ::after pseudo on the .window root (layout.css),
      drawn above the frame body and any sticky footer, so a framed window needs no
