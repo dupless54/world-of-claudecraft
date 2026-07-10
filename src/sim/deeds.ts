@@ -727,11 +727,14 @@ export function seedItemDiscovery(ctx: SimContext, meta: PlayerMeta): void {
   }
 }
 
-/** Retro grants that a state predicate cannot express: craft skill only ever
- *  comes from successful crafts, so any positive craftSkills value proves the
- *  first craft happened before the counter existed. */
+/** Retro grants that a state predicate cannot express: every craft skill
+ *  except enchanting only ever comes from successful crafts, so a positive
+ *  value on any other craft proves the first craft happened before the
+ *  counter existed. Enchanting is excluded because disenchant and
+ *  apply-enchant (professions/enchanting.ts) gain that skill without any
+ *  craft, and it has no recipes, so its value can never prove one. */
 export function retroFallbackGrants(ctx: SimContext, meta: PlayerMeta): void {
-  if (Object.values(meta.craftSkills).some((v) => v > 0)) {
+  if (Object.entries(meta.craftSkills).some(([craftId, v]) => craftId !== 'enchanting' && v > 0)) {
     grantDeed(ctx, meta, 'prog_first_craft', { retro: true });
   }
 }

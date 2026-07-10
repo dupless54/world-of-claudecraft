@@ -983,3 +983,43 @@ describe('hub-station craft counter (prog_tools_of_the_trade)', () => {
     expect(meta.deedsEarned.has('prog_first_craft')).toBe(true);
   });
 });
+
+// Enchanting's two skill-gain sites (professions/enchanting.ts) raise
+// craftSkills.enchanting, which the craftSkill triggers read, so each site
+// must mark the player dirty itself (the crafting.ts craftItem contract):
+// the grant may not depend on some unrelated site dirtying the player later.
+describe('enchanting skill-gain sites', () => {
+  // Pre-discover every item the action touches and drain the dirty set first:
+  // addItem marks the player dirty on FIRST discovery of an item id, which
+  // would mask a missing site mark (a veteran who long since discovered the
+  // dust gets no discovery mark from the disenchant yield).
+  function stagedAt74(sim: Sim): PlayerMeta {
+    const meta = sim.players.get(sim.playerId)!;
+    sim.addItem('eastbrook_arming_sword', 1, sim.playerId);
+    sim.addItem('arcane_dust', 5, sim.playerId);
+    sim.tick();
+    expect(meta.deedsEarned.has('prog_craft_specialist')).toBe(false);
+    meta.craftSkills.enchanting = 74;
+    return meta;
+  }
+
+  it('a disenchant that lifts enchanting skill over a craftSkill threshold grants after the tick', () => {
+    const sim = makeSim();
+    const meta = stagedAt74(sim);
+    sim.disenchantItem('eastbrook_arming_sword');
+    expect(sim.lastDisenchantResult?.ok).toBe(true);
+    expect(meta.craftSkills.enchanting).toBe(75);
+    sim.tick();
+    expect(meta.deedsEarned.has('prog_craft_specialist')).toBe(true);
+  });
+
+  it('an apply-enchant that lifts enchanting skill over the threshold grants after the tick', () => {
+    const sim = makeSim();
+    const meta = stagedAt74(sim);
+    sim.applyEnchant('eastbrook_arming_sword', 'enchant_weapon_might');
+    expect(sim.lastEnchantResult?.ok).toBe(true);
+    expect(meta.craftSkills.enchanting).toBe(75);
+    sim.tick();
+    expect(meta.deedsEarned.has('prog_craft_specialist')).toBe(true);
+  });
+});

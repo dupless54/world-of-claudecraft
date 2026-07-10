@@ -450,6 +450,21 @@ describe('retro on join', () => {
     expect(veteranEv?.pid).toBe(pid);
   });
 
+  it('enchanting-only skill never retro-grants the first craft', () => {
+    // Disenchant and apply-enchant raise craftSkills.enchanting without any
+    // craft (professions/enchanting.ts), so the fallback's proof-of-craft
+    // inference must not read that key; any real craft skill still proves it.
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Disenchanter', {
+      state: { ...veteranState(), craftSkills: { enchanting: 5 } },
+    });
+    expect(sim.players.get(pid)!.deedsEarned.has('prog_first_craft')).toBe(false);
+    const pid2 = sim.addPlayer('warrior', 'Cook', {
+      state: { ...veteranState(), craftSkills: { enchanting: 5, cooking: 1 } },
+    });
+    expect(sim.players.get(pid2)!.deedsEarned.has('prog_first_craft')).toBe(true);
+  });
+
   it('the quest-chain deeds retro-grant for an attuned veteran on first login', () => {
     const sim = makeSim();
     const state = veteranState();
