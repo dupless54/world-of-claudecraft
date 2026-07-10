@@ -73,37 +73,41 @@ VITE_API_ORIGIN=http://192.168.1.247 npm run native:sync
 Replace the IP with the Mac's current Wi-Fi/LAN address. Do not use
 `localhost` for a physical phone; that resolves to the phone itself.
 
-## Over The Air Updates
+## Native Discord Authentication
 
-The native apps include the Ionic Appflow Capacitor Live Updates SDK. It is
-configured in `capacitor.config.ts` with:
+Discord login and account linking open the system browser, return through the
+`worldofclaudecraft://discord-auth` app URL, and exchange a short-lived,
+single-use handoff code with the game server. The exchange also requires an
+app-generated verifier that never appears in the callback URL, so another app
+cannot use an intercepted custom-scheme callback. Starting the flow also uses
+the existing Apple DeviceCheck or Play Integrity proof, which prevents another
+app from initiating its own handoff with the shared URL scheme. The native return URL
+never carries a bearer session token or first-login link token. Discord itself
+continues to redirect to the existing
+HTTPS `/api/auth/discord/callback` URL, so no additional Discord Developer Portal
+redirect is required.
 
-| Setting | Value |
-|---|---|
-| Appflow app ID | `9fa1b0c1` |
-| Channel | `Production` |
-| Update method | `background` |
+Release QA must cover returning-user login, the first-time create-or-link chooser,
+linking from an existing signed-in account, cancellation, and an expired handoff
+on both iOS and Android. Confirm each browser flow returns to the app and that a
+consumed handoff code cannot be reused.
 
-Background updates are downloaded after app launch and become active on the next
-launch. Use this for web asset fixes only: HTML, CSS, JavaScript, bundled media,
-copy, and other client code already inside the Capacitor web build. Changes to
-native code, app icons, splash screens, permissions, entitlements, Capacitor
-config, or native plugin versions still require a new App Store or Play Store
-binary.
+## Store Updates Only
 
-After changing the Live Updates config or native dependencies, run:
+The native apps do not include the Ionic Appflow Capacitor Live Updates SDK and
+must not use Appflow over the air deployments. Every web or native change ships
+in a new App Store and Play Store binary.
 
-```sh
-npm run native:sync
-```
+Always run `npm run native:sync` before creating an archive. This rebuilds the
+native web client and copies the current assets into both platform projects.
+Confirm the version and build shown by the installed app match the intended
+release before submission.
 
-To ship an OTA update after the app-store binary containing Live Updates has
-been approved:
-
-1. Build the web app in Appflow from the target Git commit.
-2. Assign the web build to the `Production` Live Update channel.
-3. Test on a store or TestFlight build by launching once to download the update,
-   then closing and relaunching the app to apply it.
+Release QA must cover both a fresh install and an update over an existing store
+installation. For the update test, preserve the existing app data, install the
+new build over the old one, force quit and relaunch it several times, and confirm
+the app always uses the web assets bundled with the new binary. Also test one
+offline launch to ensure startup does not depend on an update service.
 
 ## Store Review Notes
 
