@@ -314,6 +314,8 @@ export const id_ID: EnTranslations = {
       "haptics": "Haptik",
       "hapticsOff": "Haptik Nonaktif",
       "toggleHaptics": "Alihkan haptik",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Kemampuan",
       "hotbarPageAria": "Tampilkan rangkaian kemampuan berikutnya",
       "actionRing": "Aksi tempur",

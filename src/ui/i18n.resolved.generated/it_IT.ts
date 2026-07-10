@@ -314,6 +314,8 @@ export const it_IT: EnTranslations = {
       "haptics": "Vibrazione",
       "hapticsOff": "Vibrazione disattivata",
       "toggleHaptics": "Attiva/disattiva vibrazione",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Abilità",
       "hotbarPageAria": "Mostra la serie successiva di abilità",
       "actionRing": "Azioni di combattimento",

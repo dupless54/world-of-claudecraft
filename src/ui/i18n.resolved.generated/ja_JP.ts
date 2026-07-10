@@ -314,6 +314,8 @@ export const ja_JP: EnTranslations = {
       "haptics": "振動",
       "hapticsOff": "振動オフ",
       "toggleHaptics": "振動を切り替え",
+      "showMenuButtons": "メニューボタンを表示",
+      "hideMenuButtons": "メニューボタンを非表示",
       "hotbarPage": "スキル",
       "hotbarPageAria": "次のスキルセットを表示",
       "actionRing": "戦闘アクション",

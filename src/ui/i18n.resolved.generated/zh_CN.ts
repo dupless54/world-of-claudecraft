@@ -314,6 +314,8 @@ export const zh_CN: EnTranslations = {
       "haptics": "震动反馈",
       "hapticsOff": "震动反馈：关",
       "toggleHaptics": "切换震动反馈",
+      "showMenuButtons": "显示菜单按钮",
+      "hideMenuButtons": "隐藏菜单按钮",
       "hotbarPage": "技能",
       "hotbarPageAria": "显示下一组技能",
       "actionRing": "战斗动作",

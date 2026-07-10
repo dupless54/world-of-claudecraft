@@ -3718,6 +3718,8 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.mobile.targetCycle': 'Сменить цель',
   'hudChrome.mobile.targetCycleShort': 'Цель',
   'hudChrome.mobile.toggleHaptics': 'Вкл/выкл вибрацию',
+  'hudChrome.mobile.showMenuButtons': 'Показать кнопки меню',
+  'hudChrome.mobile.hideMenuButtons': 'Скрыть кнопки меню',
   'hudChrome.rest.resting': 'Отдых',
   'hudChrome.swing.ready': 'Замах',
   'hudChrome.swing.seconds': '{seconds} сек.',

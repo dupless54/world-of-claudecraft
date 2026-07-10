@@ -314,6 +314,8 @@ export const zh_TW: EnTranslations = {
       "haptics": "觸覺回饋",
       "hapticsOff": "觸覺回饋已關閉",
       "toggleHaptics": "切換觸覺回饋",
+      "showMenuButtons": "顯示選單按鈕",
+      "hideMenuButtons": "隱藏選單按鈕",
       "hotbarPage": "技能",
       "hotbarPageAria": "顯示下一組技能",
       "actionRing": "戰鬥動作",

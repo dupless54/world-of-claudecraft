@@ -314,6 +314,8 @@ export const nl_NL: EnTranslations = {
       "haptics": "Haptiek",
       "hapticsOff": "Haptiek uit",
       "toggleHaptics": "Haptiek aan/uit",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Vaardigheden",
       "hotbarPageAria": "Toon de volgende set vaardigheden",
       "actionRing": "Gevechtsacties",

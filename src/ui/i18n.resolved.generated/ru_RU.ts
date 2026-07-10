@@ -314,6 +314,8 @@ export const ru_RU: EnTranslations = {
       "haptics": "Вибрация",
       "hapticsOff": "Вибрация выкл.",
       "toggleHaptics": "Вкл/выкл вибрацию",
+      "showMenuButtons": "Показать кнопки меню",
+      "hideMenuButtons": "Скрыть кнопки меню",
       "hotbarPage": "Навыки",
       "hotbarPageAria": "Показать следующий набор навыков",
       "actionRing": "Боевые действия",

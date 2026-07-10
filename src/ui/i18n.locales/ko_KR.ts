@@ -3667,6 +3667,8 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.mobile.targetCycle': '대상 전환',
   'hudChrome.mobile.targetCycleShort': '대상',
   'hudChrome.mobile.toggleHaptics': '진동 전환',
+  'hudChrome.mobile.showMenuButtons': '메뉴 버튼 표시',
+  'hudChrome.mobile.hideMenuButtons': '메뉴 버튼 숨기기',
   'hudChrome.rest.resting': '휴식 중',
   'hudChrome.swing.ready': '공격',
   'hudChrome.swing.seconds': '{seconds}초',

@@ -3676,6 +3676,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.mobile.targetCycle': 'ターゲット切替',
   'hudChrome.mobile.targetCycleShort': '標的',
   'hudChrome.mobile.toggleHaptics': '振動を切り替え',
+  'hudChrome.mobile.showMenuButtons': 'メニューボタンを表示',
+  'hudChrome.mobile.hideMenuButtons': 'メニューボタンを非表示',
   'hudChrome.rest.resting': '休息中',
   'hudChrome.swing.ready': '攻撃',
   'hudChrome.swing.seconds': '{seconds}秒',

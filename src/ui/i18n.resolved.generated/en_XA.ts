@@ -314,6 +314,8 @@ export const en_XA: EnTranslations = {
       "haptics": "[Ĥáþţíçš]",
       "hapticsOff": "[Ĥáþţíçš Óƒƒ]",
       "toggleHaptics": "[Ţóĝĝļé ĥáþţíçš]",
+      "showMenuButtons": "[Šĥóŵ ɱéñú ƀúţţóñš]",
+      "hideMenuButtons": "[Ĥíðé ɱéñú ƀúţţóñš]",
       "hotbarPage": "[Šķíļļš]",
       "hotbarPageAria": "[Šĥóŵ ñéẋţ šéţ óƒ šķíļļš]",
       "actionRing": "[Çóɱƀáţ áçţíóñš]",

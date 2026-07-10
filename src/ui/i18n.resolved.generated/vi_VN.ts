@@ -314,6 +314,8 @@ export const vi_VN: EnTranslations = {
       "haptics": "Phản Hồi Rung",
       "hapticsOff": "Tắt Phản Hồi Rung",
       "toggleHaptics": "Bật/tắt phản hồi rung",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Kỹ Năng",
       "hotbarPageAria": "Hiện bộ kỹ năng tiếp theo",
       "actionRing": "Hành động chiến đấu",

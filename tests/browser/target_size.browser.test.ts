@@ -92,7 +92,7 @@ describe('mobile target-size: in-game touch controls are >=40x40 in landscape', 
     expectAtLeastFloor(toggle, 'compact #mobile-action-page-toggle');
   });
 
-  it('the left utility cluster (Autorun/Jump) and the Chat/More pair', () => {
+  it('the left utility cluster (Autorun/Jump), the Chat/More pair, and the menu collapse handle', () => {
     const cluster = el('div', { id: 'mobile-utility-cluster' });
     const autorun = el('button', { id: 'mobile-autorun', class: 'mobile-btn' });
     const jump = el('button', { id: 'mobile-jump', class: 'mobile-btn' });
@@ -100,12 +100,17 @@ describe('mobile target-size: in-game touch controls are >=40x40 in landscape', 
     const combat = el('div', { id: 'mobile-combat-controls' });
     const chat = el('button', { id: 'mobile-chat', class: 'mobile-btn' });
     const more = el('button', { id: 'mobile-more', class: 'mobile-btn' });
-    combat.append(chat, more);
+    // The always-visible collapse handle sits before the button grid; it is a 40px
+    // chip that must hold the floor even while the cluster is collapsed (no
+    // mobile-menu-open here, its default state).
+    const handle = el('button', { id: 'mobile-menu-collapse-toggle' });
+    combat.append(handle, chat, more);
     document.body.append(cluster, combat);
     expectAtLeastFloor(autorun, '#mobile-autorun');
     expectAtLeastFloor(jump, '#mobile-jump');
     expectAtLeastFloor(chat, '#mobile-chat');
     expectAtLeastFloor(more, '#mobile-more');
+    expectAtLeastFloor(handle, '#mobile-menu-collapse-toggle');
   });
 
   it('party-member rows (role=button tap targets)', () => {

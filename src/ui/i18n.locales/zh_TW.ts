@@ -3532,6 +3532,8 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.mobile.targetCycle': '切換目標',
   'hudChrome.mobile.targetCycleShort': '目標',
   'hudChrome.mobile.toggleHaptics': '切換觸覺回饋',
+  'hudChrome.mobile.showMenuButtons': '顯示選單按鈕',
+  'hudChrome.mobile.hideMenuButtons': '隱藏選單按鈕',
   'hudChrome.rest.resting': '休息中',
   'hudChrome.swing.ready': '揮砍',
   'hudChrome.swing.seconds': '{seconds}秒',

@@ -314,6 +314,8 @@ export const da_DK: EnTranslations = {
       "haptics": "Haptik",
       "hapticsOff": "Haptik fra",
       "toggleHaptics": "Slå haptik til/fra",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Evner",
       "hotbarPageAria": "Vis næste sæt evner",
       "actionRing": "Kamphandlinger",

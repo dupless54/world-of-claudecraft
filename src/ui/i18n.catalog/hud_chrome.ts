@@ -239,6 +239,14 @@ export const hudChromeStrings = {
     haptics: 'Haptics',
     hapticsOff: 'Haptics Off',
     toggleHaptics: 'Toggle haptics',
+    // The collapse handle for the top-left menu-button cluster (Chat/Social/
+    // Quests/Settings/More). Default collapsed so the round icons do not crowd
+    // the play field; the arrow chip stays visible so a player can reopen it.
+    // The accessible name reflects the action the tap performs, mirrored by
+    // aria-expanded. Both values are wordy prose (M16), so the five non-Latin
+    // locales are filled in the same change.
+    showMenuButtons: 'Show menu buttons',
+    hideMenuButtons: 'Hide menu buttons',
     // The v0.22.0 base's touch-hotbar paging button ("Skills", #mobile-hotbar-page):
     // superseded by the paged action ring below, whose page toggle owns ability
     // paging on touch. The keys stay (already filled in all 20 locales) per the

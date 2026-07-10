@@ -314,6 +314,8 @@ export const tr_TR: EnTranslations = {
       "haptics": "Dokunsal Geri Bildirim",
       "hapticsOff": "Dokunsal Kapalı",
       "toggleHaptics": "Dokunsal geri bildirimi aç/kapat",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Yetenekler",
       "hotbarPageAria": "Sonraki yetenek grubunu göster",
       "actionRing": "Savaş eylemleri",

@@ -314,6 +314,8 @@ export const cs_CZ: EnTranslations = {
       "haptics": "Haptika",
       "hapticsOff": "Haptika vypnuta",
       "toggleHaptics": "Přepnout haptiku",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Dovednosti",
       "hotbarPageAria": "Zobrazit další sadu dovedností",
       "actionRing": "Bojové akce",

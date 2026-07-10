@@ -314,6 +314,8 @@ export const ko_KR: EnTranslations = {
       "haptics": "진동",
       "hapticsOff": "진동 꺼짐",
       "toggleHaptics": "진동 전환",
+      "showMenuButtons": "메뉴 버튼 표시",
+      "hideMenuButtons": "메뉴 버튼 숨기기",
       "hotbarPage": "스킬",
       "hotbarPageAria": "다음 스킬 세트 표시",
       "actionRing": "전투 행동",

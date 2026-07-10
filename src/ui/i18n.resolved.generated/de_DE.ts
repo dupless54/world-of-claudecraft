@@ -314,6 +314,8 @@ export const de_DE: EnTranslations = {
       "haptics": "Haptik",
       "hapticsOff": "Haptik aus",
       "toggleHaptics": "Haptik umschalten",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Fähigkeiten",
       "hotbarPageAria": "Nächste Fähigkeitengruppe anzeigen",
       "actionRing": "Kampfhandlungen",

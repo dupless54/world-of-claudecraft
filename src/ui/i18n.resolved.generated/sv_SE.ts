@@ -314,6 +314,8 @@ export const sv_SE: EnTranslations = {
       "haptics": "Haptik",
       "hapticsOff": "Haptik av",
       "toggleHaptics": "Växla haptik",
+      "showMenuButtons": "Show menu buttons",
+      "hideMenuButtons": "Hide menu buttons",
       "hotbarPage": "Förmågor",
       "hotbarPageAria": "Visa nästa uppsättning förmågor",
       "actionRing": "Stridsaktioner",
