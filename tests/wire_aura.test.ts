@@ -43,6 +43,9 @@ describe('wireEntity aura serialization', () => {
       rem: 5,
       dur: 10,
     });
+    // toEqual ignores key order; direct assignment must still emit id/name/kind/rem/dur
+    // in that exact order (a future reorder would still pass toEqual but change wire bytes).
+    expect(Object.keys(w)).toEqual(['id', 'name', 'kind', 'rem', 'dur']);
     expect(w).not.toHaveProperty('value');
     expect(w).not.toHaveProperty('value2');
     expect(w).not.toHaveProperty('value3');
@@ -85,6 +88,21 @@ describe('wireEntity aura serialization', () => {
       charges: 2,
       src: 7,
     });
+    expect(Object.keys(w)).toEqual([
+      'id',
+      'name',
+      'kind',
+      'rem',
+      'dur',
+      'value',
+      'value2',
+      'value3',
+      'tickInterval',
+      'school',
+      'stacks',
+      'charges',
+      'src',
+    ]);
   });
 
   it('omits stacks when exactly 1 but includes charges even when exactly 1', () => {
@@ -95,5 +113,23 @@ describe('wireEntity aura serialization', () => {
     const w = wireAuras(e)[0];
     expect(w).not.toHaveProperty('stacks');
     expect(w.charges).toBe(1);
+  });
+
+  it('includes value2/value3/tickInterval/charges when defined as exactly 0', () => {
+    // These fields are gated on `!== undefined`, not truthiness (unlike value/sourceId,
+    // which are gated on truthiness and legitimately omit 0). A defined 0 must still ride
+    // the wire, or a judgement min-range of 0 or a Lightning Shield down to 0 charges would
+    // silently vanish and decode back to "absent" on the client.
+    const sim = new Sim({ seed: 1, playerClass: 'warrior' });
+    const e = sim.player;
+    e.auras = [baseAura({ value2: 0, value3: 0, tickInterval: 0, charges: 0 })];
+
+    const w = wireAuras(e)[0];
+    expect(w.value2).toBe(0);
+    expect(w.value3).toBe(0);
+    expect(w.tickInterval).toBe(0);
+    expect(w.charges).toBe(0);
+    expect(w).not.toHaveProperty('value');
+    expect(w).not.toHaveProperty('src');
   });
 });
