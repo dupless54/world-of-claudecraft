@@ -12,7 +12,6 @@
 // under mobile-touch), and the close routes through the frame to close().
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEMS } from '../src/sim/data';
 import type { EquipSlot } from '../src/sim/types';
 import { CharWindow, type CharWindowDeps } from '../src/ui/char_window';
 import type { StatId } from '../src/ui/stat_tooltip';
@@ -133,6 +132,15 @@ describe('CharWindow: frame adoption', () => {
     expect(el.querySelector('.window-body')).toBe(firstBody);
     expect(el.querySelectorAll('.window-titlebar').length).toBe(1);
   });
+
+  it('frames a pinned titlebar then a scrollable body (footer-less flex column)', () => {
+    const el = charEl();
+    new CharWindow(fakeDeps(el, fakeWorld())).render();
+    const frame = el.querySelector<HTMLElement>(':scope > .window-frame');
+    const order = Array.from(frame?.children ?? []).map((c) => (c as HTMLElement).className);
+    expect(order).toEqual(['window-titlebar', 'window-body']);
+    expect(frame?.querySelectorAll('.window-body').length).toBe(1);
+  });
 });
 
 describe('CharWindow: move / resize / fit parity', () => {
@@ -170,6 +178,18 @@ describe('CharWindow: paperdoll + stats body grammar', () => {
     expect(el.querySelectorAll('#equip-col-left .equip-slot').length).toBe(5);
     expect(el.querySelectorAll('#equip-col-right .equip-slot').length).toBe(6);
     expect(body.querySelectorAll('.char-stats [data-stat]').length).toBeGreaterThan(0);
+  });
+
+  it('escapes the user-controlled player name through esc() (no live injection)', () => {
+    const el = charEl();
+    const world = fakeWorld({
+      player: { level: 3, name: '<img src=x onerror=alert(1)>', skin: 0 },
+    });
+    new CharWindow(fakeDeps(el, world)).render();
+    const identity = el.querySelector<HTMLElement>('.char-identity') as HTMLElement;
+    // The portrait chip is mocked to a span, so any <img> here would be an injection.
+    expect(identity.querySelector('img')).toBeNull();
+    expect(identity.querySelector('.char-title-text')?.innerHTML).toContain('&lt;img');
   });
 
   it('wires each stat cell to its lazily-resolved breakdown tooltip', () => {
