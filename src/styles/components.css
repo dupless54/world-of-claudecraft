@@ -2517,6 +2517,12 @@
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);
   }
+  /* Talents: the class-name subtitle (was the header's colored suffix) leads the
+     body under the frame's static "Talents" title. */
+  #talents-window .window-body > .tal-classname {
+    font-size: var(--text-xs);
+    margin: 0 2px var(--spacing-xs);
+  }
 
   /* ---------- modals and dropdown ---------- */
   /* in-app input modal field (Save / Import / Export, replaces window.prompt) */
