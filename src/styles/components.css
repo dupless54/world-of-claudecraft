@@ -8827,6 +8827,30 @@
     border-radius: var(--radius-md);
     color: var(--color-text-light);
   }
+  /* Visible resize grip for FRAME-mounted resizable windows. The root's diagonal
+     grip layer (layout.css .window.window-resizable) is wiped for framed windows:
+     #<id>:has(> .window-frame) neutralizes the root background, and the frame's own
+     `background` above (in this @layer components, which wins over @layer layout)
+     re-covers it. So restate the SAME token grip HERE on the inner .window-frame
+     (the element that paints the panel), where it survives the layer order. Only a
+     resizable host stamps .window-resizable, so non-resizable framed windows get no
+     grip. Hidden under body.mobile-touch (windows dock/full-screen; the grip would
+     fight the dock chrome, and the touch corner band still resizes). */
+  .window.window-resizable > .window-frame {
+    background-image:
+      repeating-linear-gradient(135deg, transparent 0 3px, var(--gold-dim) 3px 4px),
+      var(--panel-l1-bg);
+    background-size:
+      12px 12px,
+      auto;
+    background-position:
+      right 3px bottom 3px,
+      0 0;
+    background-repeat: no-repeat, no-repeat;
+  }
+  body.mobile-touch .window.window-resizable > .window-frame {
+    background-image: var(--panel-l1-bg);
+  }
   /* Move / resize / viewport-fit parity with the World Market for every
      grammar-built window: the host .window (shown as display:flex, the Market
      precedent) becomes a clipping flex column, and the frame fills it as the
