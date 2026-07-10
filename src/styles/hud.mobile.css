@@ -2458,6 +2458,22 @@
     box-sizing: border-box;
     overflow-y: auto;
   }
+  /* Frame-hosting windows keep the desktop internal-scroll model on touch: the
+     root clips and the frame's .window-body is the scroller (components.css).
+     The root-scroll pin above (overflow-y: auto) would make the ROOT scroll a
+     flex frame that is sized to the root's first screenful, painting every
+     later row frameless over the 3D world (the Trader Wilkes vendor-bottom
+     leak, live feedback; the Market's own overflow:hidden below was a
+     per-window patch for the same fault). The three legacy root-scroll
+     windows (char/talents/crafting, display:block) are exempt: a BLOCK frame
+     grows with its content, so root scroll is safe there, and their
+     open-state detection needs the block model. The vendor 50/50 dock
+     override (id-scoped, display:block) outranks this by specificity and is
+     safe for the same block-grows reason. */
+  body.mobile-touch
+  .window:has(> .window-frame):not(#char-window):not(#talents-window):not(#crafting-window) {
+    overflow-y: hidden;
+  }
   body.mobile-touch #vendor-window {
     max-height: calc(58vh - 20px);
   }
@@ -4394,15 +4410,13 @@
   body.mobile-touch .vcup-role {
     min-height: 40px;
   }
-  /* One scroller per window: the vendor sheet scrolls on its ROOT (the dock rule
-     re-asserts overflow-y:auto there), so the framed tab panels must not open a
-     SECOND nested scrollport (root 969/338 AND panel 916/243 measured live: two
-     scrollers fight the same touch gesture). The panels give their height back to
-     the root scroller on touch. */
-  body.mobile-touch #vendor-window [id^="vendor-window-panel-"] {
-    overflow: visible;
-    max-height: none;
-  }
+  /* One scroller per window, and it is the BODY, not the root: the old rule here
+     gave the vendor tab panels overflow:visible so the ROOT could scroll instead,
+     but a flex frame never grows past the root's first screenful, so every row
+     scrolled past it painted frameless over the 3D world (the Trader Wilkes
+     bottom leak). Framed windows now keep root overflow hidden on touch (the
+     :has(> .window-frame) rule with the mobile pin above) and the panel keeps its
+     base .window-body internal scroll, so there is still exactly one scroller. */
   /* Floating top-right chrome (minimap cluster, mail badge) sits above the
      edge-pinned sheets and covered their top strip (the leaderboard's Daily
      Leaderboard tab, the town-focus first stepper row: audit shots). While any
