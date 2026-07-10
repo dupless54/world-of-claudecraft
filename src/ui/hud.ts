@@ -11258,6 +11258,8 @@ export class Hud {
         // The Sell tab dispatches the whole stack through the SAME sim sellItem
         // command the bags Ctrl-click flow uses (byte-identical: itemId + count).
         onSellItem: (itemId, count) => buyAndRefresh(() => this.sim.sellItem(itemId, count)),
+        confirmDialog: (title, body, okText, cancelText, onOk) =>
+          this.confirmDialog(title, body, okText, cancelText, onOk),
         onSellJunk: () => buyAndRefresh(() => this.sim.sellAllJunk()),
         onTabChange: (tab) => {
           this.vendorTab = tab;

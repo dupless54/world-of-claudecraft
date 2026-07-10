@@ -70,6 +70,7 @@ function fakeVendorDeps(overrides: Partial<VendorWindowDeps> = {}): VendorWindow
     onBuy: () => {},
     onBuyBack: () => {},
     onSellItem: () => {},
+    confirmDialog: () => {},
     onSellJunk: () => {},
     onTabChange: () => {},
     onClose: () => {},

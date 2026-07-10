@@ -55,6 +55,18 @@ export interface VendorWindowDeps extends PainterHostPresentation {
   onBuyBack(itemId: string): void;
   /** Sell the whole stack of one bag item (dispatches the sim sellItem command). */
   onSellItem(itemId: string, count: number): void;
+  /**
+   * Shared modal confirm (the Hud's confirmDialog). Gates selling an
+   * instance-bearing (rolled-stat) row, whose rolled stats buyback cannot restore;
+   * `onOk` runs only if the player accepts.
+   */
+  confirmDialog(
+    title: string,
+    body: string,
+    okText: string,
+    cancelText: string,
+    onOk: () => void,
+  ): void;
   onSellJunk(): void;
   /** Fired with the id fragment of the tab the player activated. */
   onTabChange(tab: VendorTab): void;
@@ -180,8 +192,24 @@ function sellRow(s: VendorSellRow, deps: VendorWindowDeps): HTMLButtonElement {
     `<span class="vendor-row-price">${deps.moneyHtml(s.total)}</span>`;
   // The whole-stack sell: the classic right-click-sells-the-stack dispatch, and the
   // total shown is exactly what it pays out. Routes through the same sim sellItem
-  // command the bags flow uses.
-  row.addEventListener('click', () => deps.onSellItem(s.itemId, s.count));
+  // command the bags flow uses. An instance-bearing (rolled-stat) row is gated
+  // behind a confirm first, because the sim sells by itemId and buyback restores
+  // only a BASE copy, so this one click would otherwise silently lose the rolled
+  // stats. Plain fungible rows sell with no friction.
+  const sell = () => deps.onSellItem(s.itemId, s.count);
+  row.addEventListener('click', () => {
+    if (s.instanced) {
+      deps.confirmDialog(
+        t('itemUi.vendor.sellQuantityTitle', { item: itemName }),
+        t('itemUi.vendor.sellRolledWarning'),
+        t('itemUi.vendor.sellQuantityConfirm'),
+        t('itemUi.vendor.sellQuantityCancel'),
+        sell,
+      );
+    } else {
+      sell();
+    }
+  });
   deps.attachTooltip(row, () => deps.itemTooltip(s.item));
   return row;
 }

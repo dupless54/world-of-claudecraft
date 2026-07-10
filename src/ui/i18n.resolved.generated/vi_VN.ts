@@ -4973,6 +4973,7 @@ export const vi_VN: EnTranslations = {
       "buybackEmpty": "Không có vật phẩm",
       "buybackAria": "Mua lại {item} với giá {price}",
       "sellItemAria": "Sell {item} for {price}",
+      "sellRolledWarning": "Rolled stats cannot be recovered by buyback.",
       "sellQuantityTitle": "Bán {item}",
       "sellQuantityInput": "Số lượng cần bán",
       "sellQuantityConfirm": "Bán",

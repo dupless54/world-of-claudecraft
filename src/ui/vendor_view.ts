@@ -43,6 +43,11 @@ export interface VendorSellRow {
   unitPrice: number;
   /** Copper for selling the whole stack: unitPrice times count. */
   total: number;
+  /** True if ANY aggregated slot carried per-instance (rolled-stat) payload. The
+   *  sim sells by itemId and buyback only restores a BASE copy, so a one-click
+   *  whole-stack sell of a rolled row would lose the rolled stats: the UI gates it
+   *  behind a confirm. Plain fungible rows (no instance) sell with no friction. */
+  instanced: boolean;
 }
 
 /**
@@ -99,10 +104,12 @@ export function buildVendorSellRows(
     if (item.kind === 'quest') continue;
     if (item.noVendorSell) continue;
     if (!item.sellValue || item.sellValue <= 0) continue;
+    const slotInstanced = slot.instance != null;
     const existing = byId.get(slot.itemId);
     if (existing) {
       existing.count += slot.count;
       existing.total = existing.unitPrice * existing.count;
+      if (slotInstanced) existing.instanced = true;
     } else {
       byId.set(slot.itemId, {
         itemId: slot.itemId,
@@ -110,6 +117,7 @@ export function buildVendorSellRows(
         count: slot.count,
         unitPrice: item.sellValue,
         total: item.sellValue * slot.count,
+        instanced: slotInstanced,
       });
       order.push(slot.itemId);
     }

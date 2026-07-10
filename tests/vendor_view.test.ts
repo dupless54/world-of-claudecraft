@@ -135,6 +135,32 @@ describe('buildVendorSellRows', () => {
     expect(rows[0].total).toBe(128); // 4 * 32
   });
 
+  it('flags a plain fungible row as NOT instanced (sells with no confirm friction)', () => {
+    const items = table(item('cloth', { sellValue: 4 }));
+    const rows = buildVendorSellRows([{ itemId: 'cloth', count: 5 }], items);
+    expect(rows[0].instanced).toBe(false);
+  });
+
+  it('flags a row carrying per-instance (rolled-stat) payload as instanced', () => {
+    const items = table(item('sword', { sellValue: 500 }));
+    const inv: InvSlot[] = [
+      { itemId: 'sword', count: 1, instance: { rolled: { stats: { power: 7 } } } },
+    ];
+    expect(buildVendorSellRows(inv, items)[0].instanced).toBe(true);
+  });
+
+  it('flags an aggregated row instanced if ANY contributing slot is instance-bearing', () => {
+    const items = table(item('sword', { sellValue: 500 }));
+    const inv: InvSlot[] = [
+      { itemId: 'sword', count: 1 }, // plain copy
+      { itemId: 'sword', count: 1, instance: { rolled: { stats: { power: 7 } } } },
+    ];
+    const rows = buildVendorSellRows(inv, items);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].count).toBe(2);
+    expect(rows[0].instanced).toBe(true);
+  });
+
   it('skips items missing from the table', () => {
     const items = table(item('cloth', { sellValue: 4 }));
     const inv: InvSlot[] = [

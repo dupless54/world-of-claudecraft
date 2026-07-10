@@ -42,6 +42,7 @@ function fakeDeps(overrides: Partial<VendorWindowDeps> = {}): VendorWindowDeps {
     onBuy: () => {},
     onBuyBack: () => {},
     onSellItem: () => {},
+    confirmDialog: () => {},
     onSellJunk: () => {},
     onTabChange: () => {},
     onClose: () => {},
@@ -274,8 +275,20 @@ describe('renderVendorWindow: Browse tab', () => {
 });
 
 describe('renderVendorWindow: Sell tab', () => {
+  // Plain fungible stack (no instance): sells immediately, never behind a confirm.
   const sellRows: VendorSellRow[] = [
-    { itemId: 'cloth', item: item('cloth'), count: 5, unitPrice: 3, total: 15 },
+    { itemId: 'cloth', item: item('cloth'), count: 5, unitPrice: 3, total: 15, instanced: false },
+  ];
+  // Rolled/instance-bearing stack: gated behind a confirm before it can sell.
+  const instancedRows: VendorSellRow[] = [
+    {
+      itemId: 'sword',
+      item: item('sword'),
+      count: 2,
+      unitPrice: 500,
+      total: 1000,
+      instanced: true,
+    },
   ];
 
   it('renders the bulk sell-junk primary action then the sellable rows', () => {
@@ -293,12 +306,36 @@ describe('renderVendorWindow: Sell tab', () => {
     expect(row?.getAttribute('aria-label')).toContain('Sell');
   });
 
-  it('sells the whole stack through onSellItem (byte-identical itemId + count)', () => {
+  it('sells a plain fungible stack immediately through onSellItem, with NO confirm', () => {
     const el = vendorEl();
     const onSellItem = vi.fn();
-    render(el, 'V', emptyView, fakeDeps({ onSellItem }), { tab: 'sell', sellRows });
+    const confirmDialog = vi.fn();
+    render(el, 'V', emptyView, fakeDeps({ onSellItem, confirmDialog }), { tab: 'sell', sellRows });
     el.querySelector<HTMLButtonElement>('.list-rows .vendor-row')?.click();
+    // Byte-identical dispatch (itemId + count), and no friction on normal selling.
     expect(onSellItem).toHaveBeenCalledWith('cloth', 5);
+    expect(confirmDialog).not.toHaveBeenCalled();
+  });
+
+  it('gates an instance-bearing (rolled) row behind a confirm before selling', () => {
+    const el = vendorEl();
+    const onSellItem = vi.fn();
+    const confirmDialog = vi.fn();
+    render(el, 'V', emptyView, fakeDeps({ onSellItem, confirmDialog }), {
+      tab: 'sell',
+      sellRows: instancedRows,
+    });
+    el.querySelector<HTMLButtonElement>('.list-rows .vendor-row')?.click();
+    // The click routes through the confirm, NOT straight to the sale.
+    expect(confirmDialog).toHaveBeenCalledTimes(1);
+    expect(onSellItem).not.toHaveBeenCalled();
+    // The confirm body warns about the unrecoverable rolled stats.
+    const [, body] = confirmDialog.mock.calls[0];
+    expect(body).toContain('buyback');
+    // Accepting the confirm (its onOk, the 5th arg) sells the whole rolled stack.
+    const onOk = confirmDialog.mock.calls[0][4] as () => void;
+    onOk();
+    expect(onSellItem).toHaveBeenCalledWith('sword', 2);
   });
 
   it('fires onSellJunk from the bulk action', () => {

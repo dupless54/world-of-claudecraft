@@ -4973,6 +4973,7 @@ export const da_DK: EnTranslations = {
       "buybackEmpty": "Ingen genstande",
       "buybackAria": "Køb {item} tilbage for {price}",
       "sellItemAria": "Sell {item} for {price}",
+      "sellRolledWarning": "Rolled stats cannot be recovered by buyback.",
       "sellQuantityTitle": "Sælg {item}",
       "sellQuantityInput": "Antal at sælge",
       "sellQuantityConfirm": "Sælg",

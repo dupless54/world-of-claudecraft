@@ -4973,6 +4973,7 @@ export const tr_TR: EnTranslations = {
       "buybackEmpty": "Eşya yok",
       "buybackAria": "{item} eşyasını {price} karşılığında geri al",
       "sellItemAria": "Sell {item} for {price}",
+      "sellRolledWarning": "Rolled stats cannot be recovered by buyback.",
       "sellQuantityTitle": "{item} Sat",
       "sellQuantityInput": "Satılacak miktar",
       "sellQuantityConfirm": "Sat",
