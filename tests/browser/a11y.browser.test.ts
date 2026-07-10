@@ -453,8 +453,8 @@ describe('axe: social window', () => {
     // The single active tab on the shared frame rail (aria-selected is the contract;
     // the frame tab buttons carry data-window-tab, not the old .soc-tab/.on classes).
     const active = () =>
-      (root.querySelector('[data-window-tab][aria-selected="true"]') as HTMLElement | null)
-        ?.dataset.windowTab;
+      (root.querySelector('[data-window-tab][aria-selected="true"]') as HTMLElement | null)?.dataset
+        .windowTab;
     const focused = () => (document.activeElement as HTMLElement | null)?.dataset.windowTab;
     const press = (key: string) =>
       (document.activeElement as HTMLElement | null)?.dispatchEvent(
