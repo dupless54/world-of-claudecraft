@@ -2799,6 +2799,11 @@
     max-width: none;
     max-height: none;
     box-sizing: border-box;
+    /* The generic mobile .window rule pads the bottom for the safe area;
+       this window is already inset-pinned on all four edges, so that rule
+       would double count the inset and eat the short-landscape height
+       budget below. */
+    padding-bottom: var(--window-pad);
     overflow: hidden;
     z-index: 95;
   }

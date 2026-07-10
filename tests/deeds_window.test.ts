@@ -254,6 +254,11 @@ describe('mobile layout (hud.mobile.css)', () => {
     expect(block).toContain('transform: none;');
     expect(block).toContain('max-width: none;');
     expect(block).toContain('overflow: hidden;');
+    // The generic mobile .window rule reserves bottom safe-area padding for
+    // centered windows that can reach under the home indicator; this window
+    // is already inset-pinned on all four edges, so that rule would double
+    // count the bottom inset and eat the short-landscape height budget.
+    expect(block).toContain('padding-bottom: var(--window-pad);');
   });
 
   it('collapses the category rail to one horizontally scrollable chip row', () => {
