@@ -710,6 +710,17 @@ export const hudChromeStrings = {
       page: 'Page',
     },
     keybindCleared: 'Cleared {action}',
+    // Esc menu redesign P4 (rebind UX + conflicts): the assertive rebind-capture
+    // announce, the eviction announce/note (exact wording), the transient badge on
+    // a displaced row, the persistent unbound-action banner line, and the
+    // controller-duplicate chip. keybindRebinding / keybindEvicted / keybindTaken /
+    // controller.duplicate are wordy, so their five non-Latin fills
+    // (zh_CN/zh_TW/ja_JP/ko_KR/ru_RU) land in this same change (M16); keybindUnbound
+    // is short prose (no 4+ lowercase run) and English-fills at PR tier.
+    keybindRebinding: 'Rebinding {action}. Press a key, or Escape to cancel.',
+    keybindEvicted: 'Bound {key} to {action}; removed from {evicted}',
+    keybindTaken: 'Key removed',
+    keybindUnbound: '{action} has no key',
     sec: {
       quality: 'Quality',
       view: 'View',

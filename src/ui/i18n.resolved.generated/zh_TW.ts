@@ -615,6 +615,10 @@ export const zh_TW: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "已清除 {action}",
+      "keybindRebinding": "正在重新綁定 {action}。請按一個按鍵，或按 Esc 取消。",
+      "keybindEvicted": "已將 {key} 綁定到 {action}；已從 {evicted} 移除。",
+      "keybindTaken": "按鍵已移除",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "畫質",
         "view": "View",

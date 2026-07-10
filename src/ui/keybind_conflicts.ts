@@ -143,7 +143,9 @@ export function computeKeybindConflicts(
  * action that gained `code`, and `code` itself, return which action lost it. Mirrors the
  * real Keybinds.bind() sweep exactly: it runs only when the GAINING action is not shared,
  * and it never evicts a shared holder (Attack Move keeps its intentionally shared key).
- * Returns null when nothing was evicted.
+ * Returns null when nothing was evicted. Names only the FIRST holder (all the
+ * one-code-per-action invariant normally permits); use `evictedActions` for the full list
+ * when a loaded/corrupt profile may have duplicated the code.
  */
 export function describeEviction(
   before: readonly KeyboardBindRow[],
@@ -156,4 +158,24 @@ export function describeEviction(
     (row) => row.id !== gained && !row.allowShared && row.codes.includes(code),
   );
   return loser ? { code, gained, evicted: loser.id } : null;
+}
+
+/**
+ * Every action a keyboard steal of `code` onto `gained` evicts, in input order (task 8
+ * review, task 10 item 6: `describeEviction` names only the FIRST holder, which is all the
+ * one-code-per-action invariant normally permits; this names ALL of them for the rare
+ * degenerate case where a loaded/corrupt profile already had `code` on more than one
+ * action). Mirrors the real `Keybinds.bind()` sweep: skipped entirely when the GAINING
+ * action is shared, and never evicts a shared holder. Returns [] when nothing is evicted.
+ */
+export function evictedActions(
+  before: readonly KeyboardBindRow[],
+  gained: string,
+  code: string,
+): string[] {
+  const gainedRow = before.find((row) => row.id === gained);
+  if (gainedRow?.allowShared) return [];
+  return before
+    .filter((row) => row.id !== gained && !row.allowShared && row.codes.includes(code))
+    .map((row) => row.id);
 }

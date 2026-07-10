@@ -6412,10 +6412,41 @@
     color: #ffd9a0;
     border-color: #4a3d1d;
   }
+  /* Capturing cap (spec section 6): a gold border that breathes at fx medium+, and
+     a steady gold border (no animation) at low fx / under reduced motion. */
+  @keyframes kb-capture-breathe {
+    0%,
+    100% {
+      box-shadow: 0 0 4px var(--color-primary-glow);
+    }
+    50% {
+      box-shadow: 0 0 10px var(--gold);
+    }
+  }
   .kb-key.capturing {
     border-color: var(--gold);
-    color: #fff;
-    box-shadow: 0 0 8px #ffd100aa;
+    color: var(--color-text-light);
+    box-shadow: 0 0 8px var(--color-primary-glow);
+    animation: kb-capture-breathe calc(1.6s * var(--motion-scale, 1)) ease-in-out infinite;
+  }
+  :root[data-fx-level="low"] .kb-key.capturing {
+    animation: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kb-key.capturing {
+      animation: none;
+    }
+  }
+  /* On-screen Cancel affordance next to the capturing cap (touch has no Escape). */
+  .kb-cancel {
+    margin-inline-start: var(--spacing-xs);
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+  /* Transient "key removed" badge on a just-displaced bind row. */
+  .kb-evicted {
+    margin-inline-start: var(--spacing-xs);
+    flex: none;
   }
   .kb-note {
     font-size: 11px;

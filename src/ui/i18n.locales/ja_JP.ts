@@ -51,6 +51,11 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.legend.reset': 'リセット',
   'hudChrome.options.legend.clear': 'クリア',
   'hudChrome.options.keybindCleared': '{action} をクリアしました',
+  'hudChrome.options.keybindRebinding':
+    '{action} を再割り当て中です。キーを押すか、Esc でキャンセルしてください。',
+  'hudChrome.options.keybindEvicted':
+    '{key} を {action} に割り当てました。{evicted} からは解除されました。',
+  'hudChrome.options.keybindTaken': 'キー解除',
   'hudChrome.options.sec.quality': '品質',
   'hudChrome.options.sec.general': '一般',
   'hudChrome.options.sec.scaleText': '拡大と文字',

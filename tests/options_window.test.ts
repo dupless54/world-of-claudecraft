@@ -213,6 +213,83 @@ describe('options_window: keybind rebind dispatch (unchanged until P4)', () => {
   });
 });
 
+describe('options_window: rebind UX (P4)', () => {
+  const components = readFileSync(new URL('../src/styles/components.css', import.meta.url), 'utf8');
+
+  it('captures through a canceller and has THREE independent exits', () => {
+    // The capture returns a canceller stored for the non-Escape exits.
+    expect(painter).toContain('this.captureCancel = hooks.captureKey((code)');
+    // Exit 1: physical Escape -> the capture callback receives null (input.ts fires it),
+    // handled here as the cancelled path.
+    const begin = painter.slice(painter.indexOf('private beginCapture'));
+    const body = begin.slice(0, begin.indexOf('\n  // ----'));
+    expect(body).toContain('if (code === null) {');
+    expect(body).toContain("t('hud.options.keybindCancelled')");
+    // Exit 2: on-screen Cancel affordance on the capturing row.
+    expect(painter).toContain("el('button', 'btn kb-cancel')");
+    expect(painter).toContain("cancel.addEventListener('click', () => this.cancelCapture())");
+    // Exit 3: focus-loss / blur while capturing.
+    expect(painter).toContain("key.addEventListener('blur', () => this.cancelCapture())");
+    // The canceller fires the callback once (a no-op afterwards).
+    expect(painter).toContain('private cancelCapture(): void {');
+    expect(painter).toContain('this.captureCancel?.();');
+  });
+
+  it('announces rebind start / cancel / reserved / bound assertively', () => {
+    const begin = painter.slice(painter.indexOf('private beginCapture'));
+    const body = begin.slice(0, begin.indexOf('\n  // ----'));
+    expect(body).toContain(
+      "this.announce(t('hudChrome.options.keybindRebinding', { action: name }))",
+    );
+    expect(body).toContain("this.announce(t('hud.options.keybindCancelled'))");
+    expect(body).toContain('isReservedCode(code)');
+    expect(body).toContain("this.announce(t('hud.options.keybindReserved'");
+  });
+
+  it('surfaces an eviction with the exact wording + a transient row badge', () => {
+    const begin = painter.slice(painter.indexOf('private beginCapture'));
+    const body = begin.slice(0, begin.indexOf('\n  // ----'));
+    // Names the exact evicted action(s) off the BEFORE snapshot via the pure helper.
+    expect(body).toContain('const before = this.keyboardConflictRows();');
+    expect(body).toContain('evictedActions(before, actionId, stored)');
+    expect(body).toContain("t('hudChrome.options.keybindEvicted', {");
+    expect(body).toContain('this.evictedRows = evicted;');
+    // Transient .ui-badge.badge-warning chip painted on the displaced row same-render.
+    expect(painter).toContain("el('span', 'ui-badge badge-warning kb-evicted')");
+    expect(painter).toContain("t('hudChrome.options.keybindTaken')");
+  });
+
+  it('lists fully-unbound actions in a persistent error banner', () => {
+    const table = painter.slice(painter.indexOf('private renderKeybindTable'));
+    const body = table.slice(0, table.indexOf('\n  /** Cancel'));
+    expect(body).toContain('const conflicts = this.computeConflicts();');
+    expect(body).toContain('if (conflicts.unbound.length > 0) {');
+    expect(body).toContain("el('div', 'error-banner')");
+    expect(body).toContain("t('hudChrome.options.keybindUnbound', {");
+  });
+
+  it('unbinds a focused cap on Delete/Backspace (not while capturing)', () => {
+    const detail = painter.slice(painter.indexOf('private onDetailKeydown'));
+    const body = detail.slice(0, detail.indexOf('\n  /** The authoritative'));
+    expect(body).toContain("kind === 'keybind'");
+    expect(body).toContain('!this.capturingKey');
+    expect(body).toContain("e.key === 'Delete' || e.key === 'Backspace'");
+    expect(body).toContain('this.clearFocusedKeybind();');
+  });
+
+  it('breathes the capturing cap at fx medium+ with a steady low-fx / reduced-motion fallback', () => {
+    const cap = components.slice(components.indexOf('.kb-key.capturing {'));
+    const block = cap.slice(0, cap.indexOf('}'));
+    expect(block).toContain('animation: kb-capture-breathe');
+    // Steady border (no animation) at low fx and under reduced motion.
+    expect(components).toContain(':root[data-fx-level="low"] .kb-key.capturing {');
+    const reduced = components.slice(components.indexOf('@keyframes kb-capture-breathe'));
+    expect(reduced).toMatch(
+      /@media \(prefers-reduced-motion: reduce\) \{\s*\.kb-key\.capturing \{\s*animation: none;/,
+    );
+  });
+});
+
 describe('options_window: keyboard navigation (P3)', () => {
   const components = readFileSync(new URL('../src/styles/components.css', import.meta.url), 'utf8');
 

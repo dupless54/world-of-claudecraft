@@ -53,6 +53,10 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.legend.reset': 'Сброс',
   'hudChrome.options.legend.clear': 'Очистить',
   'hudChrome.options.keybindCleared': 'Очищено: {action}',
+  'hudChrome.options.keybindRebinding':
+    'Переназначение «{action}». Нажмите клавишу или Escape для отмены.',
+  'hudChrome.options.keybindEvicted': '{key} назначена на «{action}»; снята с «{evicted}».',
+  'hudChrome.options.keybindTaken': 'Клавиша снята',
   'hudChrome.options.sec.quality': 'Качество',
   'hudChrome.options.sec.general': 'Основные',
   'hudChrome.options.sec.scaleText': 'Масштаб и текст',

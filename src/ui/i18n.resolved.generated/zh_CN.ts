@@ -615,6 +615,10 @@ export const zh_CN: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "已清除 {action}",
+      "keybindRebinding": "正在重绑定 {action}。请按一个键，或按 Esc 取消。",
+      "keybindEvicted": "已将 {key} 绑定到 {action}；已从 {evicted} 移除。",
+      "keybindTaken": "按键已移除",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "画质",
         "view": "View",

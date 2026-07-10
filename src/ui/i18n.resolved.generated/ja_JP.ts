@@ -615,6 +615,10 @@ export const ja_JP: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "{action} をクリアしました",
+      "keybindRebinding": "{action} を再割り当て中です。キーを押すか、Esc でキャンセルしてください。",
+      "keybindEvicted": "{key} を {action} に割り当てました。{evicted} からは解除されました。",
+      "keybindTaken": "キー解除",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "品質",
         "view": "View",

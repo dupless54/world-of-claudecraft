@@ -615,6 +615,10 @@ export const cs_CZ: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "Cleared {action}",
+      "keybindRebinding": "Rebinding {action}. Press a key, or Escape to cancel.",
+      "keybindEvicted": "Bound {key} to {action}; removed from {evicted}",
+      "keybindTaken": "Key removed",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "Quality",
         "view": "View",

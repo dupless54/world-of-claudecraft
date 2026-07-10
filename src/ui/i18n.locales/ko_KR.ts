@@ -52,6 +52,10 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.legend.reset': '초기화',
   'hudChrome.options.legend.clear': '지우기',
   'hudChrome.options.keybindCleared': '{action} 지움',
+  'hudChrome.options.keybindRebinding': '{action} 재설정 중입니다. 키를 누르거나 Esc로 취소하세요.',
+  'hudChrome.options.keybindEvicted':
+    '{key}을 {action}에 지정했습니다. {evicted}에서는 해제되었습니다.',
+  'hudChrome.options.keybindTaken': '키 해제됨',
   'hudChrome.options.sec.quality': '품질',
   'hudChrome.options.sec.general': '일반',
   'hudChrome.options.sec.scaleText': '배율 및 텍스트',

@@ -407,7 +407,9 @@ import { YumiMatchPainter } from './yumi_match_painter';
 // perf_overlay_settings.ts alongside the panel that consumes it.
 export interface OptionsHooks {
   logout(): void;
-  captureKey(cb: (code: string | null) => void): void;
+  // Arm a one-shot rebind capture; returns a canceller the rebind UI calls for its
+  // on-screen Cancel affordance and its focus-loss/blur exit (fires cb(null) once).
+  captureKey(cb: (code: string | null) => void): () => void;
   settings: Settings;
   onSettingChange(key: keyof GameSettings, value: GameSettings[keyof GameSettings]): void;
   // Switch the active locale at runtime (loads the locale chunk, relocalizes the page,

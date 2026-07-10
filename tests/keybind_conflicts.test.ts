@@ -4,6 +4,7 @@ import {
   type ControllerBindRow,
   computeKeybindConflicts,
   describeEviction,
+  evictedActions,
   type KeyboardBindRow,
 } from '../src/ui/keybind_conflicts';
 
@@ -177,6 +178,37 @@ describe('describeEviction: names the loser of a just-performed steal', () => {
   it('never names a shared holder as the evicted action', () => {
     const before = [kbRow('attackMove', ['KeyA', null], { allowShared: true })];
     expect(describeEviction(before, 'turnLeft', 'KeyA')).toBeNull();
+  });
+});
+
+describe('evictedActions: names EVERY evicted holder (task 10 item 6)', () => {
+  it('returns the single evicted action for the normal one-holder case', () => {
+    const before = [kbRow('interact', ['KeyF', null]), kbRow('bags', ['KeyB', null])];
+    expect(evictedActions(before, 'bags', 'KeyF')).toEqual(['interact']);
+    expect(evictedActions(before, 'bags', 'KeyZ')).toEqual([]);
+  });
+
+  it('names ALL holders when a degenerate profile already had the code duplicated', () => {
+    // Two non-shared actions both hold KeyH (a loaded/corrupt profile). Stealing it
+    // onto meters evicts BOTH, in input order (describeEviction names only the first).
+    const before = [
+      kbRow('targetFriendly', ['KeyH', null]),
+      kbRow('altAction', ['KeyH', null]),
+      kbRow('meters', ['KeyZ', null]),
+    ];
+    expect(describeEviction(before, 'meters', 'KeyH')?.evicted).toBe('targetFriendly');
+    expect(evictedActions(before, 'meters', 'KeyH')).toEqual(['targetFriendly', 'altAction']);
+  });
+
+  it('skips the sweep for a shared gainer and never names a shared holder', () => {
+    const shared = [
+      kbRow('turnLeft', ['KeyA', null]),
+      kbRow('attackMove', ['KeyQ', null], { allowShared: true }),
+    ];
+    expect(evictedActions(shared, 'attackMove', 'KeyA')).toEqual([]); // shared gainer: no sweep
+    expect(
+      evictedActions([kbRow('attackMove', ['KeyA', null], { allowShared: true })], 'x', 'KeyA'),
+    ).toEqual([]); // shared holder never evicted
   });
 });
 

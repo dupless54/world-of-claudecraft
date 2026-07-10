@@ -57,6 +57,13 @@ import {
 } from './i18n';
 import type { TranslationKey } from './i18n.catalog';
 import {
+  type ControllerBindRow,
+  computeKeybindConflicts,
+  evictedActions,
+  type KeybindConflicts,
+  type KeyboardBindRow,
+} from './keybind_conflicts';
+import {
   clampIndex,
   type FocusIntent,
   type RowControlKind,
@@ -298,6 +305,11 @@ export class OptionsWindow {
   // A pushed sub-view (bug report) inside the detail pane; back returns to System.
   private subView: 'none' | 'bugreport' = 'none';
   private capturingKey: { action: string; index: number } | null = null;
+  // The active rebind capture's canceller (the on-screen Cancel affordance + the
+  // focus-loss/blur exit call it; it fires the capture callback with null once).
+  private captureCancel: (() => void) | null = null;
+  // Action ids carrying a transient eviction badge until the next rebind interaction.
+  private evictedRows: string[] = [];
   private keybindNote = '';
   private reloadPending = false;
   private perfSettings: PerfOverlaySettingsPanel | null = null;
@@ -350,6 +362,9 @@ export class OptionsWindow {
 
   close(): void {
     this.deps.root().style.display = 'none';
+    // Disarm any in-flight rebind capture so a stale callback can never fire after
+    // the menu is gone (input's captureCb is cleared by the canceller).
+    this.cancelCapture();
     this.capturingKey = null;
     this.deps.options()?.perfOverlay.setPlacement(false);
     this.deps.hideTooltip();
@@ -631,11 +646,25 @@ export class OptionsWindow {
   }
 
   /** In-row value keys: switch Left/Right, segmented Left/Right + Home/End, slider
-   *  Page (Left/Right/Home/End on a slider stay native to the range input). */
+   *  Page (Left/Right/Home/End on a slider stay native to the range input); a
+   *  keybind cap Delete/Backspace unbinds that slot (spec sections 5/6). */
   private onDetailKeydown(e: KeyboardEvent): void {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
     const kind = this.controlKindOf(target);
+    // Keybind cap: Delete/Backspace unbinds. Skipped while a capture is in flight
+    // (then the next keydown belongs to the capture callback, not the unbind).
+    if (
+      kind === 'keybind' &&
+      !this.capturingKey &&
+      (e.key === 'Delete' || e.key === 'Backspace') &&
+      target.dataset.action !== undefined &&
+      target.dataset.index !== undefined
+    ) {
+      e.preventDefault();
+      this.clearFocusedKeybind();
+      return;
+    }
     const intent = rowKeyIntent(kind, e.key);
     if (!intent) return;
     e.preventDefault();
@@ -1760,8 +1789,54 @@ export class OptionsWindow {
     );
   }
 
+  /** The VISIBLE keyboard bind rows adapted for keybind_conflicts (the pure core
+   *  wants only shown rows: Attack Move is omitted while its setting is off). */
+  private keyboardConflictRows(): KeyboardBindRow[] {
+    const attackMoveOn = !!this.deps.options()?.settings.get('attackMove');
+    const kb = this.deps.keybinds();
+    return BIND_ACTIONS.filter((a) => a.id !== 'attackMove' || attackMoveOn).map((a) => ({
+      id: a.id,
+      category: a.category,
+      codes: [kb.codeAt(a.id, 0), kb.codeAt(a.id, 1)],
+      allowShared: a.allowShared,
+    }));
+  }
+
+  /** The controller bind rows adapted for keybind_conflicts (per-button action +
+   *  its resolved brand glyph), or [] when the pad map is empty. */
+  private controllerConflictRows(): ControllerBindRow[] {
+    const hooks = this.deps.options();
+    if (!hooks) return [];
+    const kind = hooks.gamepad.kind();
+    return hooks.gamepad.entries().map((e) => ({
+      button: e.button,
+      action: e.action,
+      label: gamepadButtonLabel(e.button, kind),
+    }));
+  }
+
+  /** The aggregate conflict state (rail dots, Overview alert, unbound banner,
+   *  controller-duplicate chips) computed from the two live tables. */
+  private computeConflicts(): KeybindConflicts {
+    return computeKeybindConflicts(this.keyboardConflictRows(), this.controllerConflictRows());
+  }
+
   private renderKeybindTable(parent: HTMLElement): void {
     const hooks = this.deps.options();
+    // Persistent unbound banner (spec section 6): list every keyboard action left
+    // with no key, fed by the same keybind_conflicts aggregate the rail dot reads.
+    const conflicts = this.computeConflicts();
+    if (conflicts.unbound.length > 0) {
+      const banner = el('div', 'error-banner');
+      const text = document.createElement('span');
+      text.textContent = conflicts.unbound
+        .map((id) =>
+          t('hudChrome.options.keybindUnbound', { action: this.actionDisplayName(id, id) }),
+        )
+        .join('; ');
+      banner.appendChild(text);
+      parent.appendChild(banner);
+    }
     const note = el('div', 'kb-note');
     note.textContent = this.keybindNote || t('hud.options.keybindHelpMouseCamera');
     parent.appendChild(note);
@@ -1781,6 +1856,7 @@ export class OptionsWindow {
       const rows = el('div', 'kb-rows');
       for (const action of visible) {
         const row = el('div', 'kb-row');
+        row.dataset.action = action.id;
         const name = el('span', 'kb-name');
         const label = el('span', 'kb-label');
         label.textContent = this.actionDisplayName(action.id, action.label);
@@ -1788,13 +1864,21 @@ export class OptionsWindow {
         const primary = this.deps.keybinds().labelAt(action.id, 0);
         hint.textContent = primary ? `(${primary})` : '';
         name.append(label, hint);
+        // Transient eviction badge on a just-displaced row (spec section 6), painted
+        // in the SAME render as the steal; cleared on the next rebind interaction.
+        if (this.evictedRows.includes(action.id)) {
+          const badge = el('span', 'ui-badge badge-warning kb-evicted');
+          badge.textContent = t('hudChrome.options.keybindTaken');
+          name.appendChild(badge);
+        }
         row.appendChild(name);
         for (let index = 0; index < 2; index++) {
           const capturing =
             this.capturingKey?.action === action.id && this.capturingKey?.index === index;
           const key = el('button', `btn kb-key${capturing ? ' capturing' : ''}`);
           key.type = 'button';
-          // Identify the slot for the controller X = clear verb (spec section 5).
+          // Identify the slot for the controller X = clear verb (spec section 5) and
+          // the keyboard Delete/Backspace unbind (spec section 6).
           key.dataset.action = action.id;
           key.dataset.index = String(index);
           key.textContent = capturing
@@ -1806,7 +1890,20 @@ export class OptionsWindow {
             `${this.actionDisplayName(action.id, action.label)} ${key.title}`,
           );
           key.addEventListener('click', () => this.beginCapture(action.id, index, action.label));
+          // Blur exit (spec section 6): losing focus while capturing cancels, so the
+          // capture can never trap (a click/tap away, an alt-tab, all release it).
+          if (capturing) key.addEventListener('blur', () => this.cancelCapture());
           row.appendChild(key);
+          // On-screen Cancel affordance (spec section 6): a visible exit for pointer /
+          // touch users, who have no physical Escape.
+          if (capturing) {
+            const cancel = el('button', 'btn kb-cancel');
+            cancel.type = 'button';
+            cancel.textContent = t('game.talents.cancel');
+            cancel.setAttribute('aria-label', t('game.talents.cancel'));
+            cancel.addEventListener('click', () => this.cancelCapture());
+            row.appendChild(cancel);
+          }
         }
         rows.appendChild(row);
       }
@@ -1821,32 +1918,72 @@ export class OptionsWindow {
       audio.click();
       this.deps.keybinds().reset();
       this.capturingKey = null;
+      this.evictedRows = [];
       this.keybindNote = t('hud.options.keybindReset');
       this.deps.refreshKeybindLabels();
       this.renderDetail();
     });
     parent.appendChild(reset);
+    // Re-home focus onto the capturing cap after the repaint so the blur exit and
+    // the keyboard capture both have a live target (the prior cap was detached).
+    if (this.capturingKey) {
+      this.deps
+        .root()
+        .querySelector<HTMLElement>(
+          `.kb-key.capturing[data-action="${this.capturingKey.action}"][data-index="${this.capturingKey.index}"]`,
+        )
+        ?.focus();
+    }
+  }
+
+  /** Cancel the in-flight rebind capture (the on-screen Cancel + blur exits). Fires
+   *  the capture callback with null exactly once; a no-op when nothing is capturing. */
+  private cancelCapture(): void {
+    this.captureCancel?.();
   }
 
   private beginCapture(actionId: string, index: number, fallbackLabel: string): void {
     const hooks = this.deps.options();
     if (!hooks) return;
     const name = this.actionDisplayName(actionId, fallbackLabel);
+    // A fresh capture clears any transient eviction badge from a prior rebind.
+    this.evictedRows = [];
     this.capturingKey = { action: actionId, index };
     this.keybindNote = t('hud.options.keybindCapture', { action: name });
+    // Assertive announce (spec section 6); the visible note stays the shorter cue.
+    this.announce(t('hudChrome.options.keybindRebinding', { action: name }));
+    // Snapshot the BEFORE table so a steal can name the exact evicted action(s).
+    const before = this.keyboardConflictRows();
     this.renderDetail();
-    hooks.captureKey((code) => {
+    this.captureCancel = hooks.captureKey((code) => {
+      this.captureCancel = null;
       this.capturingKey = null;
       if (code === null) {
         this.keybindNote = t('hud.options.keybindCancelled');
-      } else if (this.deps.keybinds().bind(actionId, index, code)) {
-        this.keybindNote = t('hud.options.keybindBound', {
-          action: name,
-          key: keyLabel(this.deps.keybinds().codeAt(actionId, index)),
-        });
-        this.deps.refreshKeybindLabels();
+        this.announce(t('hud.options.keybindCancelled'));
       } else if (isReservedCode(code)) {
         this.keybindNote = t('hud.options.keybindReserved', { key: keyLabel(code) });
+        this.announce(t('hud.options.keybindReserved', { key: keyLabel(code) }));
+      } else if (this.deps.keybinds().bind(actionId, index, code)) {
+        const stored = this.deps.keybinds().codeAt(actionId, index);
+        const key = keyLabel(stored);
+        const evicted = stored ? evictedActions(before, actionId, stored) : [];
+        if (evicted.length > 0) {
+          this.evictedRows = evicted;
+          const evictedNames = evicted.map((id) => this.actionDisplayName(id, id)).join(', ');
+          const msg = t('hudChrome.options.keybindEvicted', {
+            key,
+            action: name,
+            evicted: evictedNames,
+          });
+          this.keybindNote = msg;
+          this.announce(msg);
+        } else {
+          const msg = t('hud.options.keybindBound', { action: name, key });
+          this.keybindNote = msg;
+          this.announce(msg);
+        }
+        this.deps.refreshKeybindLabels();
       }
       if (this.isOpen && this.activeCategory === 'keybinds' && this.subView === 'none')
         this.renderDetail();

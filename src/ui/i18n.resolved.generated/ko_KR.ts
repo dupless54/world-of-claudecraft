@@ -615,6 +615,10 @@ export const ko_KR: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "{action} 지움",
+      "keybindRebinding": "{action} 재설정 중입니다. 키를 누르거나 Esc로 취소하세요.",
+      "keybindEvicted": "{key}을 {action}에 지정했습니다. {evicted}에서는 해제되었습니다.",
+      "keybindTaken": "키 해제됨",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "품질",
         "view": "View",

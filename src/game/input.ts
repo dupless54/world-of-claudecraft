@@ -391,8 +391,19 @@ export class Input {
     if (hadHeldInput) this.noteIntent('move');
   }
 
-  captureNextKey(cb: (code: string | null) => void): void {
+  // Arm a one-shot rebind capture: the next keydown is delivered to `cb` (Escape
+  // cancels with null). Returns a canceller the rebind UI calls for its OTHER two
+  // exits (an on-screen Cancel affordance, focus-loss/blur): invoking it fires
+  // `cb(null)` exactly once and disarms, so the capture can never trap. A no-op once
+  // the capture has already fired or been cancelled (the identity guard).
+  captureNextKey(cb: (code: string | null) => void): () => void {
     this.captureCb = cb;
+    return () => {
+      if (this.captureCb === cb) {
+        this.captureCb = null;
+        cb(null);
+      }
+    };
   }
 
   setCameraSpeed(mult: number): void {

@@ -615,6 +615,10 @@ export const en_XA: EnTranslations = {
         "page": "[Þáĝé]"
       },
       "keybindCleared": "[Çļéáŕéð {action}]",
+      "keybindRebinding": "[Ŕéƀíñðíñĝ {action}. Þŕéšš á ķéý, óŕ Éšçáþé ţó çáñçéļ.]",
+      "keybindEvicted": "[Ɓóúñð {key} ţó {action}; ŕéɱóʋéð ƒŕóɱ {evicted}]",
+      "keybindTaken": "[Ķéý ŕéɱóʋéð]",
+      "keybindUnbound": "[{action} ĥáš ñó ķéý]",
       "sec": {
         "quality": "[Ɋúáļíţý]",
         "view": "[Ʋíéŵ]",

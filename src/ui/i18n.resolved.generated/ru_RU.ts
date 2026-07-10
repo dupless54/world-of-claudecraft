@@ -615,6 +615,10 @@ export const ru_RU: EnTranslations = {
         "page": "Page"
       },
       "keybindCleared": "Очищено: {action}",
+      "keybindRebinding": "Переназначение «{action}». Нажмите клавишу или Escape для отмены.",
+      "keybindEvicted": "{key} назначена на «{action}»; снята с «{evicted}».",
+      "keybindTaken": "Клавиша снята",
+      "keybindUnbound": "{action} has no key",
       "sec": {
         "quality": "Качество",
         "view": "View",
