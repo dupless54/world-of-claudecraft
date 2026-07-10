@@ -309,17 +309,17 @@
     position: absolute;
     left: max(12px, env(safe-area-inset-left));
     top: max(8px, env(safe-area-inset-top));
-    transform: scale(calc(var(--btn-scale, 1) * var(--mobile-chrome-scale, 1)));
-    transform-origin: left top;
     /* A flex band: the always-visible collapse handle (#mobile-menu-collapse-toggle),
        then the five-button grid (#mobile-combat-buttons). Chat, Social, Quests,
        Settings, More sit alone at TOP-LEFT, far from both thumb clusters (movement
        cluster bottom-left, combat ring bottom-right) and off the top-centre band (pet
        bar, banners). The single 54px row clears the target frame seat below it (top +
-       72px). The handle + grid keep the band's established width in every orientation
-       (base 338, landscape 310, portrait 234, minus the handle + gap), so
-       #mobile-consumables docks past a constant width whether the cluster is collapsed
-       or open. */
+       72px). The band itself NEVER scales: the Button Size / chrome-scale transform
+       lives on the grid inside it (#mobile-combat-buttons), so the collapse handle
+       keeps the same fixed touch-floor face as the consumables chip it pairs with at
+       every size setting. Handle + gap therefore paint a constant 48px and only the
+       grid's painted width varies, which is exactly what the #mobile-consumables dock
+       offsets below assume, collapsed or open. */
     display: flex;
     gap: 8px;
     pointer-events: auto;
@@ -333,12 +333,20 @@
   body.mobile-touch:not(.mobile-menu-open) #mobile-combat-controls {
     pointer-events: none;
   }
-  /* The always-visible collapse handle: a 40px chip (the touch floor, never
-     scaled below it) that shows or hides the five menu buttons. It stays lit while
-     collapsed so a player can reopen them. */
-  body.mobile-touch #mobile-menu-collapse-toggle {
+  /* The two top-left disclosure chips: the always-visible collapse handle that
+     shows or hides the five menu buttons, and the consumables chevron
+     (#mobile-consumables-toggle) docked past the band. ONE shared rule, ONE face,
+     ONE size, so the pair can never drift apart again (live feedback: two
+     different-sized, different-looking arrows). Both sit on UNSCALED containers
+     (the Button Size transform lives on the grid / slot row inside, never on a
+     chip's ancestor), so the declared size IS the rendered size at every
+     size-setting combination: width holds the hard 40px touch floor, height folds
+     in chrome-scale but is floored back at 40px. Each chip stays lit while
+     collapsed so a player can reopen its cluster. */
+  body.mobile-touch #mobile-menu-collapse-toggle,
+  body.mobile-touch #mobile-consumables-toggle {
     width: 40px;
-    height: 54px;
+    height: max(40px, calc(54px * var(--mobile-chrome-scale, 1)));
     flex: none;
     padding: 0;
     display: inline-flex;
@@ -357,11 +365,13 @@
       inset 0 1px 0 #ffffff14,
       0 2px 8px #0009;
   }
-  body.mobile-touch #mobile-menu-collapse-toggle .ui-icon {
+  body.mobile-touch #mobile-menu-collapse-toggle .ui-icon,
+  body.mobile-touch #mobile-consumables-toggle .ui-icon {
     width: 14px;
     height: 14px;
   }
-  body.mobile-touch.mobile-menu-open #mobile-menu-collapse-toggle {
+  body.mobile-touch.mobile-menu-open #mobile-menu-collapse-toggle,
+  body.mobile-touch.mobile-consumables-open #mobile-consumables-toggle {
     opacity: 1;
     border-color: var(--gold-dim);
     color: #ffdf9c;
@@ -378,13 +388,21 @@
      band never reflows and the consumables chip never shifts. */
   body.mobile-touch #mobile-combat-buttons {
     --mobile-menu-row-w: calc(338px - 40px - 8px);
+    /* The Button Size / chrome-scale factor lands HERE, not on the band, so the
+       collapse handle to the left keeps its fixed 40px face (portrait re-points
+       the factor to btn-scale only, mirroring the old band behavior). The grid's
+       LAYOUT width stays the untransformed row width, so the band never reflows;
+       only the painted width varies, and the #mobile-consumables dock offsets
+       track exactly that painted width. */
+    --mobile-menu-scale: calc(var(--btn-scale, 1) * var(--mobile-chrome-scale, 1));
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
     width: var(--mobile-menu-row-w);
     pointer-events: none;
     opacity: 0;
-    transform: translateX(-6px);
+    transform: scale(var(--mobile-menu-scale)) translateX(-6px);
+    transform-origin: left top;
     visibility: hidden;
   }
   body.mobile-touch #mobile-combat-buttons .mobile-btn {
@@ -393,7 +411,7 @@
   body.mobile-touch.mobile-menu-open #mobile-combat-buttons {
     pointer-events: auto;
     opacity: 1;
-    transform: none;
+    transform: scale(var(--mobile-menu-scale));
     visibility: visible;
   }
   @media (prefers-reduced-motion: no-preference) {
@@ -403,7 +421,8 @@
         transform 0.16s ease,
         visibility 0.16s;
     }
-    body.mobile-touch #mobile-menu-collapse-toggle .ui-icon {
+    body.mobile-touch #mobile-menu-collapse-toggle .ui-icon,
+    body.mobile-touch #mobile-consumables-toggle .ui-icon {
       transition: transform 0.16s ease;
     }
   }
@@ -989,75 +1008,42 @@
      ring's). Collapsed by default and session-only: the row shows only under
      body.mobile-consumables-open, and empty slots collapse away so the open
      row is exactly as wide as what the player carries. The left anchor adds
-     the bar's SCALED width (5 columns + 4 gaps) to the bar's own safe-area
-     anchor so a grown --btn-scale never slides the bar under the chip. */
+     the band's PAINTED width (a constant 48px for the unscaled handle + gap,
+     then the grid's scaled 290px row) to the bar's own safe-area anchor so a
+     grown --btn-scale never slides the bar under the chip. */
   body.mobile-touch #mobile-consumables {
     position: absolute;
     left: calc(
       max(12px, env(safe-area-inset-left)) +
-      338px *
+      48px +
+      290px *
       var(--btn-scale, 1) *
       var(--mobile-chrome-scale, 1) +
       10px
     );
     top: max(8px, env(safe-area-inset-top));
-    /* Right reservation sized for the WORST-CASE visual overhang: flex-wrap
-       decides on the untransformed layout width, but the container then scales
-       by --btn-scale (max 1.3) from left top, so the painted row extends past
-       its layout edge by (scale - 1) x row width. 260px keeps the scaled row
-       clear of everything in #ui above it (buff column at right 98px+, the
-       daily-chest rail, the minimap corner): on an 844px landscape phone,
-       (844 - 260 - left(1.3)) x 1.3 + left(1.3) = 684 = the buff column edge. */
+    /* Right reservation sized for the WORST-CASE visual overhang: the slot row
+       (#mobile-consumables-row below) paints scaled by --btn-scale from its own
+       left top, so the painted row extends past its layout edge by (scale - 1) x
+       row width. 260px keeps the scaled row clear of everything in #ui above it
+       (buff column at right 98px+, the daily-chest rail, the minimap corner). */
     right: calc(260px + env(safe-area-inset-right));
     display: flex;
     align-items: flex-start;
     gap: 8px;
     /* The container spans the top band; only its BUTTONS take touches, so an
        empty stretch stays camera-draggable (touch_router matches the target's
-       closest #mobile-consumables, which pointer-events: none prevents). */
+       closest #mobile-consumables, which pointer-events: none prevents). The
+       container carries NO scale transform: the chevron chip keeps its fixed
+       shared-with-the-collapse-handle size (rule up in the combat band section),
+       and the Button Size factor lands on the slot row inside instead. */
     pointer-events: none;
-    transform: scale(var(--btn-scale, 1));
-    transform-origin: left top;
     z-index: 30;
   }
-  body.mobile-touch #mobile-consumables-toggle {
-    /* Width stays a hard 40px (the touch floor is never scaled); only the height
-       folds in chrome-scale (54 * 0.85 = 45.9, still >= 40). The portrait override
-       below keeps its own 44px height. */
-    width: 40px;
-    height: calc(54px * var(--mobile-chrome-scale, 1));
-    padding: 0;
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto;
-    border: 1px solid var(--mobile-glass-border, #cba43d8c);
-    border-radius: 12px;
-    background: var(--mobile-glass-bg, linear-gradient(160deg, #23212de3, #0e0d10eb));
-    -webkit-backdrop-filter: blur(var(--mobile-glass-blur, 8px));
-    backdrop-filter: blur(var(--mobile-glass-blur, 8px));
-    color: #d8b98a;
-    cursor: var(--cursor-point);
-    opacity: 0.85;
-    box-shadow:
-      inset 0 1px 0 #ffffff14,
-      0 2px 8px #0009;
-  }
-  body.mobile-touch #mobile-consumables-toggle .ui-icon {
-    width: 14px;
-    height: 14px;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    body.mobile-touch #mobile-consumables-toggle .ui-icon {
-      transition: transform 0.12s ease;
-    }
-  }
-  body.mobile-touch.mobile-consumables-open #mobile-consumables-toggle {
-    opacity: 1;
-    border-color: var(--gold-dim);
-    color: #ffdf9c;
-  }
+  /* Chip face + size: SHARED with #mobile-menu-collapse-toggle (one rule up in
+     the combat band section, so the two arrows can never diverge again). Only the
+     open-state arrow direction is chip-specific: right (open me) collapsed, down
+     (close me) open. */
   body.mobile-touch.mobile-consumables-open #mobile-consumables-toggle .ui-icon {
     transform: rotate(90deg);
   }
@@ -1078,6 +1064,11 @@
     left: calc(40px + 6px);
     right: auto;
     gap: 8px;
+    /* The Button Size factor lands on the ROW (the chip's container never
+       transforms, keeping the chip itself at its fixed shared size); slots still
+       render 48px x chrome-scale x btn-scale exactly as before. */
+    transform: scale(var(--btn-scale, 1));
+    transform-origin: left top;
   }
   /* Pet classes: the pet bar sits on the top-centre line, so the row (which flows
      right across the centre) drops below the toggle while a pet is out. Still
@@ -3478,19 +3469,20 @@
   }
 
   @media (orientation: portrait) {
-    body.mobile-touch #mobile-combat-controls {
-      /* Portrait resets JUST this band back to btn-scale only (no chrome-scale), as
+    body.mobile-touch #mobile-combat-buttons {
+      /* Portrait resets JUST the grid back to btn-scale only (no chrome-scale), as
          the rest of the chrome still scales via the token. Web in-game is landscape-
          locked (the rotate-device prompt covers portrait), so the band never actually
          renders portrait in play; the fitted 234px width keeps the consumables dock
          correct there regardless. */
-      transform: scale(var(--btn-scale, 1));
-    }
-    body.mobile-touch #mobile-combat-buttons {
+      --mobile-menu-scale: var(--btn-scale, 1);
       --mobile-menu-row-w: calc(234px - 40px - 8px);
       gap: 6px;
     }
-    body.mobile-touch #mobile-menu-collapse-toggle {
+    /* Both disclosure chips re-tune together (shared face, see the combat band
+       section): fixed 44px, flush with the portrait button row height. */
+    body.mobile-touch #mobile-menu-collapse-toggle,
+    body.mobile-touch #mobile-consumables-toggle {
       height: 44px;
     }
     body.mobile-touch .mobile-btn {
@@ -3498,14 +3490,11 @@
       height: 44px;
       font-size: 16px;
     }
-    /* Portrait bar is 5x42px + 4x6px gaps = 234px wide (native app: web
-       gameplay is landscape-locked); shrink the chip to the 44px button
-       height and re-dock it past the narrower bar. */
+    /* Portrait band paints the constant 48px handle + gap, then the fitted 186px
+       grid row scaled by btn-scale only (native app: web gameplay is landscape-
+       locked); re-dock the chip past that narrower painted band. */
     body.mobile-touch #mobile-consumables {
-      left: calc(max(12px, env(safe-area-inset-left)) + 234px * var(--btn-scale, 1) + 8px);
-    }
-    body.mobile-touch #mobile-consumables-toggle {
-      height: 44px;
+      left: calc(max(12px, env(safe-area-inset-left)) + 48px + 186px * var(--btn-scale, 1) + 8px);
     }
   }
 
@@ -3651,21 +3640,27 @@
     }
     body.mobile-touch #mobile-combat-buttons {
       --mobile-menu-row-w: calc(310px - 40px - 8px);
-      /* 6px, not 10: the band carries the 0.85 chrome-scale, so a 10px internal gap
+      /* 6px, not 10: the grid carries the 0.85 chrome-scale, so a 10px internal gap
          shrank each of the five grid buttons to ~38px rendered, under the 40px touch
          floor. Tightening the gap widens each button to ~40px ((262 - 4*6)/5 * 0.85)
-         while the band width (310px) and the consumables dock stay fixed. */
+         while the grid width (262px) and the consumables dock stay fixed. */
       gap: 6px;
     }
-    body.mobile-touch #mobile-menu-collapse-toggle {
-      height: 48px;
+    /* Both disclosure chips re-tune together (shared face, see the combat band
+       section): flush with the landscape button row's rendered height, floored at
+       the 40px touch minimum (48 x 0.85 = 40.8). */
+    body.mobile-touch #mobile-menu-collapse-toggle,
+    body.mobile-touch #mobile-consumables-toggle {
+      height: max(40px, calc(48px * var(--mobile-chrome-scale, 1)));
     }
-    /* Landscape band stays 310px wide (40px handle + 8px gap + 262px button grid);
-       keep the chip docked just past it on the same compressed top line. */
+    /* Landscape band paints the constant 48px handle + gap, then the scaled 262px
+       button grid; keep the chip docked just past it on the same compressed top
+       line. */
     body.mobile-touch #mobile-consumables {
       left: calc(
         max(12px, env(safe-area-inset-left)) +
-        310px *
+        48px +
+        262px *
         var(--btn-scale, 1) *
         var(--mobile-chrome-scale, 1) +
         10px

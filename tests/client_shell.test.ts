@@ -1689,13 +1689,14 @@ describe('client HTML shell', () => {
     expect(hudMobileCss).toContain('--mobile-menu-row-w: calc(338px - 40px - 8px);'); // base row
     expect(hudMobileCss).toContain('--mobile-menu-row-w: calc(310px - 40px - 8px);'); // landscape row
     expect(hudMobileCss).toContain('--mobile-menu-row-w: calc(234px - 40px - 8px);'); // portrait row
-    // The #mobile-consumables chip docks just PAST the band, so its left offset must
-    // track the band's scaled width in each orientation (base 338, portrait 234,
-    // landscape 310). Pinned so a future band-width change updates both and the chip
-    // never slides back under the buttons.
-    expect(hudMobileCss).toContain('338px *'); // base consumables dock offset
-    expect(hudMobileCss).toContain('+ 234px * var(--btn-scale, 1) + 8px)'); // portrait dock
-    expect(hudMobileCss).toContain('310px *'); // landscape consumables dock offset
+    // The #mobile-consumables chip docks just PAST the band's PAINTED width: the
+    // unscaled 48px handle + gap, then the grid row scaled by the size settings
+    // (base 290, landscape 262, portrait 186 = each row-w above). Pinned so a
+    // future band-width change updates both and the chip never slides back under
+    // the buttons.
+    expect(hudMobileCss).toContain('48px +\n      290px *'); // base consumables dock offset
+    expect(hudMobileCss).toContain('+ 48px + 186px * var(--btn-scale, 1) + 8px)'); // portrait dock
+    expect(hudMobileCss).toContain('48px +\n        262px *'); // landscape consumables dock offset
     // Top-LEFT anchor: the band clears the target-frame seat below it (top + 72px)
     // and leaves the top-centre band to the pet bar.
     expect(hudMobileCss).toContain(
@@ -1735,6 +1736,55 @@ describe('client HTML shell', () => {
     expect(hudTs).toContain(
       'if (p.autoAttack || hasLiveHostileTarget || !this.onMobileAttackNearest) {',
     );
+  });
+
+  it('sizes the two top-left disclosure chips from ONE shared block, outside every scale transform', () => {
+    // Live user feedback: the menu collapse handle and the consumables chevron rendered
+    // as two different-sized, different-looking arrows because one inherited the band's
+    // --btn-scale transform and the other its own container's. The pair now shares a
+    // single selector list for face + size, and BOTH containers stay transform-free:
+    // the Button Size factor lives on the grid / slot row INSIDE them, so the chips
+    // hold their fixed rendered size (>= the 40px touch floor) at every size setting.
+    // The shared sizing block, in every orientation tier (base, landscape, portrait).
+    expect(hudMobileCss).toContain(
+      'body.mobile-touch #mobile-menu-collapse-toggle,\n  body.mobile-touch #mobile-consumables-toggle {\n    width: 40px;\n    height: max(40px, calc(54px * var(--mobile-chrome-scale, 1)));',
+    );
+    expect(hudMobileCss).toContain(
+      'body.mobile-touch #mobile-menu-collapse-toggle,\n    body.mobile-touch #mobile-consumables-toggle {\n      height: max(40px, calc(48px * var(--mobile-chrome-scale, 1)));',
+    );
+    expect(hudMobileCss).toContain(
+      'body.mobile-touch #mobile-menu-collapse-toggle,\n    body.mobile-touch #mobile-consumables-toggle {\n      height: 44px;',
+    );
+    // Anti-drift teeth: any rule that names ONE of the two chips (not both) may never
+    // declare width/height again; reintroducing a solo sizing block fails here.
+    // (Comments are stripped first: prose mentioning ids or "transform:" inside a
+    // block body must not trip the declaration scans below.)
+    const strippedCss = hudMobileCss.replace(/\/\*[\s\S]*?\*\//g, '');
+    const blocks = [...strippedCss.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+    for (const [, selector, body] of blocks) {
+      const namesHandle = selector.includes('#mobile-menu-collapse-toggle');
+      const namesChevron = selector.includes('#mobile-consumables-toggle');
+      if (namesHandle === namesChevron) continue; // shared list (or neither): fine
+      expect(
+        body,
+        `solo chip rule may not size the chip (shared block only): ${selector.trim()}`,
+      ).not.toMatch(/(?:^|[\s;])(?:width|height)\s*:/);
+    }
+    // The chip containers carry NO transform (a scale here is exactly the bug the
+    // shared block fixed); the Button Size factor lands on the content inside.
+    for (const [, selector, body] of blocks) {
+      if (!/#mobile-combat-controls(?![\w-])|#mobile-consumables(?![\w-])/.test(selector)) continue;
+      expect(body, `chip container must stay transform-free: ${selector.trim()}`).not.toContain(
+        'transform:',
+      );
+    }
+    expect(hudMobileCss).toContain(
+      'transform: scale(var(--mobile-menu-scale)) translateX(-6px);\n    transform-origin: left top;',
+    ); // the five-button grid scales...
+    expect(hudMobileCss).toContain('--mobile-menu-scale: var(--btn-scale, 1);'); // ...portrait re-points it
+    expect(hudMobileCss).toContain(
+      'transform: scale(var(--btn-scale, 1));\n    transform-origin: left top;',
+    ); // ...and the consumable slot row scales
   });
 
   it('seats Autorun by the joystick and Jump on the ring bottom row', () => {

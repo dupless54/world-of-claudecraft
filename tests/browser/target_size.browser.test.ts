@@ -123,6 +123,44 @@ describe('mobile target-size: in-game touch controls are >=40x40 in landscape', 
     expectAtLeastFloor(handle, '#mobile-menu-collapse-toggle');
   });
 
+  it('the two top-left disclosure chips render the SAME size at every Button Size setting', () => {
+    // Live user feedback: the menu collapse handle and the consumables chevron rendered
+    // as two different-sized arrows because one inherited the band's --btn-scale
+    // transform and the other its own container's. Both now sit on UNSCALED containers
+    // (the scale transforms moved inward to #mobile-combat-buttons and
+    // #mobile-consumables-row), so their rendered rects must be IDENTICAL and hold the
+    // 40px floor across the whole Button Size slider range (settings.ts
+    // actionButtonScale: min 0.25, max 2). Mirrors the real markup: main.ts writes
+    // --btn-scale onto #mobile-controls, the chips live in their real containers.
+    const controls = el('section', { id: 'mobile-controls' });
+    controls.style.display = 'block';
+    const combat = el('div', { id: 'mobile-combat-controls' });
+    const handle = el('button', { id: 'mobile-menu-collapse-toggle' });
+    const buttons = el('div', { id: 'mobile-combat-buttons' });
+    combat.append(handle, buttons);
+    const consumables = el('div', { id: 'mobile-consumables' });
+    const chevron = el('button', { id: 'mobile-consumables-toggle' });
+    const row = el('div', { id: 'mobile-consumables-row' });
+    consumables.append(chevron, row);
+    controls.append(combat, consumables);
+    document.body.appendChild(controls);
+    for (const scale of ['0.25', '1', '2']) {
+      controls.style.setProperty('--btn-scale', scale);
+      const h = measure(handle);
+      const c = measure(chevron);
+      expect(
+        Math.abs(h.w - c.w),
+        `chip widths diverge at --btn-scale ${scale}: handle ${h.w} vs chevron ${c.w}`,
+      ).toBeLessThanOrEqual(EPSILON);
+      expect(
+        Math.abs(h.h - c.h),
+        `chip heights diverge at --btn-scale ${scale}: handle ${h.h} vs chevron ${c.h}`,
+      ).toBeLessThanOrEqual(EPSILON);
+      expectAtLeastFloor(handle, `#mobile-menu-collapse-toggle at --btn-scale ${scale}`);
+      expectAtLeastFloor(chevron, `#mobile-consumables-toggle at --btn-scale ${scale}`);
+    }
+  });
+
   it('party-member rows (role=button tap targets)', () => {
     const frames = el('div', { id: 'party-frames' });
     const row = el('div', { class: 'party-frame', role: 'button', tabindex: '0' });
