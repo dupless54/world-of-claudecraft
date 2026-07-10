@@ -553,12 +553,24 @@ for (const tier of TIERS) {
   await surfacePass(tier.vp, tier.phone);
   if (tier.vp === '844x390') {
     // The phone chat panel and own nameplate, carrying the same live title.
-    // Chat is collapsed behind the Chat button on phones; open it first.
-    await evr(() => document.querySelector('#mobile-chat')?.click());
-    await sleep(900);
+    // Chat is collapsed behind the Chat button on phones, and the button is
+    // pointer-bound (a synthetic element.click() never fires it), so tap it
+    // through the real input pipeline; a second tap closes it again.
+    const tapChatButton = async () => {
+      const pt = await evr(() => {
+        const r = document.querySelector('#mobile-chat')?.getBoundingClientRect();
+        return r && r.width > 0 ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null;
+      });
+      if (pt) await page.mouse.click(pt.x, pt.y);
+      await sleep(900);
+    };
+    await tapChatButton();
+    check(
+      await evr(() => document.body.classList.contains('mobile-chat-open')),
+      '844x390: the chat panel opens via the Chat button',
+    );
     await shot(page, '06-chat-title-844x390.png', 'Chat panel with the titled say line', '844x390');
-    await page.keyboard.press('Escape');
-    await sleep(500);
+    await tapChatButton();
     await page.keyboard.press('KeyV');
     await sleep(900);
     await shot(
