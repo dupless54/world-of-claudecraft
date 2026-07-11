@@ -109,8 +109,13 @@ describe('BagsWindow: frame adoption', () => {
     expect(frame?.querySelector('.window-titlebar')).not.toBeNull();
     expect(frame?.querySelector('.window-body')).not.toBeNull();
     expect(frame?.querySelector('[data-window-close]')).not.toBeNull();
-    // Bags has no bottom transactional action: no footer.
-    expect(frame?.querySelector('.window-footer')).toBeNull();
+    // The money readout lives in the frame's PINNED footer, never the
+    // scrollable body: as the body's last child the touch sheet pushed it
+    // below the fold and the coin purse was invisible on a phone.
+    const footer = frame?.querySelector('.window-footer');
+    expect(footer).not.toBeNull();
+    expect(footer?.querySelector('.money')).not.toBeNull();
+    expect(frame?.querySelector('.window-body .money')).toBeNull();
   });
 
   it('bakes no inline geometry, so the cluster docking CSS (by #bags id) still wins', () => {
@@ -131,12 +136,12 @@ describe('BagsWindow: frame adoption', () => {
     document.body.classList.remove('vendor-open');
   });
 
-  it('frames a bounded flex column: pinned titlebar then a scrollable body', () => {
+  it('frames a bounded flex column: titlebar, scrollable body, pinned money footer', () => {
     const el = bagsEl();
     new BagsWindow(fakeDeps(fakeWorld([]))).render();
     const frame = el.querySelector<HTMLElement>(':scope > .window-frame');
     const order = Array.from(frame?.children ?? []).map((c) => (c as HTMLElement).className);
-    expect(order).toEqual(['window-titlebar', 'window-body']);
+    expect(order).toEqual(['window-titlebar', 'window-body', 'window-footer']);
     expect(frame?.querySelectorAll('.window-body').length).toBe(1);
   });
 

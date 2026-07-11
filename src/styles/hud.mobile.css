@@ -2623,6 +2623,15 @@
   body.mobile-touch #bags .bag-grid {
     min-height: 150px;
   }
+  /* The coin-purse readout in the pinned bags footer steps up one size at
+     arm's length (the .opt-row-label touch pattern): 18px text, 16px coins. */
+  body.mobile-touch #bags .money {
+    font-size: var(--text-lg);
+  }
+  body.mobile-touch #bags .money .coin {
+    width: 16px;
+    height: 16px;
+  }
   body.mobile-touch .bag-item,
   body.mobile-touch .mkt-tab,
   body.mobile-touch .mkt-btn,

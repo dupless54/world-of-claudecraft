@@ -60,14 +60,18 @@ import type { WindowFrameDescriptor } from './window_frame_view';
 
 const BAG_FILTER_KEY = 'woc_bag_filter';
 
-// A closable, footer-less frame: the bag bar, filter header, slot grid, and money
-// row all render into one scrollable body (the filter stays a HEADER, not a footer;
-// the bags have no bottom transactional action). Reuses the existing bag title +
-// close keys. Instance-parameterized on the '#bags' id (title id 'bags-title').
+// A closable frame WITH the sticky footer: the bag bar, filter header, and slot
+// grid render into the scrollable body, and the player's money lives in the
+// pinned .window-footer (the classic bags anatomy). It used to sit as the last
+// child of the scrollable body, where the touch sheet pushed it below the fold
+// and the coin readout was effectively invisible on mobile (live maintainer
+// feedback). Reuses the existing bag title + close keys. Instance-parameterized
+// on the '#bags' id (title id 'bags-title').
 const BAGS_FRAME: WindowFrameDescriptor = {
   id: 'bags',
   titleKey: 'itemUi.bags.title',
   closeLabelKey: 'itemUi.bags.close',
+  footer: true,
 };
 
 // Monotonic id source for the ad-hoc prompt dialogs' aria-labelledby target, so the
@@ -243,10 +247,13 @@ export class BagsWindow {
     // Stamp the shared AAA window frame onto an INNER mount, leaving the #bags root
     // pristine (never a builder class / role / aria): the root stays the docking
     // anchor the cluster CSS targets by id, and .window:has(> .window-frame) makes it
-    // the clipping flex column the frame fills. The bag bar, filter header, slot grid,
-    // and money row render into the one scrollable body.
+    // the clipping flex column the frame fills. The bag bar, filter header, and slot
+    // grid render into the scrollable body; the money readout is pinned in the
+    // frame's sticky footer so it stays visible however far the grid scrolls.
     const mount = document.createElement('div');
-    const { body } = renderWindowFrame(mount, BAGS_FRAME, { onClose: () => this.handleClose() });
+    const { body, footer } = renderWindowFrame(mount, BAGS_FRAME, {
+      onClose: () => this.handleClose(),
+    });
     body.appendChild(this.buildBagBar());
     // Skip the chip/search row entirely when the bag is empty: a full filter bar
     // above a grid of empty squares is just noise.
@@ -258,7 +265,7 @@ export class BagsWindow {
     const moneyRow = document.createElement('div');
     moneyRow.className = 'money';
     moneyRow.innerHTML = `${this.deps.wocBalanceHtml()}${this.deps.moneyHtml(world.copper)}`;
-    body.appendChild(moneyRow);
+    (footer ?? body).appendChild(moneyRow);
     el.replaceChildren(mount);
     grid.scrollTop = prevScrollTop;
   }
