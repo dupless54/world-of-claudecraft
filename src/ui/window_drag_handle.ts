@@ -27,8 +27,11 @@ const DRAG_HANDLE_SELECTOR = '.panel-title, .window-titlebar';
 // the report dialog is a one-shot form. The deliberately movable windows
 // (bags, character, vendor, market, the Codex, ...) stay off this list. The
 // sibling per-window opt-out for resizing is NON_RESIZABLE_WINDOW_IDS
-// (window_resize.ts); this is the drag twin.
-const STATIC_DIALOG_WINDOW_IDS = new Set([
+// (window_resize.ts); this is the drag twin. Exported because the Hud's
+// placeNewWindow consumes the same ruling: a never-moves dialog must not be
+// cascade-offset either (the 28px cascade bakes a session-sticky windowMoved
+// position the player now has no drag to recover from).
+export const STATIC_DIALOG_WINDOW_IDS = new Set([
   'quest-dialog',
   'confirm-dialog',
   'delve-board',

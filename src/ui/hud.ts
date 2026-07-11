@@ -395,7 +395,7 @@ import {
   wocBalanceVerified,
 } from './wallet_balance';
 import { type WeaponProcEffectDesc, weaponProcLines } from './weapon_proc_view';
-import { isWindowDragHandle } from './window_drag_handle';
+import { isWindowDragHandle, STATIC_DIALOG_WINDOW_IDS } from './window_drag_handle';
 import { makeWindowFocus } from './window_focus';
 import { relocalizeWindowFrame } from './window_frame';
 import { installWindowResize, markResizableWindow } from './window_resize';
@@ -2009,8 +2009,13 @@ export class Hud {
       }
       return;
     }
-    if (el.dataset.windowMoved === '1' || el.id === 'loot-window' || el.id === 'confirm-dialog')
-      return;
+    // The static-dialog family (quest/gossip, confirm, delve board/rite,
+    // lockpick, loot, report) is never cascade-offset: these are centered
+    // transient dialogs whose drag is disabled (STATIC_DIALOG_WINDOW_IDS), so
+    // a baked cascade position would stick for the session with no way to
+    // pull the window back. loot-window/confirm-dialog were already skipped
+    // (cursor-anchored / modal); the set subsumes both.
+    if (el.dataset.windowMoved === '1' || STATIC_DIALOG_WINDOW_IDS.has(el.id)) return;
     // A window that already carries a baked inline position was cascaded (or
     // otherwise pinned) before: re-cascading from that persisted rect would
     // compound another 28px of drift on every reopen while any other window is

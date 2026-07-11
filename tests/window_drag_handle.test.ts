@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { isWindowDragHandle } from '../src/ui/window_drag_handle';
+import { isWindowDragHandle, STATIC_DIALOG_WINDOW_IDS } from '../src/ui/window_drag_handle';
 
 // Fake-DOM harness (this repo deliberately has no jsdom; tests/CLAUDE.md: model
 // only the contract under test). isWindowDragHandle touches exactly: the target
@@ -83,5 +84,19 @@ describe('isWindowDragHandle: grammar-window titlebar drag', () => {
       const { target, win } = scenario(id);
       expect(isWindowDragHandle(target, win), `${id} must drag`).toBe(true);
     }
+  });
+
+  it('placeNewWindow honors the same static ruling (no cascade offset either)', () => {
+    // A never-moves dialog must not be cascade-offset on open: the 28px cascade
+    // bakes a session-sticky windowMoved position the player now has no drag
+    // to recover from. The Hud's skip must consume THIS set (not a hand-copied
+    // id pair) so the two rulings cannot drift.
+    const hud = readFileSync(new URL('../src/ui/hud.ts', import.meta.url), 'utf8');
+    expect(hud).toContain(
+      "if (el.dataset.windowMoved === '1' || STATIC_DIALOG_WINDOW_IDS.has(el.id)) return;",
+    );
+    // The set still covers the two ids the old inline skip named.
+    expect(STATIC_DIALOG_WINDOW_IDS.has('loot-window')).toBe(true);
+    expect(STATIC_DIALOG_WINDOW_IDS.has('confirm-dialog')).toBe(true);
   });
 });
