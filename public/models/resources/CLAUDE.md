@@ -9,30 +9,32 @@ harvestable/crafting-material GLBs.
 
 ## Size budget
 
-Category average as of this writing: **~19.6 KB** (135 files, ~2.6 MB total).
-This is the tightest budget of any model category: these are tiny, distant,
-often-repeated static props, so keep new additions in the 15-45 KB range.
-Below ~30 KB the container overhead (Draco tables, glTF JSON) starts to
-dominate a small mesh, so do not fight for byte-for-byte parity with the
-average if a further texture-size halving stops moving the needle; land as
-close as the compressor's diminishing returns allow and document the actual
-result here.
+Category average as of this writing: **~19.6 KB** (133 pre-existing files,
+~2.6 MB total). This is the tightest budget of any model category: these are
+tiny, distant, often-repeated static props, so keep new additions in the
+15-45 KB range where possible. The ore/wood/herb gather-node GLBs land at
+60-83 KB, well above that; see the compression note below for why.
 
 ## Compression pipeline
 
-Same `gltf-transform optimize` pipeline as `public/models/creatures/`, but
-iterate texture-size down further (this category has the smallest budget):
+Same `gltf-transform optimize` pipeline as `public/models/creatures/`.
+**Always compress with `--compress meshopt`, never `draco`** (see
+`public/models/creatures/CLAUDE.md` for why: this repo's runtime loader has no
+`DRACOLoader`, so a Draco GLB silently fails to load and falls back to the old
+procedural geometry):
 
 ```
 npx gltf-transform optimize <in>.glb <out>.glb \
-  --texture-size <16|32|64> --texture-compress auto \
-  --simplify true --simplify-ratio 0.01 --simplify-error 0.01 \
-  --compress draco
+  --texture-compress webp --compress meshopt
 ```
 
-The ore/wood/herb gather-node GLBs landed at 32-46 KB from raw ~15 MB Tripo
-exports (texture-size 8-16, simplify-ratio floored at 0.01); that floor is the
-practical minimum this pipeline reaches for a PBR-textured mesh, not a bug.
+The ore/wood/herb gather-node GLBs landed at 60-83 KB from raw ~15 MB Tripo
+exports. Meshopt is noticeably less space-efficient than Draco on these small
+meshes, and this category's historical ~19.6 KB average was set entirely by
+Draco-era or hand-built primitive assets; 60-83 KB is the practical floor this
+pipeline reaches for a meshopt-compressed, PBR-textured mesh at this
+complexity, not a tuning miss. Iterate `--texture-size 32` or lower first if a
+future addition needs to land smaller before accepting a size above budget.
 
 ## Naming convention
 

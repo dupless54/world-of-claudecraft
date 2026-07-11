@@ -9,29 +9,38 @@ Mob bodies (`src/render/characters/`) plus small ambient-wildlife GLBs
 
 ## Size budget
 
-Category average as of this writing: **~185 KB** (33 files, ~5.9 MB total).
-Keep new additions within roughly 100-300 KB unless the model is a raid boss
-or otherwise a genuine visual centerpiece; small ambient critters/fish should
-land well under the average (100-200 KB), not at it.
+Category average as of this writing: **~185 KB** (30 pre-existing files,
+~5.6 MB total). Keep new additions within roughly 100-300 KB unless the model
+is a raid boss or otherwise a genuine visual centerpiece; small ambient
+critters/fish should land well under the average (100-200 KB), not at it.
+The rabbit/squirrel/songbird/leaping-fish additions land at 242-312 KB, a bit
+above that range: see the compression note below for why.
 
 ## Compression pipeline
 
 New GLBs (e.g. Tripo-generated ambient wildlife) are produced raw (10-15 MB,
-1M+ vertices, 2K+ textures) and MUST be compressed before committing. Pipeline
-used for the rabbit/squirrel/songbird/leaping-fish additions:
+1M+ vertices, 2K+ textures) and MUST be compressed before committing. **This
+repo's runtime loader (`src/render/assets/loader.ts`) only wires up a
+`MeshoptDecoder`, not a `DRACOLoader`** (a Draco-compressed GLB parses fine
+with offline tools but silently fails `GLTFLoader.load()` in the browser
+(`asset load failed: ... (missing file or bad GLB)`) and the renderer falls
+back to the old procedural geometry with no visible error to the player).
+Always compress with `--compress meshopt`, never `draco`, for anything this
+loader will load at runtime:
 
 ```
 npx gltf-transform optimize <in>.glb <out>.glb \
-  --texture-size <128|256> --texture-compress auto \
-  --simplify true --simplify-ratio <0.05-0.15> --simplify-error 0.01 \
-  --compress draco
+  --texture-compress webp --compress meshopt
 ```
 
-Start at `--texture-size 256 --simplify-ratio 0.15`; if the result is still
-above budget, halve `texture-size` and `simplify-ratio` and retry (2-3
-iterations is typical to land in the 150-200 KB range from a raw 13-15 MB
-Tripo export). `gltf-transform inspect <file>.glb` shows the resulting
-vertex/texture footprint if you need to tune further.
+Meshopt is somewhat less space-efficient than Draco for these small organic
+meshes (roughly 1.4-1.7x larger), which is why this category's new additions
+run above the historical average; that is the correct tradeoff given the
+loader only supports meshopt. Iterate `--texture-size` down (256 -> 128 -> 64)
+if a new addition needs to land smaller. `gltf-transform inspect <file>.glb`
+shows the resulting vertex/texture footprint and confirms
+`EXT_meshopt_compression` (not `KHR_draco_mesh_compression`) is the extension
+actually used.
 
 ## Naming convention
 

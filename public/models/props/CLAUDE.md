@@ -9,27 +9,31 @@ Buildings, market stalls, graves, rocks, and other overworld/delve decoration
 
 ## Size budget
 
-Category average as of this writing: **~70 KB** (42 files, ~2.8 MB total).
-Keep new additions in the 40-100 KB range; a hero landmark prop (a house, a
-dungeon entrance) can run larger, but a small standalone decoration (a
-gravestone, a crate) should land well under the average.
+Category average as of this writing: **~70 KB** (39 pre-existing files,
+~2.7 MB total). Keep new additions in the 40-100 KB range; a hero landmark
+prop (a house, a dungeon entrance) can run larger, but a small standalone
+decoration (a gravestone, a crate) should land well under the average. The
+mailbox/grave/wall/crate additions land at 83-115 KB, a bit above that range:
+see the compression note below for why.
 
 ## Compression pipeline
 
-Same `gltf-transform optimize` pipeline as `public/models/creatures/`, tuned
-for this category's mid-size budget:
+Same `gltf-transform optimize` pipeline as `public/models/creatures/`.
+**Always compress with `--compress meshopt`, never `draco`** (see
+`public/models/creatures/CLAUDE.md`: this repo's runtime loader has no
+`DRACOLoader`, so a Draco GLB silently fails to load and falls back to the old
+procedural geometry with no visible error):
 
 ```
 npx gltf-transform optimize <in>.glb <out>.glb \
-  --texture-size 32 --texture-compress auto \
-  --simplify true --simplify-ratio 0.01875 --simplify-error 0.01 \
-  --compress draco
+  --texture-compress webp --compress meshopt
 ```
 
-The mailbox/grave/wall/crate additions landed at 49-59 KB from raw ~15 MB
-Tripo exports after 4 halving iterations starting at texture-size 256 /
-simplify-ratio 0.15 (see `public/models/creatures/CLAUDE.md` for the general
-iterate-until-under-budget loop).
+The mailbox/grave/wall/crate additions landed at 83-115 KB from raw ~15 MB
+Tripo exports. Meshopt is less space-efficient than Draco on these meshes,
+which is why these land above the category average; iterate `--texture-size`
+down first if a future addition needs to land smaller before accepting a size
+above budget.
 
 ## Naming convention
 
