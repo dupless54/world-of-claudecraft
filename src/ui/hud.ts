@@ -1,6 +1,6 @@
 import { audio } from '../game/audio';
 import type { GamepadKind } from '../game/gamepad_map';
-import type { Keybinds } from '../game/keybinds';
+import { type Keybinds, keyCapLabel } from '../game/keybinds';
 import type { MenuIntentKind } from '../game/menu_gamepad_nav';
 import { music, musicZoneForLocation, shouldResetMusicForDungeonEntry } from '../game/music';
 import type { GameSettings, Settings } from '../game/settings';
@@ -1608,6 +1608,7 @@ export class Hud {
     $('#mm-talents')?.addEventListener('click', () => this.toggleTalents());
     $('#mm-town-focus')?.addEventListener('click', () => this.toggleTownFocus());
     $('#mm-quest').addEventListener('click', () => this.toggleQuestLog());
+    $('#mm-deeds').addEventListener('click', () => this.toggleDeeds());
     // Collapse/expand the on-screen quest tracker by clicking its header. The
     // overlay is click-through (pointer-events:none) except the header button, so
     // delegate on the stable container (the header is rebuilt on each render).
@@ -6145,6 +6146,7 @@ export class Hud {
       ['#mm-spell', 'spellbook', 'abilityUi.spellbook.title'],
       ['#mm-talents', 'talents', 'game.talents.title'],
       ['#mm-quest', 'questlog', 'questUi.log.title'],
+      ['#mm-deeds', 'deeds', 'hudChrome.deeds.title'],
       ['#mm-map', 'map', 'hud.core.mobileMap'],
       ['#mm-bag', 'bags', 'itemUi.bags.title'],
       ['#mm-arena', 'arena', 'hud.core.mobileArena'],
@@ -6159,7 +6161,7 @@ export class Hud {
       const key = this.keybinds.primaryLabel(action);
       const label = t(labelKey);
       const keyEl = btn.querySelector<HTMLElement>('.keybind');
-      if (keyEl) keyEl.textContent = key.toLowerCase();
+      if (keyEl) keyEl.textContent = keyCapLabel(key);
       btn.setAttribute('aria-label', key ? `${label} (${key})` : label);
     }
   }

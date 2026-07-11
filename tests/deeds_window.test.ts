@@ -202,6 +202,23 @@ describe('entry HTMLs', () => {
     }
     expect(chrome).toMatch(/deeds: 'Deeds',/);
   });
+
+  it('ships the side-menu Deeds button in BOTH game entries, under the quest log', () => {
+    for (const html of [indexHtml, playHtml]) {
+      expect(html).toMatch(/id="mm-deeds"[^>]*data-icon="book"/);
+      expect(html).toMatch(/id="mm-deeds"[^>]*data-i18n-title="hudChrome\.deeds\.title"/);
+      // Dock order: quest log, then deeds, then map.
+      const quest = html.indexOf('id="mm-quest"');
+      const deeds = html.indexOf('id="mm-deeds"');
+      const map = html.indexOf('id="mm-map"');
+      expect(quest).toBeGreaterThan(-1);
+      expect(deeds).toBeGreaterThan(quest);
+      expect(map).toBeGreaterThan(deeds);
+    }
+    // hud.ts binds the click and repaints the keycap from the live binding.
+    expect(hud).toContain("$('#mm-deeds').addEventListener('click', () => this.toggleDeeds());");
+    expect(hud).toContain("['#mm-deeds', 'deeds', 'hudChrome.deeds.title'],");
+  });
 });
 
 describe('touch open chain (More tray -> Hud)', () => {

@@ -9,6 +9,7 @@ import {
   isModifierCode,
   isReservedCode,
   Keybinds,
+  keyCapLabel,
   keyLabel,
   makeCombo,
 } from '../src/game/keybinds';
@@ -41,6 +42,22 @@ describe('keyLabel', () => {
     expect(keyLabel('Space')).toBe('Space');
     expect(keyLabel('ArrowUp')).toBe('↑');
     expect(keyLabel(null)).toBe('');
+  });
+});
+
+describe('keyCapLabel', () => {
+  it('lowercases and compacts modifier words to one-letter prefixes', () => {
+    expect(keyCapLabel('Shift+Z')).toBe('s-z');
+    expect(keyCapLabel('Ctrl+1')).toBe('c-1');
+    expect(keyCapLabel('Alt+Q')).toBe('a-q');
+    expect(keyCapLabel('Meta+1')).toBe('m-1');
+    expect(keyCapLabel('Ctrl+Alt+A')).toBe('c-a-a');
+  });
+
+  it('leaves unmodified labels as plain lowercase', () => {
+    expect(keyCapLabel('L')).toBe('l');
+    expect(keyCapLabel('Esc')).toBe('esc');
+    expect(keyCapLabel('')).toBe('');
   });
 });
 

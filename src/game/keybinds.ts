@@ -438,6 +438,22 @@ export function keyLabel(combo: string | null): string {
   return head + codeLabel(code);
 }
 
+/**
+ * Compact keycap form of a binding label for the tiny UI keycaps (a side-menu
+ * button is 34px wide): lowercase, with modifier words shortened to classic
+ * one-letter prefixes, so "Shift+Z" reads "s-z" and stays inside the cap.
+ * Full-length surfaces (aria labels, tooltips, the keybind options rows) keep
+ * keyLabel/primaryLabel untouched.
+ */
+export function keyCapLabel(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/shift\+/g, 's-')
+    .replace(/ctrl\+/g, 'c-')
+    .replace(/alt\+/g, 'a-')
+    .replace(/meta\+/g, 'm-');
+}
+
 export class Keybinds {
   // actionId -> [primary, secondary] codes (either may be null)
   private map = new Map<string, (string | null)[]>();
