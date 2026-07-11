@@ -198,6 +198,23 @@ const dungeons = Object.values(DUNGEONS)
   })
   .sort((a, b) => (a.min ?? 99) - (b.min ?? 99) || a.suggestedPlayers - b.suggestedPlayers);
 
+// Druid shapeshift forms: player-worn models a reader meets constantly, shown as their own
+// gallery group. Labels are guide.models.form* keys on the client, not baked names.
+// form_sheep stays out: it is the polymorph victim model, not a druid form.
+const DRUID_FORM_KEYS = ['form_bear', 'form_cat', 'form_travel'];
+const druidForms = DRUID_FORM_KEYS.map((vk) => {
+  const model = modelKeyFor(vk);
+  if (!model) throw new Error(`druid form visual missing from the manifest: ${vk}`);
+  const tint = tintFor(vk, 0xffffff);
+  const tintHex = tint != null ? hex(tint) : null;
+  return {
+    id: vk,
+    model,
+    ...(tintHex != null ? { tint: tintHex } : {}),
+    ...(stillUrl(model, tintHex) ? { still: stillUrl(model, tintHex) } : {}),
+  };
+});
+
 // Warlock demons, in summon order. Names only; role flavor is authored guide copy.
 const warlockPets = Object.values(WARLOCK_PET_MOBS).map((p) => {
   const vk = mobVisualKey(p.id);
@@ -244,7 +261,7 @@ for (const [id, m] of Object.entries({
   if (id.startsWith('warlock_')) continue; // summoned pets, not wild creatures
   if (!campedMobIds.has(id)) continue; // summon-only encounter adds, never met in the open
   if (/vision/i.test(id) || /^Vision\b/.test(m.name)) continue; // cinematic apparitions, not creatures
-  if (!m.dmgBase && !m.dmgPerLevel) continue; // inert practice fixtures (the training dummy), not creatures
+  if (m.dummy) continue; // inert practice fixtures (the training dummy), not creatures
   const vk = mobVisualKey(id);
   const tint = tintFor(vk, m.color ?? 0xffffff);
   const tintHex = tint != null ? hex(tint) : null;
@@ -261,6 +278,12 @@ for (const [id, m] of Object.entries({
     ...(stillUrl(model, tintHex) ? { still: stillUrl(model, tintHex) } : {}),
   });
   publishedMobIds.add(id);
+}
+// A published creature whose family lacks an order slot would silently vanish from the
+// bestiary (the freshness test faithfully reproduces a buggy generator), so fail loudly.
+const unknownFamilies = Object.keys(famMap).filter((f) => !FAMILY_ORDER.includes(f));
+if (unknownFamilies.length) {
+  throw new Error(`bestiary family missing from FAMILY_ORDER: ${unknownFamilies.join(', ')}`);
 }
 const families = FAMILY_ORDER.filter((f) => famMap[f]).map((f) => ({
   family: f,
@@ -404,6 +427,10 @@ export interface GuideDungeon {
 
 export interface GuideWarlockPet { id: string; name: string; model: string; tint?: string; still?: string; }
 
+// Druid shapeshift forms. Unnamed on purpose: the gallery labels them with guide.models.form*
+// keys so the names localize like the rest of the picker chrome.
+export interface GuideDruidForm { id: string; model: string; tint?: string; still?: string; }
+
 export interface GuideCreature { name: string; min: number; max: number; rare: boolean; templateId: string; model: string; tint?: string; still?: string; }
 export interface GuideFamily { family: string; creatures: GuideCreature[]; }
 
@@ -446,6 +473,7 @@ writeFileSync(
     `\nexport const GUIDE_ZONES: GuideZoneInfo[] = ${JSON.stringify(zones, null, 2)};\n`,
     `\nexport const GUIDE_DUNGEONS: GuideDungeon[] = ${JSON.stringify(dungeons, null, 2)};\n`,
     `\nexport const GUIDE_WARLOCK_PETS: GuideWarlockPet[] = ${JSON.stringify(warlockPets, null, 2)};\n`,
+    `\nexport const GUIDE_DRUID_FORMS: GuideDruidForm[] = ${JSON.stringify(druidForms, null, 2)};\n`,
     `\nexport const GUIDE_FAMILIES: GuideFamily[] = ${JSON.stringify(families, null, 2)};\n`,
     `\nexport const GUIDE_DELVES: GuideDelve[] = ${JSON.stringify(delves, null, 2)};\n`,
     `\nexport const GUIDE_DEEDS: GuideDeed[] = ${JSON.stringify(deeds, null, 2)};\n`,
@@ -454,5 +482,5 @@ writeFileSync(
 );
 // eslint-disable-next-line no-console
 console.log(
-  `generated src/guide/content.generated.ts (${classes.length} classes, ${zones.length} zones, ${dungeons.length} dungeons, ${warlockPets.length} warlock pets, ${families.length} families, ${delves.length} delves, ${deeds.length} deeds, ${Object.keys(MODELS).length} models)`,
+  `generated src/guide/content.generated.ts (${classes.length} classes, ${zones.length} zones, ${dungeons.length} dungeons, ${warlockPets.length} warlock pets, ${druidForms.length} druid forms, ${families.length} families, ${delves.length} delves, ${deeds.length} deeds, ${Object.keys(MODELS).length} models)`,
 );

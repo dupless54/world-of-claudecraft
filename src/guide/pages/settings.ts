@@ -103,6 +103,7 @@ const FACTS: Fact[] = [
   { title: 'guide.settingsPage.factDetectTitle', body: 'guide.settingsPage.factDetectBody' },
   { title: 'guide.settingsPage.factReloadTitle', body: 'guide.settingsPage.factReloadBody' },
   { title: 'guide.settingsPage.factGovernorTitle', body: 'guide.settingsPage.factGovernorBody' },
+  { title: 'guide.settingsPage.factSearchTitle', body: 'guide.settingsPage.factSearchBody' },
 ];
 
 type Impact = 'none' | 'light' | 'moderate' | 'heavy';
@@ -191,13 +192,13 @@ const SETTING_ROWS: SettingRow[] = [
   },
   {
     setting: 'hud.options.reduceMotion',
-    where: ['hud.options.interface'],
+    where: ['hudChrome.options.ia.catAccessibilityName'],
     body: 'guide.settingsPage.rowReduceMotion',
     impact: 'light',
   },
   {
     setting: 'hudChrome.perf.enable',
-    where: ['hudChrome.perf.title'],
+    where: ['hudChrome.options.ia.catSystemName', 'hudChrome.perf.title'],
     body: 'guide.settingsPage.rowPerfOverlay',
     impact: 'none',
   },
@@ -275,7 +276,7 @@ export const settings: GuidePage = {
           </div>
           <p class="guide-set-foot">${esc(t('guide.settingsPage.tableFoot'))}</p>`,
         )}
-        ${section('guide.settingsPage.audioTitle', p('guide.settingsPage.audioBody'))}
+        ${section('guide.settingsPage.audioTitle', p('guide.settingsPage.audioBody') + p('guide.settingsPage.autolootBody'))}
         ${callout(
           `<p>${esc(t('guide.settingsPage.mobileBody'))}</p><p>${esc(t('guide.settingsPage.touchBody'))}</p>`,
           {

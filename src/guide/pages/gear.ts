@@ -62,6 +62,8 @@ export const gear: GuidePage = {
 
         ${section('guide.gear.slotsTitle', p('guide.gear.slotsBody') + slotList())}
 
+        ${section('guide.gear.bagsTitle', p('guide.gear.bagsBody'))}
+
         ${section('guide.gear.qualityTitle', p('guide.gear.qualityBody') + qualityList() + p('guide.gear.qualityNote'))}
 
         ${section('guide.gear.upgradeTitle', p('guide.gear.upgradeBody') + p('guide.gear.itemLevelBody'))}

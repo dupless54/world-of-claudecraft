@@ -31,7 +31,20 @@ export const GLOSSARY_TERMS: { slug: string; term: TranslationKey; def: Translat
   { slug: 'deed', term: 'guide.glossary.deedTerm', def: 'guide.glossary.deedDef' },
   { slug: 'renown', term: 'guide.glossary.renownTerm', def: 'guide.glossary.renownDef' },
   { slug: 'heroic', term: 'guide.glossary.heroicTerm', def: 'guide.glossary.heroicDef' },
+  { slug: 'lockout', term: 'guide.glossary.lockoutTerm', def: 'guide.glossary.lockoutDef' },
+  { slug: 'rested', term: 'guide.glossary.restedTerm', def: 'guide.glossary.restedDef' },
+  { slug: 'pet-bar', term: 'guide.glossary.petBarTerm', def: 'guide.glossary.petBarDef' },
   { slug: 'loadout', term: 'guide.glossary.loadoutTerm', def: 'guide.glossary.loadoutDef' },
+  {
+    slug: 'damage-meters',
+    term: 'guide.glossary.metersTerm',
+    def: 'guide.glossary.metersDef',
+  },
+  {
+    slug: 'target-marker',
+    term: 'guide.glossary.targetMarkerTerm',
+    def: 'guide.glossary.targetMarkerDef',
+  },
   {
     slug: 'ready-check',
     term: 'guide.glossary.readyCheckTerm',

@@ -35,6 +35,7 @@ export const combat: GuidePage = {
           <h2>${esc(t('guide.combat.effectsTitle'))}</h2>
           <p>${esc(t('guide.combat.effectsBody'))}</p>
           <p>${esc(t('guide.combat.ccBody'))}</p>
+          <p>${esc(t('guide.combat.metersBody'))}</p>
         </section>
         <section class="guide-block">
           <h2>${esc(t('guide.combat.deathTitle'))}</h2>

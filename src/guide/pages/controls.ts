@@ -20,7 +20,7 @@ const GROUPS: Group[] = [
   {
     heading: 'guide.controls.groupMovement',
     rows: [
-      { keys: ['W', 'A', 'S', 'D'], label: 'controls.moveTurn' },
+      { keys: ['W', 'A', 'S', 'D', 'guide.controls.arrowKeys'], label: 'controls.moveTurn' },
       // Strafe ships unbound by default (Q/E belong to the action bar, slots 11
       // and 12); the key cell reuses the keybind pane's Unbound label, and the
       // page intro already says every binding is rebindable in the options.
@@ -60,7 +60,7 @@ const GROUPS: Group[] = [
       { keys: ['V'], label: 'controls.nameplates' },
       { keys: ['Z'], label: 'hud.keybinds.actions.meters' },
       { keys: ['X'], label: 'controls.emoteWheel' },
-      { keys: ['Enter'], label: 'controls.chat' },
+      { keys: ['Enter', 'NumEnter'], label: 'controls.chat' },
     ],
   },
   {
@@ -72,6 +72,7 @@ const GROUPS: Group[] = [
     rows: [
       { keys: ['controls.rightDrag'], label: 'controls.mouselook' },
       { keys: ['controls.leftDrag'], label: 'controls.orbit' },
+      { keys: ['guide.controls.bothMouse'], label: 'guide.controls.runForward' },
       { keys: ['controls.mouseWheel'], label: 'controls.zoom' },
     ],
   },

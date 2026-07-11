@@ -21,6 +21,7 @@ const GATHERING_BLOCKS = [
 const CRAFT_BLOCKS = [
   ['guide.professions.craftRingTitle', 'guide.professions.craftRingBody'],
   ['guide.professions.craftRecipesTitle', 'guide.professions.craftRecipesBody'],
+  ['guide.professions.craftHowTitle', 'guide.professions.craftHowBody'],
   ['guide.professions.craftMasteryTitle', 'guide.professions.craftMasteryBody'],
   ['guide.professions.craftComboTitle', 'guide.professions.craftComboBody'],
 ] as const;

@@ -65,6 +65,10 @@ export interface GuideDungeon {
 
 export interface GuideWarlockPet { id: string; name: string; model: string; tint?: string; still?: string; }
 
+// Druid shapeshift forms. Unnamed on purpose: the gallery labels them with guide.models.form*
+// keys so the names localize like the rest of the picker chrome.
+export interface GuideDruidForm { id: string; model: string; tint?: string; still?: string; }
+
 export interface GuideCreature { name: string; min: number; max: number; rare: boolean; templateId: string; model: string; tint?: string; still?: string; }
 export interface GuideFamily { family: string; creatures: GuideCreature[]; }
 
@@ -1423,6 +1427,26 @@ export const GUIDE_WARLOCK_PETS: GuideWarlockPet[] = [
     "model": "mob_demonalt",
     "tint": "#7a3a8e",
     "still": "/guide-stills/mob_demonalt__7a3a8e.webp"
+  }
+];
+
+export const GUIDE_DRUID_FORMS: GuideDruidForm[] = [
+  {
+    "id": "form_bear",
+    "model": "form_bear",
+    "tint": "#5a4030",
+    "still": "/guide-stills/form_bear__5a4030.webp"
+  },
+  {
+    "id": "form_cat",
+    "model": "form_cat",
+    "tint": "#d08b45",
+    "still": "/guide-stills/form_cat__d08b45.webp"
+  },
+  {
+    "id": "form_travel",
+    "model": "form_travel",
+    "still": "/guide-stills/form_travel.webp"
   }
 ];
 
@@ -3253,6 +3277,23 @@ export const GUIDE_MODELS: Record<string, GuideModelSpec> = {
         "bone": "handslot.r"
       }
     ]
+  },
+  "form_bear": {
+    "url": "models/creatures/yetialt.glb",
+    "idle": "Idle",
+    "height": 2.4,
+    "tintStrength": 0.55
+  },
+  "form_cat": {
+    "url": "models/creatures/wolf_basic.glb",
+    "idle": "Idle",
+    "height": 1.6,
+    "tintStrength": 0.35
+  },
+  "form_travel": {
+    "url": "models/creatures/chicken_cow.glb",
+    "idle": "Idle",
+    "height": 2.3
   },
   "mob_demon": {
     "url": "models/creatures/demonalt.glb",

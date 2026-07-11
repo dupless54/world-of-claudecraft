@@ -8,6 +8,7 @@ import {
   GUIDE_CLASSES,
   GUIDE_DEEDS,
   GUIDE_DELVES,
+  GUIDE_DRUID_FORMS,
   GUIDE_DUNGEONS,
   GUIDE_FAMILIES,
   GUIDE_MODELS,
@@ -751,6 +752,7 @@ describe('Guide model stills', () => {
   it('bakes a still url for every figure that has a model', () => {
     const missing: string[] = [];
     for (const c of GUIDE_CLASSES) if (c.model && !c.still) missing.push(`class ${c.id}`);
+    for (const d of GUIDE_DRUID_FORMS) if (d.model && !d.still) missing.push(`form ${d.id}`);
     for (const p of GUIDE_WARLOCK_PETS) if (p.model && !p.still) missing.push(`pet ${p.id}`);
     for (const f of GUIDE_FAMILIES) {
       for (const c of f.creatures)
@@ -762,6 +764,7 @@ describe('Guide model stills', () => {
   it('ships a committed WebP on disk for every baked still url', () => {
     const stills = new Set<string>();
     for (const c of GUIDE_CLASSES) if (c.still) stills.add(c.still);
+    for (const d of GUIDE_DRUID_FORMS) if (d.still) stills.add(d.still);
     for (const p of GUIDE_WARLOCK_PETS) if (p.still) stills.add(p.still);
     for (const f of GUIDE_FAMILIES) for (const c of f.creatures) if (c.still) stills.add(c.still);
     expect(stills.size).toBeGreaterThan(0);
@@ -777,6 +780,7 @@ describe('Guide model stills', () => {
     const basename = (url: string): string => url.split('/').pop() ?? '';
     const referenced = new Set<string>();
     for (const c of GUIDE_CLASSES) if (c.still) referenced.add(basename(c.still));
+    for (const d of GUIDE_DRUID_FORMS) if (d.still) referenced.add(basename(d.still));
     for (const p of GUIDE_WARLOCK_PETS) if (p.still) referenced.add(basename(p.still));
     for (const f of GUIDE_FAMILIES)
       for (const c of f.creatures) if (c.still) referenced.add(basename(c.still));
