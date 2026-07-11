@@ -132,24 +132,20 @@ export function navForSelection(
 // Render mode: the touch settings menu picks its layout by viewport width
 // ---------------------------------------------------------------------------
 
-/** The minimum effective viewport width (px) at which the touch settings menu
- *  renders the desktop-style rail + detail two-pane instead of the single-column
- *  back-stack shell. Below it a rail (--opt-rail-w, 208px) plus a readable detail
- *  pane (~360px min) will not both fit, so the shell is clearer; at or above it
- *  the two-pane (the live-feedback fix for landscape / tablet) is comfortable. A
- *  named threshold, not a bare literal (the no-magic contract). */
-export const MOBILE_RAIL_MIN_WIDTH = 720;
+/** The touch settings layout. Only the back-stack shell remains: a grid landing
+ *  (the settings "front page") that pushes full-screen category pages. The old
+ *  desktop-style rail two-pane was retired on touch (it rendered a cramped,
+ *  duplicated-header layout in landscape); the game is landscape-only on mobile,
+ *  so the single shell now serves every touch width. Kept as a one-value union so
+ *  the render-mode branch and its tests read intentionally, not as a bare string. */
+export type MobileSettingsMode = 'backstack';
 
-/** The two touch settings layouts. `rail` reuses the desktop two-pane (rail +
- *  detail) with touch sizing; `backstack` is the single-column back-stack shell. */
-export type MobileSettingsMode = 'rail' | 'backstack';
-
-/** Pick the touch settings layout for a viewport width: the rail two-pane once
- *  the viewport is wide enough (landscape / tablet), else the narrow back-stack
- *  shell (portrait). Pure so the render-mode branch is unit-tested directly and a
- *  live rotate can re-evaluate it without a DOM. */
-export function mobileSettingsMode(viewportWidth: number): MobileSettingsMode {
-  return viewportWidth >= MOBILE_RAIL_MIN_WIDTH ? 'rail' : 'backstack';
+/** The touch settings layout, for every mobile width (see MobileSettingsMode).
+ *  Pure so the render-mode branch is unit-tested directly and a live rotate can
+ *  re-evaluate it without a DOM. Takes the width for call-site symmetry with the
+ *  desktop/rail selection it replaced, though the shell no longer varies by it. */
+export function mobileSettingsMode(_viewportWidth: number): MobileSettingsMode {
+  return 'backstack';
 }
 
 // ---------------------------------------------------------------------------
@@ -199,23 +195,18 @@ export function mobileCategoryRows(
 // ---------------------------------------------------------------------------
 
 /** The mobile landing's section slots, in render order. */
-export type LandingSection =
-  | 'search'
-  | 'quickActions'
-  | 'alerts'
-  | 'pins'
-  | 'categoryList'
-  | 'status';
+export type LandingSection = 'search' | 'alerts' | 'pins' | 'categoryList' | 'status';
 
-/** The landing section order (spec section 9): the global search field directly
- *  beneath the header, then the Overview quick actions and alert rows, then the
- *  pinned-essentials mirrors, then the stacked category list, then the status
- *  readout. The pins render BETWEEN the quick actions and the list. */
+/** The landing section order: the global search field directly beneath the
+ *  header, then the category GRID (the settings front page: the primary content a
+ *  player scans first, matching the reference mock; Reset to Defaults and Logout
+ *  ride the grid as action tiles, so there is no separate quick-action button
+ *  row), then the alert rows, pinned-essentials mirrors, and the status readout.
+ *  While a search query is live the grid slot hosts the results instead. */
 export const MOBILE_LANDING_ORDER: readonly LandingSection[] = [
   'search',
-  'quickActions',
+  'categoryList',
   'alerts',
   'pins',
-  'categoryList',
   'status',
 ];

@@ -1164,7 +1164,14 @@
     top: 50%;
     bottom: auto;
     transform: translate(-50%, -50%);
-    display: none;
+    /* Shown as a flex column (the framed-window layout) so the closed/open state
+       is driven by opacity + visibility (the transition below), NOT display: a
+       `display: none` base can never be revealed by the open rule, which only
+       flips opacity/visibility, so the More tray stayed invisible on tap. Closed
+       state (the :not(.mobile-more-open) rule up top) hides it via
+       visibility:hidden + opacity:0 + pointer-events:none. */
+    display: flex;
+    flex-direction: column;
     width: min(560px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
     --window-pad: 0px;
     padding: 0;
@@ -2450,6 +2457,34 @@
     transform: none;
     box-sizing: border-box;
     overflow-y: auto;
+  }
+  /* Frame-hosting windows keep the desktop internal-scroll model on touch: the
+     root clips and the frame's .window-body is the scroller (components.css).
+     The root-scroll pin above (overflow-y: auto) would make the ROOT scroll a
+     flex frame that is sized to the root's first screenful, painting every
+     later row frameless over the 3D world (the Trader Wilkes vendor-bottom
+     leak, live feedback; the Market's own overflow:hidden below was a
+     per-window patch for the same fault). The three legacy root-scroll
+     windows (char/talents/crafting, display:block) are exempt: a BLOCK frame
+     grows with its content, so root scroll is safe there, and their
+     open-state detection needs the block model. The vendor 50/50 dock
+     override (id-scoped, display:block) outranks this by specificity and is
+     safe for the same block-grows reason. */
+  body.mobile-touch
+  .window:has(> .window-frame):not(#char-window):not(#talents-window):not(#crafting-window) {
+    overflow-y: hidden;
+  }
+  /* No root padding on ANY framed window (block-model ones included): the generic
+     mobile .window rule below pads the bottom by 18px + safe-area for the LEGACY
+     panels, whose own background paints the padding box. A framed window's root
+     is transparent (the frame child draws the chrome) and the frame fills only
+     the CONTENT box, so that padding read as an 18px see-through strip of world
+     along the bottom of every framed menu (live feedback: the dark background
+     "not rendering completely"). Layer order note: the components-layer per-id
+     neutralize rules already set padding:0, but this hud-mobile-layer .window
+     rule outranked them, so the fix must live in this layer too. */
+  body.mobile-touch .window:has(> .window-frame) {
+    padding: 0;
   }
   body.mobile-touch #vendor-window {
     max-height: calc(58vh - 20px);
@@ -4387,15 +4422,13 @@
   body.mobile-touch .vcup-role {
     min-height: 40px;
   }
-  /* One scroller per window: the vendor sheet scrolls on its ROOT (the dock rule
-     re-asserts overflow-y:auto there), so the framed tab panels must not open a
-     SECOND nested scrollport (root 969/338 AND panel 916/243 measured live: two
-     scrollers fight the same touch gesture). The panels give their height back to
-     the root scroller on touch. */
-  body.mobile-touch #vendor-window [id^="vendor-window-panel-"] {
-    overflow: visible;
-    max-height: none;
-  }
+  /* One scroller per window, and it is the BODY, not the root: the old rule here
+     gave the vendor tab panels overflow:visible so the ROOT could scroll instead,
+     but a flex frame never grows past the root's first screenful, so every row
+     scrolled past it painted frameless over the 3D world (the Trader Wilkes
+     bottom leak). Framed windows now keep root overflow hidden on touch (the
+     :has(> .window-frame) rule with the mobile pin above) and the panel keeps its
+     base .window-body internal scroll, so there is still exactly one scroller. */
   /* Floating top-right chrome (minimap cluster, mail badge) sits above the
      edge-pinned sheets and covered their top strip (the leaderboard's Daily
      Leaderboard tab, the town-focus first stepper row: audit shots). While any
@@ -4624,80 +4657,87 @@
     width: 100%;
     margin-bottom: var(--spacing-md);
   }
-  /* Stacked category list: full-width 56px rows (icon + label/subhead + count +
-     conflict dot + chevron); the whole row is the tap target that pushes the page. */
-  .opt-mshell-cats {
-    display: flex;
-    flex-direction: column;
+  /* Front-page category grid: icon-over-label tiles, each the tap target that
+     pushes its category page; the Reset to Defaults + Logout action tiles fill
+     the last two cells. Fixed 5 columns so the ten tiles read as a balanced
+     5 + 5 (live feedback). */
+  .opt-mshell-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--spacing-sm);
     margin-top: var(--spacing-sm);
   }
   .opt-mshell-cat {
+    position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--spacing-sm);
-    width: 100%;
-    min-height: 56px;
-    padding: var(--spacing-sm);
-    border: 0;
-    border-bottom: 1px solid var(--panel-edge);
-    background: transparent;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    min-height: 92px;
+    padding: var(--spacing-md) var(--spacing-sm);
+    border: 1px solid var(--panel-edge);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-text-light) 4%, transparent);
     color: var(--color-text-light);
-    text-align: start;
+    text-align: center;
     cursor: var(--cursor-point);
   }
   .opt-mshell-cat:hover {
-    background: color-mix(in srgb, var(--color-text-light) 6%, transparent);
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-text-light) 8%, transparent);
+  }
+  /* The Reset to Defaults / Logout action tiles: the destructive tint the
+     .btn.is-danger footer actions carried (same tokens), on the tile shape. */
+  .opt-mshell-cat.is-danger {
+    border-color: var(--color-border-invalid);
+  }
+  .opt-mshell-cat.is-danger:hover {
+    border-color: var(--color-text-error);
+  }
+  .opt-mshell-cat.is-danger .opt-mshell-cat-icon,
+  .opt-mshell-cat.is-danger .opt-mshell-cat-label {
+    color: var(--color-text-error);
   }
   .opt-mshell-cat-icon {
     flex: none;
     display: inline-flex;
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     color: var(--color-accent);
   }
   .opt-mshell-cat-icon .ui-icon {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
   }
   .opt-mshell-cat-text {
-    flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
   }
   .opt-mshell-cat-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     font-family: var(--font-ui);
     font-size: var(--text-md);
     color: var(--color-text-light);
   }
-  .opt-mshell-cat-sub {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-  }
-  /* The conflict dot rides inline in the list row (not the absolute rail corner). */
-  .opt-mshell-cat .opt-tab-dot {
-    position: static;
-    flex: none;
-    inset: auto;
-  }
+  /* The muted subhead + the row chevron are list-only; the compact tile drops
+     them (the label carries the tile). */
+  .opt-mshell-cat-sub,
   .opt-mshell-chevron {
-    flex: none;
-    display: inline-flex;
-    width: 16px;
-    height: 16px;
-    color: var(--color-text-muted);
+    display: none;
   }
-  .opt-mshell-chevron .ui-icon {
-    width: 16px;
-    height: 16px;
+  /* Change count + conflict dot ride the tile's top-inline-end corner. */
+  .opt-mshell-cat .opt-tab-dot {
+    position: absolute;
+    inset: var(--spacing-xs) var(--spacing-xs) auto auto;
   }
-  /* Sticky bottom Done bar, with the gamepad legend above it when a pad connects. */
+  .opt-mshell-cat .opt-tab-count {
+    position: absolute;
+    inset: var(--spacing-xs) var(--spacing-xs) auto auto;
+  }
+  /* Sticky bottom bar: hosts ONLY the gamepad legend, and only renders while a
+     pad is connected (the Done button is gone; the header X closes). */
   .opt-mshell-bar {
     flex: none;
     display: flex;
@@ -4707,14 +4747,40 @@
     border-top: 1px solid var(--panel-edge);
     background: var(--color-panel-l2-base);
   }
-  /* 48px to match the wide rail's frame-footer actions (same primary control). */
-  .opt-mshell-done {
-    width: 100%;
-    min-height: 48px;
-  }
   .opt-mshell-cat:focus-visible {
     outline: var(--focus-ring-width) solid var(--focus-ring-color);
     outline-offset: calc(var(--focus-ring-offset) * -1);
+  }
+  /* Two-column detail (the reference mock): each category page lays its controls
+     out two-across. The section is the grid; its head spans the full width, and
+     every control row becomes a cell that stacks its label over its control (a
+     half-width cell is too narrow for the desktop label|control split). Sliders,
+     segments, dropdowns and toggles all read cleanly stacked. */
+  body.mobile-touch #options-menu .opt-mshell-content .opt-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    column-gap: var(--spacing-lg);
+    row-gap: var(--spacing-xs);
+  }
+  /* Only .opt-row children are half-width cells; EVERYTHING else spans the full
+     width (section heads, notes, pin home crumbs, the theme swatch grid, bespoke
+     buttons). An allowlist of specific classes here kept missing pieces: the
+     Overview pins' home crumbs and theme sub-blocks landed as stray right-column
+     cells (live feedback: the right side "not rendering properly"). */
+  body.mobile-touch #options-menu .opt-mshell-content .opt-section > :not(.opt-row) {
+    grid-column: 1 / -1;
+  }
+  body.mobile-touch #options-menu .opt-mshell-content .opt-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+    row-gap: var(--spacing-xs);
+  }
+  body.mobile-touch #options-menu .opt-mshell-content .opt-row-label {
+    white-space: normal;
+  }
+  body.mobile-touch #options-menu .opt-mshell-content .opt-row-control {
+    justify-content: flex-start;
   }
   /* Touch floors for the reused .opt-* controls inside the shell (spec section 9:
      48px rows, larger switch/segments, a 16px search input floor that does not

@@ -8,7 +8,6 @@ import {
   LANDING_LEVEL,
   levelSelection,
   MOBILE_LANDING_ORDER,
-  MOBILE_RAIL_MIN_WIDTH,
   type MobileNavState,
   mobileCategoryRows,
   mobileSettingsMode,
@@ -169,45 +168,41 @@ describe('options_mobile_shell_view: category list env gating', () => {
 // Landing section order (spec section 9)
 // ---------------------------------------------------------------------------
 describe('options_mobile_shell_view: landing section order', () => {
-  it('places the pinned mirrors BETWEEN the quick actions and the category list', () => {
-    expect(MOBILE_LANDING_ORDER).toEqual([
-      'search',
-      'quickActions',
-      'alerts',
-      'pins',
-      'categoryList',
-      'status',
-    ]);
+  it('leads with the search field then the category grid (the front page)', () => {
+    // No quickActions slot: Reset to Defaults and Logout ride the grid as action
+    // tiles, so the landing has no separate button row.
+    expect(MOBILE_LANDING_ORDER).toEqual(['search', 'categoryList', 'alerts', 'pins', 'status']);
     const idx = (s: string) => MOBILE_LANDING_ORDER.indexOf(s as never);
     expect(idx('search')).toBe(0);
-    expect(idx('quickActions')).toBeLessThan(idx('pins'));
-    expect(idx('pins')).toBeLessThan(idx('categoryList'));
-    expect(idx('categoryList')).toBeLessThan(idx('status'));
+    // The category grid is the front page: directly under search, above the
+    // alerts / pins / status that follow it.
+    expect(idx('categoryList')).toBe(1);
+    expect(idx('categoryList')).toBeLessThan(idx('pins'));
+    expect(idx('pins')).toBeLessThan(idx('status'));
   });
 });
 
 // ---------------------------------------------------------------------------
-// Render mode: rail two-pane on wide/landscape, back-stack shell on narrow
+// Render mode: the back-stack shell (grid landing) at every touch width. The
+// desktop-style rail two-pane was retired on touch; the game is landscape-only
+// on mobile, so one shell serves both orientations.
 // ---------------------------------------------------------------------------
 describe('options_mobile_shell_view: render mode by viewport width', () => {
-  it('selects the rail two-pane at wide / landscape widths', () => {
-    // The live-feedback sizes (1000x600 landscape, 1280x720) and a tablet width.
-    expect(mobileSettingsMode(1000)).toBe('rail');
-    expect(mobileSettingsMode(1280)).toBe('rail');
-    expect(mobileSettingsMode(834)).toBe('rail');
+  it('selects the back-stack shell at wide / landscape widths', () => {
+    // Former rail widths (1000x600 landscape, 1280 tablet, 834) now use the shell.
+    expect(mobileSettingsMode(1000)).toBe('backstack');
+    expect(mobileSettingsMode(1280)).toBe('backstack');
+    expect(mobileSettingsMode(834)).toBe('backstack');
   });
 
   it('selects the back-stack shell at narrow / portrait widths', () => {
-    // A phone in portrait (the shell's home) stays the single-column back-stack.
     expect(mobileSettingsMode(400)).toBe('backstack');
     expect(mobileSettingsMode(390)).toBe('backstack');
   });
 
-  it('switches at the rail-min-width breakpoint (inclusive at the threshold)', () => {
-    expect(MOBILE_RAIL_MIN_WIDTH).toBe(720);
-    expect(mobileSettingsMode(MOBILE_RAIL_MIN_WIDTH - 1)).toBe('backstack');
-    expect(mobileSettingsMode(MOBILE_RAIL_MIN_WIDTH)).toBe('rail');
-    expect(mobileSettingsMode(MOBILE_RAIL_MIN_WIDTH + 1)).toBe('rail');
+  it('never selects a rail two-pane, at any width', () => {
+    for (const w of [0, 320, 719, 720, 721, 1440, 3000])
+      expect(mobileSettingsMode(w)).toBe('backstack');
   });
 });
 
