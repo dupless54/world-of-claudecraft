@@ -27,7 +27,11 @@ const browser = await puppeteer.launch({
   defaultViewport: { width: 1600, height: 900, deviceScaleFactor: 2 },
 });
 const page = await browser.newPage();
-page.on('pageerror', (e) => console.log('PAGEERROR:', e.message));
+const pageErrors = [];
+page.on('pageerror', (e) => {
+  console.log('PAGEERROR:', e.message);
+  pageErrors.push(e.message);
+});
 
 await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForSelector('#btn-offline', { timeout: 60000 });
@@ -60,6 +64,21 @@ const bag = await page.evaluate(() => {
 });
 check('bags cell >= 56px', bag.cellW >= 56, `cell ${bag.cellW.toFixed(1)}px`);
 check('bag socket >= 56px', bag.socketW >= 56, `socket ${bag.socketW.toFixed(1)}px`);
+// The grown sockets must not clip the capacity counter at the default width:
+// the bar wraps, so the counter stays inside the window body's content box.
+const cap = await page.evaluate(() => {
+  const counter = document.querySelector('#bags .bag-capacity');
+  const body = document.querySelector('#bags .window-body');
+  if (!counter || !body) return null;
+  const c = counter.getBoundingClientRect();
+  const b = body.getBoundingClientRect();
+  return { fits: c.right <= b.right + 1 && c.width > 0, cr: c.right, br: b.right };
+});
+check(
+  'bag capacity counter not clipped',
+  cap?.fits === true,
+  cap ? `counter right ${cap.cr.toFixed(0)} vs body right ${cap.br.toFixed(0)}` : 'nodes missing',
+);
 await page.screenshot({ path: 'tmp/fix_bags_desktop.png' });
 await page.evaluate(() => window.__game.hud.toggleBags());
 await sleep(300);
@@ -207,7 +226,32 @@ if (shell) {
 }
 await page.screenshot({ path: 'tmp/fix_options_overview_touch.png' });
 
+// A theme-preset tap on the shell must repaint (renderDetail used to deref the
+// missing desktop pane and throw, leaving the pin stale).
+const errsBeforeTap = pageErrors.length;
+const themeTap = await page.evaluate(() => {
+  const seg = document.querySelector('#options-menu .theme-presets');
+  if (!seg) return null;
+  const target = [...seg.querySelectorAll('button')].find((b) => !b.classList.contains('active'));
+  if (!target) return null;
+  const label = target.textContent;
+  target.click();
+  return label;
+});
+await sleep(600);
+const themeState = await page.evaluate(() => {
+  const seg = document.querySelector('#options-menu .theme-presets');
+  const active = seg?.querySelector('button.active');
+  return active ? active.textContent : null;
+});
+check(
+  'theme preset tap repaints on the shell',
+  !!themeTap && themeState === themeTap && pageErrors.length === errsBeforeTap,
+  `tapped "${themeTap}", active "${themeState}", new page errors ${pageErrors.length - errsBeforeTap}`,
+);
+
 await browser.close();
+check('no page errors across the run', pageErrors.length === 0, pageErrors.join(' | '));
 if (failures.length) {
   console.log(`\n${failures.length} FAILURE(S): ${failures.join(', ')}`);
   process.exit(1);
