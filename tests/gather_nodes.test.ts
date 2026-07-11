@@ -38,4 +38,23 @@ describe('gather node content', () => {
       expect(NODE_COLOR[type]).toBeDefined();
     }
   });
+
+  it("Eastbrook Vale ore nodes sit near the Copper Dig POI, the zone's only mine-themed landmark", () => {
+    // Regression: the ore veins for q_prof_intro ("A Trade for Every Hand") used
+    // to sit near Boar Meadow, a wolf/boar mob area with no mining flavor and no
+    // discoverable landmark, so players could not find them. They now cluster
+    // around Copper Dig, the zone's actual mine-themed POI.
+    const zone = zonesById.get('eastbrook_vale');
+    if (!zone) throw new Error('unknown zone eastbrook_vale');
+    const copperDig = zone.pois.find((p) => p.label === 'Copper Dig');
+    expect(copperDig).toBeDefined();
+    if (!copperDig) throw new Error('missing Copper Dig POI');
+
+    const oreNodes = GATHER_NODES.filter((n) => n.zoneId === 'eastbrook_vale' && n.type === 'ore');
+    expect(oreNodes.length).toBeGreaterThan(0);
+    for (const node of oreNodes) {
+      const dist = Math.hypot(node.pos.x - copperDig.x, node.pos.z - copperDig.z);
+      expect(dist).toBeLessThanOrEqual(20);
+    }
+  });
 });

@@ -27,6 +27,13 @@ export const GATHER_NODES: GatherNodeDef[] = [
     pos: { x: 66, z: 22 },
     level: 4,
   },
+  // Eastbrook Vale (eastbrook_vale), ore around the Copper Dig outcrops (the
+  // zone's mine-themed POI, zone1.ts pois); moved here from Boar Meadow (a
+  // wolf/boar mob area with no mining flavor and no discoverable landmark)
+  // so q_prof_intro's ore veins actually sit somewhere players can find them.
+  { id: 'ore_eastbrook_1', zoneId: 'eastbrook_vale', type: 'ore', pos: { x: -80, z: -60 } },
+  { id: 'ore_eastbrook_2', zoneId: 'eastbrook_vale', type: 'ore', pos: { x: -88, z: -68 } },
+  { id: 'ore_eastbrook_3', zoneId: 'eastbrook_vale', type: 'ore', pos: { x: -76, z: -54 } },
 
   // Eastbrook Vale, wood stands around Webwood
   {
