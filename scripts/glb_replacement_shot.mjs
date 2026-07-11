@@ -149,11 +149,18 @@ async function standNextTo(
   // "directly behind the player" during the wait above. Re-assert the exact
   // camYaw once more now that facing is no longer changing frame to frame,
   // so nothing pulls it back before the shot.
-  await page.evaluate((faceX, faceZ, x, z, yawOffset) => {
-    const g = window.__game;
-    const facingToTarget = Math.atan2(faceX - x, faceZ - z);
-    g.input.camYaw = facingToTarget + yawOffset;
-  }, targetX, targetZ, x, z, yawOffset);
+  await page.evaluate(
+    (faceX, faceZ, x, z, yawOffset) => {
+      const g = window.__game;
+      const facingToTarget = Math.atan2(faceX - x, faceZ - z);
+      g.input.camYaw = facingToTarget + yawOffset;
+    },
+    targetX,
+    targetZ,
+    x,
+    z,
+    yawOffset,
+  );
   await new Promise((r) => setTimeout(r, 400));
 }
 
@@ -394,7 +401,8 @@ const desktopShots = [
   },
   {
     file: 'mailbox-eastbrook-desktop.png',
-    place: (p) => standNextTo(p, MAILBOX_SPOT.x, MAILBOX_SPOT.z, { standOffX: 2.6, standOffZ: -2.6 }),
+    place: (p) =>
+      standNextTo(p, MAILBOX_SPOT.x, MAILBOX_SPOT.z, { standOffX: 2.6, standOffZ: -2.6 }),
   },
   {
     file: 'delve-cracked-grave-desktop.png',
@@ -442,7 +450,8 @@ const mobileShots = [
   },
   {
     file: 'mailbox-eastbrook-mobile.png',
-    place: (p) => standNextTo(p, MAILBOX_SPOT.x, MAILBOX_SPOT.z, { standOffX: 2.6, standOffZ: -2.6 }),
+    place: (p) =>
+      standNextTo(p, MAILBOX_SPOT.x, MAILBOX_SPOT.z, { standOffX: 2.6, standOffZ: -2.6 }),
   },
 ];
 
