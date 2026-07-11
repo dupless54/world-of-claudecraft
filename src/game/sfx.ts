@@ -43,6 +43,8 @@ class Sfx {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private buffers = new Map<string, AudioBuffer>();
+  private variants = new Map<string, AudioBuffer[]>();
+  private lastVariant = new Map<string, number>(); // last played index per key (no-repeat random)
   private vol = 0.8;
   private active = 0;
   private lastPlay = new Map<string, number>();
@@ -95,13 +97,19 @@ class Sfx {
     if (!ctx) return;
     await Promise.all(
       Object.entries(SFX_CLIPS).map(async ([key, entry]) => {
-        try {
-          const res = await fetch(entry.url);
-          if (!res.ok) return;
-          const buf = await ctx.decodeAudioData(await res.arrayBuffer());
-          this.buffers.set(key, buf);
-        } catch {
-          /* missing/corrupt clip: that key just stays silent */
+        const bufs: AudioBuffer[] = [];
+        for (const url of entry.urls) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) continue;
+            bufs.push(await ctx.decodeAudioData(await res.arrayBuffer()));
+          } catch {
+            /* missing/corrupt variant: skip it */
+          }
+        }
+        if (bufs.length > 0) {
+          this.buffers.set(key, bufs[0]);
+          this.variants.set(key, bufs);
         }
       }),
     );
@@ -202,6 +210,20 @@ class Sfx {
     return p;
   }
 
+  /** No-repeat random variant selection. Picks a random variant each play,
+   *  never repeating the immediately previous one so the same sample never
+   *  double-hits back-to-back. */
+  private nextBuffer(key: string): AudioBuffer | undefined {
+    const pool = this.variants.get(key);
+    if (!pool || pool.length === 0) return undefined;
+    if (pool.length === 1) return pool[0];
+    const last = this.lastVariant.get(key) ?? -1;
+    let idx = Math.floor(Math.random() * (pool.length - 1));
+    if (idx >= last) idx++;
+    this.lastVariant.set(key, idx);
+    return pool[idx];
+  }
+
   /** Squared distance from the listener — callers can pre-cull, but playAt also
    *  guards internally so a far event is a cheap no-op. */
   private tooFar(x: number, z: number): boolean {
@@ -216,7 +238,7 @@ class Sfx {
       master = this.master;
     if (!ctx || !master) return;
     if (this.tooFar(x, z)) return;
-    const buf = this.buffers.get(key);
+    const buf = this.nextBuffer(key);
     if (!buf || this.active >= MAX_VOICES) return;
     const now = ctx.currentTime;
     const cd = opts?.cooldown ?? 0.03;
@@ -281,7 +303,7 @@ class Sfx {
     const ctx = this.ctx,
       master = this.master;
     if (!ctx || !master) return;
-    const buf = this.buffers.get(key);
+    const buf = this.nextBuffer(key);
     if (!buf || this.active >= MAX_VOICES) return;
     const jitter = opts?.jitter !== false;
     const src = ctx.createBufferSource();
