@@ -94,6 +94,12 @@ export const SFX_CLIPS: Record<string, SfxEntry> =
     ],
     "loop": true
   },
+  "cast_lightning_bolt": {
+    "urls": [
+      "/audio/sfx/cast_lightning_bolt.wav"
+    ],
+    "loop": true
+  },
   "cast_nature": {
     "urls": [
       "/audio/sfx/cast_nature.mp3"

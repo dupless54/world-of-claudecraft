@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sfx } from '../src/game/sfx';
 
 // The footstep "jingling" bug: foot clips are ~0.48s but steps fire every ~0.22s
@@ -86,10 +86,14 @@ function installAudioStub(): void {
   (globalThis as never as { AudioContext: unknown }).AudioContext = FakeCtx;
 }
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 beforeEach(() => {
   installAudioStub();
   // Neutralize the ±jitter so alternation is the only pitch variable under test.
-  Math.random = () => 0.5;
+  vi.spyOn(Math, 'random').mockReturnValue(0.5);
   sfx.init();
   // Footsteps are off by default (the footstepSfx setting); enable them so the
   // play-path behaviours below are exercised. The gate itself is tested separately.
@@ -134,7 +138,7 @@ describe('variant selection (nextBuffer)', () => {
     // With Math.random()=0.1 and the fixed first-play path:
     //   idx = floor(0.1 * pool.length) = floor(0.1 * 2) = 0  => variant 0 selected.
     // The old buggy code did floor(0.1 * 1)=0 then always bumped idx++ to 1.
-    Math.random = () => 0.1;
+    vi.spyOn(Math, 'random').mockReturnValue(0.1);
     (sfx as unknown as { lastVariant: Map<string, number> }).lastVariant.delete('ui_click');
     sfx.playUi('ui_click');
     const src = sources.at(-1)!;
@@ -148,7 +152,7 @@ describe('variant selection (nextBuffer)', () => {
   it('never plays the same variant back-to-back on a 2-clip pool', () => {
     injectPool('ui_click2', [{ duration: 0.1 }, { duration: 0.2 }]);
     (sfx as unknown as { lastVariant: Map<string, number> }).lastVariant.delete('ui_click2');
-    Math.random = () => 0.5;
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     sfx.playUi('ui_click2');
     const first = sources.at(-1)!.buffer;
     nowT += 1; // clear cooldown

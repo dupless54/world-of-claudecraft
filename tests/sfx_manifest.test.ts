@@ -6,8 +6,13 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { buildManifest } from '../scripts/sfx/sfx_manifest_builder.mjs';
+import { SFX } from '../scripts/sfx/sfx_prompts.mjs';
+
+const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const realSfxDir = path.join(repoRoot, 'public/audio/sfx');
 
 let sfxDir: string;
 let manifestPath: string;
@@ -69,5 +74,17 @@ describe('buildManifest', () => {
     const manifest = readFileSync(manifestPath, 'utf8');
     const data = JSON.parse(manifest.split('=\n')[1].replace(/ as const;/, ''));
     expect(data['amb_wind'].loop).toBe(true);
+  });
+
+  // Decisive regression pin: a key present on disk but missing from the SFX
+  // catalog is silently dropped from every rebuild (the loop only visits
+  // catalog entries). cast_lightning_bolt was lost this way; pin it, and any
+  // future catalog omission, against the REAL catalog and REAL disk so this
+  // class of bug fails loudly instead of shipping silent.
+  it('rebuilds the real manifest from the real catalog without dropping any on-disk key', () => {
+    const { count } = buildManifest(SFX, realSfxDir, manifestPath);
+    expect(count).toBeGreaterThan(0);
+    const manifest = readFileSync(manifestPath, 'utf8');
+    expect(manifest).toContain('cast_lightning_bolt');
   });
 });
