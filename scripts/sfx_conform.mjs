@@ -22,6 +22,7 @@ const sfxDir = path.join(root, 'public/audio/sfx');
 const ffprobePath = ffprobeStatic.path;
 
 const TARGET_BITRATE = 192;
+const MIN_SOURCE_BITRATE = 128; // below this the source is too lossy to transcode — reject outright
 const TARGET_SAMPLE_RATE = 44100;
 const DURATION_THRESHOLD = 1.0;
 const TARGET_PEAK_DBFS = -6;
@@ -94,10 +95,21 @@ const files = readdirSync(sfxDir)
 
 let issues = 0;
 let fixed = 0;
+let rejected = 0;
 
 for (const name of files) {
   const file = path.join(sfxDir, name);
   const { duration, bitrate, sampleRate } = getStats(file);
+
+  // Source quality gate: below 128kbps the file is too lossy to transcode acceptably.
+  // Re-encoding low-bitrate MP3 to 192kbps does not recover lost quality — it just
+  // makes a larger file that sounds the same or worse. Reject and tell the contributor
+  // to re-export from their DAW at a higher bitrate.
+  if (bitrate < MIN_SOURCE_BITRATE) {
+    console.log(`  REJECT ${name}  [${bitrate}kbps source — minimum ${MIN_SOURCE_BITRATE}kbps required; re-export from your DAW]`);
+    rejected++;
+    continue;
+  }
 
   const problems = [];
   if (bitrate < TARGET_BITRATE) problems.push(`${bitrate}kbps (want ${TARGET_BITRATE}kbps)`);
@@ -132,11 +144,12 @@ for (const name of files) {
 }
 
 console.log('');
+if (rejected > 0) {
+  console.log(`${rejected} file(s) rejected: source bitrate below ${MIN_SOURCE_BITRATE}kbps. Re-export from your DAW and resubmit.`);
+}
 if (fix) {
-  console.log(`${fixed}/${issues} files conformed. ${files.length - issues} already at spec.`);
+  console.log(`${fixed}/${issues} files conformed. ${files.length - issues - rejected} already at spec.`);
 } else if (issues > 0) {
   console.log(`${issues} file(s) out of spec. Run with --fix to conform them.`);
-  process.exit(1);
-} else {
-  console.log('All files at spec.');
 }
+if (rejected > 0 || (!fix && issues > 0)) process.exit(1);
