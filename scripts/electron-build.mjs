@@ -111,6 +111,13 @@ const config = desktopBuilderConfig({
   // The real Steamworks app id for a depot build (stamped into wocDesktop for
   // electron/steam.cjs); unset falls back to the Spacewar dev id at runtime.
   steamAppId: process.env.WOC_STEAM_APP_ID || '',
+  // steamworks.js is an optionalDependency, so guard the steam channel against a
+  // tree where its native install silently failed: the depot would otherwise
+  // ship without Steam. desktopBuilderConfig invokes this only for the steam
+  // channel, so website builds never touch node_modules here.
+  steamworksInstalled: () =>
+    existsSync(path.join(root, 'node_modules/steamworks.js/package.json')) &&
+    existsSync(path.join(root, 'node_modules/steamworks.js/dist')),
 });
 const configDir = mkdtempSync(path.join(tmpdir(), 'woc-eb-'));
 const configPath = path.join(configDir, 'electron-builder.json');

@@ -161,6 +161,32 @@ describe('desktopBuilderConfig', () => {
     expect(website.asarUnpack ?? []).not.toContain('node_modules/steamworks.js/dist/**');
   });
 
+  it('steam: fails fast when the steamworks.js optional dependency is absent', () => {
+    // steamworks.js is an optionalDependency, which npm skips silently on
+    // install failure. A depot packaged from such a tree would ship without
+    // Steam (electron/steam.cjs degrades to null), so the steam channel must
+    // refuse to build. The presence probe is injected, so this stays hermetic.
+    expect(() =>
+      desktopBuilderConfig({ base, distribution: 'steam', steamworksInstalled: () => false }),
+    ).toThrow(/steamworks\.js optional dependency/);
+    // Present: the steam config derives as usual, native package re-included.
+    const present = desktopBuilderConfig({
+      base,
+      distribution: 'steam',
+      steamworksInstalled: () => true,
+    });
+    expect(present.publish).toBeNull();
+    expect(present.files ?? []).toContain('node_modules/steamworks.js/**');
+    // The probe never runs for other channels: a website build succeeds even
+    // when the same probe reports steamworks.js absent.
+    expect(() =>
+      desktopBuilderConfig({ base, distribution: 'website', steamworksInstalled: () => false }),
+    ).not.toThrow();
+    // And an unprobed steam build (no injected check) is a pure derivation that
+    // never touches the filesystem, so the config tests above stay valid.
+    expect(desktopBuilderConfig({ base, distribution: 'steam' }).publish).toBeNull();
+  });
+
   it('stamps steamAppId for the steam channel only, digits only, when provided', () => {
     const stamped = desktopBuilderConfig({ base, distribution: 'steam', steamAppId: '3140820' });
     expect(stamped.extraMetadata.wocDesktop.steamAppId).toBe('3140820');

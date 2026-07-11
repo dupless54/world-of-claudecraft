@@ -45,6 +45,7 @@ export function desktopBuilderConfig(input: {
   azureSign?: AzureSignOptions | null;
   updateChannel?: string | null;
   steamAppId?: string;
+  steamworksInstalled?: (() => boolean) | null;
 }): DesktopBuilderConfig;
 
 export function isChannelFeedFile(fileName: unknown, channel: unknown): boolean;

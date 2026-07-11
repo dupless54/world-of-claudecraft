@@ -68,6 +68,7 @@ export function desktopBuilderConfig({
   azureSign = null,
   updateChannel = null,
   steamAppId = '',
+  steamworksInstalled = null,
 }) {
   if (distribution !== 'website' && distribution !== 'steam') {
     throw new Error(`unknown desktop distribution: ${distribution}`);
@@ -122,6 +123,22 @@ export function desktopBuilderConfig({
     config.win = { ...(config.win ?? {}), azureSignOptions: azureSign };
   }
   if (distribution === 'steam') {
+    // steamworks.js is an optionalDependency, so a plain server/web install (or
+    // a failed native prebuild) can drop it silently, and electron/steam.cjs
+    // then degrades to null on every path. A depot packaged from such a tree
+    // would ship WITHOUT Steam and nobody would notice, so the steam channel
+    // refuses to build here. The presence probe is INJECTED (this module stays
+    // free of fs, like stampChannelFeedFiles): scripts/electron-build.mjs wires
+    // the real node_modules check, and the config tests pass a fake. An absent
+    // probe (null) is a pure config derivation, so it never runs.
+    if (typeof steamworksInstalled === 'function' && !steamworksInstalled()) {
+      throw new Error(
+        'steam channel build needs the steamworks.js optional dependency, but it is ' +
+          'not installed under node_modules/steamworks.js. Reinstall it (npm install ' +
+          'steamworks.js) before packaging the Steam depot; otherwise the build would ' +
+          'ship without Steam.',
+      );
+    }
     config.publish = null;
     config.directories = { ...(config.directories ?? {}), output: 'release-steam' };
     // One depot per OS: mac ships a single universal .app (Steam has no mac
