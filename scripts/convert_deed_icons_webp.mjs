@@ -9,11 +9,12 @@
 // scripts/convert_skill_icons_webp.mjs).
 //
 // Usage:  node scripts/convert_deed_icons_webp.mjs <source-dir>
-//   <source-dir> holds the delivered <deed_id>.png files (it lives outside the repo;
-//   the tool only reads it). Files whose id is not a live deed in DEED_ORDER are
-//   skipped with a log (the orphan guard: deferred and cut ids ship no art). Live
-//   deeds with no delivered PNG (a freshly added deed whose art has not arrived) are
-//   reported as missing and keep the procedural category crest via the fallback.
+//   <source-dir> holds delivered <deed_id>.png files (it lives outside the repo;
+//   the tool only reads it). Each run overlays that delivery onto the committed live
+//   set, so later commissions do not need the earlier source PNGs. Files whose id is
+//   not a live deed in DEED_ORDER are skipped with a log (the orphan guard: deferred
+//   and cut ids ship no art). Live deeds with neither existing art nor a delivered PNG
+//   are reported as missing and keep the procedural category crest via the fallback.
 //
 // The content module is loaded through esbuild exactly like scripts/wiki/build_content.mjs
 // (never import raw .ts under node). Deterministic and idempotent: same sources in,
@@ -79,10 +80,17 @@ for (const f of sourcePngs) {
 }
 toConvert.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 const convertedIds = toConvert.map((x) => x.id);
-const convertedSet = new Set(convertedIds);
-// Live deeds with no delivered PNG (a freshly added deed whose art has not arrived):
-// expected, not an error; they keep the procedural category crest via the fallback.
-const missing = DEED_ORDER.filter((id) => !convertedSet.has(id));
+const existingIds = existsSync(OUT_DIR)
+  ? readdirSync(OUT_DIR)
+      .filter((f) => path.extname(f).toLowerCase() === '.webp')
+      .map((f) => path.basename(f, '.webp'))
+      .filter((id) => live.has(id))
+  : [];
+const finalIds = [...new Set([...existingIds, ...convertedIds])].sort();
+const finalSet = new Set(finalIds);
+// Live deeds with neither committed art nor a delivered PNG are expected, not an
+// error. They keep the procedural category crest via the fallback.
+const missing = DEED_ORDER.filter((id) => !finalSet.has(id));
 
 // A source dir with zero matching deeds is a mistake (wrong path): refuse to touch
 // the tree rather than nuke the committed set to empty.
@@ -117,9 +125,9 @@ for (const { id, file } of toConvert) {
   if (buf.length > heaviest.bytes) heaviest = { id, bytes: buf.length };
 }
 
-// Drop any stale WebP that no longer maps to a converted id, so the committed set
-// always equals the converted set (keeps the bijection gate honest across re-runs).
-const keep = new Set(convertedIds.map((id) => `${id}.webp`));
+// Drop stale WebPs whose ids are no longer live deeds. Existing art for a live deed
+// stays when a later delivery omits its source PNG.
+const keep = new Set(finalIds.map((id) => `${id}.webp`));
 const removed = [];
 for (const f of readdirSync(OUT_DIR)) {
   if (path.extname(f).toLowerCase() === '.webp' && !keep.has(f)) {
@@ -130,10 +138,7 @@ for (const f of readdirSync(OUT_DIR)) {
 
 // Regenerate the checked-in id list. Emitted in the exact Biome shape (single quotes,
 // 2-space, trailing comma) so the file is format-stable and re-runs are a no-op diff.
-const idLines = [...convertedIds]
-  .sort()
-  .map((id) => `  '${id}',`)
-  .join('\n');
+const idLines = finalIds.map((id) => `  '${id}',`).join('\n');
 const moduleText = `// Deed ids with committed painted art under public/ui/deeds/<id>.webp (128px WebP,
 // downscaled from the maintainer's 512px source set by scripts/convert_deed_icons_webp.mjs).
 // GENERATED: do not hand-edit; re-run the script to regenerate. Imported by both the icon
@@ -159,6 +164,6 @@ if (removed.length) console.log(`  removed stale webp: ${removed.sort().join(', 
 if (requeued.length)
   console.log(`  re-encoded at q${FALLBACK_QUALITY} (over cap): ${requeued.join(', ')}`);
 console.log(
-  `  shipped weight ${kib(totalBytes)} across ${convertedIds.length} files; ` +
+  `  converted weight ${kib(totalBytes)} across ${convertedIds.length} files; ` +
     `heaviest ${heaviest.id} at ${heaviest.bytes} B`,
 );

@@ -140,16 +140,17 @@ describe('Book of Deeds webp icons', () => {
   });
 
   it('an artless deed card resolves to a procedural crest (no committed image)', () => {
-    // The deeds added after the icon set was delivered ship no art; each must land on its
-    // category base crest, which carries no image url and so falls through to the procedural
-    // canvas path (covered elsewhere; here we only assert the branch point returns no image).
+    // Any live deeds awaiting art must land on their category base crest, which carries no
+    // image URL and falls through to the procedural canvas path. A fully commissioned live
+    // catalog makes this loop empty, so the synthetic id below keeps the branch pinned.
     const artless = DEED_ORDER.filter((id) => !DEED_IMAGE_IDS.has(id));
-    expect(artless.length).toBeGreaterThan(0);
     for (const id of artless) {
       const crestId = deedCrestId(id, DEEDS[id].category);
       expect(deedImageUrl(crestId), `${id} -> ${crestId} must have no committed image`).toBeNull();
       expect(deedImageUrl(`deed_${id}`), `${id} itself must have no committed image`).toBeNull();
     }
+    expect(DEED_IMAGE_IDS.has('synthetic_artless')).toBe(false);
+    expect(deedImageUrl('deed_synthetic_artless')).toBeNull();
     // The category base crests never resolve to a deed image either.
     expect(deedImageUrl('deed_cat_progression')).toBeNull();
     expect(deedImageUrl('deed_cat_dungeon')).toBeNull();
