@@ -1001,6 +1001,7 @@ export class Hud {
   // showMobHoverTooltip.
   private lastMobTooltipId: string | null = null;
   private errorTimer: number | undefined;
+  private lastMirroredErrorText: string | undefined;
   private bannerTimer: number | undefined;
   private pfLevelEl = $('#pf-level');
   private pfHpEl = $('#pf-hp');
@@ -10231,8 +10232,13 @@ export class Hud {
     audio.error();
     // Mirror into the chat log's system channel (the same one loot/level-up/death
     // lines use) so the toast is not lost once it fades: WoW-style error/system
-    // logging. The on-screen toast's own timing above is unchanged.
-    if (shouldMirrorErrorToast(localized)) this.log(localized, ERROR_LOG_COLOR);
+    // logging. The on-screen toast's own timing above is unchanged. Consecutive
+    // repeats (mashing a key while an error condition persists) are suppressed
+    // so the channel does not flood; a different error still logs normally.
+    if (shouldMirrorErrorToast(localized, this.lastMirroredErrorText)) {
+      this.log(localized, ERROR_LOG_COLOR);
+      this.lastMirroredErrorText = localized;
+    }
   }
 
   showBanner(text: string): void {

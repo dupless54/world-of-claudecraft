@@ -16,7 +16,15 @@ export const ERROR_LOG_CHAN = 'system';
 
 // Guards against mirroring a blank/whitespace-only toast (defensive: showError
 // is never called with empty text today, but an empty chat line would still be
-// a visible, confusing no-op entry if that ever changed).
-export function shouldMirrorErrorToast(text: string): boolean {
-  return text.trim().length > 0;
+// a visible, confusing no-op entry if that ever changed), and against mirroring
+// the same text twice in a row. Without the latter, mashing a key or
+// click-spamming an action button while an error condition persists (out of
+// range, ability on cooldown, not enough mana) appends one duplicate chat line
+// per attempt, flooding the shared system channel and pushing real history
+// (loot, level-ups, deaths) out of view. Only the LAST mirrored text is
+// tracked (not a longer history), so a burst of the same error still collapses
+// to a single line, matching the on-screen toast's own clearTimeout-based
+// collapsing, while a different error in between still logs normally.
+export function shouldMirrorErrorToast(text: string, lastMirrored: string | undefined): boolean {
+  return text.trim().length > 0 && text !== lastMirrored;
 }

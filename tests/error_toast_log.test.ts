@@ -4,14 +4,26 @@ import { ERROR_LOG_CHAN, ERROR_LOG_COLOR, shouldMirrorErrorToast } from '../src/
 
 describe('error_toast_log: shouldMirrorErrorToast', () => {
   it('mirrors a normal error toast message', () => {
-    expect(shouldMirrorErrorToast('You cannot do that yet.')).toBe(true);
-    expect(shouldMirrorErrorToast('Out of range.')).toBe(true);
+    expect(shouldMirrorErrorToast('You cannot do that yet.', undefined)).toBe(true);
+    expect(shouldMirrorErrorToast('Out of range.', undefined)).toBe(true);
   });
 
   it('does not mirror an empty or whitespace-only toast', () => {
-    expect(shouldMirrorErrorToast('')).toBe(false);
-    expect(shouldMirrorErrorToast('   ')).toBe(false);
-    expect(shouldMirrorErrorToast('\n\t')).toBe(false);
+    expect(shouldMirrorErrorToast('', undefined)).toBe(false);
+    expect(shouldMirrorErrorToast('   ', undefined)).toBe(false);
+    expect(shouldMirrorErrorToast('\n\t', undefined)).toBe(false);
+  });
+
+  it('does not mirror the same text as the immediately preceding mirrored toast', () => {
+    expect(shouldMirrorErrorToast('Out of range.', 'Out of range.')).toBe(false);
+  });
+
+  it('does mirror a different error even right after a repeat suppression', () => {
+    expect(shouldMirrorErrorToast('Line of sight.', 'Out of range.')).toBe(true);
+  });
+
+  it('does mirror the same text again once a different one broke the streak', () => {
+    expect(shouldMirrorErrorToast('Out of range.', 'Line of sight.')).toBe(true);
   });
 
   it('reuses the existing system chan (not a new channel)', () => {
@@ -38,8 +50,14 @@ describe('hud.ts showError: mirrors into the chat log', () => {
     const match = hud.match(/showError\(text: string\): void \{[\s\S]*?\n {2}\}/);
     expect(match, 'showError method not found').toBeTruthy();
     const body = match?.[0] ?? '';
-    expect(body).toContain('shouldMirrorErrorToast(localized)');
+    expect(body).toContain('shouldMirrorErrorToast(localized, this.lastMirroredErrorText)');
     expect(body).toContain('this.log(localized, ERROR_LOG_COLOR)');
+  });
+
+  it('tracks the last mirrored text so consecutive repeats are suppressed', () => {
+    const match = hud.match(/showError\(text: string\): void \{[\s\S]*?\n {2}\}/);
+    const body = match?.[0] ?? '';
+    expect(body).toContain('this.lastMirroredErrorText = localized');
   });
 
   it('keeps the existing 1600ms toast fade timing unchanged', () => {
