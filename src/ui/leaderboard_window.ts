@@ -94,6 +94,12 @@ export class LeaderboardWindow {
   private deedsPage = 0;
   private devPage = 0;
   private dailyPage = 0;
+  // Render epoch (the DailyRewardsWindow renderSeq pattern). The five boards
+  // share one .lb-body, so every board arm re-checks this after its await: a
+  // slow response for an older tab or page must neither repaint the shared
+  // body nor mirror its server-clamped page into the now-current board's
+  // pager state (this.page dispatches on the CURRENT this.board).
+  private renderSeq = 0;
   private openerFocus: HTMLElement | null = null;
 
   constructor(private readonly deps: LeaderboardWindowDeps) {}
@@ -157,6 +163,9 @@ export class LeaderboardWindow {
   // leaderboard() maps to the error state (a localized retry message), instead of
   // silently masquerading as an empty board.
   async render(focus: FocusTarget = null): Promise<void> {
+    // Claim the epoch before the repaint: any board fetch still in flight is
+    // now stale and bails at its post-await guard.
+    const seq = ++this.renderSeq;
     // The setting may have been turned off after the devs tab was selected (a
     // prior session, or a live Options change while this window is open): fall
     // back to the players board rather than rendering an un-tabbed orphan board.
@@ -180,19 +189,19 @@ export class LeaderboardWindow {
     if (focus === 'tab') (el.querySelector('.lb-tab-active') as HTMLElement | null)?.focus();
 
     if (this.board === 'guilds') {
-      await this.renderGuildBoard(el, world, focus);
+      await this.renderGuildBoard(el, world, focus, seq);
       return;
     }
     if (this.board === 'deeds') {
-      await this.renderDeedsBoard(el, world, focus);
+      await this.renderDeedsBoard(el, world, focus, seq);
       return;
     }
     if (this.board === 'devs') {
-      await this.renderDevBoard(el, world, focus);
+      await this.renderDevBoard(el, world, focus, seq);
       return;
     }
     if (this.board === 'daily') {
-      await this.renderDailyBoard(el, world, focus);
+      await this.renderDailyBoard(el, world, focus, seq);
       return;
     }
 
@@ -202,8 +211,9 @@ export class LeaderboardWindow {
     } catch {
       result = null;
     }
-    // The panel may have been closed while the fetch was in flight.
-    if (el.style.display !== 'block') return;
+    // A newer render may own the body now, or the panel may have been closed,
+    // while the fetch was in flight.
+    if (seq !== this.renderSeq || el.style.display !== 'block') return;
     const body = el.querySelector('.lb-body');
     if (!body) return;
 
@@ -251,6 +261,7 @@ export class LeaderboardWindow {
     el: HTMLElement,
     world: IWorld,
     focus: FocusTarget,
+    seq: number,
   ): Promise<void> {
     let result: GuildLeaderboardPage | null = null;
     try {
@@ -258,7 +269,7 @@ export class LeaderboardWindow {
     } catch {
       result = null;
     }
-    if (el.style.display !== 'block') return;
+    if (seq !== this.renderSeq || el.style.display !== 'block') return;
     const body = el.querySelector('.lb-body');
     if (!body) return;
 
@@ -294,6 +305,7 @@ export class LeaderboardWindow {
     el: HTMLElement,
     world: IWorld,
     focus: FocusTarget,
+    seq: number,
   ): Promise<void> {
     let result: DeedsLeaderboardPage | null = null;
     try {
@@ -301,7 +313,7 @@ export class LeaderboardWindow {
     } catch {
       result = null;
     }
-    if (el.style.display !== 'block') return;
+    if (seq !== this.renderSeq || el.style.display !== 'block') return;
     const body = el.querySelector('.lb-body');
     if (!body) return;
 
@@ -336,14 +348,19 @@ export class LeaderboardWindow {
   // from GitHub's public stats) and renders contributor rows with their dev badge.
   // Offline / GitHub-unconfigured resolves the empty state; a rejection is the
   // error state.
-  private async renderDevBoard(el: HTMLElement, world: IWorld, focus: FocusTarget): Promise<void> {
+  private async renderDevBoard(
+    el: HTMLElement,
+    world: IWorld,
+    focus: FocusTarget,
+    seq: number,
+  ): Promise<void> {
     let result: DevLeaderboardPage | null = null;
     try {
       result = await world.devLeaderboard(this.page, LEADERBOARD_PAGE_SIZE);
     } catch {
       result = null;
     }
-    if (el.style.display !== 'block') return;
+    if (seq !== this.renderSeq || el.style.display !== 'block') return;
     const body = el.querySelector('.lb-body');
     if (!body) return;
 
@@ -376,6 +393,7 @@ export class LeaderboardWindow {
     el: HTMLElement,
     world: IWorld,
     focus: FocusTarget,
+    seq: number,
   ): Promise<void> {
     let result: DailyRewardLeaderboardPage | null = null;
     try {
@@ -383,7 +401,7 @@ export class LeaderboardWindow {
     } catch {
       result = null;
     }
-    if (el.style.display !== 'block') return;
+    if (seq !== this.renderSeq || el.style.display !== 'block') return;
     const body = el.querySelector('.lb-body');
     if (!body) return;
     if (result === null) {

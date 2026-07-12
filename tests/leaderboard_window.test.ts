@@ -87,10 +87,21 @@ describe('leaderboard_window: async + page wiring contracts (the painter half)',
     expect(code).toContain('result === null');
   });
 
-  it('guards against painting into a window closed during the in-flight fetch', () => {
-    // close() hides the window without clearing innerHTML, so a late-resolving fetch
-    // must bail rather than repaint a hidden panel.
-    expect(code).toContain("if (el.style.display !== 'block') return;");
+  it('guards against painting into a window closed or superseded during the in-flight fetch', () => {
+    // close() hides the window without clearing innerHTML, and a newer render
+    // (tab switch, page change) owns the shared body; a late-resolving fetch
+    // must bail on either rather than repaint stale rows.
+    expect(code).toContain("if (seq !== this.renderSeq || el.style.display !== 'block') return;");
+  });
+
+  it('stamps a render epoch and bails every stale board response against it', () => {
+    // One class-wide seq (the DailyRewardsWindow renderSeq pattern): render()
+    // bumps it before the repaint and all five board arms (players, guilds,
+    // deeds, devs, daily) re-check it after their await, so a slow response for
+    // an older tab or page never paints the shared body nor mirrors its clamped
+    // page into the wrong board's pager state.
+    expect(code).toContain('const seq = ++this.renderSeq;');
+    expect(code.match(/seq !== this\.renderSeq/g)?.length).toBe(5);
   });
 
   it('mirrors the server-clamped page back into the pager state', () => {
@@ -193,9 +204,9 @@ describe('leaderboard_window: developers board tab', () => {
     expect(code).toContain("t('hudChrome.leaderboard.devEmpty')");
   });
 
-  it('guards against painting the dev board into a window closed mid-fetch', () => {
+  it('guards against painting the dev board into a window closed or superseded mid-fetch', () => {
     expect(code).toMatch(
-      /renderDevBoard[\s\S]{0,400}if \(el\.style\.display !== 'block'\) return;/,
+      /renderDevBoard[\s\S]{0,400}if \(seq !== this\.renderSeq \|\| el\.style\.display !== 'block'\) return;/,
     );
   });
 
@@ -253,9 +264,9 @@ describe('leaderboard_window: Renown (deeds) board tab', () => {
     expect(code).toContain("t('hudChrome.deeds.lbEmpty')");
   });
 
-  it('guards against painting the Renown board into a window closed mid-fetch', () => {
+  it('guards against painting the Renown board into a window closed or superseded mid-fetch', () => {
     expect(code).toMatch(
-      /renderDeedsBoard\([\s\S]{0,500}if \(el\.style\.display !== 'block'\) return;/,
+      /renderDeedsBoard\([\s\S]{0,500}if \(seq !== this\.renderSeq \|\| el\.style\.display !== 'block'\) return;/,
     );
   });
 });
