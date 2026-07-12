@@ -990,9 +990,14 @@ describe('client HTML shell', () => {
       expect(entry, name).toMatch(/id="mm-discord"[^>]*>\s*<span class="keybind">u<\/span>/);
     }
     // main.ts wires the click through the Hud's discord hook (attachDiscordHook)
-    // to the same toggleDiscordPanel the 'U' keybind calls, and reveals/hides the
-    // button alongside the mobile tray entry via the shared syncDiscordEntries.
-    expect(mainTs).toContain('hud.attachDiscordHook(() => toggleDiscordPanel());');
+    // to openDiscordEntry, the SAME entry point the mobile tray uses: it opens
+    // the panel when logged in and falls through to the community invite
+    // otherwise, so the desktop button is a live affordance offline too. The
+    // hook is attached unconditionally (not inside `if (online)`), else the
+    // button would render visible but no-op offline.
+    expect(mainTs).toMatch(
+      /hud\.attachDiscordHook\(\(\) => openDiscordEntry\(\)\);\s*\n\s*if \(online\) \{/,
+    );
     expect(mainTs).toContain('function syncDiscordEntries(): void {');
     expect(mainTs).toContain("const desktopBtn = document.getElementById('mm-discord');");
   });

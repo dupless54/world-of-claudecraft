@@ -1765,12 +1765,12 @@ async function startGame(
       connected: () => gamepad.isConnected(),
     },
   });
+  // Desktop discoverability for the Discord link/panel: the micro-menu button
+  // (#mm-discord) mirrors the mobile "More" tray entry (onDiscord), opening the
+  // account panel when logged in and falling through to the community invite
+  // otherwise, so it is a live affordance offline too (not gated on `online`).
+  hud.attachDiscordHook(() => openDiscordEntry());
   if (online) {
-    // Desktop discoverability for the Discord link/panel: the micro-menu button
-    // (#mm-discord) opens the same panel the 'U' keybind does, mirroring the
-    // mobile "More" tray entry (onDiscord) so both platforms have a visible,
-    // no-keybind-required path to it.
-    hud.attachDiscordHook(() => toggleDiscordPanel());
     hud.attachReporting({
       submit: (targetPid, reason, details) =>
         api.reportPlayer(online.characterId, targetPid, reason, details),
