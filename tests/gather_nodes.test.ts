@@ -61,8 +61,9 @@ describe('gather node content', () => {
   it('every zone offers all three gather node types, so players are not forced back to one zone', () => {
     // Regression: thornpeak_heights had zero gather nodes of any type, and
     // mirefen_marsh had fewer than eastbrook_vale, so every player past the
-    // starting zone funneled back to eastbrook_vale's ore to progress mining,
-    // creating the exact contention this pins against.
+    // starting zone had to backtrack to eastbrook_vale for ore (nodes respawn
+    // per player and session-only, see gathering.ts, so this was never about
+    // node camping contention, just discoverability and travel distance).
     for (const zone of ZONES) {
       for (const type of GATHER_NODE_TYPES) {
         const count = GATHER_NODES.filter((n) => n.zoneId === zone.id && n.type === type).length;
