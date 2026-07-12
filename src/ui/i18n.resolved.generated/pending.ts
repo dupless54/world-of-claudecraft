@@ -12,24 +12,40 @@ export const pending: Record<string, readonly string[]> = {
   "es": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "es_ES": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "fr_FR": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "fr_CA": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
@@ -37,12 +53,20 @@ export const pending: Record<string, readonly string[]> = {
   "it_IT": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "de_DE": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
@@ -53,6 +77,10 @@ export const pending: Record<string, readonly string[]> = {
   "pt_BR": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
@@ -60,48 +88,80 @@ export const pending: Record<string, readonly string[]> = {
   "cs_CZ": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "nl_NL": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "pl_PL": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "id_ID": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "tr_TR": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "sv_SE": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "vi_VN": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ],
   "da_DK": [
     "hudChrome.corpseHarvest.harvestButtonTooltip",
     "hudChrome.loot.takeAllTooltip",
+    "hudChrome.tutorial.nextTipMap",
+    "hudChrome.tutorial.nextTipQuestLog",
+    "hudChrome.tutorial.nextTipSocial",
+    "hudChrome.tutorial.nextTipsTitle",
     "hudChrome.tutorial.slayTargetHint",
     "hudChrome.tutorial.slayTargetHintTouch"
   ]
