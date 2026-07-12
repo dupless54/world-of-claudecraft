@@ -1937,12 +1937,12 @@ export const DEEDS: Record<string, DeedDef> = {
     renown: 5,
     trigger: { kind: 'quest', questId: 'q_prof_intro' },
   },
-  // KNOWN GAP, maintainer decision pending: every hub recipe requires one of
-  // the six tier 4/5 reagents (thorium_ore, arcanite_bar, ashwood_log,
-  // elderwood_log, goldleaf_herb, sunpetal_herb) that items.ts documents as
-  // "vendor/loot-sourced for now", but no vendor, loot table, node, or quest
-  // grants them yet, so this deed cannot complete until that sourcing lands
-  // (and it blocks feat_book_complete via BOOK_COMPLETE_REQUIREMENTS).
+  // Reagent sourcing: every hub recipe requires one of the six tier 4/5
+  // reagents (thorium_ore, arcanite_bar, ashwood_log, elderwood_log,
+  // goldleaf_herb, sunpetal_herb), sold by Quartermaster Bree at the
+  // Highwatch hub (zone3.ts), so this deed (and feat_book_complete through
+  // it) is completable in live play. The vendor-to-craft-to-grant chain is
+  // pinned by tests/professions_crafting_hub.test.ts.
   prog_tools_of_the_trade: {
     id: 'prog_tools_of_the_trade',
     name: 'Tools of the Trade',

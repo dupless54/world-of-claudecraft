@@ -1091,6 +1091,16 @@ export const ZONE3_NPCS: Record<string, NpcDef> = {
       'cragwalker_boots',
       'windguard_leggings',
       'simple_fishing_pole',
+      // Tier 4/5 hub-recipe reagents (items.ts): Bree is the trade-goods
+      // vendor inside the crafting hub radius, so every requiresHubStation
+      // recipe has a live reagent source (prog_tools_of_the_trade needs at
+      // least one hub craft to be possible).
+      'thorium_ore',
+      'arcanite_bar',
+      'ashwood_log',
+      'elderwood_log',
+      'goldleaf_herb',
+      'sunpetal_herb',
     ],
     greeting:
       'Wool, hardtack, and steel-shod boots — Highwatch runs on all three, and I am short of everything.',
