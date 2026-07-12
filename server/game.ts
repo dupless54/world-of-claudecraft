@@ -560,6 +560,13 @@ export interface ClientSession {
   leaseNonce: string | undefined;
   // Behavioral bot-detection state. Ephemeral — reset on every join.
   botTrackingContext: BotTrackingContext;
+  // Deed unlocks awaiting a SUCCESSFUL authoritative save before they may be
+  // published to the character_deeds index (and, chained off it, Steam).
+  // Publishing before the blob is durable creates the one drift direction the
+  // insert-only join reconcile can never heal: records claiming a deed the
+  // character does not have. Event-ordered; drained by saveCharacter up to
+  // the count captured when the blob was serialized.
+  pendingDeedRecords: string[];
   spectating: {
     characterId: number;
     name: string;
@@ -2145,6 +2152,7 @@ export class GameServer {
       clientSeed: meta.clientSeed ?? '',
       leaseNonce: meta.leaseNonce,
       botTrackingContext,
+      pendingDeedRecords: [],
       spectating: null,
       jailed: state?.jail ?? null,
       jailVisit: null,
@@ -2440,6 +2448,11 @@ export class GameServer {
     const run = (previous ? previous.catch(() => {}) : Promise.resolve()).then(async () => {
       const state = this.sim.serializeCharacter(session.pid);
       const e = this.sim.entities.get(session.pid);
+      // Captured at serialize time: only unlocks already inside THIS blob may
+      // publish when it lands. An unlock granted while the write is in flight
+      // stays pending for the save queued behind it, so the character_deeds
+      // index (and Steam, chained off it) never runs ahead of durable state.
+      const recordUpTo = session.pendingDeedRecords.length;
       if (state && e) {
         if (session.spectating) {
           state.pos = {
@@ -2488,6 +2501,17 @@ export class GameServer {
           await saveCharacterState(session.characterId, state.level, state);
         }
         session.lastSave = Date.now();
+        // The blob is durable: publish every unlock it contains. A rejected
+        // save skips this (the throw propagates past it), leaving the ids
+        // pending for the next save attempt (the 30s autosave, the next
+        // unlock's save, or the leave save), so a transient failure delays
+        // the public record instead of publishing it ahead of the source.
+        for (const deedId of session.pendingDeedRecords.splice(0, recordUpTo)) {
+          recordDeedUnlock(
+            { characterId: session.characterId, accountId: session.accountId },
+            deedId,
+          );
+        }
       }
     });
     this.characterSaveQueues.set(session.characterId, run);
@@ -4779,25 +4803,22 @@ export class GameServer {
     // character_deeds (and on Steam, which chains off the insert) for up to
     // 30s before the Book itself is durable; a hard crash in that window
     // leaves the public record ahead of the source, the one drift direction
-    // the join-time reconcile cannot heal (it is insert-only). Saving FIRST
-    // flips any crash residue into the healable direction. One save covers
-    // every unlock the tick produced for a session (a retro burst on join is
-    // a single blob write); characterSaveQueues plus the recorder's FIFO
-    // preserve per-character unlock order. A rejected save logs and still
-    // records: the index write was never gated on the blob landing, so the
-    // failure arm must not drop rows the reconcile would only heal at the
-    // NEXT login.
+    // the join-time reconcile cannot heal (it is insert-only). So the ids are
+    // queued on the session and saveCharacter publishes them only AFTER its
+    // write lands: a rejected save leaves them pending for the next save
+    // attempt (30s autosave, next unlock, or the leave save) instead of
+    // publishing a record the source never persisted; if no save ever lands
+    // before the process dies, blob and index stay CONSISTENTLY without the
+    // deed, and the marquee broadcast (cosmetic, no durability contract)
+    // already fired above. One save covers every unlock the tick produced for
+    // a session (a retro burst on join is a single blob write);
+    // characterSaveQueues plus the recorder's FIFO preserve per-character
+    // unlock order.
     for (const [session, deedIds] of deedUnlocks) {
-      void this.saveCharacter(session)
-        .catch((err) => console.error(`deed-unlock save failed for ${session.name}:`, err))
-        .then(() => {
-          for (const deedId of deedIds) {
-            recordDeedUnlock(
-              { characterId: session.characterId, accountId: session.accountId },
-              deedId,
-            );
-          }
-        });
+      session.pendingDeedRecords.push(...deedIds);
+      void this.saveCharacter(session).catch((err) =>
+        console.error(`deed-unlock save failed for ${session.name}:`, err),
+      );
     }
   }
 

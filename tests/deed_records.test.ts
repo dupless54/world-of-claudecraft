@@ -38,6 +38,7 @@ vi.mock('../server/steam/mirror', () => ({
   onDeedRecorded: vi.fn(),
 }));
 
+import { saveCharacterState } from '../server/db';
 import { getDeedBroadcasts, insertCharacterDeed } from '../server/deeds_db';
 import {
   deedRecordsIdle,
@@ -54,6 +55,10 @@ import type { DeedDef } from '../src/sim/types';
 const insertMock = vi.mocked(insertCharacterDeed);
 const broadcastsFlagMock = vi.mocked(getDeedBroadcasts);
 const onDeedRecordedMock = vi.mocked(onDeedRecorded);
+// The blob-write seam: tests that hold or reject the authoritative save
+// control THIS mock while the real saveCharacter (which owns the publish-
+// after-durable drain) keeps running.
+const saveStateMock = vi.mocked(saveCharacterState);
 
 // Let the fire-and-forget promise chains (FIFO tail + the broadcast gate)
 // settle deterministically before asserting. Unlocks routed through
@@ -76,6 +81,10 @@ beforeEach(async () => {
   broadcastsFlagMock.mockResolvedValue(true);
   onDeedRecordedMock.mockClear();
   onDeedRecordedMock.mockImplementation(() => {});
+  // vi.restoreAllMocks does not touch module-factory vi.fn mocks, so a held
+  // or rejecting blob write set by one test must not leak into the next.
+  saveStateMock.mockReset();
+  saveStateMock.mockImplementation(async () => {});
 });
 
 afterEach(async () => {
@@ -508,7 +517,8 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     insertMock.mockClear();
 
     let releaseSave: () => void = () => {};
-    const saveSpy = vi.spyOn(server, 'saveCharacter').mockImplementation(
+    const saveSpy = vi.spyOn(server, 'saveCharacter');
+    saveStateMock.mockImplementation(
       () =>
         new Promise<void>((resolve) => {
           releaseSave = resolve;
@@ -534,6 +544,52 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     });
   });
 
+  it('an unlock granted while a save is in flight waits for ITS OWN save, not the in-flight one', async () => {
+    // The publish set is captured when the blob is SERIALIZED: an unlock
+    // landing while that write is in flight is not inside it, so publishing
+    // it on the in-flight save's success would put the index ahead of
+    // durable state for the crash window until the queued save lands.
+    const fc = fakeWs();
+    const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);
+    if ('error' in session) throw new Error(session.error);
+    tickAndDetect();
+    await settle();
+    insertMock.mockClear();
+
+    let releaseFirst: () => void = () => {};
+    let releaseSecond: () => void = () => {};
+    saveStateMock
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseFirst = resolve;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseSecond = resolve;
+          }),
+      );
+    const detect = (server as unknown as { detectActivity(events: unknown[]): void })
+      .detectActivity;
+    detect.call(server, [{ type: 'deedUnlocked', pid: session.pid, deedId: 'gone_first' }]);
+    // Let the first save serialize and start its (held) write.
+    await new Promise((resolve) => setImmediate(resolve));
+    detect.call(server, [{ type: 'deedUnlocked', pid: session.pid, deedId: 'gone_second' }]);
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(insertMock).not.toHaveBeenCalled();
+
+    releaseFirst();
+    await settle();
+    // Only the id the first blob actually contained publishes.
+    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual(['gone_first']);
+
+    releaseSecond();
+    await settle();
+    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual(['gone_first', 'gone_second']);
+  });
+
   it('a burst of unlocks for one session coalesces into ONE save with inserts in event order', async () => {
     // The retro back-credit on a veteran's first login lands dozens of
     // unlocks in one tick; one blob write must cover them all.
@@ -544,7 +600,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     await settle();
     insertMock.mockClear();
 
-    const saveSpy = vi.spyOn(server, 'saveCharacter').mockResolvedValue(undefined);
+    const saveSpy = vi.spyOn(server, 'saveCharacter');
     (server as unknown as { detectActivity(events: unknown[]): void }).detectActivity([
       { type: 'deedUnlocked', pid: session.pid, deedId: 'gone_first' },
       { type: 'deedUnlocked', pid: session.pid, deedId: 'gone_second' },
@@ -552,6 +608,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     ]);
     await settle();
     expect(saveSpy).toHaveBeenCalledTimes(1);
+    expect(saveStateMock).toHaveBeenCalledTimes(1);
     expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual([
       'gone_first',
       'gone_second',
@@ -559,11 +616,12 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     ]);
   });
 
-  it('a rejected save logs and still records every unlock in the tick', async () => {
-    // The failure arm must stay no worse than the pre-ordering behavior: the
-    // index write was never gated on the blob landing, so a save rejection
-    // cannot be allowed to drop rows (the reconcile would heal them only at
-    // the NEXT login).
+  it('a rejected save logs, defers every record, and the next successful save publishes in order', async () => {
+    // The failure arm must never publish: a record landing while the blob
+    // save failed is the ONE drift direction the insert-only join reconcile
+    // cannot heal (index and Steam claiming a deed the character does not
+    // have). The ids stay pending on the session and the next successful
+    // save (the 30s autosave stands in here) publishes them in event order.
     const fc = fakeWs();
     const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);
     if ('error' in session) throw new Error(session.error);
@@ -572,7 +630,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     insertMock.mockClear();
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(server, 'saveCharacter').mockRejectedValue(new Error('db down'));
+    saveStateMock.mockRejectedValue(new Error('db down'));
     (server as unknown as { detectActivity(events: unknown[]): void }).detectActivity([
       { type: 'deedUnlocked', pid: session.pid, deedId: 'gone_first' },
       { type: 'deedUnlocked', pid: session.pid, deedId: 'gone_second' },
@@ -582,7 +640,27 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
       expect.stringContaining('deed-unlock save failed'),
       expect.any(Error),
     );
-    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual(['gone_first', 'gone_second']);
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(onDeedRecordedMock).not.toHaveBeenCalled();
+
+    // Still failing across a second tick: nothing may ever publish (the
+    // crash analog: blob and index stay CONSISTENTLY without the deed).
+    (server as unknown as { detectActivity(events: unknown[]): void }).detectActivity([
+      { type: 'deedUnlocked', pid: session.pid, deedId: 'gone_third' },
+    ]);
+    await settle();
+    expect(insertMock).not.toHaveBeenCalled();
+
+    // The next successful save publishes the whole backlog in event order.
+    saveStateMock.mockImplementation(async () => {});
+    await server.saveCharacter(session);
+    await settle();
+    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual([
+      'gone_first',
+      'gone_second',
+      'gone_third',
+    ]);
+    expect(onDeedRecordedMock).toHaveBeenCalledTimes(3);
   });
 
   it('the marquee broadcast fires immediately, never gated on the save', async () => {
@@ -600,7 +678,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     insertMock.mockClear();
 
     let releaseSave: () => void = () => {};
-    vi.spyOn(server, 'saveCharacter').mockImplementation(
+    saveStateMock.mockImplementation(
       () =>
         new Promise<void>((resolve) => {
           releaseSave = resolve;
