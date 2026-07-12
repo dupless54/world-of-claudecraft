@@ -6846,6 +6846,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.trackerLabel': 'Деяния',
   'hudChrome.deeds.collapseHint': 'Свернуть список деяний',
   'hudChrome.deeds.expandHint': 'Развернуть список деяний',
+  'hudChrome.deeds.openBookHint': 'Открыть Книгу деяний',
   'hudChrome.deeds.charTitleLabel': 'Звание',
   'hudChrome.deeds.charTitleNone': 'Звание не выбрано',
   'hudChrome.deeds.charOpenBook': 'Книга деяний',

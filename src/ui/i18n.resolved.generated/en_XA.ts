@@ -1569,6 +1569,7 @@ export const en_XA: EnTranslations = {
       "trackerLabel": "[Ðééðš]",
       "collapseHint": "[Çóļļáþšé ðééð ţŕáçķéŕ]",
       "expandHint": "[Éẋþáñð ðééð ţŕáçķéŕ]",
+      "openBookHint": "[Óþéñ ţĥé Ɓóóķ óƒ Ðééðš]",
       "charTitleLabel": "[Ţíţļé]",
       "charTitleNone": "[Ñó ţíţļé çĥóšéñ]",
       "charOpenBook": "[Ɓóóķ óƒ Ðééðš]",

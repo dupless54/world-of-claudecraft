@@ -1891,6 +1891,9 @@ export const hudChromeStrings = {
     trackerLabel: 'Deeds',
     collapseHint: 'Collapse deed tracker',
     expandHint: 'Expand deed tracker',
+    // Compact touch tier: the tracker header is a count chip that opens the Book
+    // of Deeds dialog rather than toggling the inline watch list.
+    openBookHint: 'Open the Book of Deeds',
     charTitleLabel: 'Title',
     charTitleNone: 'No title chosen',
     charOpenBook: 'Book of Deeds',

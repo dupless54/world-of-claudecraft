@@ -1569,6 +1569,7 @@ export const en_CA: EnTranslations = {
       "trackerLabel": "Deeds",
       "collapseHint": "Collapse deed tracker",
       "expandHint": "Expand deed tracker",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Title",
       "charTitleNone": "No title chosen",
       "charOpenBook": "Book of Deeds",

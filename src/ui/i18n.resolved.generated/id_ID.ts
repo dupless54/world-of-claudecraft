@@ -1569,6 +1569,7 @@ export const id_ID: EnTranslations = {
       "trackerLabel": "Jasa",
       "collapseHint": "Ciutkan pelacak jasa",
       "expandHint": "Bentangkan pelacak jasa",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Gelar",
       "charTitleNone": "Belum ada gelar dipilih",
       "charOpenBook": "Kitab Jasa",

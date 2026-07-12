@@ -1569,6 +1569,7 @@ export const zh_TW: EnTranslations = {
       "trackerLabel": "功績",
       "collapseHint": "摺疊功績追蹤器",
       "expandHint": "展開功績追蹤器",
+      "openBookHint": "打開功績之書",
       "charTitleLabel": "頭銜",
       "charTitleNone": "未選擇頭銜",
       "charOpenBook": "功績之書",

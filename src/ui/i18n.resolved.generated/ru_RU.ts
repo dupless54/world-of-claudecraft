@@ -1569,6 +1569,7 @@ export const ru_RU: EnTranslations = {
       "trackerLabel": "Деяния",
       "collapseHint": "Свернуть список деяний",
       "expandHint": "Развернуть список деяний",
+      "openBookHint": "Открыть Книгу деяний",
       "charTitleLabel": "Звание",
       "charTitleNone": "Звание не выбрано",
       "charOpenBook": "Книга деяний",

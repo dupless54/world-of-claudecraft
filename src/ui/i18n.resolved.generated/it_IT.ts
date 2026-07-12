@@ -1569,6 +1569,7 @@ export const it_IT: EnTranslations = {
       "trackerLabel": "Imprese",
       "collapseHint": "Comprimi il riquadro Imprese",
       "expandHint": "Espandi il riquadro Imprese",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Titolo",
       "charTitleNone": "Nessun titolo scelto",
       "charOpenBook": "Libro delle Imprese",

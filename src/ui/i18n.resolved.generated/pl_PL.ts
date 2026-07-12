@@ -1569,6 +1569,7 @@ export const pl_PL: EnTranslations = {
       "trackerLabel": "Czyny",
       "collapseHint": "Zwiń podgląd czynów",
       "expandHint": "Rozwiń podgląd czynów",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Tytuł",
       "charTitleNone": "Nie wybrano tytułu",
       "charOpenBook": "Księga Czynów",

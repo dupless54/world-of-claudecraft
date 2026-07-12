@@ -11864,16 +11864,23 @@ export class Hud {
   // elided writers make an unchanged repaint free.
   private updateDeedTracker(): void {
     const collapsed = (this.optionsHooks?.settings.get('deedTrackerCollapsed') ?? false) === true;
-    this.deedTrackerPainter.update(
-      buildDeedTrackerViewInto(
-        this.deedTrackerView,
-        this.deedsWindow.watched,
-        this.sim.deedsEarned,
-        this.sim.deedStats,
-        DEEDS,
-        collapsed,
-      ),
+    const view = buildDeedTrackerViewInto(
+      this.deedTrackerView,
+      this.deedsWindow.watched,
+      this.sim.deedsEarned,
+      this.sim.deedStats,
+      DEEDS,
+      collapsed,
     );
+    // Compact touch tier: the rows are folded away (hud.mobile.css) and the header
+    // is a count chip that opens the Book (see the #deed-tracker click/keydown
+    // delegation, which reroutes to openDeeds here). Tell the painter so it swaps
+    // the header from a disclosure toggle to a dialog opener. Reuse the exact class
+    // test the delegation uses so the announced role matches the behavior.
+    view.chip =
+      document.body.classList.contains('mobile-touch') &&
+      document.body.classList.contains('hud-mobile-compact');
+    this.deedTrackerPainter.update(view);
   }
 
   /** Flip the persisted deed-tracker collapse (header click/keyboard delegation). */

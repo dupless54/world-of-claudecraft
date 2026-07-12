@@ -421,6 +421,11 @@ export interface DeedTrackerLine {
 export interface DeedTrackerView {
   visible: boolean;
   collapsed: boolean;
+  // Compact touch tier: the header is a count chip that opens the Book of Deeds
+  // dialog rather than a disclosure toggle (the rows are folded away there). Set
+  // by the host from document.body, not by buildDeedTrackerViewInto (which stays
+  // DOM-free); the painter drops the disclosure a11y when it is true.
+  chip: boolean;
   // Live line count; `lines` slots past it hold stale data by design.
   count: number;
   lines: DeedTrackerLine[];
@@ -432,7 +437,7 @@ export function makeDeedTrackerView(): DeedTrackerView {
   for (let i = 0; i < DEED_WATCH_CAP; i++) {
     lines.push({ id: '', hasProgress: false, current: 0, target: 0 });
   }
-  return { visible: false, collapsed: false, count: 0, lines };
+  return { visible: false, collapsed: false, chip: false, count: 0, lines };
 }
 
 /** Fill `out` with the watched, unearned deeds (earned and catalog-unknown

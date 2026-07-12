@@ -6379,6 +6379,7 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.trackerLabel': '功绩',
   'hudChrome.deeds.collapseHint': '折叠功绩追踪器',
   'hudChrome.deeds.expandHint': '展开功绩追踪器',
+  'hudChrome.deeds.openBookHint': '打开功绩之书',
   'hudChrome.deeds.charTitleLabel': '头衔',
   'hudChrome.deeds.charTitleNone': '未选择头衔',
   'hudChrome.deeds.charOpenBook': '功绩之书',

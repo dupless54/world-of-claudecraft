@@ -6703,6 +6703,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.trackerLabel': '업적',
   'hudChrome.deeds.collapseHint': '업적 추적기 접기',
   'hudChrome.deeds.expandHint': '업적 추적기 펼치기',
+  'hudChrome.deeds.openBookHint': '업적의 서 열기',
   'hudChrome.deeds.charTitleLabel': '칭호',
   'hudChrome.deeds.charTitleNone': '선택한 칭호 없음',
   'hudChrome.deeds.charOpenBook': '업적의 서',

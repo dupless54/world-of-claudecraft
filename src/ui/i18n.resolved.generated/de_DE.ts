@@ -1569,6 +1569,7 @@ export const de_DE: EnTranslations = {
       "trackerLabel": "Taten",
       "collapseHint": "Tatenverfolgung einklappen",
       "expandHint": "Tatenverfolgung ausklappen",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Titel",
       "charTitleNone": "Kein Titel gewählt",
       "charOpenBook": "Buch der Taten",

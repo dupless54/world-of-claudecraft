@@ -1569,6 +1569,7 @@ export const nl_NL: EnTranslations = {
       "trackerLabel": "Daden",
       "collapseHint": "Klap de dadenvolglijst in",
       "expandHint": "Klap de dadenvolglijst uit",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Titel",
       "charTitleNone": "Geen titel gekozen",
       "charOpenBook": "Boek der Daden",

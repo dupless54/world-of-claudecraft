@@ -6719,6 +6719,7 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.trackerLabel': '功績',
   'hudChrome.deeds.collapseHint': '功績トラッカーを折りたたむ',
   'hudChrome.deeds.expandHint': '功績トラッカーを展開',
+  'hudChrome.deeds.openBookHint': '功績の書を開く',
   'hudChrome.deeds.charTitleLabel': '称号',
   'hudChrome.deeds.charTitleNone': '称号未選択',
   'hudChrome.deeds.charOpenBook': '功績の書',

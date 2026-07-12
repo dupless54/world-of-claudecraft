@@ -240,14 +240,22 @@ describe('entry HTMLs', () => {
 });
 
 describe('tracker accessibility (quest-tracker contract)', () => {
-  it('keeps the header a native tab stop with live expand/collapse semantics', () => {
+  it('keeps the header a native tab stop, disclosure a11y gated on chip mode', () => {
     expect(tracker).not.toContain('tabindex="-1"');
+    // Disclosure tier: the quest-tracker aria-expanded contract, live-synced.
     expect(tracker).toContain(
       "w.setAttr(this.header, 'aria-expanded', view.collapsed ? 'false' : 'true');",
     );
     // aria-controls ties the toggle to the watch list it shows/hides.
     expect(tracker).toContain('aria-controls="deed-watch-list"');
     expect(tracker).toContain('id="deed-watch-list"');
+    // Chip tier (compact touch): a dialog opener, not a disclosure. The presence
+    // swap is a direct DOM write on the mode transition, since the elided setAttr
+    // facet has no removal path.
+    expect(tracker).toContain("this.header.setAttribute('aria-haspopup', 'dialog')");
+    expect(tracker).toContain("this.header.removeAttribute('aria-expanded')");
+    expect(tracker).toContain("this.header.removeAttribute('aria-controls')");
+    expect(tracker).toContain("t('hudChrome.deeds.openBookHint')");
   });
 
   it('hides the decorative glyphs from assistive tech (dt-count text carries the numbers)', () => {

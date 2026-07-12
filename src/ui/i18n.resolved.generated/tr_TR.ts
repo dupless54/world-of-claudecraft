@@ -1569,6 +1569,7 @@ export const tr_TR: EnTranslations = {
       "trackerLabel": "Yiğitlikler",
       "collapseHint": "Yiğitlik takipçisini daralt",
       "expandHint": "Yiğitlik takipçisini genişlet",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Unvan",
       "charTitleNone": "Unvan seçilmedi",
       "charOpenBook": "Yiğitlikler Kitabı",

@@ -1569,6 +1569,7 @@ export const ja_JP: EnTranslations = {
       "trackerLabel": "功績",
       "collapseHint": "功績トラッカーを折りたたむ",
       "expandHint": "功績トラッカーを展開",
+      "openBookHint": "功績の書を開く",
       "charTitleLabel": "称号",
       "charTitleNone": "称号未選択",
       "charOpenBook": "功績の書",

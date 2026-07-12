@@ -1569,6 +1569,7 @@ export const ko_KR: EnTranslations = {
       "trackerLabel": "업적",
       "collapseHint": "업적 추적기 접기",
       "expandHint": "업적 추적기 펼치기",
+      "openBookHint": "업적의 서 열기",
       "charTitleLabel": "칭호",
       "charTitleNone": "선택한 칭호 없음",
       "charOpenBook": "업적의 서",

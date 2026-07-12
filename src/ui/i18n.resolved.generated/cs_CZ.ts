@@ -1569,6 +1569,7 @@ export const cs_CZ: EnTranslations = {
       "trackerLabel": "Skutky",
       "collapseHint": "Sbalit panel skutků",
       "expandHint": "Rozbalit panel skutků",
+      "openBookHint": "Open the Book of Deeds",
       "charTitleLabel": "Titul",
       "charTitleNone": "Žádný titul nezvolen",
       "charOpenBook": "Kniha skutků",
