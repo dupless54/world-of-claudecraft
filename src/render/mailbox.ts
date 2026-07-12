@@ -55,7 +55,7 @@ function brassMat(color: number): THREE.Material {
   });
 }
 
-function attachMailGlow(group: THREE.Group, glowScale = 1): THREE.Mesh {
+function attachMailGlow(group: THREE.Group): THREE.Mesh {
   const glow = new THREE.Mesh(
     new THREE.SphereGeometry(0.09, 8, 6),
     surfaceMat({
@@ -67,7 +67,7 @@ function attachMailGlow(group: THREE.Group, glowScale = 1): THREE.Mesh {
       flatShading: !GFX.standardMaterials,
     }),
   );
-  glow.position.set(0, 1.56 * glowScale, 0.2 * glowScale);
+  glow.position.set(0, 1.56, 0.2);
   glow.visible = false;
   group.add(glow);
   group.userData.mailGlow = glow;
@@ -89,12 +89,11 @@ export function buildMailboxPillar(entityId: number): { group: THREE.Group; heig
     });
     const size = new THREE.Vector3();
     new THREE.Box3().setFromObject(inst).getSize(size);
-    const glowScale = size.y > 1e-3 ? MAILBOX_TARGET_H / size.y : 1;
-    if (size.y > 1e-3) inst.scale.setScalar(glowScale);
+    if (size.y > 1e-3) inst.scale.setScalar(MAILBOX_TARGET_H / size.y);
     const seated = new THREE.Box3().setFromObject(inst);
     inst.position.y -= seated.min.y;
     group.add(inst);
-    attachMailGlow(group, glowScale);
+    attachMailGlow(group);
     return { group, height: MAILBOX_TARGET_H };
   }
   const group = new THREE.Group();
