@@ -2,8 +2,8 @@
 // pattern scoped to the Book of Deeds). The English source of truth is the
 // DEEDS content table itself (name/desc on the def, the title string on its
 // reward); this module adds the locale plumbing, and the release fill lives
-// in DEED_LOCALE_TABLES (deed_i18n.newlocales.ts, a lazily fetched chunk via
-// ensureDeedLocalesLoaded) without touching a single call site. An absent or
+// in per-base-locale chunks (deed_i18n.locales/<locale>.ts, each lazily fetched
+// via ensureDeedLocalesLoaded) without touching a single call site. An absent or
 // not-yet-resident locale table or field still falls back to the authored
 // English (clean English is preferable to a broken guess).
 
@@ -22,64 +22,125 @@ export interface DeedLocaleEntry {
 
 export type DeedLocaleTable = Record<string, DeedLocaleEntry>;
 
-// The release-fill tables (the TALENT_NEW newlocales shape) live in ONE
-// dynamically imported chunk so the eager renderer bundle (hud.ts,
+// The release-fill tables (the TALENT_NEW newlocales shape) live in per-base-
+// locale chunks (deed_i18n.locales/<locale>.ts) behind DEED_LOCALE_LOADERS,
+// mirroring the i18n.ts LOCALE_LOADERS model: the eager renderer bundle (hud.ts,
 // render/nameplate_painter.ts) carries zero deed locale bytes for a
-// default-English player (the ensureLocaleLoaded model). `residentDeedLocales`
-// holds the assembled per-language map once the chunk resolves: the base
-// tables plus es_ES and fr_CA layered over their base locale (the talent_i18n
-// localeText dialect model) under the few entries whose delve vocabulary
-// genuinely diverges; en and en_CA resolve to the authored English in
-// localeEntry before this map is consulted, so they never fetch the chunk.
-let residentDeedLocales: Partial<Record<SupportedLanguage, DeedLocaleTable>> | undefined;
-// One coalesced in-flight promise (the single chunk carries every locale),
-// cleared on reject so a failed fetch leaves a retry possible.
-let inflightDeedLocales: Promise<void> | undefined;
+// default-English player, and a non-en visitor fetches ONLY their own locale's
+// chunk (a de_DE reader never downloads the other seventeen). `residentDeedLocales`
+// holds the assembled table per LANGUAGE once that locale's chunk resolves: es_ES
+// and fr_CA ride their base locale's chunk (es, fr_FR) with a small delve-
+// vocabulary override layered on (the talent_i18n localeText dialect model) under
+// the few entries whose vocabulary genuinely diverges; en and en_CA resolve to the
+// authored English in localeEntry before this map is consulted, so they never
+// fetch a chunk.
 
-type DeedNewlocalesModule = typeof import('./deed_i18n.newlocales');
+/** A per-base-locale deed chunk: its table, plus the co-located override layer
+ *  for any dialect that rides it (es carries es_ES, fr_FR carries fr_CA). */
+export interface DeedLocaleModule {
+  table: DeedLocaleTable;
+  dialects?: Record<string, DeedLocaleTable>;
+}
 
-// The dynamic-import thunk behind an exported seam so tests can simulate a
-// failed chunk fetch (the LOCALE_LOADERS spy shape); production code never
-// reassigns it.
-export const DEED_LOCALE_CHUNK = {
-  load: (): Promise<DeedNewlocalesModule> => import('./deed_i18n.newlocales'),
+type DeedBaseLocale =
+  | 'cs_CZ'
+  | 'da_DK'
+  | 'de_DE'
+  | 'es'
+  | 'fr_FR'
+  | 'id_ID'
+  | 'it_IT'
+  | 'ja_JP'
+  | 'ko_KR'
+  | 'nl_NL'
+  | 'pl_PL'
+  | 'pt_BR'
+  | 'ru_RU'
+  | 'sv_SE'
+  | 'tr_TR'
+  | 'vi_VN'
+  | 'zh_CN'
+  | 'zh_TW';
+
+// The per-locale dynamic-import thunks (the LOCALE_LOADERS shape scoped to the
+// Book of Deeds): each base locale is its own content-hashed chunk. Production
+// never reassigns the map; tests spy a single locale's thunk (vi.spyOn) to assert
+// per-locale fetch counts and simulate a failed chunk fetch. Read at call time in
+// ensureDeedLocalesLoaded (never captured) so a spy replacement is honored.
+export const DEED_LOCALE_LOADERS: Record<DeedBaseLocale, () => Promise<DeedLocaleModule>> = {
+  cs_CZ: () => import('./deed_i18n.locales/cs_CZ'),
+  da_DK: () => import('./deed_i18n.locales/da_DK'),
+  de_DE: () => import('./deed_i18n.locales/de_DE'),
+  es: () => import('./deed_i18n.locales/es'),
+  fr_FR: () => import('./deed_i18n.locales/fr_FR'),
+  id_ID: () => import('./deed_i18n.locales/id_ID'),
+  it_IT: () => import('./deed_i18n.locales/it_IT'),
+  ja_JP: () => import('./deed_i18n.locales/ja_JP'),
+  ko_KR: () => import('./deed_i18n.locales/ko_KR'),
+  nl_NL: () => import('./deed_i18n.locales/nl_NL'),
+  pl_PL: () => import('./deed_i18n.locales/pl_PL'),
+  pt_BR: () => import('./deed_i18n.locales/pt_BR'),
+  ru_RU: () => import('./deed_i18n.locales/ru_RU'),
+  sv_SE: () => import('./deed_i18n.locales/sv_SE'),
+  tr_TR: () => import('./deed_i18n.locales/tr_TR'),
+  vi_VN: () => import('./deed_i18n.locales/vi_VN'),
+  zh_CN: () => import('./deed_i18n.locales/zh_CN'),
+  zh_TW: () => import('./deed_i18n.locales/zh_TW'),
 };
 
-/** Make the deed locale tables resident for `lang` (a no-op for en / en_CA
- *  and once the chunk is resident). Callers await it beside ensureLocaleLoaded
- *  (bootstrap / picker); every lookup in this module stays synchronous and
- *  falls back to the authored English until it resolves. Rejects on a failed
- *  chunk fetch (the caller owns the UI, English keeps rendering). */
+// Dialect locales ride their base locale's chunk (es_ES over es, fr_CA over
+// fr_FR); the base chunk co-locates the override layer under `dialects`.
+const DEED_DIALECT_BASE: Partial<Record<SupportedLanguage, DeedBaseLocale>> = {
+  es_ES: 'es',
+  fr_CA: 'fr_FR',
+};
+
+// The assembled deed table per LANGUAGE (es and es_ES tracked separately), each
+// resident once its own chunk resolves. Absent until then: a non-en read falls
+// back to the authored English (the documented absent-table behavior).
+const residentDeedLocales: Partial<Record<SupportedLanguage, DeedLocaleTable>> = {};
+// One coalesced in-flight promise PER LANGUAGE, cleared on reject so a failed
+// fetch of one locale leaves a retry possible and never blocks another locale.
+const inflightDeedLocales = new Map<SupportedLanguage, Promise<void>>();
+
+/** Make the deed locale table resident for `lang` (a no-op for en / en_CA and
+ *  once resident). Callers await it beside ensureLocaleLoaded (bootstrap /
+ *  picker); every lookup in this module stays synchronous and falls back to the
+ *  authored English until it resolves. Fetches ONLY `lang`'s chunk (a dialect
+ *  rides its base locale's chunk). Rejects on a failed chunk fetch (the caller
+ *  owns the UI, English keeps rendering) and clears the in-flight slot so a
+ *  retry can start a fresh import. */
 export async function ensureDeedLocalesLoaded(lang: SupportedLanguage): Promise<void> {
   if (lang === 'en' || lang === 'en_CA') return;
-  if (residentDeedLocales) return;
-  const existing = inflightDeedLocales;
+  if (residentDeedLocales[lang]) return;
+  const existing = inflightDeedLocales.get(lang);
   if (existing) return existing;
-  const task = DEED_LOCALE_CHUNK.load()
+  const dialectBase = DEED_DIALECT_BASE[lang];
+  const base = dialectBase ?? (lang as DeedBaseLocale);
+  const loader = DEED_LOCALE_LOADERS[base];
+  if (!loader) return; // no chunk for this code (unknown): resident no-op
+  const task = loader()
     .then((mod) => {
-      // Shape-tolerant read (the ensureLocaleLoaded gotcha): a production
-      // chunk may expose the module under `default` while raw vitest resolves
-      // the SOURCE .ts with named exports only.
-      const m = (mod as { default?: DeedNewlocalesModule }).default ?? mod;
-      residentDeedLocales = {
-        ...m.DEED_LOCALE_TABLES,
-        es_ES: { ...m.DEED_LOCALE_TABLES.es, ...m.DEED_LOCALE_DIALECT_OVERRIDES.es_ES },
-        fr_CA: { ...m.DEED_LOCALE_TABLES.fr_FR, ...m.DEED_LOCALE_DIALECT_OVERRIDES.fr_CA },
-      };
-      inflightDeedLocales = undefined;
+      // Shape-tolerant read (the ensureLocaleLoaded gotcha): a production chunk
+      // may expose the module under `default` while raw vitest resolves the
+      // SOURCE .ts with named exports only.
+      const m = (mod as { default?: DeedLocaleModule }).default ?? mod;
+      const override = dialectBase ? m.dialects?.[lang] : undefined;
+      residentDeedLocales[lang] = override ? { ...m.table, ...override } : m.table;
+      inflightDeedLocales.delete(lang);
     })
     .catch((err) => {
-      inflightDeedLocales = undefined;
+      inflightDeedLocales.delete(lang);
       throw err;
     });
-  inflightDeedLocales = task;
+  inflightDeedLocales.set(lang, task);
   return task;
 }
 
 function localeEntry(id: string): DeedLocaleEntry | undefined {
   const lang = getLanguage();
   if (lang === 'en' || lang === 'en_CA') return undefined;
-  return residentDeedLocales?.[lang]?.[id];
+  return residentDeedLocales[lang]?.[id];
 }
 
 /** Localized deed name; the raw id for a catalog-unknown id (content drift). */

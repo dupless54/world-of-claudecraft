@@ -3,9 +3,11 @@
 // ''-for-non-title gate (load-bearing: the hud inspect/nameplate surfaces
 // hide entirely on ''), and the release-fill manifest shape.
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { DEEDS } from '../src/sim/content/deeds';
 import {
+  DEED_LOCALE_LOADERS,
+  type DeedLocaleTable,
   deedBroadcastLine,
   deedDesc,
   deedName,
@@ -15,7 +17,6 @@ import {
   titledDisplayName,
   titledNameDecoration,
 } from '../src/ui/deed_i18n';
-import { DEED_LOCALE_DIALECT_OVERRIDES, DEED_LOCALE_TABLES } from '../src/ui/deed_i18n.newlocales';
 import { setLanguage } from '../src/ui/i18n';
 
 describe('deed_i18n English resolution', () => {
@@ -121,11 +122,37 @@ describe('titledDisplayName + titledNameDecoration (the name-plus-title pattern)
   });
 });
 
-describe('DEED_LOCALE_TABLES (the release fill)', () => {
-  const tableLocales = Object.keys(DEED_LOCALE_TABLES) as (keyof typeof DEED_LOCALE_TABLES)[];
+describe('deed locale chunks (the per-base-locale release fill)', () => {
+  // The release-fill tables now live in per-base-locale chunks
+  // (deed_i18n.locales/<locale>.ts) behind DEED_LOCALE_LOADERS, each fetched on
+  // demand. The runtime pulls only one chunk per visitor; this suite assembles
+  // all of them (and the two co-located dialect override layers) once for the
+  // data checks.
+  type BaseLocale = keyof typeof DEED_LOCALE_LOADERS;
+  const tables = {} as Record<BaseLocale, DeedLocaleTable>;
+  const overrides = {} as Record<'es_ES' | 'fr_CA', DeedLocaleTable>;
 
-  it('carries one table per base locale', () => {
-    expect(tableLocales.length).toBe(18);
+  beforeAll(async () => {
+    const keys = Object.keys(DEED_LOCALE_LOADERS) as BaseLocale[];
+    await Promise.all(
+      keys.map(async (loc) => {
+        tables[loc] = (await DEED_LOCALE_LOADERS[loc]()).table;
+      }),
+    );
+    overrides.es_ES = (await DEED_LOCALE_LOADERS.es()).dialects?.es_ES ?? {};
+    overrides.fr_CA = (await DEED_LOCALE_LOADERS.fr_FR()).dialects?.fr_CA ?? {};
+    // Make every language the resolver test switches to resident (per-locale now,
+    // so each is a distinct chunk): the test-harness mirror of the bootstrap's
+    // await-before-paint.
+    await Promise.all(
+      (['de_DE', 'es', 'es_ES', 'fr_FR', 'fr_CA'] as const).map(ensureDeedLocalesLoaded),
+    );
+  });
+
+  const tableLocales = (): BaseLocale[] => Object.keys(tables) as BaseLocale[];
+
+  it('carries one chunk per base locale', () => {
+    expect(tableLocales().length).toBe(18);
   });
 
   // RELEASE-TIER ONLY: a contributor adds new deeds ENGLISH-only (the deed
@@ -138,8 +165,8 @@ describe('DEED_LOCALE_TABLES (the release fill)', () => {
     'covers every manifest row in all 18 base locale tables',
     () => {
       const manifest = deedTranslationManifest();
-      for (const lang of tableLocales) {
-        const table = DEED_LOCALE_TABLES[lang];
+      for (const lang of tableLocales()) {
+        const table = tables[lang];
         for (const row of manifest) {
           const value = table[row.id]?.[row.field];
           expect(
@@ -152,8 +179,8 @@ describe('DEED_LOCALE_TABLES (the release fill)', () => {
   );
 
   it('carries only real catalog ids, and a title exactly where the deed rewards one', () => {
-    for (const lang of tableLocales) {
-      for (const [id, entry] of Object.entries(DEED_LOCALE_TABLES[lang])) {
+    for (const lang of tableLocales()) {
+      for (const [id, entry] of Object.entries(tables[lang])) {
         const def = DEEDS[id];
         expect(def, `${lang}.${id} is not a catalog deed`).toBeDefined();
         if (entry.title !== undefined) {
@@ -165,11 +192,11 @@ describe('DEED_LOCALE_TABLES (the release fill)', () => {
     }
   });
 
-  it('keeps every value free of em/en dashes and emoji (this file sits outside the overlay copy-scan exemption)', () => {
+  it('keeps every value free of em/en dashes and emoji (these files sit outside the overlay copy-scan exemption)', () => {
     const forbidden =
       /[\u{2013}\u{2014}\u{2015}]|[\u{1F000}-\u{1FAFF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{2600}-\u{27BF}]|\u{FE0F}/u;
-    for (const lang of tableLocales) {
-      for (const [id, entry] of Object.entries(DEED_LOCALE_TABLES[lang])) {
+    for (const lang of tableLocales()) {
+      for (const [id, entry] of Object.entries(tables[lang])) {
         for (const field of ['name', 'desc', 'title'] as const) {
           const value = entry[field];
           if (value !== undefined) {
@@ -180,11 +207,7 @@ describe('DEED_LOCALE_TABLES (the release fill)', () => {
     }
   });
 
-  it('resolves per language, with es_ES and fr_CA inheriting their base under the delve-term overrides', async () => {
-    // Lazy deed locales: the tables ride one dynamically imported chunk, so
-    // make them resident first (the test-harness mirror of the bootstrap's
-    // await-before-paint); any non-en load makes every table resident.
-    await ensureDeedLocalesLoaded('de_DE');
+  it('resolves per language, with es_ES and fr_CA inheriting their base under the delve-term overrides', () => {
     try {
       setLanguage('de_DE');
       expect(deedName('prog_first_steps')).toBe('Erste Schritte');
@@ -217,8 +240,8 @@ describe('DEED_LOCALE_TABLES (the release fill)', () => {
   it('dialect overrides carry only real catalog ids and obey the same copy rules', () => {
     const forbidden =
       /[\u{2013}\u{2014}\u{2015}]|[\u{1F000}-\u{1FAFF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{2600}-\u{27BF}]|\u{FE0F}/u;
-    for (const [dialect, table] of Object.entries(DEED_LOCALE_DIALECT_OVERRIDES)) {
-      const base = dialect === 'es_ES' ? DEED_LOCALE_TABLES.es : DEED_LOCALE_TABLES.fr_FR;
+    for (const [dialect, table] of Object.entries(overrides)) {
+      const base = dialect === 'es_ES' ? tables.es : tables.fr_FR;
       for (const [id, entry] of Object.entries(table)) {
         expect(DEEDS[id], `${dialect}.${id} is not a catalog deed`).toBeDefined();
         for (const field of ['name', 'desc', 'title'] as const) {
