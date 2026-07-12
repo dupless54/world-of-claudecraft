@@ -294,6 +294,36 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     (server as unknown as { detectActivity(events: unknown[]): void }).detectActivity(events);
   }
 
+  it('founding a guild grants soc_guild_founded live: the transport observer feeds the sim stat', async () => {
+    const fc = fakeWs();
+    const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);
+    if ('error' in session) throw new Error(session.error);
+    vi.spyOn(server.social, 'broadcastDeedUnlock').mockResolvedValue(undefined);
+    tickAndDetect(); // settle the fresh join
+    await settle();
+    insertMock.mockClear();
+
+    // Drive the REAL game-side transport closure (the seam social.guildCreate
+    // fires on its success arm), not a hand-bumped counter: it must resolve
+    // the session by character id, reach the live sim meta, and bump.
+    const tx = (
+      server.social as unknown as {
+        tx: { onGuildFounded(characterId: number): void };
+      }
+    ).tx;
+    tx.onGuildFounded(42);
+    const meta = server.sim.meta(session.pid);
+    expect(meta?.deedStats.counters.guildsFounded).toBe(1);
+    expect(meta?.deedsEarned.has('soc_guild_founded')).toBe(false); // tick tail grants
+    tickAndDetect();
+    await settle();
+    expect(meta?.deedsEarned.has('soc_guild_founded')).toBe(true);
+    const rows = insertMock.mock.calls.map((c) => c[0]);
+    expect(rows.some((r) => r.deedId === 'soc_guild_founded')).toBe(true);
+    // An unknown character id (no live session) is a safe no-op.
+    expect(() => tx.onGuildFounded(999999)).not.toThrow();
+  });
+
   it('a live unlock inserts one row per deed with the session ids; a marquee unlock broadcasts', async () => {
     const fc = fakeWs();
     const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);

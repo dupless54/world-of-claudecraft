@@ -223,6 +223,10 @@ class FakeTransport implements SocialTransport {
   onBlocksChanged(id: number, ids: number[]): void {
     this.blockSets.set(id, ids);
   }
+  founded: number[] = [];
+  onGuildFounded(id: number): void {
+    this.founded.push(id);
+  }
   isIgnoring(recipientId: number, senderCharacterId: number): boolean {
     return !!this.db.blocks.get(recipientId)?.has(senderCharacterId);
   }
@@ -492,6 +496,22 @@ describe('guilds', () => {
     h.tx.clear();
     await h.svc.guildCreate(h.actor(2), 'iron vanguard');
     expect(h.tx.errorsFor(2).join()).toMatch(/already exists/i);
+  });
+
+  it('fires onGuildFounded exactly once, on the committed create only (the soc_guild_founded feed)', async () => {
+    // Every refusal arm must stay silent: an invalid name, then a real
+    // founding, then a duplicate name, then a create while already guilded.
+    await h.svc.guildCreate(h.actor(1), 'no');
+    expect(h.tx.founded).toEqual([]);
+    await h.svc.guildCreate(h.actor(1), 'Iron Vanguard');
+    expect(h.tx.founded).toEqual([1]);
+    await h.svc.guildCreate(h.actor(2), 'iron vanguard');
+    await h.svc.guildCreate(h.actor(1), 'Second Banner');
+    expect(h.tx.founded).toEqual([1]);
+    // A JOIN never counts as founding.
+    await h.svc.guildInvite(h.actor(1), 'Bet');
+    await h.svc.guildAccept(h.actor(2));
+    expect(h.tx.founded).toEqual([1]);
   });
 
   it('invites, accepts, and broadcasts the join to all members', async () => {

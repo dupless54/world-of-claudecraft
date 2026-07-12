@@ -2764,8 +2764,9 @@ export type DeedCategory =
 // Persisted lifetime counters (DeedStats numeric fields). Each key has exactly
 // one increment site and at least one deed reading it; do not add a counter no
 // deed reads. The one non-sim producer is `guildsFounded`: guild creation
-// resolves entirely in the server social layer, so its bump is a server
-// observer (until that lands, the deed reading it simply cannot grant). These
+// resolves entirely in the server social layer, so its bump is the server
+// observer SocialTransport.onGuildFounded (fired by the guildCreate success
+// arm in server/social.ts, wired to the sim in server/game.ts). These
 // are the PERSISTED lifetime surface; the session-scoped RewardCounters (the
 // RL reward channel) stays untouched even where the two double up at a site
 // by design.

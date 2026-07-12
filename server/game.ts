@@ -1394,6 +1394,15 @@ export class GameServer {
         const s = this.sessionByCharacterId(id);
         if (s) s.blockedIds = new Set(ids);
       },
+      onGuildFounded: (id) => {
+        // The one server-produced deed stat (DeedStatKey doc, src/sim/types.ts):
+        // guild creation resolves in the social layer, so the founder credit is
+        // observed here; the sim's tick tail then grants soc_guild_founded and
+        // the normal unlock observer records and broadcasts it.
+        const s = this.sessionByCharacterId(id);
+        const meta = s ? this.sim.meta(s.pid) : null;
+        if (meta) this.sim.ctx.bumpDeedStat(meta, 'guildsFounded', 1);
+      },
       isIgnoring: (recipientId, senderCharacterId) => {
         const s = this.sessionByCharacterId(recipientId);
         return s ? s.blockedIds.has(senderCharacterId) : false;

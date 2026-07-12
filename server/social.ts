@@ -166,6 +166,11 @@ export interface SocialTransport {
   pushSnapshot(characterId: number): void;
   // a character's block set changed; refresh the in-memory chat filter
   onBlocksChanged(characterId: number, blockedIds: number[]): void;
+  // the character just FOUNDED a guild (create committed, never a join or a
+  // refused create): the transport owner credits the founder's deed stat
+  // (guildsFounded is the one server-produced DeedStatKey; see its doc in
+  // src/sim/types.ts)
+  onGuildFounded(characterId: number): void;
   // true if `recipientId` has `senderCharacterId` on their ignore list, so
   // guild/officer chat can honour the same filter say/whisper already apply
   isIgnoring(recipientId: number, senderCharacterId: number): boolean;
@@ -481,6 +486,10 @@ export class SocialService {
       );
       return;
     }
+    // Founder credit rides the transport seam: soc_guild_founded reads the
+    // guildsFounded deed stat, which only this success arm may ever produce
+    // (a refused create above must never reach it).
+    this.tx.onGuildFounded(actor.characterId);
     this.info(
       actor.characterId,
       `You found the guild <${name}>! You are its Guild Master.`,
