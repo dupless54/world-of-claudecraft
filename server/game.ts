@@ -1436,13 +1436,25 @@ export class GameServer {
     for (const session of this.clients.values()) {
       const ids = session.socialTrackedIds;
       if (!ids || ids.length === 0) continue;
-      const list: { id: number; x: number; z: number; zone: string; status: PresenceStatus }[] = [];
+      const list: {
+        id: number;
+        x: number;
+        z: number;
+        zone: string;
+        status: PresenceStatus;
+        title: string | null;
+      }[] = [];
       for (const id of ids) {
         const other = this.sessionByCharacterId(id);
         if (!other) continue; // offline — snapshots own the online/offline flip
         const loc = this.presenceOf(other);
         if (loc.x === undefined || loc.z === undefined) continue;
-        list.push({ id, x: loc.x, z: loc.z, zone: loc.zone, status: loc.status });
+        // The live Book of Deeds title (sim meta, no DB read); the `social`
+        // frame's DB-sourced roster value lags the autosave, so this keeps
+        // non-nearby friends/guildmates current without a relog. Always
+        // present so a cleared title propagates as an explicit null.
+        const title = this.sim.meta(other.pid)?.activeTitle ?? null;
+        list.push({ id, x: loc.x, z: loc.z, zone: loc.zone, status: loc.status, title });
       }
       if (list.length > 0) this.send(session, { t: 'socialpos', list });
     }

@@ -236,6 +236,15 @@ describe('W9 socialInfo via the social/socialpos frames (non-snapshot)', () => {
           activeTitle: null,
           online: false,
         },
+        {
+          id: 6,
+          name: 'Keeper',
+          cls: 'hunter',
+          level: 7,
+          realm: 'R1',
+          activeTitle: 'prog_veteran',
+          online: false,
+        },
       ],
       blocks: [],
       guild: {
@@ -249,7 +258,7 @@ describe('W9 socialInfo via the social/socialpos frames (non-snapshot)', () => {
             cls: 'priest',
             level: 9,
             realm: 'R1',
-            activeTitle: null,
+            activeTitle: 'prog_veteran',
             online: false,
             rank: 'member',
             lastLogin: null,
@@ -263,23 +272,32 @@ describe('W9 socialInfo via the social/socialpos frames (non-snapshot)', () => {
     feed(c, {
       t: 'socialpos',
       list: [
-        { id: 2, x: 10, z: 20, zone: 'Eastvale', status: 'combat' },
-        { id: 4, x: 30, z: 40, zone: 'Westwood', status: 'dungeon' },
+        { id: 2, x: 10, z: 20, zone: 'Eastvale', status: 'combat', title: 'prog_veteran' },
+        { id: 4, x: 30, z: 40, zone: 'Westwood', status: 'dungeon', title: null },
+        { id: 6, x: 50, z: 60, zone: 'Northfen', status: 'online' },
       ],
     });
 
-    // matched friend updated in place (and flipped online)
+    // matched friend updated in place (and flipped online); a title-bearing row
+    // sets the roster activeTitle so friends see title changes without relog
     const f2 = c.socialInfo!.friends.find((f) => f.id === 2)!;
     expect(f2).toMatchObject({ x: 10, z: 20, zone: 'Eastvale', status: 'combat', online: true });
+    expect(f2.activeTitle).toBe('prog_veteran');
     // unmatched friend left exactly as it was (snapshots own online/offline)
     const f5 = c.socialInfo!.friends.find((f) => f.id === 5)!;
     expect(f5.x).toBeUndefined();
     expect(f5.zone).toBeUndefined();
     expect(f5.status).toBeUndefined();
     expect(f5.online).toBe(false);
-    // matched guildmate updated in place too
+    // a row WITHOUT the title field leaves activeTitle alone (an older server
+    // that does not send titles must not wipe the DB-sourced roster value)
+    const f6 = c.socialInfo!.friends.find((f) => f.id === 6)!;
+    expect(f6).toMatchObject({ x: 50, z: 60, zone: 'Northfen', status: 'online', online: true });
+    expect(f6.activeTitle).toBe('prog_veteran');
+    // matched guildmate updated in place too; title: null clears the roster title
     const m4 = c.socialInfo!.guild!.members.find((m) => m.id === 4)!;
     expect(m4).toMatchObject({ x: 30, z: 40, zone: 'Westwood', status: 'dungeon', online: true });
+    expect(m4.activeTitle).toBeNull();
   });
 
   it('`socialpos` is a no-op when there is no prior socialInfo (guarded)', () => {
@@ -374,5 +392,44 @@ describe('guild/officer relay sender title (Book of Deeds)', () => {
       expect.objectContaining({ name: 'Titled', activeTitle: null }),
       'plain',
     );
+  });
+});
+
+describe('socialpos carries the live active title (Book of Deeds)', () => {
+  // The roster title otherwise comes only from the full `social` frame, which
+  // reads the persisted DB blob and lags the 30s autosave: without this, a
+  // non-nearby friend/guildmate sees a title change only after a relog. The
+  // 1 Hz socialpos push reads the LIVE sim meta, no DB round trip.
+  function lastSocialPos(sent: any[]): any {
+    for (let i = sent.length - 1; i >= 0; i--) {
+      if (sent[i].t === 'socialpos') return sent[i];
+    }
+    return null;
+  }
+
+  it('broadcastSocialPositions rides the live activeTitle, and null once cleared', () => {
+    const server = new GameServer();
+    const changerFc = fakeWs();
+    const changer = joinServer(server, changerFc, 1, 'Changer');
+    const watcherFc = fakeWs();
+    const watcher = joinServer(server, watcherFc, 2, 'Watcher');
+    watcher.socialTrackedIds = [changer.characterId];
+
+    const sim = (server as any).sim;
+    const meta = sim.players.get(changer.pid)!;
+    grantDeed(sim.ctx, meta, 'prog_veteran');
+    sim.setActiveTitle('prog_veteran', changer.pid);
+
+    (server as any).broadcastSocialPositions();
+    const frame = lastSocialPos(watcherFc.sent);
+    expect(frame).not.toBeNull();
+    const row = frame.list.find((r: any) => r.id === changer.characterId);
+    expect(row?.title).toBe('prog_veteran');
+
+    sim.setActiveTitle(null, changer.pid);
+    (server as any).broadcastSocialPositions();
+    const row2 = lastSocialPos(watcherFc.sent).list.find((r: any) => r.id === changer.characterId);
+    // the key is always present so a clear propagates as an explicit null
+    expect(row2.title).toBeNull();
   });
 });

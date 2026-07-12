@@ -1577,7 +1577,7 @@ export class ClientWorld implements IWorld {
       if (this.socialInfo && Array.isArray(msg.list)) {
         const byId = new Map<
           number,
-          { x: number; z: number; zone: string; status: PresenceStatus }
+          { x: number; z: number; zone: string; status: PresenceStatus; title?: string | null }
         >();
         for (const e of msg.list) byId.set(e.id, e);
         const apply = (arr: FriendInfo[]) => {
@@ -1589,6 +1589,9 @@ export class ClientWorld implements IWorld {
               m.zone = u.zone;
               m.status = u.status;
               m.online = true;
+              // rides only on servers that send it; an older server's frame
+              // must not wipe the DB-sourced roster title
+              if (u.title !== undefined) m.activeTitle = u.title;
             }
           }
         };
