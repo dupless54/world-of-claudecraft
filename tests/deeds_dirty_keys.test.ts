@@ -289,7 +289,72 @@ describe('the scheduler-resolved witness sweep', () => {
     for (let i = 0; i < 21; i++) sim.tick();
     expect(meta.deedStats.visited.has('witness:thunzharr_waking_peak')).toBe(false);
     // The spawn-square POI mark proves the sweep itself ran (the deeds.test
-    // namespace suite pins the same landmark).
-    expect(meta.deedStats.visited.has('poi:eastbrook_vale:Eastbrook')).toBe(true);
+    // namespace suite pins the same landmark). The mark is poi:<zone.id>:<poi.id>,
+    // and the Eastbrook landmark's id is the lowercase slug 'eastbrook' (its
+    // display label stays 'Eastbrook').
+    expect(meta.deedStats.visited.has('poi:eastbrook_vale:eastbrook')).toBe(true);
+  });
+});
+
+describe('setPlayerGuild retro-on-first-join (soc_guild_joined)', () => {
+  // guildMember is the only deed predicate reading host-stamped entity state
+  // (e.guild) hydrated after addPlayer, and the guild name arrives a beat after
+  // the retro pass (it lives in the server social DB, not the loaded blob). The
+  // first join-time stamp threads retroDeeds so a pre-existing member re-earns
+  // soc_guild_joined SILENTLY (the retro summary), not with the live banner;
+  // any later membership change is a genuine live join.
+  function findGuildJoin(events: ReturnType<Sim['tick']>): { retro?: boolean } | undefined {
+    return (events as ReadonlyArray<{ type: string; deedId?: string; retro?: boolean }>).find(
+      (e) => e.type === 'deedUnlocked' && e.deedId === 'soc_guild_joined',
+    );
+  }
+
+  it('the join retro pass leaves an unaffiliated player without soc_guild_joined', () => {
+    const sim = makeSim();
+    const { meta, e } = primary(sim);
+    expect(e.guild).toBe('');
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(false);
+  });
+
+  it('the first join-time stamp (retroDeeds) grants soc_guild_joined silently, retro true', () => {
+    const sim = makeSim();
+    const { meta } = primary(sim);
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(false);
+    sim.setPlayerGuild(sim.playerId, 'The Levy', { retroDeeds: true });
+    // The retro evaluate grants synchronously (mirroring the addPlayer retro
+    // tail), before any tick; the marks are cleared, so the tick only drains
+    // the already-emitted event.
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(true);
+    const ev = findGuildJoin(sim.tick());
+    expect(ev).toBeDefined();
+    expect(ev?.retro).toBe(true); // the client renders retro as the silent summary
+  });
+
+  it('a genuine live join (no retroDeeds) grants soc_guild_joined with no retro flag', () => {
+    const sim = makeSim();
+    const { meta } = primary(sim);
+    sim.setPlayerGuild(sim.playerId, 'The Levy'); // a membership change = live join
+    // A live join only MARKS dirty; the tick tail grants it, live.
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(false);
+    const ev = findGuildJoin(sim.tick());
+    expect(ev).toBeDefined();
+    expect(ev && 'retro' in ev).toBe(false); // live: full banner, no retro flag
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(true);
+  });
+
+  it('retroDeeds is inert unless the guild goes from empty to named (never a re-stamp)', () => {
+    const sim = makeSim();
+    const { meta, e } = primary(sim);
+    sim.setPlayerGuild(sim.playerId, 'The Levy', { retroDeeds: true }); // first stamp: retro
+    sim.tick();
+    expect(meta.deedsEarned.has('soc_guild_joined')).toBe(true);
+    const earnedCount = meta.deedsEarned.size;
+    // A later stamp of a different guild is a live membership change; the player
+    // is already affiliated, so retroDeeds cannot fire and the deed (already
+    // earned) never re-emits.
+    sim.setPlayerGuild(sim.playerId, 'Mire Herons', { retroDeeds: true });
+    expect(findGuildJoin(sim.tick())).toBeUndefined();
+    expect(meta.deedsEarned.size).toBe(earnedCount);
+    expect(e.guild).toBe('Mire Herons');
   });
 });

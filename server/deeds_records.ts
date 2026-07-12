@@ -111,6 +111,57 @@ export function recordDeedUnlock(
   }
 }
 
+/** Mirror a BATCH of sim-decided unlocks into character_deeds in ONE multi-row
+ *  insert, fire-and-forget, chained onto the SAME per-process FIFO tail as
+ *  single unlocks and the login reconcile so unlock order is preserved. The
+ *  post-save drain uses this: a returning veteran's blob write flushes many
+ *  pending unlocks at once, and a login storm would otherwise serialize N*M
+ *  single-row round trips ahead of the public index, the Steam pushes, and the
+ *  shutdown drain that awaits deedRecordsIdle. One batch replaces the M inserts.
+ *  A single-id slice delegates to recordDeedUnlock, keeping the common
+ *  live-unlock case on its exact single-row insert; an empty slice never
+ *  touches the tail. Unlike the login reconcile (a DB write only), the drain
+ *  owns the Steam at-least-once push, so onDeedRecorded fires once per id AFTER
+ *  the batch resolves. A rejected batch logs and never breaks the tail;
+ *  at-least-once heals via the join reconcile, which replays the same ids. */
+export function recordDeedUnlocks(
+  who: { characterId: number; accountId: number },
+  deedIds: readonly string[],
+): void {
+  if (deedIds.length === 0) return;
+  if (deedIds.length === 1) {
+    recordDeedUnlock(who, deedIds[0]);
+    return;
+  }
+  // Snapshot so the insert bind and the post-resolve mirror loop share one
+  // stable list even if the caller reuses the array.
+  const ids = [...deedIds];
+  try {
+    tail = tail
+      .then(() =>
+        insertCharacterDeeds(
+          { realm: REALM, characterId: who.characterId, accountId: who.accountId },
+          ids,
+        ),
+      )
+      .then(() => {
+        // The drain, unlike the login reconcile, owns the Steam at-least-once
+        // push: notify the mirror once per id, in unlock order, only after the
+        // batch upsert resolves. onDeedRecorded is synchronous + swallow-all and
+        // a per-process no-op unless STEAM_ENABLED, the deed is mapped, and the
+        // account is linked (server/steam/mirror.ts), exactly like the
+        // single-unlock path.
+        for (const id of ids) onDeedRecorded(who.accountId, id);
+      })
+      .catch((err) => {
+        console.error('character_deeds batch write failed:', err);
+      });
+  } catch (err) {
+    // The observer must never fault the event-routing path.
+    console.error('deeds recordDeedUnlocks failed:', err);
+  }
+}
+
 /** Login-time reconcile: replay a character's whole earned-deed set (from the
  *  authoritative state blob) into character_deeds in ONE idempotent batch,
  *  chained onto the SAME FIFO tail as live unlocks so it never races them. It

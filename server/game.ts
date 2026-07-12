@@ -91,10 +91,11 @@ import {
 } from './db';
 import { getDeedBroadcasts } from './deeds_db';
 import {
+  deedRecordsIdle,
   isHiddenDeedId,
   isMarqueeDeed,
   reconcileCharacterDeeds,
-  recordDeedUnlock,
+  recordDeedUnlocks,
 } from './deeds_records';
 import { enqueueActivity } from './discord_activity';
 import { discordFlairForAccount, grantRewardPoints } from './discord_db';
@@ -1422,7 +1423,7 @@ export class GameServer {
     };
   }
 
-  private async sendSocialSnapshot(charId: number): Promise<void> {
+  private async sendSocialSnapshot(charId: number, firstJoin = false): Promise<void> {
     const session = this.sessionByCharacterId(charId);
     if (!session) return;
     try {
@@ -1431,7 +1432,12 @@ export class GameServer {
       // Stamp the guild name onto the player's world entity so it rides the
       // identity wire and shows under their nameplate for everyone nearby. This
       // is the single chokepoint hit on join and on every membership change.
-      this.sim.setPlayerGuild(session.pid, snap.guild?.name ?? '');
+      // On the FIRST join-time stamp (firstJoin), a pre-existing guild arrives a
+      // beat after addPlayer's retro pass (the name lives in the social DB, not
+      // the blob), so retroDeeds re-credits soc_guild_joined silently instead of
+      // firing the live banner for an existing member; later changes are genuine
+      // live joins and pass firstJoin false.
+      this.sim.setPlayerGuild(session.pid, snap.guild?.name ?? '', { retroDeeds: firstJoin });
       // remember who to track for the live position push (friends + guildmates)
       session.socialTrackedIds = [
         ...snap.friends.map((f) => f.id),
@@ -2176,20 +2182,34 @@ export class GameServer {
     // Book of Deeds drift heal: the character_deeds index is written
     // fire-and-forget per unlock, and the sim never re-emits a deed already in
     // the state blob, so a transient per-unlock insert failure leaves the index
-    // one row short forever. Replay the loaded earned set (the blob is
-    // authoritative) into the index once per join, idempotently. Fire-and-
-    // forget: it never blocks or reorders the join, and resumes skip it (they
-    // return above without reloading state).
+    // one row short forever. Replay this character's whole LIVE earned set
+    // (deedsEarned after addPlayer's retro pass) into the index once per join,
+    // idempotently (ON CONFLICT DO NOTHING). That set is the loaded blob deeds
+    // PLUS the retro/legacy grants the retro pass just added, not only the
+    // loaded ids: every join-time grant is a deterministic function of the
+    // already-durable blob, so a crash that loses the index rows costs nothing
+    // to replay, and the batch is a DB write only (it never calls
+    // onDeedRecorded, so it never drives Steam; Steam's own login catch-up is
+    // reconcileOnLogin below). Fire-and-forget: it never blocks or reorders the
+    // join, and resumes skip it (they return above without reloading state).
     reconcileCharacterDeeds({ characterId, accountId }, [
       ...(this.sim.meta(pid)?.deedsEarned.keys() ?? []),
     ]);
     // Steam mirror drift heal (the steady-state counterpart to the link-time
     // reconcile): a live achievement push can exhaust its retry ladder and
     // drop, and an already-linked account never re-links, so the login
-    // reconcile is the only path that replays it. Fire-and-forget, fully
+    // reconcile is the only path that replays it. Chained BEHIND the deeds
+    // records FIFO rather than run beside it: reconcileOnLogin stamps a 6h TTL
+    // then reads earnedDeedIds, so if it ran before the reconcile above healed a
+    // dropped character_deeds row it would miss that id and the TTL would
+    // throttle the retry for 6h. Awaiting the tail first guarantees its read
+    // observes the healed rows. deedRecordsIdle is NOT awaited on the join path
+    // (join latency is unchanged); the continuation is fire-and-forget, fully
     // guarded, per-account throttled, and a no-op unless STEAM_ENABLED and the
-    // account is linked; it never blocks or reorders the join.
-    reconcileOnLogin(accountId);
+    // account is linked.
+    void deedRecordsIdle()
+      .then(() => reconcileOnLogin(accountId))
+      .catch(() => {});
     openPlaySession(accountId, characterId, name, meta)
       .then((id) => {
         session.dbSessionId = id;
@@ -2223,7 +2243,11 @@ export class GameServer {
       t: 'events',
       list: [{ type: 'log', text: `${name} has entered World of ClaudeCraft.`, color: '#ffd100' }],
     });
-    void this.initSocial(session);
+    // firstJoin: the fresh-join path (a resume takes resumeSession, which stamps
+    // the guild with firstJoin false since the entity already carries it), so
+    // the first guild stamp retro-credits an existing member's soc_guild_joined
+    // silently instead of firing the live banner.
+    void this.initSocial(session, true);
     // Stamp the $WOC holder-tier flair (best-effort: a balance read must never
     // affect joining the world).
     void this.refreshHolderTier(session).catch((err) =>
@@ -2346,14 +2370,14 @@ export class GameServer {
 
   // Load the player's block list, send their friends/ignore/guild panel, and
   // let friends + guildmates know they've come online.
-  private async initSocial(session: ClientSession): Promise<void> {
+  private async initSocial(session: ClientSession, firstJoin = false): Promise<void> {
     try {
       session.blockedIds = new Set(await this.socialDb.blockedIds(session.characterId));
       session.blockListLoaded = true;
     } catch (err) {
       console.error('failed to load block list:', err);
     }
-    await this.sendSocialSnapshot(session.characterId);
+    await this.sendSocialSnapshot(session.characterId, firstJoin);
     await this.social
       .announcePresence({ characterId: session.characterId, name: session.name }, true)
       .catch((err) => console.error('presence announce failed:', err));
@@ -2518,12 +2542,16 @@ export class GameServer {
         // pending for the next save attempt (the 30s autosave, the next
         // unlock's save, or the leave save), so a transient failure delays
         // the public record instead of publishing it ahead of the source.
-        for (const deedId of session.pendingDeedRecords.splice(0, recordUpTo)) {
-          recordDeedUnlock(
-            { characterId: session.characterId, accountId: session.accountId },
-            deedId,
-          );
-        }
+        // A returning veteran's first save flushes many pending unlocks at
+        // once; recordDeedUnlocks mirrors the whole spliced slice in ONE
+        // multi-row insert (a single id still takes the single-row path), so a
+        // login storm never serializes N single-row round trips ahead of the
+        // index and the Steam pushes. The capture-at-serialize recordUpTo
+        // watermark is preserved: only ids already inside THIS blob drain now.
+        recordDeedUnlocks(
+          { characterId: session.characterId, accountId: session.accountId },
+          session.pendingDeedRecords.splice(0, recordUpTo),
+        );
       }
     });
     this.characterSaveQueues.set(session.characterId, run);

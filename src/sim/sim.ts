@@ -2357,13 +2357,34 @@ export class Sim {
 
   /** Set a player's guild name (online only) so it rides the entity wire and
    *  shows under their nameplate. Guilds live in the server social DB, not the
-   *  Sim, so this is a passive display field. Offline/headless leave it ''. */
-  setPlayerGuild(pid: number, guild: string): void {
+   *  Sim, so this is a passive display field. Offline/headless leave it ''.
+   *
+   *  retroDeeds marks the FIRST join-time stamp: a '' -> non-empty transition
+   *  then is a PRE-EXISTING membership hydrated a beat after addPlayer's retro
+   *  pass (the name lives in the social DB, not the loaded blob), not a live
+   *  join. In that one case, evaluate the deeds retro (the silent Book summary,
+   *  no banner or audio) and clear the marks, mirroring the addPlayer retro tail,
+   *  so an existing guildmate does not re-earn soc_guild_joined with the live
+   *  fanfare on every post-ship first login. guildMember is the only deed
+   *  predicate reading host-stamped entity state hydrated after addPlayer, so a
+   *  full retro pass grants exactly that one deed and re-checks the rest as
+   *  no-ops. Any later membership change is a genuine live join: mark dirty for
+   *  the normal unlock path (banner, audio, broadcast gate). */
+  setPlayerGuild(pid: number, guild: string, opts: { retroDeeds?: boolean } = {}): void {
     const e = this.entities.get(pid);
-    if (e) {
-      e.guild = guild;
-      deedsMod.markDeedsDirty(this.ctx, pid); // soc_guild_joined reads the stamped name
+    if (!e) return;
+    const wasUnaffiliated = e.guild === '';
+    e.guild = guild;
+    if (opts.retroDeeds && wasUnaffiliated && guild !== '') {
+      const meta = this.players.get(pid);
+      if (meta) {
+        deedsMod.evaluateDeedsFor(this.ctx, meta, e, true);
+        this.deedDirtyPids.delete(pid);
+        this.deedDirtyKeys.delete(pid);
+        return;
+      }
     }
+    deedsMod.markDeedsDirty(this.ctx, pid); // soc_guild_joined reads the stamped name
   }
 
   /** Cosmetic skin-select event: rolls a rarity rank (once) and emits the

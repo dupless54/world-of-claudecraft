@@ -63,6 +63,11 @@ beforeEach(async () => {
   insertDeedsMock.mockImplementation(async () => {});
   onDeedRecordedMock.mockClear();
   onDeedRecordedMock.mockImplementation(() => {});
+  // The Steam login reconcile is a module-factory vi.fn that vi.restoreAllMocks
+  // does not touch, so its call log and any per-test implementation must be
+  // reset here or they accumulate across the join tests below.
+  reconcileOnLoginMock.mockClear();
+  reconcileOnLoginMock.mockImplementation(() => {});
 });
 
 afterEach(async () => {
@@ -179,10 +184,50 @@ describe('reconcile through GameServer.join', () => {
     expect([...ids].sort()).toEqual(earnedIds);
     // The reconcile is a DB write only; the Steam mirror is never told
     // per-row. The join DOES fire the account-level Steam login reconcile
-    // (the durable heal for a dropped push), exactly once, beside this one.
+    // (the durable heal for a dropped push), exactly once, chained BEHIND this
+    // one on the records FIFO so its earnedDeedIds read sees the healed rows.
     expect(onDeedRecordedMock).not.toHaveBeenCalled();
     expect(reconcileOnLoginMock).toHaveBeenCalledTimes(1);
     expect(reconcileOnLoginMock).toHaveBeenCalledWith(7);
+  });
+
+  it('replays the retro/legacy grants too, not just the loaded ids, and never tells Steam', async () => {
+    // A leatherworking craft skill in the blob makes retroFallbackGrants
+    // back-credit prog_first_craft (retro) during addPlayer, so the live earned
+    // set the reconcile replays is the loaded blob deeds PLUS that retro grant,
+    // not only the ids the blob carried. Every join-time grant is a
+    // deterministic function of the already-durable blob, so replaying it is a
+    // free crash-heal under ON CONFLICT.
+    const state = {
+      level: 1,
+      xp: 0,
+      lifetimeXp: 0,
+      copper: 0,
+      hp: 100,
+      resource: 0,
+      pos: { x: 2, z: -2 },
+      facing: 0,
+      equipment: {},
+      inventory: [],
+      questLog: [],
+      questsDone: [],
+      craftSkills: { leatherworking: 5 },
+    };
+    const fc = fakeWs();
+    const session = server.join(fc.ws as never, 7, 42, 'Crafter', 'warrior', state as never);
+    if ('error' in session) throw new Error(session.error);
+    await settle();
+
+    const earnedIds = [...(server.sim.meta(session.pid)?.deedsEarned.keys() ?? [])];
+    expect(earnedIds).toContain('prog_first_craft'); // the retro grant landed
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    const [who, ids] = insertDeedsMock.mock.calls[0];
+    expect(who).toEqual({ realm: REALM, characterId: 42, accountId: 7 });
+    expect([...ids]).toContain('prog_first_craft'); // the batch carries the retro id
+    expect([...ids].sort()).toEqual(earnedIds.sort()); // the WHOLE live earned set
+    // No tick ran, so the retro deedUnlocked event never reached the drain, and
+    // the reconcile itself is a DB write only: Steam is never told per row.
+    expect(onDeedRecordedMock).not.toHaveBeenCalled();
   });
 
   it('a fresh character with no earned deeds issues no reconcile batch', async () => {
@@ -191,5 +236,52 @@ describe('reconcile through GameServer.join', () => {
     if ('error' in session) throw new Error(session.error);
     await settle();
     expect(insertDeedsMock).not.toHaveBeenCalled();
+  });
+
+  it('runs the Steam login reconcile only AFTER the join deeds batch insert resolves', async () => {
+    // reconcileOnLogin stamps a 6h TTL then reads earnedDeedIds, so it must
+    // observe the healed character_deeds rows: chained onto the records FIFO, it
+    // may run only after the reconcile batch insert resolves, never beside it.
+    // This FAILS on the old side-by-side wiring, where the Steam reconcile fired
+    // synchronously at join, before the batch landed.
+    const order: string[] = [];
+    let releaseInsert: () => void = () => {};
+    insertDeedsMock.mockImplementationOnce(async () => {
+      await new Promise<void>((resolve) => {
+        releaseInsert = resolve;
+      });
+      order.push('insert');
+    });
+    reconcileOnLoginMock.mockImplementation(() => {
+      order.push('steam');
+    });
+    // A loaded earned set so the reconcile batch actually chains onto the tail.
+    const state = {
+      level: 1,
+      xp: 0,
+      lifetimeXp: 0,
+      copper: 0,
+      hp: 100,
+      resource: 0,
+      pos: { x: 2, z: -2 },
+      facing: 0,
+      equipment: {},
+      inventory: [],
+      questLog: [],
+      questsDone: [],
+      deeds: { prog_veteran: '2026-01-01' },
+    };
+    const fc = fakeWs();
+    const session = server.join(fc.ws as never, 7, 42, 'Returning', 'warrior', state as never);
+    if ('error' in session) throw new Error(session.error);
+    // The batch insert is held: Steam must wait behind it on the FIFO tail.
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(order).toEqual([]);
+    expect(reconcileOnLoginMock).not.toHaveBeenCalled();
+    releaseInsert();
+    await settle();
+    expect(order).toEqual(['insert', 'steam']);
+    expect(reconcileOnLoginMock).toHaveBeenCalledTimes(1);
+    expect(reconcileOnLoginMock).toHaveBeenCalledWith(7);
   });
 });

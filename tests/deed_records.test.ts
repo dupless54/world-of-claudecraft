@@ -28,6 +28,7 @@ vi.mock('../server/db', () => ({
 
 vi.mock('../server/deeds_db', () => ({
   insertCharacterDeed: vi.fn(async () => {}),
+  insertCharacterDeeds: vi.fn(async () => {}),
   getDeedBroadcasts: vi.fn(async () => true),
 }));
 
@@ -40,14 +41,16 @@ vi.mock('../server/steam/mirror', () => ({
 }));
 
 import { saveCharacterState } from '../server/db';
-import { getDeedBroadcasts, insertCharacterDeed } from '../server/deeds_db';
+import { getDeedBroadcasts, insertCharacterDeed, insertCharacterDeeds } from '../server/deeds_db';
 import {
   deedRecordsIdle,
   isHiddenDeedId,
   isMarqueeDeed,
   isPubliclyListableDeedId,
   publicRarityPayload,
+  reconcileCharacterDeeds,
   recordDeedUnlock,
+  recordDeedUnlocks,
 } from '../server/deeds_records';
 import { GameServer } from '../server/game';
 import { onDeedRecorded } from '../server/steam/mirror';
@@ -55,6 +58,7 @@ import { DEEDS } from '../src/sim/content/deeds';
 import type { DeedDef } from '../src/sim/types';
 
 const insertMock = vi.mocked(insertCharacterDeed);
+const insertDeedsMock = vi.mocked(insertCharacterDeeds);
 const broadcastsFlagMock = vi.mocked(getDeedBroadcasts);
 const onDeedRecordedMock = vi.mocked(onDeedRecorded);
 // The blob-write seam: tests that hold or reject the authoritative save
@@ -79,6 +83,8 @@ beforeEach(async () => {
   await deedRecordsIdle();
   insertMock.mockClear();
   insertMock.mockImplementation(async () => {});
+  insertDeedsMock.mockClear();
+  insertDeedsMock.mockImplementation(async () => {});
   broadcastsFlagMock.mockClear();
   broadcastsFlagMock.mockResolvedValue(true);
   onDeedRecordedMock.mockClear();
@@ -302,6 +308,108 @@ describe('recordDeedUnlock', () => {
 });
 
 // ---------------------------------------------------------------------------
+// recordDeedUnlocks: the batched multi-deed drain (the post-save flush). One
+// multi-row insert replaces N single-row round trips so a login storm never
+// serializes ahead of the public index, the Steam pushes, and the shutdown
+// drain; a single-id slice keeps the exact single-row path.
+// ---------------------------------------------------------------------------
+
+describe('recordDeedUnlocks (batch drain)', () => {
+  it('mirrors a multi-deed slice in ONE batch insert carrying every id in order, no single-row inserts', async () => {
+    recordDeedUnlocks({ characterId: 42, accountId: 7 }, ['a', 'b', 'c', 'd', 'e']);
+    await deedRecordsIdle();
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    const [who, ids] = insertDeedsMock.mock.calls[0];
+    expect(who).toEqual({ realm: 'Claudemoon', characterId: 42, accountId: 7 });
+    expect([...ids]).toEqual(['a', 'b', 'c', 'd', 'e']); // event order preserved
+    expect(insertMock).not.toHaveBeenCalled(); // zero single-row round trips
+  });
+
+  it('notifies the Steam mirror once per id, in order, only AFTER the batch insert resolves', async () => {
+    const order: string[] = [];
+    let release: () => void = () => {};
+    insertDeedsMock.mockImplementationOnce(async () => {
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      order.push('insert');
+    });
+    onDeedRecordedMock.mockImplementation((_accountId, id) => {
+      order.push(`mirror:${id}`);
+    });
+    recordDeedUnlocks({ characterId: 42, accountId: 7 }, ['a', 'b', 'c']);
+    // The batch has not resolved, so no id may have reached Steam yet.
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(onDeedRecordedMock).not.toHaveBeenCalled();
+    release();
+    await deedRecordsIdle();
+    expect(order).toEqual(['insert', 'mirror:a', 'mirror:b', 'mirror:c']);
+    expect(onDeedRecordedMock.mock.calls).toEqual([
+      [7, 'a'],
+      [7, 'b'],
+      [7, 'c'],
+    ]);
+  });
+
+  it('a rejected batch logs, never breaks the tail, and the join reconcile replays the same ids', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    insertDeedsMock.mockRejectedValueOnce(new Error('db down'));
+    expect(() => recordDeedUnlocks({ characterId: 1, accountId: 1 }, ['a', 'b'])).not.toThrow();
+    // The FIFO tail survived: the login reconcile heals by replaying the ids.
+    reconcileCharacterDeeds({ characterId: 1, accountId: 1 }, ['a', 'b']);
+    await deedRecordsIdle();
+    expect(errorSpy).toHaveBeenCalledWith('character_deeds batch write failed:', expect.any(Error));
+    expect(insertDeedsMock).toHaveBeenCalledTimes(2);
+    expect([...insertDeedsMock.mock.calls[1][1]]).toEqual(['a', 'b']); // reconcile replay
+    // The rejected batch never told Steam; the heal is Steam-invisible until the
+    // account's reconcile-on-link (the reconcile itself is a DB write only).
+    expect(onDeedRecordedMock).not.toHaveBeenCalled();
+  });
+
+  it('a live single unlock enqueued after a batch lands BEHIND it on the same FIFO tail', async () => {
+    const order: string[] = [];
+    let releaseBatch: () => void = () => {};
+    insertDeedsMock.mockImplementationOnce(async () => {
+      await new Promise<void>((resolve) => {
+        releaseBatch = resolve;
+      });
+      order.push('batch');
+    });
+    insertMock.mockImplementationOnce(async (row) => {
+      order.push(`single:${row.deedId}`);
+    });
+    recordDeedUnlocks({ characterId: 1, accountId: 1 }, ['a', 'b']);
+    recordDeedUnlock({ characterId: 1, accountId: 1 }, 'c');
+    // Give the single insert a chance to (wrongly) run ahead of the held batch.
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(order).toEqual([]);
+    releaseBatch();
+    await deedRecordsIdle();
+    expect(order).toEqual(['batch', 'single:c']);
+  });
+
+  it('a single-id slice takes the single-row path (delegates to recordDeedUnlock)', async () => {
+    recordDeedUnlocks({ characterId: 42, accountId: 7 }, ['prog_veteran']);
+    await deedRecordsIdle();
+    expect(insertDeedsMock).not.toHaveBeenCalled();
+    expect(insertMock).toHaveBeenCalledTimes(1);
+    expect(insertMock).toHaveBeenCalledWith({
+      realm: 'Claudemoon',
+      characterId: 42,
+      accountId: 7,
+      deedId: 'prog_veteran',
+    });
+  });
+
+  it('an empty slice is a no-op that never touches the queue', async () => {
+    recordDeedUnlocks({ characterId: 42, accountId: 7 }, []);
+    await deedRecordsIdle();
+    expect(insertDeedsMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // detectActivity wiring: the sim's deedUnlocked events (and nothing else)
 // reach the observer, with the marquee/retro/opt-out gates on the broadcast.
 // ---------------------------------------------------------------------------
@@ -358,7 +466,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     expect(() => tx.onGuildFounded(999999)).not.toThrow();
   });
 
-  it('a live unlock inserts one row per deed with the session ids; a marquee unlock broadcasts', async () => {
+  it('a multi-deed live tick batches every earned id with the session ids; a marquee unlock broadcasts', async () => {
     const fc = fakeWs();
     const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);
     if ('error' in session) throw new Error(session.error);
@@ -368,27 +476,28 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     tickAndDetect(); // settle the fresh join (level 1: nothing earned)
     await settle();
     insertMock.mockClear();
+    insertDeedsMock.mockClear();
 
     // 250k lifetime XP crosses prog_veteran (marquee: title reward) plus the
-    // low level rungs (non-marquee) in one tick, all non-retro.
+    // low level rungs (non-marquee) in one tick, all non-retro: the post-save
+    // drain mirrors the whole slice in ONE multi-row batch, no per-row singles.
     server.sim.grantXp(250_000, server.sim.meta(session.pid) ?? undefined);
     tickAndDetect();
     await settle();
 
-    const rows = insertMock.mock.calls.map((c) => c[0]);
-    expect(rows.length).toBeGreaterThan(0);
-    for (const row of rows) {
-      expect(row.realm).toBe('Claudemoon');
-      expect(row.characterId).toBe(42);
-      expect(row.accountId).toBe(7);
-    }
-    expect(rows.some((r) => r.deedId === 'prog_veteran')).toBe(true);
-    expect(rows.some((r) => r.deedId === 'prog_first_steps')).toBe(true);
+    expect(insertMock).not.toHaveBeenCalled(); // a multi-deed slice takes the batch path
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    const [who, ids] = insertDeedsMock.mock.calls[0];
+    expect(who).toEqual({ realm: 'Claudemoon', characterId: 42, accountId: 7 });
+    const drainedIds = [...ids];
+    expect(drainedIds.length).toBeGreaterThan(1);
+    expect(drainedIds).toContain('prog_veteran');
+    expect(drainedIds).toContain('prog_first_steps');
     // Exactly the marquee subset of this tick's unlocks broadcast (with the
     // session actor), and the opt-out flag was consulted by account id.
     expect(broadcastSpy).toHaveBeenCalledWith({ characterId: 42, name: 'Hilda' }, 'prog_veteran');
     const broadcastIds = broadcastSpy.mock.calls.map((c) => c[1]);
-    const expectedMarquee = rows.map((r) => r.deedId).filter((id) => isMarqueeDeed(DEEDS[id]));
+    const expectedMarquee = drainedIds.filter((id) => isMarqueeDeed(DEEDS[id]));
     expect(broadcastIds.sort()).toEqual(expectedMarquee.sort());
     expect(broadcastIds).not.toContain('prog_first_steps');
     expect(broadcastsFlagMock).toHaveBeenCalledWith(7);
@@ -404,18 +513,21 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     tickAndDetect();
     await settle();
     insertMock.mockClear();
+    insertDeedsMock.mockClear();
     broadcastsFlagMock.mockResolvedValue(false);
 
     server.sim.grantXp(250_000, server.sim.meta(session.pid) ?? undefined);
     tickAndDetect();
     await settle();
 
-    expect(insertMock.mock.calls.some((c) => c[0].deedId === 'prog_veteran')).toBe(true);
+    // 250k XP crosses several rungs at once, so the drain batches them.
+    const drainedIds = insertDeedsMock.mock.calls.flatMap((c) => [...c[1]]);
+    expect(drainedIds).toContain('prog_veteran');
     expect(broadcastsFlagMock).toHaveBeenCalled();
     expect(broadcastSpy).not.toHaveBeenCalled();
   });
 
-  it('retro unlocks on join insert rows but NEVER broadcast or read the opt-out', async () => {
+  it('retro unlocks on join batch-insert rows but NEVER broadcast or read the opt-out', async () => {
     // A pre-deeds save: high lifetime XP but no earned map, so the join pass
     // back-credits prog_veteran (marquee) with retro: true.
     const state = {
@@ -438,12 +550,20 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     const broadcastSpy = vi
       .spyOn(server.social, 'broadcastDeedUnlock')
       .mockResolvedValue(undefined);
+    // The join fires its own reconcile batch (the loaded + retro earned set);
+    // let it land and clear it so the assertion isolates the post-save DRAIN of
+    // the retro unlocks, which the next tick delivers.
+    await settle();
+    insertMock.mockClear();
+    insertDeedsMock.mockClear();
     tickAndDetect(); // the join's retro grants drain with this tick
     await settle();
 
-    const rows = insertMock.mock.calls.map((c) => c[0]);
-    expect(rows.some((r) => r.deedId === 'prog_veteran')).toBe(true);
-    expect(rows.every((r) => r.characterId === 42 && r.accountId === 7)).toBe(true);
+    expect(insertMock).not.toHaveBeenCalled(); // a multi-deed retro slice batches
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    const [who, ids] = insertDeedsMock.mock.calls[0];
+    expect(who).toEqual({ realm: 'Claudemoon', characterId: 42, accountId: 7 });
+    expect([...ids]).toContain('prog_veteran');
     expect(broadcastSpy).not.toHaveBeenCalled();
     expect(broadcastsFlagMock).not.toHaveBeenCalled();
   });
@@ -611,15 +731,17 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual(['gone_first', 'gone_second']);
   });
 
-  it('a burst of unlocks for one session coalesces into ONE save with inserts in event order', async () => {
+  it('a burst of unlocks for one session coalesces into ONE save and ONE batch insert in event order', async () => {
     // The retro back-credit on a veteran's first login lands dozens of
-    // unlocks in one tick; one blob write must cover them all.
+    // unlocks in one tick; one blob write must cover them all, and the drain
+    // mirrors the whole slice in ONE multi-row batch rather than N singles.
     const fc = fakeWs();
     const session = server.join(fc.ws as never, 7, 42, 'Hilda', 'warrior', null);
     if ('error' in session) throw new Error(session.error);
     tickAndDetect();
     await settle();
     insertMock.mockClear();
+    insertDeedsMock.mockClear();
 
     const saveSpy = vi.spyOn(server, 'saveCharacter');
     (server as unknown as { detectActivity(events: unknown[]): void }).detectActivity([
@@ -630,10 +752,18 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     await settle();
     expect(saveSpy).toHaveBeenCalledTimes(1);
     expect(saveStateMock).toHaveBeenCalledTimes(1);
-    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual([
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    expect([...insertDeedsMock.mock.calls[0][1]]).toEqual([
       'gone_first',
       'gone_second',
       'gone_third',
+    ]);
+    // The drain owns the Steam at-least-once push: one per id, after the batch.
+    expect(onDeedRecordedMock.mock.calls).toEqual([
+      [7, 'gone_first'],
+      [7, 'gone_second'],
+      [7, 'gone_third'],
     ]);
   });
 
@@ -649,6 +779,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     tickAndDetect();
     await settle();
     insertMock.mockClear();
+    insertDeedsMock.mockClear();
 
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     saveStateMock.mockRejectedValue(new Error('db down'));
@@ -662,6 +793,7 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
       expect.any(Error),
     );
     expect(insertMock).not.toHaveBeenCalled();
+    expect(insertDeedsMock).not.toHaveBeenCalled();
     expect(onDeedRecordedMock).not.toHaveBeenCalled();
 
     // Still failing across a second tick: nothing may ever publish (the
@@ -671,12 +803,16 @@ describe('deedUnlocked through GameServer.detectActivity', () => {
     ]);
     await settle();
     expect(insertMock).not.toHaveBeenCalled();
+    expect(insertDeedsMock).not.toHaveBeenCalled();
 
-    // The next successful save publishes the whole backlog in event order.
+    // The next successful save publishes the whole backlog in ONE batch in
+    // event order (three deferred ids: a multi-deed drain).
     saveStateMock.mockImplementation(async () => {});
     await server.saveCharacter(session);
     await settle();
-    expect(insertMock.mock.calls.map((c) => c[0].deedId)).toEqual([
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(insertDeedsMock).toHaveBeenCalledTimes(1);
+    expect([...insertDeedsMock.mock.calls[0][1]]).toEqual([
       'gone_first',
       'gone_second',
       'gone_third',
