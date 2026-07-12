@@ -579,17 +579,29 @@ export function deedIdsForDirtyKey(key: string): readonly string[] {
 
 // The ordered union of the buckets named by a keyed mark (single-key marks,
 // the overwhelmingly common case, reuse the prebuilt bucket allocation-free).
+// Multi-key unions (a crit tick marks stat:damageDealt plus stat:crits) are
+// memoized by their sorted key signature: the union is a pure function of the
+// static buckets, and distinct signatures are bounded by the handful of sites
+// that mark more than one key, so the cache stays tiny while the full-catalog
+// filter walk runs once per signature instead of once per dirty player per
+// tick.
+const KEY_UNION_CACHE = new Map<string, readonly string[]>();
 function deedListForKeys(keys: ReadonlySet<string>): readonly string[] {
   if (keys.size === 1) {
     const [key] = keys;
     return DIRTY_KEY_BUCKETS.get(key) ?? [];
   }
-  const member = new Set<string>();
-  for (const key of keys) {
-    for (const id of DIRTY_KEY_BUCKETS.get(key) ?? []) member.add(id);
+  const sig = [...keys].sort().join('|');
+  let ids = KEY_UNION_CACHE.get(sig);
+  if (ids === undefined) {
+    const member = new Set<string>();
+    for (const key of keys) {
+      for (const id of DIRTY_KEY_BUCKETS.get(key) ?? []) member.add(id);
+    }
+    ids = member.size === 0 ? [] : NON_MANUAL_ORDER.filter((id) => member.has(id));
+    KEY_UNION_CACHE.set(sig, ids);
   }
-  if (member.size === 0) return [];
-  return NON_MANUAL_ORDER.filter((id) => member.has(id));
+  return ids;
 }
 
 // pointsGate-8 node ids per class (the bottom row of every tree), computed

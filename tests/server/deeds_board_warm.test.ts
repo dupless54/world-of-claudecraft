@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   DEEDS_BOARD_DEMAND_TTL_MS,
   shouldWarmDeedsBoard,
+  singleFlight,
   warmDeedsBoardIfDemanded,
 } from '../../server/deeds_board_warm';
 
@@ -84,5 +85,49 @@ describe('warmDeedsBoardIfDemanded', () => {
     expect(warmDeedsBoardIfDemanded(read, NOW - 1_000, NOW, 60_000)).toBe(true);
     expect(warmDeedsBoardIfDemanded(read, NOW - 1_000, NOW, 500)).toBe(false);
     expect(read).toHaveBeenCalledOnce();
+  });
+});
+
+describe('singleFlight', () => {
+  it('shares one run across callers racing the same cold window', async () => {
+    // `run` stands in for refreshDeedsBoard (the full-table board read): three
+    // requests racing a cold cache must cost ONE read, and all three must see
+    // that read's value.
+    let release: (value: string) => void = () => {};
+    const run = vi.fn(
+      () =>
+        new Promise<string>((resolve) => {
+          release = resolve;
+        }),
+    );
+    const shared = singleFlight(run);
+    const [a, b, c] = [shared(), shared(), shared()];
+    expect(run).toHaveBeenCalledOnce();
+    release('board');
+    await expect(a).resolves.toBe('board');
+    await expect(b).resolves.toBe('board');
+    await expect(c).resolves.toBe('board');
+  });
+
+  it('runs again after the shared flight settles (no forever-cached promise)', async () => {
+    const run = vi.fn(async () => 'fresh');
+    const shared = singleFlight(run);
+    await shared();
+    await shared();
+    expect(run).toHaveBeenCalledTimes(2);
+  });
+
+  it('a rejected flight rejects every sharer once, then the next call retries fresh', async () => {
+    const run = vi
+      .fn<() => Promise<string>>()
+      .mockRejectedValueOnce(new Error('db down'))
+      .mockResolvedValueOnce('recovered');
+    const shared = singleFlight(run);
+    const first = shared();
+    const second = shared(); // shares the failing flight
+    await expect(first).rejects.toThrow('db down');
+    await expect(second).rejects.toThrow('db down');
+    await expect(shared()).resolves.toBe('recovered');
+    expect(run).toHaveBeenCalledTimes(2);
   });
 });

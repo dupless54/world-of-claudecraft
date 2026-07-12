@@ -124,7 +124,11 @@ import {
   deedsBoardSelf,
   type RankedDeedsAccount,
 } from './deeds_board';
-import { DEEDS_BOARD_DEMAND_TTL_MS, warmDeedsBoardIfDemanded } from './deeds_board_warm';
+import {
+  DEEDS_BOARD_DEMAND_TTL_MS,
+  singleFlight,
+  warmDeedsBoardIfDemanded,
+} from './deeds_board_warm';
 import { deedRarityCounts, recentDeedsForCharacter } from './deeds_db';
 import { publicRarityPayload } from './deeds_records';
 import {
@@ -490,6 +494,12 @@ async function refreshDeedsBoard(): Promise<DeedsBoardCache> {
   return deedsBoardCache;
 }
 
+// Single-flight on the inline refresh: the board read is the one full-table
+// roll-up here, so N requests racing a cold or just-expired cache must share
+// ONE refresh, not run N concurrent full-table reads (a login-page storm on a
+// fresh process would otherwise multiply the most expensive query it has).
+const refreshDeedsBoardShared = singleFlight(refreshDeedsBoard);
+
 // Freshness gate shared by the two board reads below: serve the cache inside
 // the TTL, else refresh, else stale-serve (or null before the first success).
 async function ensureDeedsBoard(): Promise<DeedsBoardCache | null> {
@@ -503,7 +513,7 @@ async function ensureDeedsBoard(): Promise<DeedsBoardCache | null> {
     return deedsBoardCache;
   }
   try {
-    return await refreshDeedsBoard();
+    return await refreshDeedsBoardShared();
   } catch (err) {
     console.error('deeds board refresh failed:', err);
     return deedsBoardCache;

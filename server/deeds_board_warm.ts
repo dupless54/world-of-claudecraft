@@ -51,3 +51,23 @@ export function warmDeedsBoardIfDemanded(
   refresh();
   return true;
 }
+
+/**
+ * Single-flight wrapper for the inline board refresh: calls arriving while one
+ * `run` is already in flight share its promise instead of starting their own,
+ * so N requests racing a cold or just-expired cache cost ONE full-table read,
+ * not N concurrent ones. A settled run (fulfilled or rejected) clears the
+ * slot, so the next call after a failure retries fresh rather than caching the
+ * rejection.
+ */
+export function singleFlight<T>(run: () => Promise<T>): () => Promise<T> {
+  let inFlight: Promise<T> | null = null;
+  return () => {
+    if (inFlight === null) {
+      inFlight = run().finally(() => {
+        inFlight = null;
+      });
+    }
+    return inFlight;
+  };
+}
