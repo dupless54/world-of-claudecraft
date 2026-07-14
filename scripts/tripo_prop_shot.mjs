@@ -18,10 +18,7 @@ const browser = await puppeteer.launch({
   executablePath: BROWSER_PATH,
   headless: 'new',
   protocolTimeout: 60000,
-  args: (MOBILE
-    ? ['--window-size=900,420']
-    : ['--window-size=1280,760']
-  ).concat([
+  args: (MOBILE ? ['--window-size=900,420'] : ['--window-size=1280,760']).concat([
     '--use-angle=swiftshader',
     '--enable-unsafe-swiftshader',
     '--disable-crash-reporter',
