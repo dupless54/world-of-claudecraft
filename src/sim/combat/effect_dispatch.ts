@@ -86,6 +86,7 @@ import { applyRewind } from './rewind';
 import { spawnRingOfFrost } from './ring_of_frost';
 import { hasCastShield, noteSpellHit, spellDamageMultFromAuras } from './spell_combat';
 import { consumeSureCritCharge, hasSureCritAura } from './sure_crit';
+import { applyTemporalHourglass } from './temporal_hourglass';
 
 export { SWEEP_MULT } from './area_echo';
 
@@ -247,6 +248,10 @@ export function runEffects(
 
   for (const eff of res.effects) {
     switch (eff.type) {
+      case 'temporalHourglass': {
+        applyTemporalHourglass(ctx, p, p.castAim ?? p.pos, eff, ability.name);
+        break;
+      }
       case 'weaponStrike': {
         if (!target) break;
         const strikeTarget = target;

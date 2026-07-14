@@ -134,6 +134,7 @@ import {
   abilityOverTimeEffect,
   abilityPrimaryEffect,
   abilitySecondaryEffect,
+  abilityTemporalHourglassValues,
 } from './ability_damage';
 import { isSelfOnlyAbility } from './ability_self_only';
 import { ActionBarPainter, type ActionBarSlotElements } from './action_bar_painter';
@@ -15894,6 +15895,14 @@ function abilityDisplayDescription(
 ): string {
   const buff = abilityBuffValue(res);
   const duration = abilityDurationValue(res);
+  const hourglass = abilityTemporalHourglassValues(res);
+  // {rage} splices the RESOLVED gainResource total, so a talent that raises the
+  // granted amount (Blood Offering on Blood Toll) shows in the tooltip.
+  const rageGained = res.effects.reduce(
+    (sum, eff) => sum + (eff.type === 'gainResource' ? eff.amount : 0),
+    0,
+  );
+  const rageText = rageGained > 0 ? formatAbilityNumber(rageGained) : '';
   return tEntity({
     kind: 'ability',
     id: res.def.id,
@@ -15903,6 +15912,9 @@ function abilityDisplayDescription(
       overTime: abilityOverTimeText(res, scaling),
       buff: buff === null ? '' : formatAbilityNumber(buff),
       duration: duration === null ? '' : formatAbilityNumber(duration),
+      healing: hourglass === null ? '' : formatAbilityNumber(hourglass.healing),
+      cooldownRecovery: hourglass === null ? '' : formatAbilityNumber(hourglass.cooldownRecovery),
+      rage: rageText,
     },
   });
 }

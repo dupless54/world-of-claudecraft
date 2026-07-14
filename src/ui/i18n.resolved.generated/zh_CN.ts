@@ -1526,6 +1526,7 @@ export const zh_CN: EnTranslations = {
       "attackSpeedSlow": "攻击速度减慢 {pct}%",
       "attackSpeedFast": "攻击速度提高 {pct}%",
       "haste": "攻击速度和施法速度提高 {pct}%",
+      "temporalHourglass": "免疫伤害且无法行动；恢复生命并加速冷却。右键点击可取消。",
       "tongues": "施法时间延长 {pct}%",
       "combustionCrit": "你的火焰法术必定造成致命一击",
       "overloadNext": "下一个法术效果提高{pct}%，但法力消耗增加50%",
@@ -7091,6 +7092,10 @@ export const zh_CN: EnTranslations = {
       "temporal_rewind": {
         "name": "回溯",
         "description": "向队伍或团队发出一道奥术波，回溯时间，为 40 码内每名盟友恢复其过去 5 秒所受伤害的 30%（最多为其最大生命值的 35%）。此效果无法暴击。（时光术）"
+      },
+      "temporal_hourglass": {
+        "name": "悬停沙漏",
+        "description": "在选定位置放置一个时间沙漏。置于敌人脚下时，使其悬停 {duration} 秒且无法行动；受到任何伤害都会解除效果。置于自己或队伍盟友脚下时，进入 {duration} 秒的停滞，免疫伤害且无法行动，恢复 {healing}% 最大生命值，并使冷却恢复速度提高 {cooldownRecovery}%。增益光环可手动移除。"
       },
       "temporal_acceleration": {
         "name": "时间加速",
