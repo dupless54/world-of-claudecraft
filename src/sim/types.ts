@@ -3182,6 +3182,7 @@ export type SimEvent = { pid?: number } & (
         // Target-anchored, no projectile travels to the ally. Visual-only.
         | 'temporalGlyph'
         | 'temporalClock'
+        | 'temporalRewindNova'
         | 'frostCone'
         | 'fireCone'
         // A teleport step (Flickerstep / Shadowstep): the renderer SNAPS the
