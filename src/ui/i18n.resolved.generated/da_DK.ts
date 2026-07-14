@@ -7647,6 +7647,15 @@ export const da_DK: EnTranslations = {
       "scepter_of_the_deathless_court": {
         "name": "Scepter fra Det Udødelige Hof"
       },
+      "deathless_warguard_legmail": {
+        "name": "Udødelig Krigsvagt-Benbrynje"
+      },
+      "soulrend_diadem": {
+        "name": "Sjæleflæng-Diadem"
+      },
+      "scourgehide_carapace": {
+        "name": "Svøbehud-Panser"
+      },
       "cryptplate_helm": {
         "name": "Kryptplade-Hjelm"
       },
@@ -7685,6 +7694,9 @@ export const da_DK: EnTranslations = {
       },
       "deathless_greatblade": {
         "name": "Udødelig Storklinge"
+      },
+      "soulforged_warplate": {
+        "name": "Sjælesmedet Krigsplade"
       },
       "stormcallers_focus": {
         "name": "Stormkalderens Fokus"
