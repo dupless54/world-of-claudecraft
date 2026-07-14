@@ -1408,7 +1408,7 @@ describe('MobileControls pointer lifecycle', () => {
     expect(zooms[1]).toBeLessThan(0);
   });
 
-  it('keeps a pinch alive when the takeover release echoes back as lostpointercapture', () => {
+  it('keeps a pinch alive when the takeover release echoes back as lostpointercapture', async () => {
     // Regression test: releaseSwipeLook() calls releasePointerCapture() on the
     // swipe-look pointer when a second finger lands (onPinchDown at size 2).
     // That explicit release also fires lostpointercapture per spec, exactly
@@ -1418,6 +1418,13 @@ describe('MobileControls pointer lifecycle', () => {
     // pointer that just became part of the pinch, deleting it from
     // pinchPointers and nulling pinchPrevDist: the pinch that just started is
     // dead on arrival and stays dead (only pointerdown re-adds a pointer).
+    //
+    // The fake DOM's releasePointerCapture() queues its lostpointercapture echo
+    // with queueMicrotask to match real non-reentrant browser timing, so this
+    // test must await a microtask tick before asserting: a synchronous body
+    // returns before the echo (and thus the guard) ever runs, which is why an
+    // earlier version of this test still passed with the guard's early-return
+    // removed. Flushing the microtask queue here is what makes it decisive.
     const { canvas } = installMobileControlDom();
     const zooms: number[] = [];
     const lookActive: boolean[] = [];
@@ -1467,6 +1474,10 @@ describe('MobileControls pointer lifecycle', () => {
         clientY: 100,
       }),
     );
+    // Let the fake DOM's queued lostpointercapture echo actually fire before
+    // asserting, otherwise the guard it exercises never runs and this test
+    // would pass whether or not the production code has the fix.
+    await Promise.resolve();
     expect(lookActive).toEqual([true, false]);
 
     // The pinch must survive the echo: a move on both fingers should still
