@@ -1,9 +1,7 @@
 # World of ClaudeCraft Design Language
 
-**Status:** Adopted target. This is the coordinated interface program contemplated by the
-"interface overhaul" dead-end note in `src/styles/CLAUDE.md` (PR #1736 landed, PR #1788
-reverted): pieces of this document must not land piecemeal; they land in the phases of
-section 15, in order.
+**Status:** Adopted standard. Interface changes land in the phases of section 15, in
+order, never as isolated fragments.
 **Scope:** The desktop game client (the `index.html` and `play.html` entries). Because
 mobile is the same client consuming the same `src/styles/tokens.css` and `src/ui/theme.ts`,
 the token, theme, and typography phases restyle mobile on day one and owe mobile
@@ -12,27 +10,37 @@ still owes the mobile-coverage decisions in section 13.5.
 **Updated:** 2026-07-15.
 
 This document is the source of truth for how World of ClaudeCraft's interface should look,
-move, and feel. It reconciles the approved concept art (section 2) with the systems this
+move, and feel. It pairs the approved design references (section 2) with the systems this
 repo already has: the token and theme engine, the painter families, the fairness, i18n,
-accessibility, and performance contracts. Where this document and the current code disagree,
-this document states the target; section 13 states the contracts that constrain how you get
-there. Where this document and a committed guard test disagree, fix the disagreement in the
-same change or do not land the change. "Today" values quoted in this document describe
-v0.26.0 and are informative context, not spec; the cited files and symbols are the live
-source for current values.
+accessibility, and performance contracts. Where this document and the current code
+disagree, this document states the target; section 13 states the contracts that constrain
+how you get there. Where this document and a committed guard test disagree, fix the
+disagreement in the same change or do not land the change. The cited files, symbols, and
+guard tests are the live anchors: when in doubt, verify against them.
 
 We are building an incredibly beautiful classic MMORPG. The interface should feel forged,
 painted, and slightly magical: a crafted fantasy artifact floating over a warm, cozy world,
 never a web dashboard wearing a fantasy skin.
+
+**How to use this document.** To build or restyle any piece of interface (whether you are
+an engineer or an AI assistant): take every color, font, radius, spacing value, and
+duration from the named tokens in sections 4, 5, and 11, never a raw value; find the
+surface's specification in section 7 (HUD) or section 8 (windows) and its building blocks
+in section 10; apply the motion rules of section 11 and the accessibility rules of
+section 12; verify against the engineering contracts and guard tests of section 13.
+Worked example, restyling the chat panel: section 7.10 is the spec; `--panel-bg`,
+`--color-text-faint`, and the themed accent variables come from section 4; the tab strip
+and form controls come from sections 10.2 and 10.7; type from 5.3; and the perf, i18n,
+and CSS-discipline contracts from 13.2 to 13.4 gate the change.
 
 ---
 
 ## 1. Design principles
 
 1. **World first.** The 3D world is the hero. Permanent UI hugs the screen edges, uses
-   controlled translucency, and never parks opaque chrome over the central play area. At the
-   reference viewport, the central 52 percent of width and 58 percent of height stay free of
-   permanent opaque UI.
+   controlled translucency, and never parks opaque chrome over the central play area. At a
+   standard desktop viewport, the central 52 percent of width and 58 percent of height stay
+   free of permanent opaque UI.
 2. **Classic structure, modern clarity.** Party frames, unit frames, action bar, minimap,
    tracker, chat: everything sits where a classic-MMO player expects it, with cleaner
    spacing and stronger hierarchy than a legacy HUD.
@@ -40,9 +48,9 @@ never a web dashboard wearing a fantasy skin.
    pill buttons, and mobile-app styling. Surfaces read as midnight blue-black metal and
    parchment, edged in bronze and gold.
 4. **Gold is structural.** Gold defines edges, selection, rewards, and hierarchy. It never
-   fills large surfaces. Most of the interface is blue-black ink and parchment; the current
-   HUD's habit of painting titles, borders, and icons in saturated `#ffd100` everywhere is
-   exactly the "busy" feel this program retires.
+   fills large surfaces. Most of the interface is blue-black ink and parchment; bright
+   saturated yellow belongs to quest markers and reward moments (`--color-quest`), never
+   to chrome.
 5. **One system on every screen.** HUD panels, windows, tooltips, dialogs, the store, the
    Book of Deeds, and the options menu all share the same surfaces, edges, type, spacing,
    and interaction states. No one-off panel styles.
@@ -51,10 +59,15 @@ never a web dashboard wearing a fantasy skin.
    typography, and feedback, not through decoration density.
 7. **Fair by construction.** Nothing in this design may hide or delay actionable gameplay
    information behind a graphics tier, a theme, or a cosmetic state (section 13.1).
+8. **Performance is part of beauty.** The interface must look incredible AND hold a steady
+   frame rate on every supported graphics tier and device class. Decoration is built to be
+   shed: cosmetic richness rides the effects tiers, actionable information never does, and
+   the low tier is a first-class design target, not a degraded afterthought (sections 4.4,
+   11, 13.1, and 13.2).
 
 ## 2. Reference images and precedence
 
-Two approved concept references are committed alongside this document:
+Two approved design references are committed alongside this document:
 
 1. `docs/design/design-language/desktop-style-reference.png`: the primary reference for
    color, typography, translucency, gold edges, icon treatment, unit frames, chat, minimap,
@@ -70,16 +83,14 @@ Precedence when details conflict:
 3. The approved layout reference image.
 4. Standard MMORPG usability conventions.
 
-The images are AI concept art. Do not reproduce their accidents: malformed text,
-misspellings, inconsistent icons, or invented widgets. Every label, value, shortcut, and
-icon in the shipped interface comes from real game data, real keybinds
-(`src/game/keybinds.ts`), and approved assets. Copy shown in the images is illustrative;
-the shipped strings are the English catalog values behind their `t()` keys, and any reword
-of an existing key is an explicit catalog change with its M16 obligations (section 13.3),
-never a silent adoption of concept-art text.
+The images communicate direction: composition, materiality, and finish. Text, values,
+shortcuts, and icons within them are illustrative only; the shipped interface always uses
+real game data, live keybinds (`src/game/keybinds.ts`), approved assets, and the English
+catalog values behind their `t()` keys (any reword of an existing key is an explicit
+catalog change with its M16 obligations, section 13.3).
 
-All reference measurements in this document are authored CSS pixels at `--ui-scale` 1 in
-the concept viewport of 1672 x 941; the shipped HUD continues to scale through the existing
+All measurements in this document are authored CSS pixels at `--ui-scale` 1 on a
+1080p-class desktop viewport; the shipped HUD scales through the existing
 `zoom: var(--ui-scale)` mechanism on `#ui` (`src/ui/ui_scale.ts`, `UI_SCALE_MIN` to
 `UI_SCALE_MAX`). Do not introduce a second scaling system. Supported desktop behavior:
 
@@ -133,26 +144,43 @@ WCAG contrast repair (`resolveTheme`, the `ensureReadable` pass). Three conseque
   palette derivations (the "reproduces the shipped gold palette" cases), so the phase that
   changes knobs re-pins those cases in the same change.
 
-The palette below is therefore expressed as: the new `classic` preset knob values (4.2),
+Design tokens exist so a value is stated once, given a name, and referenced everywhere.
+The rules that keep it that way:
+
+- Raw color values live in exactly two files: `src/styles/tokens.css` (static tokens and
+  seeds) and `src/ui/theme.ts` (preset knobs and derivations). Everywhere else, color is
+  consumed BY NAME: `var(--color-quest)` in stylesheets, the cached `getComputedStyle`
+  read in 2D canvas painters, and CSS-variable writes from painters.
+- Never repeat a value to approximate a token, and never introduce a second name for an
+  existing role. If a needed color has no token, add one with a SEMANTIC name (what it is
+  for, not what it looks like) and a comment naming its consumer, then reference it.
+- Component CSS composes tokens; it never defines palette. A hex literal in `hud.css`,
+  `components.css`, or a painter is a defect (the per-painter source scans enforce the
+  painter half).
+- The same discipline applies to every other design value: fonts, radii, spacing, and
+  durations are consumed through their tokens (sections 5, 8.1, and 11), so a system-wide
+  retune is always a one-file change.
+
+The palette below is therefore expressed as: the `classic` preset knob values (4.2),
 themed derivations with their classic outputs (4.3), and genuinely static ramp tokens
 (4.3). The `midnight`, `parchment`, and `highContrast` presets keep their identities and
 are retuned only as far as the contrast tests require.
 
 ### 4.2 The classic preset (the nine theme knobs)
 
-| Knob | New value | Today (v0.26.0) | Note |
-|---|---|---|---|
-| `accent` | `#d8a645` | `#ffd100` | Antique gold. The single biggest de-busying move: structural gold darkens and desaturates. |
-| `border` | `#926321` | `#6f5a2a` | Bronze-gold frame borders. |
-| `panel` | `#12232c` | `#15151f` | Midnight blue-black; `themeCssVars` derives the panel gradient and `--panel-edge` from it. |
-| `text` | `#fff4d9` | `#f0ebd8` | Parchment primary text. |
-| `textMuted` | `#c4b590` | `#998d6a` | Warm muted parchment. |
-| `hp` | `#25c84a` | `#1eb838` | Slightly warmer health green. |
-| `mana` | `#2d8cf0` | `#2b7bd4` | Clearer resource blue. |
-| `rage` | `#c0392b` | `#c0392b` | Unchanged. |
-| `energy` | `#e4c531` | `#e4c531` | Unchanged. |
+| Knob | Value | Note |
+|---|---|---|
+| `accent` | `#d8a645` | Antique gold: structural gold is dark and desaturated by design. |
+| `border` | `#926321` | Bronze-gold frame borders. |
+| `panel` | `#12232c` | Midnight blue-black; `themeCssVars` derives the panel gradient and `--panel-edge` from it. |
+| `text` | `#fff4d9` | Parchment primary text. |
+| `textMuted` | `#c4b590` | Warm muted parchment. |
+| `hp` | `#25c84a` | Warm health green. |
+| `mana` | `#2d8cf0` | Clear resource blue. |
+| `rage` | `#c0392b` | Classic rage red. |
+| `energy` | `#e4c531` | Classic energy yellow. |
 
-Contrast check (informative): against the new panel and its derived darker edge, text is
+Contrast check (informative): against the panel and its derived darker edge, text is
 about 14.7:1, muted text 7.9:1, accent 7.3:1, mana 4.7:1; everything clears the enforced
 floors with margin.
 
@@ -191,7 +219,7 @@ preset; the values shown are the classic outputs):
 | `--color-accent-hover` | `#f0c86d` | accent lightened one step | Hover borders, interactive gold text, selected tab text, tooltip titles |
 | `--color-accent-glint` | `#ffe5a3` | accent lightened two steps | Inner edge highlights on themed surfaces, selection glints |
 | `--color-border-focus` | `#f0c86d` | existing knob-derived var | The focus ring (section 10.1) |
-| `--color-text-secondary` | `#e8dcbe` | text mixed toward textMuted | Secondary text. Already consumed undefined with divergent fallbacks in `shell.css` and `components.css`; defining it must migrate those consumers in the same change (same latent-token class as `--panel-border` below). |
+| `--color-text-secondary` | `#e8dcbe` | text mixed toward textMuted | Secondary text. The existing `var(--color-text-secondary, ...)` fallback consumers in `shell.css` and `components.css` migrate onto it in the change that defines it. |
 | `--color-text-faint` | `#9ea6a6` | textMuted cooled and dimmed | Timestamps, metadata |
 | `--panel-fill-strong` | `#060f14` at 0.95 | panel mixed harder toward black, higher alpha | Tooltips, text inputs, confirm dialogs |
 
@@ -219,9 +247,8 @@ The bright `#ffd100` does not vanish from the game: it survives exactly where vi
 the point, as `--color-quest` (retuned to `#ffd12d`) and in the map and minimap
 quest-marker tokens. It stops being the color of chrome.
 
-Fix in the same pass: `components.css` consumes `var(--panel-border)` which is defined
-nowhere (the declarations silently drop). Define `--panel-border: var(--border)` in
-`tokens.css`; do not hand-migrate the call sites.
+Define `--panel-border: var(--border)` in `tokens.css` (the variable is already consumed
+in `components.css`); do not hand-migrate the call sites.
 
 Spacing stays on the existing `--spacing-*` scale and `--window-pad` (12px); this program
 adds no parallel spacing system. Dense HUD rows may use tighter literal padding (6 to 8px)
@@ -250,12 +277,11 @@ not per-component CSS. Opacity targets:
 | Tooltip, text input, confirm dialog | `--panel-fill-strong` | 0.94 to 0.97 |
 | Modal backdrop | `--color-ink-1000` | 0.55 to 0.65 |
 
-The chat idle/focus distinction is NEW behavior (today `--chat-opacity` is a static comfort
-setting written once from `src/main.ts`). Implement it as a separate state variable that
-MULTIPLIES the user's `chatOpacity` setting; the setting's meaning and default do not
+The chat idle/focus distinction is new behavior: implement it as a separate state variable
+that MULTIPLIES the user's `chatOpacity` setting; the setting's meaning and default do not
 change (section 12).
 
-Backdrop blur stays what it is today: an opt-in enhancement (`body.frosted-panels`, the
+Backdrop blur is an opt-in enhancement (`body.frosted-panels`, the
 `frostedPanels` setting), dropped wholesale on the low effects tier by the
 `:root[data-fx-level="low"]` rule in `tokens.css`. The default look must be fully legible
 with zero blur; never rely on blur for text contrast. Budget: at most six simultaneously
@@ -268,8 +294,7 @@ blurred parent. Every `backdrop-filter` keeps its `-webkit-` twin adjacent
 The standard edge is three layers, applied to `.panel` in `src/styles/base.css`:
 
 1. One-pixel dark outer keyline (the existing black `outline`).
-2. One-pixel `var(--border)` gold structural border (thinned from today's 2px; the fine
-   edge is the signature).
+2. One-pixel `var(--border)` gold structural border; the fine edge is the signature.
 3. Faint warm inner highlight: `inset 0 1px 0` of `--color-accent-glint` at roughly 0.14
    alpha (replaces the current white inset).
 
@@ -301,13 +326,12 @@ The interface commits to the Alegreya superfamily, which the client already half
 | `--font-serif` | `"Alegreya"` 400 (plus italic) | Quest and lore prose (replaces the literal `Georgia, serif` uses in `components.css`) |
 | `--font-brand` | `"Cinzel"` | New token: the brand face, used ONLY by the pre-game shell, logo lockups, and static pages |
 
-Neither Alegreya Sans nor the self-hosted pipeline carries a 600 cut; UI emphasis weights
-are 500 and 700 only. Cinzel retires from the in-game HUD: today `--font-display` resolves
-to Cinzel, whose formal inscriptional caps read colder and busier than the approved warm
-storybook look. Because the marketing shell (`src/styles/shell.css`) consumes the same
-display tokens as the HUD, the retirement is mechanical: introduce `--font-brand`, migrate
-the shell's display-font uses onto it, then flip `--font-display` to Alegreya. Never
-introduce a blackletter or decorative medieval face anywhere.
+Alegreya Sans carries no 600 cut; UI emphasis weights are 500 and 700 only. In-world UI is
+Alegreya only; Cinzel is the brand face, reserved for the pre-game shell, logo lockups,
+and static pages through `--font-brand`. Migration order matters because the shell
+(`src/styles/shell.css`) consumes the same display tokens as the HUD: introduce
+`--font-brand`, migrate the shell's display-font uses onto it, then flip `--font-display`
+to Alegreya. Never introduce a blackletter or decorative medieval face anywhere.
 
 ### 5.2 Self-host the fonts
 
@@ -392,10 +416,15 @@ Rules:
 
 - Primary destinations (launcher tiles, the Daily Rewards chest, window headers) get
   painted art with recognizable silhouettes, warm highlights, and a consistent
-  three-quarter or front-facing perspective. Sourcing decision: launcher and hub tiles
-  SHIP on new procedural recipes (the compositor's painted look is proven and
-  deterministic), and upgrade to curated WebP art under `public/ui/` as it is produced,
-  via a sibling converter script and a `CREDITS.md` row per set. No phase blocks on art.
+  three-quarter or front-facing perspective.
+- **The quality bar decides the source.** Draw an icon procedurally ONLY when the recipe
+  hits the painted-icon bar completely: correct silhouette, lighting, materials, and a
+  clean read at every rendered size. If a recipe cannot get all the way there, do not
+  ship a compromise: use curated image art instead (WebP under `public/ui/` via the
+  matching converter script, with a `CREDITS.md` row), and raise the art request with the
+  design team the moment the gap is known so the asset exists before its phase ships. The
+  keyword fallback compositor remains as runtime safety for unknown ids, never as the
+  shipped look for a known surface.
 - Every interactive painted icon sits inside a dark inset frame with a bronze edge; the art
   never touches the border. Inset 3px on action slots, 6 to 8px on launcher tiles.
 - One lighting direction, one perspective, one saturation range per panel. Never mix flat
@@ -424,7 +453,7 @@ Rules:
 +--------------------------------------------------------------------+
 ```
 
-Default HUD inset from the viewport edges: 12px. Anchor summary at the reference viewport
+Default HUD inset from the viewport edges: 12px. Anchor summary at `--ui-scale` 1
 (existing element ids in parentheses; sizes are targets, offsets may flex up to 8px for
 content and safe areas, hierarchy may not):
 
@@ -446,14 +475,12 @@ A full disposition inventory of every current HUD surface is in section 17.
 
 ### 7.2 Player and target frames
 
-Today the player frame sits bottom-center above the action bar and the target frame sits
-alone at the top left. Target: both frames share the bottom-center row, player left of the
-action-bar stack's center line, target mirrored right, exactly as in the approved
-references. The two frames are deliberately symmetric peers (the concept's smaller target
-frame is superseded); both remain movable and lockable through the existing `MovableFrame`
-family (`src/ui/movable_frame.ts`, persisted by `src/ui/target_frame_pos.ts`); changing the
-defaults is a one-time `LAYOUT_RESET_EPOCH` bump in `src/ui/frame_pos_reset.ts`. The
-`below-target` shift on party frames retires with the move.
+Both frames share the bottom-center row: player left of the action-bar stack's center
+line, target mirrored right, as deliberately symmetric peers. Both remain movable and
+lockable through the existing `MovableFrame` family (`src/ui/movable_frame.ts`, persisted
+by `src/ui/target_frame_pos.ts`); changing the defaults is a one-time
+`LAYOUT_RESET_EPOCH` bump in `src/ui/frame_pos_reset.ts`. The `below-target` shift on
+party frames retires with the move.
 
 Frame anatomy (the `unit_frame.ts` + `unit_frame_painter.ts` family, both instances):
 
@@ -486,7 +513,7 @@ Party rows (the third `UnitFramePainter` consumer: `party_frames.ts`, `party_fra
 
 - A slim party header panel above the rows: "Party" in panel-title type with the member
   count, a collapse control, and an invite affordance that opens the social window's invite
-  flow (adopted from the approved references; the header is new, the collapse exists).
+  flow (the header is new; the collapse control exists).
 - Rows: circular class-crest or portrait chip with a class-color ring (`--cls`), small-caps
   name, 74 x 7 health and 74 x 5 resource bars, and the existing dead, offline,
   out-of-range, leader, and aura chips restyled to the new tokens.
@@ -506,7 +533,7 @@ out. All of it stays on the `ActionBarPainter` family with hotbar drag-and-drop.
 - Slot: 48px, radius `--radius-slot` (new token, 5px), 3px inset well (icon art renders at
   about 42px), bronze border, keybind cap top-right in the shared keycap style
   (section 10.3), stack count bottom-right.
-- States (all exist today, restyle only): ready, hover (border to `--color-accent-hover`),
+- States (existing states, restyle only): ready, hover (border to `--color-accent-hover`),
   pressed (one-pixel inward), cooldown sweep plus remaining seconds, `.used` proc glow
   (gold, max two pulses per second), `.oor` out-of-range red tint (never opaque red),
   `.unusable` desaturated cool overlay, `.queued`, `.empty`, `.drop-target`.
@@ -538,8 +565,8 @@ raid-lockout satellites). Target styling:
 
 - Zone name in display type above the disc; clock and coordinates in metadata type
   (existing `formatClockTime` and `formatMinimapCoords`).
-- The disc grows to about 204px of map inside a 220px bronze ring (from today's
-  `MINIMAP_SIZE`): circular bronze outer ring, thin bright-gold inner ring, dark inset
+- The map disc is about 204px inside a 220px bronze ring (sized through `MINIMAP_SIZE`):
+  circular bronze outer ring, thin bright-gold inner ring, dark inset
   shadow inside the map edge. The cached terrain canvas in `src/ui/minimap_painter.ts` is
   built for this; mind the redraw-interval tier knob when resizing (section 13.1).
 - Satellites (zoom pair, mail, raid lockout) become compact circular map buttons
@@ -550,11 +577,10 @@ raid-lockout satellites). Target styling:
 
 ### 7.7 Daily Rewards card
 
-Today this is a small chest button (`#daily-rewards-button`) atop the launcher rail.
-Target: the approved 260 x 84 card directly below the minimap: chest art at left (the
-existing `/ui/daily-rewards/` WebP), title "Daily Rewards" in display type, subtitle
-"Rewards & Cosmetics" in metadata type, whole card clickable, notification badge top-right
-when a spin or task reward is claimable.
+The rewards entry (`#daily-rewards-button`) is a 260 x 84 card directly below the
+minimap: chest art at left (the existing `/ui/daily-rewards/` WebP), title "Daily Rewards"
+in display type, subtitle "Rewards & Cosmetics" in metadata type, whole card clickable,
+notification badge top-right when a spin or task reward is claimable.
 
 - Claimable: border brightens to `--color-accent-hover`, low-amplitude glow, chest shimmer
   at most every 4 seconds, badge shows the count. Never pulses during combat.
@@ -562,7 +588,7 @@ when a spin or task reward is claimable.
   surfaces.
 - Clicking opens the existing Daily Rewards window (`src/ui/daily_rewards_window.ts`); the
   store entries (WOC Store / Season 1 Armory via `Hud.openWocStore`, Claudium via
-  `src/ui/claudium_window.ts`) hang off it exactly as today. The card must read as a
+  `src/ui/claudium_window.ts`) hang off it unchanged. The card must read as a
   first-party game panel, not an advertisement.
 - The gates to preserve: the `dailyRewardsEnabled` flag in the HUD features wiring (set
   from the native-app check in `src/main.ts`) and the `showDailyRewardsChest` setting,
@@ -577,7 +603,7 @@ card and adopts the soft-fill panel surface (section 4.4): the stack remains cli
 except its interactive rows, quests keep their 1-based numbering that matches the world
 map badges, and thin gold dividers separate quests.
 
-- Display cap (new behavior, not a restyle): the tracker shows the three most recently
+- Display cap (new behavior): the tracker shows the three most recently
   tracked quests, up to three objective lines each; beyond that it appends a "+N more"
   line that opens the quest log. Tracking state itself is unchanged; untracking stays in
   the quest log. Long titles truncate with a tooltip.
@@ -588,8 +614,8 @@ map badges, and thin gold dividers separate quests.
 
 ### 7.9 Utility launcher (the 3 x 2 grid) and the More hub
 
-Today's `#side-buttons` rail stacks many micro-buttons; the approved design replaces
-it with six 77 x 88 tiles in a 3 x 2 grid, plus a hub for everything else:
+The utility launcher replaces the `#side-buttons` rail: six 77 x 88 tiles in a 3 x 2
+grid, plus a hub for everything else:
 
 | Tile | Window | Default key |
 |---|---|---|
@@ -602,9 +628,8 @@ it with six 77 x 88 tiles in a 3 x 2 grid, plus a hub for everything else:
 
 Tiles: painted icon 36 to 40px, 13px label below, keycap chip bottom-right (live
 `keyCapLabel` from `src/game/keybinds.ts`, never a hard-coded letter), selected state on
-every open window's tile (the existing multi-window model stays; the concept's
-one-window-at-a-time rule is superseded), notification badges where they exist today
-(unspent talent points, unread mail, bag prompts). The More tile shows a single aggregate
+every open window's tile (the existing multi-window model stays), notification badges for
+unspent talent points, unread mail, and bag prompts. The More tile shows a single aggregate
 badge dot when any destination inside the hub has one.
 
 The More hub is a compact anchored panel (not a new full window) that organizes every other
@@ -614,12 +639,12 @@ destination as list rows or small tiles, grouped:
 - Activities: Arena (G), Dungeon Finder (Shift+I), Vale Cup (Y), Leaderboard (K), Event
   Calendar (I), Damage Meters (Shift+H), Town Focus (in town only).
 - Community: Emote wheel (X), Discord (U; this row carries the full account-link and rank
-  panel behavior of today's `#mm-discord` button, not a plain link), plus the GitHub and
+  panel behavior of the `#mm-discord` button, not a plain link), plus the GitHub and
   Donate links moved from the old `#community-hud`.
 
 Sound, music, settings, and fullscreen live ONLY in the system-button corner (7.11); they
 do not duplicate into the hub. Contextual entries (Town Focus, Discord availability) show
-and hide exactly as their buttons do today. Keybinds all keep working when the tile is
+and hide by their existing rules. Keybinds all keep working when the tile is
 hidden inside More; the launcher is a surface, not the input map.
 
 ### 7.10 Chat
@@ -629,10 +654,9 @@ player channel tabs from `src/ui/chat_channels.ts`), movable and resizable behav
 (`src/ui/chat_window.ts`), and live-region semantics. Target styling and behavior:
 
 - Tab strip in the shared tab style (section 10.2); unread markers on inactive tabs.
-- NEW: an idle/focus state. Idle chat rests at the soft fill; focus or hover brings it to
-  standard fill; idle lines gently fade after a quiet period. All of it composes
-  multiplicatively with the user's `chatOpacity` and respects reduced motion. Today there
-  is no such state; build it as part of the chat restyle.
+- An idle/focus state (new): idle chat rests at the soft fill; focus or hover brings it
+  to standard fill; idle lines gently fade after a quiet period. All of it composes
+  multiplicatively with the user's `chatOpacity` and respects reduced motion.
 - Message text at 14/19 `--font-ui` with `--chat-font-scale` intact; timestamps in
   `--color-text-faint`; system lines in the themed accent; whispers, guild, and channels
   keep their channel colors; player names keep class colors where shown.
@@ -640,9 +664,8 @@ player channel tabs from `src/ui/chat_channels.ts`), movable and resizable behav
   and the channel-aware swap in `src/ui/hud.ts`); any copy reword is a catalog change with
   M16 fills, decided at implementation time. Strong fill when focused, themed focus
   border.
-- OPTIONAL, new, low priority: aggregate identical consecutive system/combat lines with a
-  count suffix (the concept's `x6`). Not current behavior; needs its own key and design
-  review before building.
+- Optional (new, low priority): aggregate identical consecutive system and combat lines
+  with a count suffix; needs its own `t()` key and design review before building.
 
 ### 7.11 System buttons (bottom right)
 
@@ -661,10 +684,10 @@ More hub's Community group.
 
 ### 7.12 Interaction prompt (new component)
 
-Both references show a bottom-center prompt above the unit frames: a keycap plus verb plus
-highlighted target name ("Speak with Apothecary Lin"). No such component exists today; the
-interact key resolves silently (the `interactKey()` closure in `src/main.ts`; the
-click-pick router is `src/game/interactions.ts`). Build it by the recipe (section 13.2):
+A bottom-center prompt above the unit frames: a keycap plus verb plus highlighted target
+name ("Speak with Apothecary Lin"). This is a new component (the interact key currently
+resolves in the `interactKey()` closure in `src/main.ts`; the click-pick router is
+`src/game/interactions.ts`). Build it by the recipe (section 13.2):
 
 - First extract the interact-candidate resolution out of `src/main.ts` (it is a firewall,
   not a home) into a shared module both the key handler and the prompt core consume.
@@ -691,10 +714,10 @@ declutter pass (`nameplate_declutter.ts`). Restyle within those constraints:
 - Reaction colors, threat tint, quest `!` and `?` markers, raid marks, combo pips, cast
   bars, guild tags, and badges all keep their slots; the current target's plate is always
   visible and slightly larger, coordinated with the selection ring in the world.
-- NEW policy (not a restyle): when plates must shed to resolve overlap, shed in reverse
+- Shedding policy (new): when plates must shed to resolve overlap, shed in reverse
   priority: other players, neutral NPCs, friends and guild, hostiles in combat, party
-  members, quest and interactable NPCs; the current target never sheds. Today's declutter
-  only nudges positions; the priority pass is new behavior for the nameplate phase.
+  members, quest and interactable NPCs; the current target never sheds. This is additive
+  behavior on top of the existing position-nudging declutter pass.
 - The update cadence stays on the static tier knob (`nameplateIntervalSec` in
   `src/game/ui_tier_knobs.ts`), never the FPS governor.
 
@@ -703,7 +726,7 @@ declutter pass (`nameplate_declutter.ts`). Restyle within those constraints:
 FCT keeps its pooled, fairness-audited pipeline (`fct_core.ts`, `fct_painter.ts`,
 `FCT_POOL_CAP`, kind-class tokens like `.fct-heal`); restyle the type only: outlined
 parchment numerics, crit pop preserved (and dropped to a static emphasis on the low tier
-exactly as wired today). Banners (`#banner`, `#quest-banner`, `#subzone-banner`) and the
+as wired). Banners (`#banner`, `#quest-banner`, `#subzone-banner`) and the
 prompt stack (`#prompt-stack`) adopt the shared panel shell with reduced padding; toasts
 stack with 8px gaps, live 3 to 5 seconds, and never impersonate combat warnings, which keep
 their separate, more immediate treatment.
@@ -732,7 +755,7 @@ this program adds is visual:
   keep their fitted sizes. No radius above 12px on any rectangular control.
 - A modal backdrop (`--color-ink-1000` at about 0.6) appears only behind flows that truly
   block (confirm dialogs, the armory-inspect overlay); ordinary windows keep the world
-  interactive as today.
+  interactive.
 
 New radius tokens and the existing ones coexist deliberately: `--radius-sm` (4px, chips
 and keycaps) and `--radius-md` (8px, HUD panels) stay; `--radius-slot` (5px),
@@ -801,10 +824,12 @@ panel so themed text stays contrast-repaired (section 4.1).
 
 - **Text button** (`.btn`): 34px compact, 40px standard; 12 to 16px horizontal padding;
   one-pixel bronze border, radius `--radius-button`; interactive gradient fill derived
-  from the panel knob (classic output reads ink-800 to ink-950); label 14px/700.
+  from the panel knob (classic output spans `--color-ink-800` to `--color-ink-950`);
+  label 14px/700.
 - **Primary (gold) button**: the claim/confirm emphasis variant; subdued gold-brown fill
-  derived from the accent knob mixed toward the panel (classic output near gold-900 over
-  ink), themed accent border, primary text. At most one per surface.
+  derived from the accent knob mixed toward the panel (classic output near
+  `--color-gold-900` over ink), themed accent border, primary text. At most one per
+  surface.
 - **Icon button** (`.micro-btn` lineage): 40px standard, 34px compact; chrome glyphs via
   `svgIcon` at 20 to 24px. New chrome respects a 36px minimum hit target on desktop, via
   padding where the visual is smaller (the mobile floor stays 40px, section 13.5).
@@ -815,8 +840,9 @@ panel so themed text stays contrast-repaired (section 4.1).
   gold-brown selected fill with a bright top edge.
 
 States, on every variant: hover (fill one tone lighter, border to `--color-accent-hover`,
-restrained glow, at most one pixel of lift), pressed (one pixel down, gold-900 inner edge,
-glow off), selected (gold-brown fill, bright top edge, parchment text), disabled
+restrained glow, at most one pixel of lift), pressed (one pixel down, `--color-gold-900`
+inner edge, glow off), selected (the derived gold-brown fill, bright top edge, primary
+text), disabled
 (desaturated, muted text, border contrast reduced, label never removed), keyboard focus,
 and loading where async.
 
@@ -838,9 +864,9 @@ roving-tabindex keyboard navigation as already wired in the chat and window tab 
 ### 10.3 Keycaps
 
 One keycap style everywhere a binding is shown (action slots, launcher tiles, the
-interaction prompt, options rebind rows): minimum 20px square, dark inset fill, gold-600
-border on its dark inset (static ramp is legal here), parchment label, radius
-`--radius-sm`, one-pixel inner highlight. Labels always come from `keyLabel` /
+interaction prompt, options rebind rows): minimum 20px square, dark inset fill,
+`--color-gold-600` border on its dark inset (static ramp is legal here), parchment label,
+radius `--radius-sm`, one-pixel inner highlight. Labels always come from `keyLabel` /
 `keyCapLabel` (or the controller glyph set), never hard-coded characters.
 
 ### 10.4 Badges
@@ -864,7 +890,7 @@ adopts the strong fill, 10px padding, max-width 320px, title in `--color-accent-
 body in secondary parchment, metadata muted; about 250ms hover delay, none on keyboard
 focus; never covers the cursor or the focused slot. Dividers are one-pixel gold fades
 (`transparent, accent at 0.38, transparent`), replacing the assorted literal brown-hex
-borders scattered through `hud.css` and `components.css` today.
+borders in `hud.css` and `components.css`.
 
 ### 10.7 Form controls
 
@@ -873,8 +899,9 @@ The MMO-styled native controls in `base.css` (range, checkbox, select, textarea)
 borders and themed focus; 18px checkboxes with a gold check; toggle switches with a themed
 active thumb; 4px slider track with gold fill to an 18px ringed thumb; the 16px mobile
 input floor stays. Scrollbars: 8px wide, transparent track; the thumb and border colors
-are theme-derived, so their retune (rest near gold-800, hover near gold-500 on the classic
-preset) lands in the `themeCssVars` derivation constants in `src/ui/theme.ts`.
+are theme-derived, so their retune (rest near `--color-gold-800`, hover near
+`--color-gold-500` on the classic preset) lands in the `themeCssVars` derivation constants
+in `src/ui/theme.ts`.
 
 ## 11. Motion
 
@@ -943,7 +970,7 @@ add-on. Highlights the visual system must actively protect:
   palettes. The existing movable frames, the nameplate toggle, theme presets, and the
   color-independence rule carry accessibility until those are specced as their own
   settings work.
-- **RTL:** no supported locale is right-to-left today; layout mirroring is out of scope
+- **RTL:** no supported locale is right-to-left; layout mirroring is out of scope
   until one lands.
 
 ## 13. Engineering contracts the design rides on
@@ -958,9 +985,11 @@ cosmetic richness, never actionable information: own debuffs, party and raid HP,
 bars, target HP granularity, and enemy positions are identical on every tier. HUD tier
 knobs read the static preset (`data-fx-level` via `src/game/ui_effects_profile.ts` and
 `src/game/ui_tier_knobs.ts`), never the FPS governor. Nothing in this design may introduce
-a tier- or theme-gated read. Guards: `tests/ui_effects_profile.test.ts`,
-`tests/ui_tier_knobs.test.ts`, `tests/ui_effects_wiring.test.ts`,
-`tests/auras_painter.test.ts`.
+a tier- or theme-gated read. The inverse duty also holds: design every surface to look
+intentional and beautiful on the LOW tier, with blur, heavy shadows, and ambient
+animation shed; verify both extremes before calling a component done. Guards:
+`tests/ui_effects_profile.test.ts`, `tests/ui_tier_knobs.test.ts`,
+`tests/ui_effects_wiring.test.ts`, `tests/auras_painter.test.ts`.
 
 ### 13.2 Module shape and per-frame cost
 
@@ -994,11 +1023,9 @@ One flat `@layer` order in `src/styles/index.css`; new window bodies in `compone
 HUD chrome in `hud.css`, tokens in `tokens.css`, each under a ten-dash section banner
 (`tests/css_corpus.test.ts`, `tests/css_value_validity.test.ts`,
 `tests/styles_extraction.test.ts`, `tests/per_entry_css_wiring.test.ts`). Token-first,
-no literal hexes in painters, theme coupling through `themeCssVars`. The reverted PR #1736
-grammar (`.window-frame`, `--z-*`, `--color-scrim`, drawer and sheet groups) returns only
-through this program's phases, deliberately: if a phase needs a z-index scale or a scrim
-token, it lands as part of that phase's reviewed change, never cherry-picked from the old
-branch.
+no literal hexes in painters, theme coupling through `themeCssVars`. New shared vocabulary
+(a z-index scale, scrim tokens, drawer or sheet grammar) lands as part of the phase that
+needs it, as one reviewed change, never as a standalone fragment.
 
 ### 13.5 Mobile duty and platform floors
 
@@ -1027,13 +1054,13 @@ claims are verified against the running game, not the stylesheet.
   blackletter anywhere.
 - No emojis as icons, ever; no mixing icon families in one panel.
 - No hard-coded colors in painters; no unlayered shared CSS; no per-component copies of
-  panel styling; no second scaling system; no `--woc-*` parallel token namespace (the
-  concept handoff's token names map onto the repo's `--color-*` system in this document,
-  which supersedes that package).
+  panel styling; no second scaling system; no parallel token namespaces: every color,
+  font, radius, spacing value, and duration is consumed through its one named token from
+  sections 4, 5, and 11.
 - No static ramp token doing a preset-dependent job (section 4.1's themed/static split).
 - No decoration that hides or delays actionable information, on any tier, in any theme.
 - No layout-shifting hover or open animations; no `transform: scale()` on list hovers.
-- No re-landing reverted-overhaul code outside the phase plan.
+- No landing restyle fragments outside the phase plan of section 15.
 
 ## 15. Rollout phases
 
@@ -1046,8 +1073,8 @@ matters; later phases assume earlier vocabulary.
    the `--panel-border` and `--color-text-secondary` latent-token fixes; self-hosted fonts
    with the `--font-brand` split and the display-face switch to Alegreya; duration and
    radius tokens. Every screen, desktop and mobile, shifts tone at once; this phase
-   deliberately contains no layout change. Update the dead-ends note in
-   `src/styles/CLAUDE.md` to point at this document when it lands.
+   deliberately contains no layout change. Update `src/styles/CLAUDE.md` to point at this
+   document when it lands.
 2. **Chrome: surfaces and primitives.** `.panel` / `.window` edge recipe, buttons, tabs,
    keycaps, badges, bars, tooltip, scrollbar derivation, form controls, dividers; retire
    the literal brown-hex borders in `hud.css` / `components.css` onto tokens.
@@ -1091,8 +1118,8 @@ The program (and each phase, for its slice) is done when:
   stay green; `npm run gate` passes.
 - Before/after screenshots for each phase live under `docs/screenshots` and tell the story
   without commentary.
-- A player who last saw the old HUD says it looks like a different, better game; a player
-  mid-fight notices nothing missing.
+- The interface reads as one crafted system that makes the game look better than players
+  remember it; a player mid-fight notices nothing missing, on any graphics tier.
 
 ## 17. Appendix: disposition inventory
 
