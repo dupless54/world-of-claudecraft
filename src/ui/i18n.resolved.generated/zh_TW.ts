@@ -1546,8 +1546,8 @@ export const zh_TW: EnTranslations = {
         "juniormods": "初級管理員",
         "artists": "美術",
         "contentcreator": "內容創作者",
-        "legend": "LEGEND",
-        "shill": "SHILL"
+        "legend": "傳奇",
+        "shill": "擁護者"
       },
       "guildMember": "已驗證成員",
       "notMember": "尚未加入伺服器",

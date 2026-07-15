@@ -1546,8 +1546,8 @@ export const ru_RU: EnTranslations = {
         "juniormods": "Младший модератор",
         "artists": "Художник",
         "contentcreator": "Контент-мейкер",
-        "legend": "LEGEND",
-        "shill": "SHILL"
+        "legend": "ЛЕГЕНДА",
+        "shill": "ГЛАШАТАЙ"
       },
       "guildMember": "Подтвержденный участник",
       "notMember": "Еще не на сервере",
