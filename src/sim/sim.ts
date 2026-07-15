@@ -137,6 +137,7 @@ import {
 import * as companionMod from './delves/companion';
 import * as lockpickMod from './delves/lockpick_controller';
 import * as runsMod from './delves/runs';
+import { despawnMobsForDev } from './dev_commands';
 import { projectOutsideDungeonDoors } from './dungeon_door_clearance';
 import * as nythraxis from './encounters/nythraxis';
 // A3: ARENA_SPAWNS_A_2v2/B_2v2 (read only by the moved fiestaRevive) now live with
@@ -2243,6 +2244,7 @@ export class Sim {
     if (leavingRun?.lockpick && leavingRun.lockpick.ownerId === pid)
       this.ctx.abandonLockpick(leavingRun);
     this.preparePlayerLeave(pid);
+    despawnMobsForDev(this.ctx, pid, 'spawned');
     // leave social systems cleanly. removeFromParty lives on the PartyMachine now
     // (A1); reach it through the seam, keeping this call in its load-bearing
     // teardown position (must run while the leaver is still in players/entities).
@@ -6474,8 +6476,8 @@ export class Sim {
     revivePlayerAt(this.ctx, pid, pos, hpFrac);
   }
 
-  // chatAllowed / handleDevChat / whisperMessageForName / resolveWhisperTarget
-  // moved to social/chat.ts (G2). The chat() router below dispatches to them via
+  // chatAllowed / whisperMessageForName / resolveWhisperTarget moved to social/chat.ts;
+  // handleDevChat moved to dev_commands.ts. The chat() router dispatches via
   // chatMod.*(this.ctx, ...); they had no callers outside chat().
 
   chat(text: string, pid?: number): SentChat | null {

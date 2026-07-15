@@ -247,6 +247,7 @@ import {
 } from './deeds_view';
 import { DeedsWindow } from './deeds_window';
 import { DelveMapPainter } from './delve_map_painter';
+import { DevCommandWindow } from './dev_command_window';
 import { devTierBadgeDataUrl, devTierByIndex, devTierDisplayName } from './dev_tier';
 import { markDialogRoot } from './dialog_root';
 import { discordRoleTagLabel } from './discord_role_tag';
@@ -586,6 +587,7 @@ export interface ClaudiumHooks {
 
 export interface HudFeatures {
   dailyRewardsEnabled: boolean;
+  devCommandsEnabled?: boolean;
 }
 
 export interface BugReportPayload {
@@ -2339,6 +2341,9 @@ export class Hud {
         // consistent with the toggle/X close path.
         this.socialWindow.close();
         break;
+      case 'dev-command-window':
+        this.devCommandWindow.close();
+        break;
       case 'char-window':
         // Route through the painter so focus returns to the opener (WCAG 2.2 AA).
         this.charWindow.close();
@@ -3809,6 +3814,12 @@ export class Hud {
     showPrompt: (text, acceptLabel, onAccept, onDecline) =>
       this.showPrompt(text, acceptLabel, onAccept, onDecline),
     startWhisper: (name) => this.startWhisper(name),
+  });
+  private readonly devCommandWindow = new DevCommandWindow({
+    available: () => this.features.devCommandsEnabled === true,
+    world: () => this.sim,
+    closeOthers: () => this.closeOtherWindows('#dev-command-window'),
+    ...this.windowFocus('#dev-command-window'),
   });
   // Bags window painter (bags_view.ts core + bags_window.ts painter). It composes
   // the shared presentation bag (icon/money/tooltip) and adds the inventory-cluster
@@ -15183,6 +15194,10 @@ export class Hud {
 
   toggleSocial(): void {
     this.socialWindow.toggle();
+  }
+
+  toggleDevCommandWindow(): boolean {
+    return this.devCommandWindow.toggle();
   }
 
   // Open the chat bar pre-filled with a whisper to this player (classic-MMO-style DM).

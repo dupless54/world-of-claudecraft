@@ -169,6 +169,7 @@ import { ChatCommandMenu } from './ui/chat_command_menu';
 import { chatInputSize } from './ui/chat_input_autosize';
 import { CLASS_DETAILS, SIGNATURE_ABILITIES } from './ui/class_details_data';
 import { ensureDeedLocalesLoaded } from './ui/deed_i18n';
+import { isDevGuiCommand } from './ui/dev_command_view';
 import { devTierByIndex, devTierDisplayName } from './ui/dev_tier';
 import {
   type DiscordAccountStatus,
@@ -981,7 +982,10 @@ async function startGame(
       renderer.enableTargetConeDebug(tabConeHalfAt, TAB_NEAR_RADIUS, TAB_QUERY_RADIUS);
     }
     perf.setRenderer(renderer);
-    hud = new Hud(world, renderer, keybinds, { dailyRewardsEnabled: !NATIVE_APP });
+    hud = new Hud(world, renderer, keybinds, {
+      dailyRewardsEnabled: !NATIVE_APP,
+      devCommandsEnabled: import.meta.env.DEV,
+    });
     perf.setHud(hud);
     hydrateIcons(); // swap [data-icon] placeholders (micro-menu, mobile bar, meters) for inline SVG
   } catch (err) {
@@ -1144,7 +1148,9 @@ async function startGame(
       // that channel without the player retyping "/world" etc.
       const raw = chatInput.value;
       // "/share" links the selected quest into party chat; skip the normal send path.
-      if (!hud.maybeHandleQuestShareCommand(raw)) {
+      if (import.meta.env.DEV && isDevGuiCommand(raw)) {
+        hud.toggleDevCommandWindow();
+      } else if (!hud.maybeHandleQuestShareCommand(raw)) {
         const text = hud.composeChatSend(raw);
         if (text) {
           world.chat(text);

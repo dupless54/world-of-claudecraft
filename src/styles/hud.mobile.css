@@ -2409,6 +2409,7 @@
   body.mobile-touch #leaderboard-window,
   body.mobile-touch #loot-settings-window,
   body.mobile-touch #town-focus-window,
+  body.mobile-touch #dev-command-window,
   body.mobile-touch #claudium-window {
     left: 10px;
     right: 10px;
@@ -2417,6 +2418,49 @@
     transform: none;
     box-sizing: border-box;
     overflow-y: auto;
+  }
+  body.mobile-touch #dev-command-window {
+    height: calc(var(--app-vh) / var(--ui-scale, 1) - 20px);
+    max-height: none;
+    overflow: hidden;
+  }
+  body.mobile-touch .dev-command-header {
+    padding: 10px 54px 9px 12px;
+  }
+  body.mobile-touch .dev-command-header h2 {
+    font-size: 20px;
+  }
+  body.mobile-touch .dev-command-header p {
+    display: none;
+  }
+  body.mobile-touch .dev-command-toolbar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  body.mobile-touch .dev-command-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  body.mobile-touch .dev-command-tabs button,
+  body.mobile-touch .dev-command-run {
+    min-height: 40px;
+  }
+  body.mobile-touch .dev-command-grid {
+    grid-template-columns: 1fr;
+    padding: 9px 10px;
+  }
+  body.mobile-touch .dev-command-card {
+    min-height: 78px;
+    padding: 10px;
+  }
+  body.mobile-touch .dev-command-footer {
+    justify-content: flex-end;
+    min-height: 34px;
+    padding: 7px 10px;
+  }
+  body.mobile-touch .dev-command-footer > span {
+    display: none;
   }
   body.mobile-touch #claudium-window .cl-body {
     max-height: calc(var(--app-vh) / var(--ui-scale, 1) - 78px);
