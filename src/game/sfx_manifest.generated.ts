@@ -3018,45 +3018,38 @@ export const SFX_CLIPS =
     ]
   },
   "wand_arcane": {
-    "url": "/audio/sfx/wand_arcane.mp3?v=e4c078b55459",
+    "url": "/audio/sfx/wand_arcane_1.mp3?v=c5a35cc4fe1d",
     "loop": false,
     "category": "other",
     "preload": "lazy",
     "spatial": true,
     "gain": 1,
     "playbackRate": 1,
-    "bytes": 13208,
-    "hash": "e4c078b55459",
+    "bytes": 18224,
+    "hash": "c5a35cc4fe1d",
     "variants": [
       {
-        "id": "main",
-        "url": "/audio/sfx/wand_arcane.mp3?v=e4c078b55459",
-        "bytes": 13208,
-        "sha256": "e4c078b55459bf1879599fdc5bf09a80b86da2dbed36fa0886220ef09aa17d87"
+        "id": "1",
+        "url": "/audio/sfx/wand_arcane_1.mp3?v=c5a35cc4fe1d",
+        "bytes": 18224,
+        "sha256": "c5a35cc4fe1d6ae8bfb4ee15304f69392bb0132d3d0deb6eef7b620abdea3715"
+      },
+      {
+        "id": "2",
+        "url": "/audio/sfx/wand_arcane_2.mp3?v=454df573220c",
+        "bytes": 18224,
+        "sha256": "454df573220cb4512e283dd2e214fa0884c66d11af5147996525493b55d0fb76"
+      },
+      {
+        "id": "3",
+        "url": "/audio/sfx/wand_arcane_3.mp3?v=ae96e32f7ffe",
+        "bytes": 19478,
+        "sha256": "ae96e32f7ffe4507cd0423ea4c0b2dfc71d6e43bc685ed376a286be513fb34aa"
       }
     ]
   },
   "wand_holy": {
-    "url": "/audio/sfx/wand_holy.mp3?v=c895abaf2f30",
-    "loop": false,
-    "category": "other",
-    "preload": "lazy",
-    "spatial": true,
-    "gain": 1,
-    "playbackRate": 1,
-    "bytes": 13208,
-    "hash": "c895abaf2f30",
-    "variants": [
-      {
-        "id": "main",
-        "url": "/audio/sfx/wand_holy.mp3?v=c895abaf2f30",
-        "bytes": 13208,
-        "sha256": "c895abaf2f30650a1a09b0e427ff61f6ea3457c4b9e8a79c42163055c5448405"
-      }
-    ]
-  },
-  "wand_shadow": {
-    "url": "/audio/sfx/wand_shadow.mp3?v=33725020b43c",
+    "url": "/audio/sfx/wand_holy_1.mp3?v=aae790137b4c",
     "loop": false,
     "category": "other",
     "preload": "lazy",
@@ -3064,13 +3057,56 @@ export const SFX_CLIPS =
     "gain": 1,
     "playbackRate": 1,
     "bytes": 15716,
-    "hash": "33725020b43c",
+    "hash": "aae790137b4c",
     "variants": [
       {
-        "id": "main",
-        "url": "/audio/sfx/wand_shadow.mp3?v=33725020b43c",
+        "id": "1",
+        "url": "/audio/sfx/wand_holy_1.mp3?v=aae790137b4c",
         "bytes": 15716,
-        "sha256": "33725020b43cd3c36a22f21d1e61d33bcefcbd22b2b9de804c2f357f3a05b75b"
+        "sha256": "aae790137b4c264101d8546ac196add88930a3aa41a45d3543299fac6a831dfa"
+      },
+      {
+        "id": "2",
+        "url": "/audio/sfx/wand_holy_2.mp3?v=b8e78047a120",
+        "bytes": 15089,
+        "sha256": "b8e78047a120ac45a7cda700c94dc58f0469bfbb8b90ba766f7f715b69871311"
+      },
+      {
+        "id": "3",
+        "url": "/audio/sfx/wand_holy_3.mp3?v=d0d172053c81",
+        "bytes": 16343,
+        "sha256": "d0d172053c8191930efef609ddf60831fa3e64ed92c59f17b54837618796fd1e"
+      }
+    ]
+  },
+  "wand_shadow": {
+    "url": "/audio/sfx/wand_shadow_1.mp3?v=ed008c4f6b1d",
+    "loop": false,
+    "category": "other",
+    "preload": "lazy",
+    "spatial": true,
+    "gain": 1,
+    "playbackRate": 1,
+    "bytes": 18224,
+    "hash": "ed008c4f6b1d",
+    "variants": [
+      {
+        "id": "1",
+        "url": "/audio/sfx/wand_shadow_1.mp3?v=ed008c4f6b1d",
+        "bytes": 18224,
+        "sha256": "ed008c4f6b1d40a01920211fac210bd85c591a19d4fbe5a8a783f8c9f15ab274"
+      },
+      {
+        "id": "2",
+        "url": "/audio/sfx/wand_shadow_2.mp3?v=157dbd16b1b9",
+        "bytes": 15716,
+        "sha256": "157dbd16b1b9bfc389d4943a62bae4a3a537060ce46867418213438ff23c9c19"
+      },
+      {
+        "id": "3",
+        "url": "/audio/sfx/wand_shadow_3.mp3?v=72fb61abd53b",
+        "bytes": 16970,
+        "sha256": "72fb61abd53b4ab93640e15ceda8f28fcf4b4760e02d434e2ff5d29d0ab93310"
       }
     ]
   }
