@@ -8,8 +8,8 @@
 | Phase 1 QA | complete: PASS-WITH-FOLLOWUPS (criterion 2 re-scoped by the owner's OPEN item 8 decision; pending.ts durable fix specced as a follow-up); 2 SHOULD-FIX fixed | 2026-07-14 | 2026-07-14 |
 | Phase 2: Flat TranslationKey + baseUrl | MERGED into release/v0.26.0 (PR #1940, merge 66b5eb6c5) | 2026-07-14 | 2026-07-14 |
 | Phase 2 QA | complete: PASS (0 BLOCKING; 2 SHOULD-FIX found and resolved: the committed teeth successor test + the recorded cadence deviation; 7 doc corrections) | 2026-07-14 | 2026-07-14 |
-| Phase 3: CI parallel checks + FFmpeg | implemented; draft PR #1945 (CI green, run observed) awaiting Phase 3 QA | 2026-07-14 | 2026-07-14 |
-| Phase 3 QA | not started | | |
+| Phase 3: CI parallel checks + FFmpeg | implemented; PR #1945 ready for review (post-merge CI green), merge owner-scheduled | 2026-07-14 | 2026-07-14 |
+| Phase 3 QA | complete: PASS (0 BLOCKING; 8 SHOULD-FIX found and resolved; release base merged in as e0f442637; 2 tests added) | 2026-07-15 | 2026-07-15 |
 | Phase 4: Test sharding | not started | | |
 | Phase 4 QA | not started | | |
 | Phase 5: TypeScript 7 flip | not started | | |
@@ -87,7 +87,12 @@
 - [x] scripts/sfx_studio/audio_io.mjs and export_bundle.mjs repointed via the new
       scripts/sfx/ffmpeg_paths.mjs resolver (static packages first, bare PATH-name
       fallback for scripts-skipped installs, WOC_FFMPEG_PATH/WOC_FFPROBE_PATH operator
-      overrides that win outright); gate.mjs preflight now probes the RESOLVED binaries
+      overrides that win outright)
+      (CORRECTED 2026-07-15 by Phase 3 QA: after the release merge e0f442637 only
+      audio_io.mjs remains on the resolver; export_bundle.mjs's conformance call
+      site binds directly to ffmpeg-static/ffprobe-static per release PR #1930,
+      which won the merge conflict and pins that wiring in its test);
+      gate.mjs preflight now probes the RESOLVED binaries
       by execution, with tests/sfx_gate_preflight.test.ts updated in the same commit
       (both red paths: nonexistent override + empty PATH, and a present-but-broken
       binary pinning probe-by-execution so it cannot degrade to existsSync); apt FFmpeg
@@ -192,7 +197,48 @@ tests added, dead code removed, deferrals.
   arbiter); typecheck and the env, server, and client builds green. PR #1940
   marked ready for review after PR CI green on the QA head; merge timing
   owner-scheduled.
-- Phase 3 QA:
+- Phase 3 QA: verdict PASS (2026-07-15). 0 BLOCKING; 8 SHOULD-FIX found, 8
+  resolved; 9 NICE-TO-HAVE/INFO items confirmed and recorded as deferrals in the
+  state.md Phase 3 QA notes. The release base moved before QA (812e4b223 to
+  61fd49975: the Windows publish job, the 2,095-row v0.26.0 locale fill, the
+  version-surface sync, plus 8 gameplay/server PRs), so QA began with the
+  packet-rule merge (single commit e0f442637; one conflict,
+  scripts/sfx_studio/export_bundle.mjs, resolved to the release side whose
+  PR #1930 binds export conformance validation directly to
+  ffmpeg-static/ffprobe-static and pins it; post-merge i18n:gen left a clean
+  tree) and the release-merge-audit skill (4 lenses, 0 BLOCKING). SHOULD-FIX
+  resolutions: audio_io.mjs now loads export_bundle.mjs lazily so the release
+  side's import-time throw on ffmpeg-static-null platforms cannot take down
+  Studio playback/encode (fix + source pin, commit 04fde718a); the preflight
+  suite gained the single-tool red path exercising the per-tool message
+  selection (test-coverage-auditor finding, same commit); stale resolver-scope
+  comments fixed (ffmpeg_paths.mjs header, ci_workflow.test.ts); contributor
+  docs' universal-PATH-fallback overclaims scoped correctly (README,
+  scripts/CLAUDE.md, sfx-studio-tutorial, qa-checklist agent; commit
+  7ae2969d7); packet records corrected with dated notes (both-spawn-sites
+  claim, OPEN item 8 pre-fill figures, pre-merge measured baselines, the
+  release-tier pending-red clauses in qa-checklist.md and phase-05-qa.md now
+  that pending=0); the branch-protection require-both note verified and
+  extended with the redundant-enforcement nuance at OPEN item 4. Tests added:
+  2 (the lazy-import pin in tests/sfx_studio.test.ts; the single-tool preflight
+  red path in tests/sfx_gate_preflight.test.ts). Dead code removed: none.
+  Audit evidence: the merged ci.yml proven a superset reordering of the
+  812e4b223 step set across all 6 jobs (only the two intended apt removals
+  dropped, if-expressions byte-identical, merge-ref checkout preserved,
+  audit-summary step directly after i18n:gen); every ci_workflow pin re-derived
+  by hand from the merged workflow; the four sfx suites green with no system
+  ffmpeg (118 tests, was 117 at go/no-go; the release pin added one). Probes
+  (both --no-verify, both removed after observation): staled-slice PR #1962 run
+  29413049770 red exactly at the pr-checks freshness step naming the union and
+  slices; type-error run 29413485950 red at Typecheck 77s into pr-checks
+  (about 2 minutes from push vs about 10 minutes pre-split), branch
+  force-reset, no probe commit remains. Live CI on the merged head: run
+  29412863470 all green, wall 564s = pr-gate 559s parallel with pr-checks 94s.
+  Gate (Node 24, bare ffmpeg-less PATH): steps 1 to 6 green (14,235 tests),
+  browser red only at the known environmental armory assertion, manual tail
+  (typecheck + three builds) green. Reviewers: privacy-security-review PASS,
+  test-coverage-auditor PASS, qa-checklist READY. PR #1945 marked ready for
+  review; merge timing owner-scheduled.
 - Phase 4 QA:
 - Phase 5 QA (includes the packet-teardown offer):
 
