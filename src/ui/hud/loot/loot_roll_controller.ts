@@ -5,6 +5,7 @@ import { itemDisplayName } from '../../entity_i18n';
 import { esc } from '../../esc';
 import { formatNumber, t } from '../../i18n';
 import { iconDataUrl, QUALITY_COLOR } from '../../icons';
+import type { PainterHostWriters } from '../../painter_host';
 import { reconcileLootRolls } from './loot_roll_reconcile';
 import {
   computeLootRollStatusRows,
@@ -29,6 +30,7 @@ export interface LootRollControllerDeps {
   itemIcon(item: ItemDef): string;
   itemTooltip(item: ItemDef): string;
   attachTooltip(element: HTMLElement, html: () => string): void;
+  writers: Pick<PainterHostWriters, 'setStyleProp'>;
 }
 
 const LOOT_ROLL_DURATION_MS = 60_000;
@@ -212,7 +214,7 @@ export class LootRollController {
         const receivedAt = this.watchTimers.get(rollId);
         if (receivedAt === undefined) continue;
         const remaining = Math.max(0, 1 - (now - receivedAt) / LOOT_ROLL_DURATION_MS);
-        row.style.setProperty('--loot-roll-frac', remaining.toFixed(3));
+        this.deps.writers.setStyleProp(row, '--loot-roll-frac', remaining.toFixed(3));
         continue;
       }
       const roll = row.dataset.master
@@ -220,7 +222,7 @@ export class LootRollController {
         : this.activeRolls.get(rollId);
       if (!roll) continue;
       const remaining = Math.max(0, 1 - (now - roll.receivedAt) / roll.durationMs);
-      row.style.setProperty('--loot-roll-frac', remaining.toFixed(3));
+      this.deps.writers.setStyleProp(row, '--loot-roll-frac', remaining.toFixed(3));
     }
   }
 
@@ -270,7 +272,7 @@ export class LootRollController {
       const row = this.deps.document.createElement('div');
       row.className = 'loot-roll panel';
       row.dataset.rollId = String(rollId);
-      row.style.setProperty('--loot-roll-frac', '1');
+      this.deps.writers.setStyleProp(row, '--loot-roll-frac', '1.000');
       row.innerHTML = `
         <div class="loot-roll-item">
           ${item ? this.deps.itemIcon(item) : `<img class="item-icon q-${quality}" src="${iconDataUrl('item', event.itemId)}" alt="" draggable="false">`}
@@ -307,7 +309,7 @@ export class LootRollController {
       row.className = 'loot-roll panel watch';
       row.dataset.rollId = String(status.rollId);
       row.dataset.watch = '1';
-      row.style.setProperty('--loot-roll-frac', '1');
+      this.deps.writers.setStyleProp(row, '--loot-roll-frac', '1.000');
       row.innerHTML = `
         <div class="loot-roll-item">
           ${item ? this.deps.itemIcon(item) : `<img class="item-icon q-${quality}" src="${iconDataUrl('item', status.itemId)}" alt="" draggable="false">`}
@@ -334,7 +336,7 @@ export class LootRollController {
     row.className = 'loot-roll panel master';
     row.dataset.rollId = String(rollId);
     row.dataset.master = '1';
-    row.style.setProperty('--loot-roll-frac', '1');
+    this.deps.writers.setStyleProp(row, '--loot-roll-frac', '1.000');
     const picks = event.candidates
       .map(
         (candidate) =>

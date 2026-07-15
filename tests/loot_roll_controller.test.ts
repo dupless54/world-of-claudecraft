@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { LootRollGroupStatus, LootRollPrompt, SimEvent } from '../src/sim/types';
 import { LootRollController } from '../src/ui/hud/loot/loot_roll_controller';
 import { LOOT_ROLL_REGRACE_MS } from '../src/ui/hud/loot/loot_roll_reconcile';
+import { makeWriterFacet } from '../src/ui/painter_host';
 import type { IWorld } from '../src/world_api';
 import { FakeDocument, FakeElement } from './helpers/fake_dom';
 
@@ -80,6 +81,15 @@ function harness() {
   let statuses: LootRollGroupStatus[] = [];
   const submitLootRoll = vi.fn();
   const assignMasterLoot = vi.fn();
+  const writerCounts = { writes: 0, skips: 0 };
+  const writers = makeWriterFacet(
+    new Map(),
+    new Map(),
+    new Map(),
+    new Map(),
+    () => writerCounts.writes++,
+    () => writerCounts.skips++,
+  );
   const world = {
     playerId: 2,
     activeLootRolls: () => open,
@@ -98,6 +108,7 @@ function harness() {
     itemIcon: () => '<img class="test-item-icon">',
     itemTooltip: () => 'tooltip',
     attachTooltip: () => {},
+    writers,
   });
   return {
     controller,
@@ -114,6 +125,7 @@ function harness() {
       now += ms;
     },
     now: () => now,
+    writerCounts,
   };
 }
 
@@ -195,5 +207,20 @@ describe('LootRollController', () => {
 
     expect(test.assignMasterLoot).toHaveBeenCalledWith(7, [2, 4]);
     expect(test.root.style.display).toBe('none');
+  });
+
+  it('elides a repeated timer fraction while still writing real time progress', () => {
+    const test = harness();
+    test.setOpen([prompt()]);
+    test.controller.showRoll(rollEvent());
+    expect(test.writerCounts).toEqual({ writes: 1, skips: 0 });
+
+    test.controller.update(test.now());
+    test.controller.update(test.now());
+    expect(test.writerCounts).toEqual({ writes: 1, skips: 2 });
+
+    test.advance(1_000);
+    test.controller.update(test.now());
+    expect(test.writerCounts).toEqual({ writes: 2, skips: 2 });
   });
 });

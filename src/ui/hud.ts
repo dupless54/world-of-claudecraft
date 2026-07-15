@@ -1425,6 +1425,7 @@ export class Hud {
       itemIcon: (item) => this.itemIcon(item),
       itemTooltip: (item) => this.itemTooltip(item),
       attachTooltip: (element, html) => this.attachTooltip(element, html),
+      writers: this.writerFacet,
     });
     this.playerCard = new PlayerCardController({
       document,
