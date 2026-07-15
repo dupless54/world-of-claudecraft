@@ -91,6 +91,10 @@ const hudTs = readFileSync(new URL('../src/ui/hud.ts', import.meta.url), 'utf8')
   /\r\n/g,
   '\n',
 );
+const actionBarControllerTs = readFileSync(
+  new URL('../src/ui/hud/action_bar/action_bar_controller.ts', import.meta.url),
+  'utf8',
+).replace(/\r\n/g, '\n');
 // The Esc options menu was extracted to options_view.ts (the declarative menu
 // model) + options_window.ts (the painter); the menu guard reads the
 // model rather than the old inline hud.ts main-menu builder.
@@ -2046,48 +2050,56 @@ describe('client HTML shell', () => {
   });
 
   it('seeds druid form bars and initializes stealth pages blank', () => {
-    expect(hudTs).toContain('if (this.isFormKitBar()) {');
-    expect(hudTs).toContain('if (this.seedFormBarIfNeeded(parsed)) return;');
-    expect(hudTs).toMatch(
-      /buildDefaultFormBar\(\s*this\.formKitAbilityIds\(this\.activeHotbarForm\),\s*Hud\.BAR_ABILITY_SLOTS,\s*\)/,
+    expect(actionBarControllerTs).toContain('if (this.isFormKitBar()) {');
+    expect(actionBarControllerTs).toContain('if (this.seedFormBarIfNeeded(parsed)) return;');
+    expect(actionBarControllerTs).toMatch(
+      /buildDefaultFormBar\(\s*this\.formKitAbilityIds\(this\.activeFormState\),\s*ACTION_BAR_ABILITY_SLOTS,\s*\)/,
     );
-    expect(hudTs).toContain('if (this.isStealthHotbarForm()) {');
-    expect(hudTs).toContain('this.loadStealthSlotMap(parsed, stored, storedRaw);');
-    expect(hudTs).toMatch(/Array\.from\(\{ length: Hud\.BAR_ABILITY_SLOTS \}, \(\) => null\)/);
-    expect(hudTs).not.toContain('fallbackForm');
+    expect(actionBarControllerTs).toContain('if (this.isStealthForm()) {');
+    expect(actionBarControllerTs).toContain('this.loadStealthActions(parsed, stored, storedRaw);');
+    expect(actionBarControllerTs).toMatch(
+      /Array\.from\(\{ length: ACTION_BAR_ABILITY_SLOTS \}, \(\) => null\)/,
+    );
+    expect(actionBarControllerTs).not.toContain('fallbackForm');
   });
 
   it('migrates a pre-existing form bar at most once via a per-form seeded marker', () => {
-    expect(hudTs).toContain('_seeded');
-    expect(hudTs).toContain('shouldSeedFormBar(parsed, normalActions, false)');
+    expect(actionBarControllerTs).toContain('_seeded');
+    expect(actionBarControllerTs).toContain('shouldSeedFormBar(parsed, normalActions, false)');
   });
 
   it('only auto-places abilities that belong on the active form bar', () => {
-    expect(hudTs).toContain(
-      'if (this.shouldAutoPlaceOnForm(id, this.activeHotbarForm)) autoPlaceAbilityIds.add(id);',
+    expect(actionBarControllerTs).toContain(
+      'if (this.shouldAutoPlaceOnForm(id, this.activeFormState)) autoPlaceAbilityIds.add(id);',
     );
   });
 
   it('keeps the active druid form toggle on its form action bar', () => {
-    expect(hudTs).toContain("new Set(['bear_form', 'cat_form', 'travel_form'])");
-    expect(hudTs).toContain("if (this.activeHotbarForm === 'bear') return 'bear_form';");
-    expect(hudTs).toContain("if (this.activeHotbarForm === 'cat') return 'cat_form';");
-    expect(hudTs).not.toContain("this.activeHotbarForm === 'cat_stealth') return 'cat_form'");
-    expect(hudTs).toContain(
+    expect(actionBarControllerTs).toContain("new Set(['bear_form', 'cat_form', 'travel_form'])");
+    expect(actionBarControllerTs).toContain(
+      "if (this.activeFormState === 'bear') return 'bear_form';",
+    );
+    expect(actionBarControllerTs).toContain(
+      "if (this.activeFormState === 'cat') return 'cat_form';",
+    );
+    expect(actionBarControllerTs).not.toContain(
+      "this.activeFormState === 'cat_stealth') return 'cat_form'",
+    );
+    expect(actionBarControllerTs).toContain(
       'if (formToggle && knownAbilityIds.includes(formToggle)) autoPlaceAbilityIds.add(formToggle);',
     );
   });
 
   it('offers a reset-to-default action bar button in the spellbook, only for classes with form bars', () => {
     // The reset button + its label live in the spellbook painter;
-    // Hud still owns resetActiveFormBarToDefault + the form-bar predicate it wires.
+    // Hud keeps compatibility callbacks while the controller owns the form state.
     expect(spellbookWindowTs).toContain('data-reset-bar');
     expect(spellbookWindowTs).toContain("t('abilityUi.spellbook.resetBar')");
     expect(spellbookWindowTs).toContain('const resetBtnHtml = view.hasFormBars');
     expect(hudTs).toContain('resetFormBar: () => this.resetActiveFormBarToDefault()');
     expect(componentsCss).toContain('.spellbook-reset {');
     expect(hudMobileCss).toContain('body.mobile-touch #spellbook .spellbook-reset {');
-    expect(hudTs).toContain('return classHasFormBars(this.sim.cfg.playerClass);');
+    expect(hudTs).toContain('return this.actionBarController.classHasFormBars();');
   });
 
   it('shows mobile spellbook add and remove controls for the spell bar', () => {

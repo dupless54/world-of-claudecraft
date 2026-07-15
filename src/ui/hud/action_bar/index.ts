@@ -1,4 +1,5 @@
 export * from './ability_self_only';
+export * from './action_bar_controller';
 export * from './action_bar_painter';
 export * from './action_bar_view';
 export * from './attack_on_ability';

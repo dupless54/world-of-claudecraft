@@ -44,7 +44,6 @@ import {
   skinRankOrder,
 } from '../sim/content/skins';
 import { FIRST_TALENT_LEVEL, type TalentAllocation, talentsFor } from '../sim/content/talents';
-import { SPORT_ABILITIES } from '../sim/content/vale_cup';
 import type { ZoneDef } from '../sim/data';
 import {
   ABILITIES,
@@ -57,7 +56,6 @@ import {
   DUNGEON_X_THRESHOLD,
   dungeonAt,
   ITEMS,
-  isDelvePos,
   MOBS,
   NPCS,
   QUESTS,
@@ -230,6 +228,10 @@ import {
   holderTierForBalance,
 } from './holder_tier';
 import { isSelfOnlyAbility } from './hud/action_bar/ability_self_only';
+import {
+  ACTION_BAR_ABILITY_SLOTS,
+  ActionBarController,
+} from './hud/action_bar/action_bar_controller';
 import { ActionBarPainter, type ActionBarSlotElements } from './hud/action_bar/action_bar_painter';
 import {
   ABILITY_ICON_PREFIX,
@@ -256,27 +258,18 @@ import {
   type GroundAimState,
 } from './hud/action_bar/ground_aim';
 import {
-  actionForAttackSlot,
   applyLoadoutBar as applyLoadoutBarActions,
   assignAttackSlotAction,
-  attackSlotStorageKey,
-  buildDefaultFormBar,
-  classHasFormBars,
   clearHotbarSlot,
   encodeHotbarAction,
   HOTBAR_ACTION_MIME,
   type HotbarAction,
   handleMobileAttackTap,
-  loadAttackSlotAction,
   parseHotbarAction,
-  parseHotbarActions,
   placeAbilityOnSlot,
   placeItemOnSlot,
   resolveMobileHotbarDrop,
-  saveAttackSlotAction,
-  shouldSeedFormBar,
   swapHotbarSlots,
-  syncHotbarActions,
 } from './hud/action_bar/hotbar';
 import {
   clampMobilePage,
@@ -830,8 +823,6 @@ const CHAT_TEMPLATE_KEYS = {
   roll: 'hud.chat.templates.roll',
   say: 'hud.chat.templates.say',
 } satisfies Record<string, TranslationKey>;
-type HotbarForm = 'normal' | 'bear' | 'cat' | 'cat_stealth' | 'stealth' | 'sport';
-
 const DELVE_AFFIX_COLORS: Record<string, string> = {
   restless_graves: '#8b7355',
   bad_air: '#6a8a6a',
@@ -896,10 +887,9 @@ export class Hud {
   // two rows share one hotbarActions array, so drag/drop, persistence, and the
   // keybind dispatch all work across both with no per-bar bookkeeping.
   private static readonly PRIMARY_BAR_ABILITY_SLOTS = 11;
-  private static readonly BAR_ABILITY_SLOTS = 22;
+  private static readonly BAR_ABILITY_SLOTS = ACTION_BAR_ABILITY_SLOTS;
   private static readonly PET_AUTOCAST_TOUCH_HOLD_MS = 2000;
   private static ddSeq = 0; // monotonic id source for buildDropdown listbox/option ARIA wiring
-  private static readonly FORM_TOGGLE_IDS = new Set(['bear_form', 'cat_form', 'travel_form']); // shift toggles, castable in any form
   private abilityButtons: {
     btn: HTMLButtonElement;
     label: HTMLSpanElement;
@@ -945,10 +935,19 @@ export class Hud {
   // that helper lives behind the game-layer seam). Null until wired; the
   // attack handler then falls back to the fixed attack control.
   onMobileAttackNearest: (() => void) | null = null;
-  private hotbarActions: HotbarAction[] = []; // index = barSlot-1
-  private loadedSlotMapFromStorage = false;
-  private knownAbilityIdsAtLastSlotSync: Set<string> | null = null;
-  private activeHotbarForm: HotbarForm = 'normal';
+  private readonly actionBarController: ActionBarController;
+  private get hotbarActions(): HotbarAction[] {
+    return this.actionBarController.actions;
+  }
+  private set hotbarActions(actions: HotbarAction[]) {
+    this.actionBarController.replaceActions(actions);
+  }
+  private get attackSlotAction(): HotbarAction {
+    return this.actionBarController.attackAction;
+  }
+  private set attackSlotAction(action: HotbarAction) {
+    this.actionBarController.replaceAttackAction(action);
+  }
   private groundAim: GroundAimState = createGroundAimState();
   private groundAimPoint: AimPoint | null = null;
   private groundAimClamped = false;
@@ -1418,6 +1417,18 @@ export class Hud {
   ) {
     this.localIgnoredNames = this.loadLocalIgnoredNames();
     this.meters = new Meters(sim);
+    this.actionBarController = new ActionBarController({
+      storage: localStorage,
+      playerClass: this.sim.cfg.playerClass,
+      playerName: this.sim.player.name,
+      knownAbilityIds: () => this.sim.known.map((known) => known.def.id),
+      hasAura: (kind) => this.sim.player.auras.some((aura) => aura.kind === kind),
+      isInSportMatch: () => {
+        const match = this.sim.cupInfo?.match;
+        return !!match && match.team !== null;
+      },
+      showAttackButton: () => this.optionsHooks?.settings.get('showAttackButton') ?? true,
+    });
     this.chatGeometry = new ChatGeometryController({
       document,
       window,
@@ -1458,7 +1469,7 @@ export class Hud {
     this.initFrameMovers();
     this.initWindowManagement();
     this.emoteWheelSlots = this.loadEmoteWheelSlots();
-    this.loadSlotMap();
+    this.actionBarController.init();
     this.buildActionBar();
     this.initMailIndicator();
     this.refreshKeybindLabels();
@@ -3611,7 +3622,7 @@ export class Hud {
     // (empty or an item) map to null, never mistaken for an ability id.
     abilityIdByBarSlot: () =>
       this.hotbarActions.map((a) => (a && a.type === 'ability' ? a.id : null)),
-    hasFreeSlot: () => this.firstEmptyHotbarIndex() !== -1,
+    hasFreeSlot: () => this.actionBarController.hasFreeSlot(),
     addToBar: (id) => this.addAbilityToHotbar(id),
     removeFromBar: (id) => this.removeAbilityFromHotbar(id),
     hasFormBars: () => this.classHasFormBars(),
@@ -4503,383 +4514,53 @@ export class Hud {
   // shortcuts. Abilities are keyed by id (known is class-ordered and shifts on
   // level-up, so indices would not survive). Persisted per class+character,
   // with separate form/stealth layouts because each state has a different kit.
-  private slotMapKey(form: HotbarForm = this.activeHotbarForm): string {
-    const base = `woc_hotbar_${this.sim.cfg.playerClass}_${this.sim.player.name}`;
-    return form === 'normal' ? base : `${base}_${form}`;
-  }
-
-  private playerHotbarForm(): HotbarForm {
-    // Vale Cup sport kit: keyed off the IWorld snapshot (cupInfo.match with me
-    // on a roster), NOT off meta.known contents, because the snapshot and the
-    // wireRev-gated known swap ride the same server flush, so the bar and the
-    // kit flip together offline AND online. The form deliberately holds through
-    // phase 'over': the sim restores the class kit in the SAME tick it nulls
-    // the match (teardownCupMatch), so flipping to 'normal' any earlier would
-    // load the saved class bar while known is still the sport kit, and
-    // syncSlotMap would drop every "unlearned" class ability from it and SAVE
-    // the wipe. Checked before the druid/rogue arms: the sport standardize
-    // strips forms/stealth on kickoff anyway.
-    const cupMatch = this.sim.cupInfo?.match;
-    if (cupMatch && cupMatch.team !== null) return 'sport';
-    if (this.sim.cfg.playerClass === 'druid') {
-      if (this.sim.player.auras.some((a) => a.kind === 'form_bear')) return 'bear';
-      if (this.sim.player.auras.some((a) => a.kind === 'form_cat')) {
-        if (this.sim.player.auras.some((a) => a.kind === 'stealth')) return 'cat_stealth';
-        return 'cat';
-      }
-    }
-    if (
-      this.sim.cfg.playerClass === 'rogue' &&
-      this.sim.player.auras.some((a) => a.kind === 'stealth')
-    )
-      return 'stealth';
-    return 'normal';
-  }
-
   private isHotbarItemId(itemId: string): boolean {
-    const item = ITEMS[itemId];
-    return (
-      item?.kind === 'food' ||
-      item?.kind === 'drink' ||
-      item?.kind === 'potion' ||
-      item?.use?.type === 'fishing'
-    );
+    return this.actionBarController.isHotbarItemId(itemId);
   }
 
-  // Whether an ability belongs on a given form's default bar. Bear/Wolf bars hold
-  // only that form's kit (its `requiresForm` abilities) plus the shift toggles;
-  // the caster ('normal') bar excludes form-only abilities so they no longer
-  // auto-dump onto it. Stealth pages are intentionally manual: they begin empty
-  // and never receive automatic placements.
-  private shouldAutoPlaceOnForm(id: string, form: HotbarForm): boolean {
-    // The sport bar holds ONLY the sport kit; conversely no sport id may ever
-    // auto-place onto (and pollute) a persisted class bar.
-    if (form === 'sport') return !!SPORT_ABILITIES[id];
-    if (SPORT_ABILITIES[id]) return false;
-    if (this.isStealthHotbarForm(form)) return false;
-    if (form === 'bear' || form === 'cat') {
-      return ABILITIES[id]?.requiresForm === form || Hud.FORM_TOGGLE_IDS.has(id);
-    }
-    return !ABILITIES[id]?.requiresForm;
-  }
-
-  // The known abilities that make up a form's default bar, in class/learn order.
-  private formKitAbilityIds(form: HotbarForm): string[] {
-    return this.sim.known.map((k) => k.def.id).filter((id) => this.shouldAutoPlaceOnForm(id, form));
-  }
-
-  // True only for the druid form bars that seed a form-specific kit. Rogue and
-  // Wolf stealth pages take the separate blank/manual path below.
-  private isFormKitBar(form: HotbarForm = this.activeHotbarForm): boolean {
-    return this.sim.cfg.playerClass === 'druid' && (form === 'bear' || form === 'cat');
-  }
-
-  private isStealthHotbarForm(form: HotbarForm = this.activeHotbarForm): boolean {
-    return form === 'stealth' || form === 'cat_stealth';
-  }
-
-  // Gates form-bar-only UI (e.g. the spellbook "Reset bar" button) so it never
-  // shows for single-bar classes. Delegates to the pure, unit-tested helper.
   private classHasFormBars(): boolean {
-    return classHasFormBars(this.sim.cfg.playerClass);
-  }
-
-  // Per-form one-time marker so the migration of pre-existing form bars (empty or
-  // a clone of the caster bar) runs at most once and never clobbers a layout the
-  // player deliberately customized. Mirrors the emote-wheel version marker.
-  private formBarSeededKey(form: HotbarForm = this.activeHotbarForm): string {
-    return `${this.slotMapKey(form)}_seeded`;
-  }
-
-  private markFormBarSeeded(form: HotbarForm = this.activeHotbarForm): void {
-    try {
-      localStorage.setItem(this.formBarSeededKey(form), '1');
-    } catch {
-      /* storage unavailable */
-    }
-  }
-
-  // Versioned separately from the druid form-kit migration. The first blank-page
-  // rollout also clears a byte-identical parent clone created by the previous
-  // behavior, while leaving every customized stealth layout untouched.
-  private stealthBarInitializedKey(form: HotbarForm = this.activeHotbarForm): string {
-    return `${this.slotMapKey(form)}_blank_v1`;
-  }
-
-  private loadStealthSlotMap(
-    parsed: HotbarAction[],
-    stored: boolean,
-    storedRaw: string | null,
-  ): void {
-    let initialized = false;
-    try {
-      initialized = localStorage.getItem(this.stealthBarInitializedKey()) === '1';
-    } catch {
-      /* storage unavailable */
-    }
-
-    let actions = parsed;
-    let shouldPersist = !stored;
-    if (!initialized) {
-      const parentForm: HotbarForm = this.activeHotbarForm === 'cat_stealth' ? 'cat' : 'normal';
-      let parentStoredRaw: string | null = null;
-      try {
-        parentStoredRaw = localStorage.getItem(this.slotMapKey(parentForm));
-      } catch {
-        /* storage unavailable */
-      }
-      if (!stored || (storedRaw !== null && storedRaw === parentStoredRaw)) {
-        actions = Array.from({ length: Hud.BAR_ABILITY_SLOTS }, () => null);
-        shouldPersist = true;
-      }
-    }
-
-    this.loadedSlotMapFromStorage = true;
-    this.hotbarActions = actions;
-    this.knownAbilityIdsAtLastSlotSync = null;
-    try {
-      // Persist first so a failed page write never leaves a success marker that
-      // suppresses the next migration attempt.
-      if (shouldPersist) localStorage.setItem(this.slotMapKey(), JSON.stringify(actions));
-      if (!initialized) localStorage.setItem(this.stealthBarInitializedKey(), '1');
-    } catch {
-      /* storage unavailable */
-    }
-  }
-
-  // Seed/migrate a druid bear/cat bar to its form kit. Returns true if it took
-  // ownership of `hotbarActions`. Runs at most once per form (guarded by the
-  // marker): on first encounter it seeds an empty bar or migrates a bar that is a
-  // byte-identical clone of the caster bar, but leaves a customized bar untouched.
-  private seedFormBarIfNeeded(parsed: HotbarAction[]): boolean {
-    let alreadySeeded = false;
-    try {
-      alreadySeeded = localStorage.getItem(this.formBarSeededKey()) === '1';
-    } catch {
-      /* storage unavailable */
-    }
-    if (alreadySeeded) return false;
-
-    let normalRaw: unknown = null;
-    try {
-      normalRaw = JSON.parse(localStorage.getItem(this.slotMapKey('normal')) ?? 'null');
-    } catch {
-      /* corrupt */
-    }
-    const normalActions = parseHotbarActions(
-      normalRaw,
-      Hud.BAR_ABILITY_SLOTS,
-      (id) => !!ABILITIES[id] || !!SPORT_ABILITIES[id],
-      (id) => this.isHotbarItemId(id),
-    );
-
-    // Mark before deciding so a deliberately customized bar is left untouched and
-    // this migration is never re-evaluated for the form.
-    this.markFormBarSeeded();
-    if (!shouldSeedFormBar(parsed, normalActions, false)) return false;
-
-    this.hotbarActions = buildDefaultFormBar(
-      this.formKitAbilityIds(this.activeHotbarForm),
-      Hud.BAR_ABILITY_SLOTS,
-    );
-    this.loadedSlotMapFromStorage = true;
-    this.knownAbilityIdsAtLastSlotSync = null;
-    this.saveSlotMap();
-    return true;
-  }
-
-  private loadSlotMap(): void {
-    let arr: unknown = null;
-    let stored = false;
-    let storedRaw: string | null = null;
-    try {
-      storedRaw = localStorage.getItem(this.slotMapKey());
-      arr = JSON.parse(storedRaw ?? 'null');
-      stored = Array.isArray(arr);
-    } catch {
-      /* corrupt */
-    }
-    const parsed = parseHotbarActions(
-      arr,
-      Hud.BAR_ABILITY_SLOTS,
-      (id) => !!ABILITIES[id] || !!SPORT_ABILITIES[id],
-      (id) => this.isHotbarItemId(id),
-    );
-    // The Vale Cup sport bar seeds from the sport kit (buildDefaultFormBar over
-    // the current known list, which IS the role kit during a match, so Kick /
-    // the role moves / Second Wind land in slots 1-4). It must NEVER inherit
-    // the class bar via the empty-form fallback below: class abilities are not
-    // castable on the pitch. A player's mid-match rearrangement still persists
-    // under the dedicated `_sport` storage key.
-    if (this.activeHotbarForm === 'sport') {
-      if (parsed.every((action) => action === null)) {
-        this.hotbarActions = buildDefaultFormBar(
-          this.formKitAbilityIds('sport'),
-          Hud.BAR_ABILITY_SLOTS,
-        );
-        this.loadedSlotMapFromStorage = true;
-        this.knownAbilityIdsAtLastSlotSync = null;
-        return;
-      }
-      this.loadedSlotMapFromStorage = stored;
-      this.hotbarActions = parsed;
-      this.knownAbilityIdsAtLastSlotSync = null;
-      return;
-    }
-    if (this.isStealthHotbarForm()) {
-      this.loadStealthSlotMap(parsed, stored, storedRaw);
-      return;
-    }
-    // Druid bear/cat bars auto-populate with that form's kit instead of cloning
-    // the caster bar; existing characters are migrated once (see seedFormBarIfNeeded).
-    if (this.isFormKitBar()) {
-      if (this.seedFormBarIfNeeded(parsed)) return;
-      this.loadedSlotMapFromStorage = stored;
-      this.hotbarActions = parsed;
-      this.knownAbilityIdsAtLastSlotSync = null;
-      return;
-    }
-    this.loadedSlotMapFromStorage = stored;
-    this.hotbarActions = parsed;
-    this.knownAbilityIdsAtLastSlotSync = null;
+    return this.actionBarController.classHasFormBars();
   }
 
   private saveSlotMap(): void {
-    try {
-      localStorage.setItem(this.slotMapKey(), JSON.stringify(this.hotbarActions));
-    } catch {
-      /* storage unavailable */
-    }
-  }
-
-  private firstEmptyHotbarIndex(): number {
-    return this.hotbarActions.indexOf(null);
-  }
-
-  private hotbarIndexForAbility(abilityId: string): number {
-    return this.hotbarActions.findIndex(
-      (action) => action?.type === 'ability' && action.id === abilityId,
-    );
+    this.actionBarController.saveActions();
   }
 
   private addAbilityToHotbar(abilityId: string): boolean {
-    if (this.hotbarIndexForAbility(abilityId) !== -1) return false;
-    const target = this.firstEmptyHotbarIndex();
-    if (target === -1) return false;
-    this.hotbarActions = placeAbilityOnSlot(this.hotbarActions, abilityId, target);
-    this.saveSlotMap();
-    return true;
+    return this.actionBarController.addAbility(abilityId);
   }
 
   private removeAbilityFromHotbar(abilityId: string): boolean {
-    const target = this.hotbarIndexForAbility(abilityId);
-    if (target === -1) return false;
-    this.hotbarActions = clearHotbarSlot(this.hotbarActions, target);
-    this.saveSlotMap();
-    return true;
+    return this.actionBarController.removeAbility(abilityId);
   }
 
-  // Rebuild the active bar from its default kit: druid forms get their form kit,
-  // caster bars get filtered known abilities, and stealth pages reset to blank.
-  // Item shortcuts and manual arrangement are intentionally discarded; it's a reset.
-  // The per-frame update() repaints the slot icons from hotbarActions, so we only
-  // mutate state here (same as addAbilityToHotbar / drag-drop).
   private resetActiveFormBarToDefault(): void {
-    this.hotbarActions = buildDefaultFormBar(
-      this.formKitAbilityIds(this.activeHotbarForm),
-      Hud.BAR_ABILITY_SLOTS,
-    );
-    this.knownAbilityIdsAtLastSlotSync = new Set(this.sim.known.map((k) => k.def.id));
-    this.markFormBarSeeded();
-    this.saveSlotMap();
+    this.actionBarController.resetActiveBar();
     this.spellbookWindow.refreshHotbarControls();
   }
 
-  private formToggleAbilityId(): string | null {
-    if (this.activeHotbarForm === 'bear') return 'bear_form';
-    if (this.activeHotbarForm === 'cat') return 'cat_form';
-    return null;
-  }
-
   private syncActiveHotbarForm(): void {
-    const next = this.playerHotbarForm();
-    if (next === this.activeHotbarForm) return;
-    this.saveSlotMap();
-    this.activeHotbarForm = next;
+    if (!this.actionBarController.syncActiveForm()) return;
     this.dragAction = null;
     this.clearMobileHotbarDrag();
-    this.loadSlotMap();
     this.mobileActionPage = clampMobilePage(this.mobileActionPage);
   }
 
-  // Drop unlearned ability ids; place newly learned abilities in the first
-  // empty slot. Item shortcuts stay assigned even when their count reaches 0.
   private syncSlotMap(): void {
-    const knownAbilityIds = this.sim.known.map((k) => k.def.id);
-    const autoPlaceAbilityIds = new Set<string>();
-    // Only auto-place abilities that belong on the active form's bar, so newly
-    // learned form abilities land on their form bar and not the caster bar.
-    const consider = (id: string) => {
-      if (this.shouldAutoPlaceOnForm(id, this.activeHotbarForm)) autoPlaceAbilityIds.add(id);
-    };
-    if (this.knownAbilityIdsAtLastSlotSync === null) {
-      if (!this.loadedSlotMapFromStorage) {
-        for (const id of knownAbilityIds) consider(id);
-      }
-    } else {
-      for (const id of knownAbilityIds) {
-        if (!this.knownAbilityIdsAtLastSlotSync.has(id)) consider(id);
-      }
-    }
-    const formToggle = this.formToggleAbilityId();
-    if (formToggle && knownAbilityIds.includes(formToggle)) autoPlaceAbilityIds.add(formToggle);
-    const synced = syncHotbarActions(this.hotbarActions, knownAbilityIds, autoPlaceAbilityIds);
-    this.hotbarActions = synced.actions;
-    if (synced.changed) this.saveSlotMap();
-    this.knownAbilityIdsAtLastSlotSync = new Set(knownAbilityIds);
+    this.actionBarController.syncKnownAbilities();
     this.mobileActionPage = clampMobilePage(this.mobileActionPage);
   }
 
-  // Slot 0 (the first key) mode. With the Interface option "Show Attack Button" ON
-  // (default) it is the classic fixed auto-attack toggle. OFF turns it into a normal
-  // assignable slot: right-click on the Attack button flips the option off (the
-  // "remove it from the bar" gesture), the freed slot accepts a drag like any other,
-  // and its key then casts the assigned action. The Options toggle restores Attack.
-  // The assignment is backed by its own persisted action (attackSlotAction), shared
-  // across forms, so it never disturbs the hotbarActions array layout.
-  private attackSlotAction: HotbarAction = null;
   private attackSlotIsAttack(): boolean {
-    return this.optionsHooks?.settings.get('showAttackButton') ?? true;
+    return this.actionBarController.isAttackSlotFixed();
   }
-  private attackSlotKey(): string {
-    return attackSlotStorageKey(this.slotMapKey('normal'));
-  }
-  private loadAttackSlotAction(): void {
-    try {
-      this.attackSlotAction = loadAttackSlotAction(
-        localStorage,
-        this.attackSlotKey(),
-        (id) => this.sim.known.some((known) => known.def.id === id),
-        (id) => this.isHotbarItemId(id),
-      );
-    } catch {
-      this.attackSlotAction = null;
-    }
-  }
+
   private saveAttackSlotAction(): void {
-    try {
-      saveAttackSlotAction(localStorage, this.attackSlotKey(), this.attackSlotAction);
-    } catch {
-      // Storage can be unavailable in private modes or restricted embeds.
-    }
+    this.actionBarController.saveAttackAction();
   }
 
   private actionForSlot(barSlot: number): HotbarAction {
-    // barSlot 0 is the attack slot: it resolves an action only when the Attack
-    // toggle was removed (showAttackButton off) and something was dropped in.
-    if (barSlot === 0) return actionForAttackSlot(this.attackSlotIsAttack(), this.attackSlotAction);
-    // barSlot 1..22 (1..11 primary bar, 12..22 secondary bar)
-    return this.hotbarActions[barSlot - 1] ?? null;
+    return this.actionBarController.actionForSlot(barSlot);
   }
 
   abilityForSlot(barSlot: number): ResolvedAbility | null {
@@ -5244,8 +4925,6 @@ export class Hud {
     // the secondary bar. One button list (this.abilityButtons), indexed by slot.
     // An entry whose template omits #actionbar2 leaves those buttons detached
     // rather than crashing on appendChild (keybind dispatch by slot still works).
-    // Restore any action assigned to the freed attack slot (showAttackButton off).
-    this.loadAttackSlotAction();
     const totalButtons = 1 + Hud.BAR_ABILITY_SLOTS;
     for (let i = 0; i < totalButtons; i++) {
       const container = i <= Hud.PRIMARY_BAR_ABILITY_SLOTS ? bar : bar2;
