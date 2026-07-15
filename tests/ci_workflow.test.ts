@@ -101,4 +101,37 @@ describe('CI workflow parity', () => {
       expect(prGate).not.toContain(step);
     }
   });
+
+  it('shards the PR and release test steps four ways and keeps the checks single-shard', () => {
+    const prGate = jobSource('pr-gate');
+    const prChecks = jobSource('pr-checks');
+    const releaseGate = jobSource('release-gate');
+    // Both test jobs fan the ONE suite across the same 4-shard matrix. The run
+    // line stays `npm test` (whose pretest regenerates the i18n artifacts in
+    // every shard: the S3 guard, guide freshness, and the git-subprocess suites
+    // need them regardless of which shard they hash into), never a bare vitest
+    // invocation. fail-fast stays off so shards pass or fail independently and
+    // a red run always reports the whole suite.
+    for (const job of [prGate, releaseGate]) {
+      expect(job).toContain('strategy:');
+      expect(job).toContain('fail-fast: false');
+      expect(job).toContain('shard: [1, 2, 3, 4]');
+      expect(job).toContain('run: npm test -- --shard=${{ matrix.shard }}/4');
+    }
+    expect(workflow.match(/run: npm test -- --shard=\$\{\{ matrix\.shard \}\}\/4/g)).toHaveLength(
+      2,
+    );
+    expect(workflow).not.toContain('npx vitest');
+    // pr-checks stays a single unsharded job: its serialized checks run once.
+    expect(prChecks).not.toContain('strategy:');
+    expect(prChecks).not.toContain('matrix:');
+    // pr-gate is tests-only, so nothing in it is gated to a single shard...
+    expect(prGate).not.toContain('matrix.shard == 1');
+    // ...while release-gate keeps its serialized checks and builds on exactly
+    // one shard each (they are not partitionable and must not run four times):
+    // i18n:gen, the freshness diff, the coverage summary, the malware gate,
+    // typecheck, and the three builds. Every new non-test step added to
+    // release-gate needs the same single-shard condition, and this count.
+    expect(releaseGate.match(/if: matrix\.shard == 1/g)).toHaveLength(8);
+  });
 });
