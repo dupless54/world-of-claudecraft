@@ -109,10 +109,10 @@ tests added, dead code removed, deferrals.
   summary committed; acceptance criterion 6 never recorded the historical-annotation
   exemption for docs/i18n-scaling/lazy-locales-and-contributor-workflow.md, now
   amended, plus three dated D4 notes added to that doc's unannotated pre-D4 mentions);
-  3 NICE-TO-HAVE confirmed and deferred (criterion 5 proven by evidence chain only;
-  untested defensive fallbacks in the coverage script; release-gate arm of the two
-  i18n steps unexercised live); 11 candidates rejected by the 3-lens adversarial
-  panel. Tests added: none (no code behavior changed). Dead code removed: none.
+  2 NICE-TO-HAVE confirmed and deferred (criterion 5 proven by evidence chain only;
+  untested defensive fallbacks in the coverage script), plus 1 rejected-severity
+  deferral recorded (release-gate arm of the two i18n steps unexercised live);
+  11 candidates rejected by the 3-lens adversarial panel. Tests added: none (no code behavior changed). Dead code removed: none.
   Live evidence recorded: PR #1931 green run 29367611824; freshness-red probe
   PR #1932 run 29367801113, closed unmerged.
 - Phase 2 QA:

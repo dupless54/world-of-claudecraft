@@ -45,8 +45,9 @@ release cut (OPEN item 3).
 
 - Verdict: FAIL on acceptance criterion 2 only; the phase's own deliverables are sound.
   Counts: 1 BLOCKING found (surfaced as OPEN item 8, not fixable in phase scope),
-  2 SHOULD-FIX found and fixed, 3 NICE-TO-HAVE confirmed and deferred, 11 candidate
-  findings rejected by a 3-lens adversarial verification panel.
+  2 SHOULD-FIX found and fixed, 2 NICE-TO-HAVE confirmed and deferred, 11 candidate
+  findings rejected by a 3-lens adversarial verification panel (one rejected item,
+  the unexercised release-gate arm, is still recorded below as a deferral).
 - The BLOCKING finding: src/ui/i18n.resolved.generated/pending.ts (pre-existing, NOT a
   Phase 1 artifact) is a small sorted per-locale array file, so any two concurrent
   new-key PRs whose keys both sort past its current tail (hudChrome.plurals.*, which
