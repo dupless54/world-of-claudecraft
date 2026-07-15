@@ -56,6 +56,29 @@ export function instanceKeyFor(ctx: SimContext, pid: number): string {
   return durable !== undefined ? `solo:char:${durable}` : `solo:${pid}`;
 }
 
+function resetOwnerPids(ctx: SimContext, pid: number): number[] {
+  return ctx.partyOf(pid)?.members ?? [pid];
+}
+
+function resetCooldownKey(ctx: SimContext, pid: number, dungeonId: string): string {
+  const durable = ctx.players.get(pid)?.characterId;
+  return `${durable !== undefined ? `char:${durable}` : `entity:${pid}`}:${dungeonId}`;
+}
+
+function activeResetLock(
+  ctx: SimContext,
+  pid: number,
+  dungeonId: string,
+): { availableAt: number; claimId: number } | null {
+  const key = resetCooldownKey(ctx, pid, dungeonId);
+  const lock = ctx.dungeonResetLocks.get(key);
+  if (!lock || lock.availableAt <= ctx.time) {
+    ctx.dungeonResetLocks.delete(key);
+    return null;
+  }
+  return lock;
+}
+
 export function instanceOriginOf(inst: InstanceSlot): { x: number; z: number } {
   return instanceOrigin(DUNGEONS[inst.dungeonId].index, inst.slot);
 }
@@ -215,6 +238,19 @@ export function enterDungeon(
     (heroicFinalBossAlive(ctx, inst) || !inst.clearedBy.has(r.meta.entityId))
   ) {
     ctx.error(r.meta.entityId, `You are locked to Heroic ${dungeon.name}.`);
+    return;
+  }
+  // Party ids are intentionally ephemeral. During a reset cooldown, every durable
+  // owner may re-enter only the exact replacement claim created by that reset.
+  // Reforming the group or joining a friend's pre-created claim cannot rotate the
+  // ownership key into an immediate fresh run.
+  const conflictingResetLock = !raidAllowed
+    ? resetOwnerPids(ctx, r.meta.entityId)
+        .map((ownerPid) => activeResetLock(ctx, ownerPid, dungeonId))
+        .find((lock) => lock !== null && lock.claimId !== inst?.exitId)
+    : undefined;
+  if (conflictingResetLock) {
+    ctx.error(r.meta.entityId, 'Instances can only be reset once every 5 minutes.');
     return;
   }
   if (!inst) {
@@ -461,7 +497,6 @@ function freeInstance(ctx: SimContext, inst: InstanceSlot): void {
   inst.exitId = null;
   inst.emptyFor = 0;
   inst.claimedAt = undefined;
-  inst.manualResetAvailableAt = undefined;
   inst.clearedBy = new Set();
 }
 
@@ -497,7 +532,12 @@ export function resetDungeonInstances(ctx: SimContext, pid?: number): void {
     ctx.error(r.meta.entityId, 'Change dungeon difficulty before resetting these instances.');
     return;
   }
-  if (resettable.some((inst) => (inst.manualResetAvailableAt ?? 0) > ctx.time)) {
+  const ownerPids = resetOwnerPids(ctx, r.meta.entityId);
+  if (
+    resettable.some((inst) =>
+      ownerPids.some((ownerPid) => activeResetLock(ctx, ownerPid, inst.dungeonId) !== null),
+    )
+  ) {
     ctx.error(r.meta.entityId, 'Instances can only be reset once every 5 minutes.');
     return;
   }
@@ -543,7 +583,13 @@ export function resetDungeonInstances(ctx: SimContext, pid?: number): void {
   for (const inst of resettable) {
     freeInstance(ctx, inst);
     claimInstance(ctx, inst, key, claimDifficultyForDungeon(inst.dungeonId, selected));
-    inst.manualResetAvailableAt = ctx.time + INSTANCE_EMPTY_TIMEOUT;
+    if (inst.exitId === null) throw new Error('Dungeon reset replacement claim has no identity.');
+    for (const ownerPid of ownerPids) {
+      ctx.dungeonResetLocks.set(resetCooldownKey(ctx, ownerPid, inst.dungeonId), {
+        availableAt: ctx.time + INSTANCE_EMPTY_TIMEOUT,
+        claimId: inst.exitId,
+      });
+    }
   }
   ctx.error(r.meta.entityId, 'All instances have been reset.');
 }

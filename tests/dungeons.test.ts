@@ -20,6 +20,7 @@ import {
 import { Sim } from '../src/sim/sim';
 import {
   type Entity,
+  INSTANCE_EMPTY_TIMEOUT,
   type MobTemplate,
   NYTHRAXIS_ADD_ID,
   NYTHRAXIS_BOSS_ID,
@@ -230,6 +231,79 @@ describe('dungeons: heroic difficulty', () => {
 
     expect(claimedDungeon(sim, 'hollow_crypt', 'normal')).toBeUndefined();
     expect(claimedDungeon(sim, 'hollow_crypt', 'heroic')).toBe(normalInst);
+  });
+
+  it('keeps the cooldown when the owners reform under a new party id', () => {
+    const sim = makeSim();
+    const leader = sim.addPlayer('warrior', 'Reformer', { characterId: 93 });
+    const member = sim.addPlayer('warrior', 'Rejoiner', { characterId: 94 });
+    sim.partyInvite(member, leader);
+    sim.partyAccept(member);
+    enterDungeon(sim.ctx, 'hollow_crypt', leader);
+    const normalInst = claimedDungeon(sim, 'hollow_crypt', 'normal');
+    leaveDungeon(sim.ctx, leader);
+
+    sim.setDungeonDifficulty('heroic', leader);
+    sim.resetDungeonInstances(leader);
+    expect(normalInst.difficulty).toBe('heroic');
+
+    sim.setDungeonDifficulty('normal', leader);
+    sim.partyLeave(member);
+    sim.partyInvite(member, leader);
+    sim.partyAccept(member);
+    sim.drainEvents();
+    enterDungeon(sim.ctx, 'hollow_crypt', leader);
+
+    expect(claimedDungeon(sim, 'hollow_crypt', 'normal')).toBeUndefined();
+    expect(
+      (sim.drainEvents() as any[]).some(
+        (event) =>
+          event.type === 'error' &&
+          event.pid === leader &&
+          event.text === 'Instances can only be reset once every 5 minutes.',
+      ),
+    ).toBe(true);
+
+    sim.time += INSTANCE_EMPTY_TIMEOUT;
+    enterDungeon(sim.ctx, 'hollow_crypt', leader);
+    expect(claimedDungeon(sim, 'hollow_crypt', 'normal')).toBeTruthy();
+  });
+
+  it("keeps a reset owner out of another party's pre-created claim during cooldown", () => {
+    const sim = makeSim();
+    const owner = sim.addPlayer('warrior', 'ResetOwner', { characterId: 95 });
+    enterDungeon(sim.ctx, 'hollow_crypt', owner);
+    const resetClaim = claimedDungeon(sim, 'hollow_crypt', 'normal');
+    leaveDungeon(sim.ctx, owner);
+    sim.setDungeonDifficulty('heroic', owner);
+    sim.resetDungeonInstances(owner);
+    expect(resetClaim.difficulty).toBe('heroic');
+
+    const friend = sim.addPlayer('warrior', 'Friend', { characterId: 96 });
+    const helper = sim.addPlayer('warrior', 'Helper', { characterId: 97 });
+    sim.partyInvite(helper, friend);
+    sim.partyAccept(helper);
+    enterDungeon(sim.ctx, 'hollow_crypt', friend);
+    const freshNormal = claimedDungeon(sim, 'hollow_crypt', 'normal');
+    expect(freshNormal).toBeTruthy();
+    leaveDungeon(sim.ctx, friend);
+
+    sim.partyInvite(owner, friend);
+    sim.partyAccept(owner);
+    sim.drainEvents();
+    enterDungeon(sim.ctx, 'hollow_crypt', owner);
+
+    expect(sim.instanceSlotAt(sim.entities.get(owner)?.pos ?? { x: 0, y: 0, z: 0 })).toBeNull();
+    expect(
+      sim
+        .drainEvents()
+        .some(
+          (event) =>
+            event.type === 'error' &&
+            event.pid === owner &&
+            event.text === 'Instances can only be reset once every 5 minutes.',
+        ),
+    ).toBe(true);
   });
 
   it('preserves an empty claim while unlooted boss loot remains inside', () => {

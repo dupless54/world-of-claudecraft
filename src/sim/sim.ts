@@ -791,9 +791,6 @@ export interface InstanceSlot {
   // Sim-time (seconds) this slot was claimed, cleared with the claim. Session
   // state (instances never persist); the Sanctum speed deed reads it.
   claimedAt?: number;
-  // A manual difficulty-transition reset cannot itself be chained into another
-  // reset until the normal empty-instance timeout has elapsed.
-  manualResetAvailableAt?: number;
   // Players whose heroic daily lockout FIRST landed with THIS claim's final-boss
   // kill (instances/dungeons lockToHeroicClaim). The heroic door's cleared-run
   // exception admits only these: a player locked by an earlier run can never
@@ -1383,6 +1380,7 @@ export class Sim {
   private channelSubs = new Map<number, Set<JoinableChannel>>();
   // dungeon instances
   instances: InstanceSlot[] = [];
+  dungeonResetLocks = new Map<string, { availableAt: number; claimId: number }>();
   // delve instances (separate slot pool from dungeons)
   delveRuns: DelveRun[] = [];
   private delvePetStash = new Map<number, PetState>();
@@ -3083,6 +3081,9 @@ export class Sim {
       },
       get instances() {
         return sim.instances;
+      },
+      get dungeonResetLocks() {
+        return sim.dungeonResetLocks;
       },
       get arenaMatches() {
         return sim.arenaMatches;
