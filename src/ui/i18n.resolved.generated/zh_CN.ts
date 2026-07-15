@@ -4816,6 +4816,7 @@ export const zh_CN: EnTranslations = {
     "lastPlayed": "上次游玩：{when}",
     "continue": "进入世界",
     "continueHint": "按 Enter 继续，按 Esc 跳过",
+    "continueHintTouch": "点击继续",
     "discord": {
       "title": "社区活跃在 Discord",
       "sub": "版本预告、活动、开发者聊天，绑定还可获得 2 个额外银行格。",
@@ -4826,6 +4827,10 @@ export const zh_CN: EnTranslations = {
     },
     "armory": {
       "cta": "进入并浏览军械库"
+    },
+    "news": {
+      "new": "New",
+      "viewAll": "在 GitHub 上查看全部更新"
     }
   },
   "hud": {

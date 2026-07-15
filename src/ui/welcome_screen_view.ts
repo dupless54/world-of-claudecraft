@@ -99,11 +99,17 @@ export function continueButtonState(connection: WelcomeConnectionInput): Continu
   return connection.ready ? 'ready' : 'connecting';
 }
 
-/** Marks each release NEW relative to the stored last-seen id, then caps the list at 5. */
-export function markNewReleases(
-  releases: WelcomeReleaseSummary[],
+/**
+ * Marks each release NEW relative to the stored last-seen id, then caps the list at 5.
+ * Generic over T so a caller holding the FULL release shape (body/url/prerelease, see
+ * NewsReleaseEntry in news_feed.ts) gets those fields back too, not just the minimal
+ * WelcomeReleaseSummary shape: the welcome screen's compact news layout
+ * (renderWelcomeNews) needs the full article to render the expanded latest release.
+ */
+export function markNewReleases<T extends WelcomeReleaseSummary>(
+  releases: T[],
   lastSeenReleaseId: number | null,
-): (WelcomeReleaseSummary & { isNew: boolean })[] {
+): (T & { isNew: boolean })[] {
   return releases
     .slice(0, MAX_RELEASES_SHOWN)
     .map((r) => ({ ...r, isNew: lastSeenReleaseId === null || r.id > lastSeenReleaseId }));

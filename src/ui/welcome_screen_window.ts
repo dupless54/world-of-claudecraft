@@ -4,14 +4,23 @@
 // cold-path convention (raw DOM writes, not the per-frame PainterHost elider).
 // Pure gating/badge/intent logic lives in ./welcome_screen_view; this module
 // only resolves DOM refs, paints from that view, and wires callbacks.
+import { appVersionInfo } from './app_version';
 import { markDialogRoot } from './dialog_root';
 import { discordInviteUrl } from './discord_status';
+import { FocusManager, type FocusTrapHandle } from './focus_manager';
 import { formatDateTime, t } from './i18n';
-import { loadNewsInto, type NewsReleaseEntry } from './news_feed';
+import {
+  newsEmptyHtml,
+  newsErrorHtml,
+  newsLoadingHtml,
+  type NewsReleaseEntry,
+  renderWelcomeNews,
+} from './news_feed';
 import { mountStorePromoCard, type StorePromoCardController } from './store_promo_card';
 import {
   buildWelcomeScreenView,
   consumeArmoryOpenIntent,
+  markNewReleases,
   nextLastSeenReleaseId,
   setArmoryOpenIntent,
   type WelcomeChestInput,
@@ -19,10 +28,15 @@ import {
   type WelcomeDiscordInput,
   type WelcomeNewsInput,
   type WelcomePlatformInput,
-  type WelcomeReleaseSummary,
 } from './welcome_screen_view';
 
 const LAST_SEEN_RELEASE_KEY = 'woc.welcome.lastSeenReleaseId';
+const GITHUB_RELEASES_URL = 'https://github.com/levy-street/world-of-claudecraft/releases';
+
+// Shared trap for this one dialog root (same "dedicated FocusManager instance
+// for a non-Hud dialog" pattern as src/ui/camera_prompt.ts): the Welcome Screen
+// exists before Hud is constructed, so it cannot ride Hud.windowFocus().
+const welcomeFocusManager = new FocusManager();
 
 export interface WelcomeScreenHeader {
   characterName: string;
@@ -80,12 +94,23 @@ export function mountWelcomeScreen(
   const chestTileEl = root.querySelector<HTMLElement>('#ws-chest-tile');
   const statusEl = root.querySelector<HTMLElement>('#ws-status');
   const continueBtn = root.querySelector<HTMLButtonElement>('#ws-continue');
+  const continueHintEl = continueBtn?.querySelector<HTMLElement>('small') ?? null;
   const versionEl = root.querySelector<HTMLElement>('#ws-version');
 
   markDialogRoot(root, { label: t('welcome.continue'), modal: true });
 
+  // Touch platforms have no physical Enter/Esc keys: "Tap to continue" per the
+  // layout spec's mobile/native paragraph. Re-target the element's data-i18n key
+  // (not just its textContent) so a later language switch re-applies the RIGHT
+  // key instead of translatePage() silently reverting it to the keyboard hint.
+  if (continueHintEl && (deps.platform.mobileTouch || deps.platform.nativeApp)) {
+    continueHintEl.setAttribute('data-i18n', 'welcome.continueHintTouch');
+    continueHintEl.textContent = t('welcome.continueHintTouch');
+  }
+
   let armoryCard: StorePromoCardController | null = null;
   let connectionReady = deps.platform.offline;
+  let focusHandle: FocusTrapHandle | null = null;
 
   function paintHeader(): void {
     const h = deps.header();
@@ -163,8 +188,46 @@ export function mountWelcomeScreen(
     });
   }
 
-  function paintVersion(text: string): void {
-    if (versionEl) versionEl.textContent = text;
+  function paintVersion(): void {
+    if (!versionEl) return;
+    // Same format as the homepage footer's syncBuildInfo (src/main.ts): plain
+    // "v<version> · build <id>", not routed through t() there either.
+    const { version, build } = appVersionInfo();
+    versionEl.textContent = `v${version} · build ${build}`;
+  }
+
+  /**
+   * Fetches releases and paints the compact Welcome Screen news column (latest
+   * expanded with a NEW badge, older releases collapsed, capped at 5, "View all
+   * updates on GitHub" link). Also advances the last-seen marker and keeps
+   * newsState in sync for buildWelcomeScreenView's own feed-state tracking.
+   */
+  async function loadWelcomeNews(newsState: WelcomeNewsInput): Promise<void> {
+    if (!newsEl) return;
+    newsEl.innerHTML = newsLoadingHtml();
+    let releases: NewsReleaseEntry[];
+    try {
+      releases = await deps.fetchReleases();
+    } catch {
+      newsState.state = 'failed';
+      newsEl.innerHTML = newsErrorHtml();
+      return;
+    }
+    newsState.state = 'loaded';
+    newsState.releases = releases.map((r) => ({
+      id: r.id,
+      tag: r.tag,
+      name: r.name,
+      publishedAt: r.publishedAt,
+    }));
+    const lastSeen = readLastSeenReleaseId();
+    const next = nextLastSeenReleaseId(releases, lastSeen);
+    if (next !== null) writeLastSeenReleaseId(next);
+    if (releases.length === 0) {
+      newsEl.innerHTML = newsEmptyHtml();
+      return;
+    }
+    newsEl.innerHTML = renderWelcomeNews(markNewReleases(releases, lastSeen), GITHUB_RELEASES_URL);
   }
 
   discordJoinBtn?.addEventListener('click', (e) => {
@@ -193,29 +256,16 @@ export function mountWelcomeScreen(
     root.hidden = false;
     paintHeader();
     setConnectionReady(deps.platform.offline);
-    continueBtn?.focus();
+    // Focus trap: same shared-FocusManager convention as every other dialog
+    // root (camera_prompt.ts). focusFirst() defers a tick and skips disabled
+    // controls itself, so it correctly lands on the first REAL focusable
+    // element (Continue starts disabled online, so a raw continueBtn.focus()
+    // was a silent no-op there before this).
+    focusHandle = welcomeFocusManager.open({ root: () => root });
+    focusHandle.focusFirst();
 
     const newsState: WelcomeNewsInput = { state: 'loading', releases: [] };
-    let releases: WelcomeReleaseSummary[] = [];
-    void loadNewsInto(newsEl, async () => {
-      try {
-        const fetched = await deps.fetchReleases();
-        releases = fetched.map((r) => ({
-          id: r.id,
-          tag: r.tag,
-          name: r.name,
-          publishedAt: r.publishedAt,
-        }));
-        newsState.state = 'loaded';
-        const lastSeen = readLastSeenReleaseId();
-        const next = nextLastSeenReleaseId(releases, lastSeen);
-        if (next !== null) writeLastSeenReleaseId(next);
-        return fetched;
-      } catch (err) {
-        newsState.state = 'failed';
-        throw err;
-      }
-    });
+    void loadWelcomeNews(newsState);
 
     const [armoryEnabled, discord, chest] = await Promise.all([
       deps.platform.offline
@@ -257,15 +307,19 @@ export function mountWelcomeScreen(
 
   function hide(): void {
     root.hidden = true;
+    focusHandle?.release();
+    focusHandle = null;
   }
 
   function destroy(): void {
     root.removeEventListener('keydown', onKeydown);
+    focusHandle?.release();
+    focusHandle = null;
     armoryCard?.dismiss();
     armoryCard = null;
   }
 
-  paintVersion('');
+  paintVersion();
 
   return { show, hide, setConnectionReady, destroy };
 }

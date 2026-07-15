@@ -4816,6 +4816,7 @@ export const en_XA: EnTranslations = {
     "lastPlayed": "[Ļášţ þļáýéð {when}]",
     "continue": "[Éñţéŕ Ŵóŕļð]",
     "continueHint": "[Éñţéŕ ţó çóñţíñúé, Éšç ţó šķíþ]",
+    "continueHintTouch": "[Ţáþ ţó çóñţíñúé]",
     "discord": {
       "title": "[Ţĥé çóɱɱúñíţý ļíʋéš óñ Ðíšçóŕð]",
       "sub": "[Þáţçĥ þŕéʋíéŵš, éʋéñţš, ðéʋ çĥáţ, áñð 2 ƀóñúš ƀáñķ šļóţš ƒóŕ ļíñķíñĝ.]",
@@ -4826,6 +4827,10 @@ export const en_XA: EnTranslations = {
     },
     "armory": {
       "cta": "[Éñţéŕ áñð ƀŕóŵšé ţĥé Áŕɱóŕý]"
+    },
+    "news": {
+      "new": "[Ñéŵ]",
+      "viewAll": "[Ʋíéŵ áļļ úþðáţéš óñ ĜíţĤúƀ]"
     }
   },
   "hud": {

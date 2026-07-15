@@ -7516,10 +7516,12 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'welcome.lastPlayed': 'Последняя игра: {when}',
   'welcome.continue': 'Войти в мир',
   'welcome.continueHint': 'Enter, чтобы продолжить, Esc, чтобы пропустить',
+  'welcome.continueHintTouch': 'Нажмите, чтобы продолжить',
   'welcome.discord.title': 'Сообщество живёт в Discord',
   'welcome.discord.sub':
     'Превью патчей, события, чат разработчиков и 2 бонусных банковских слота за привязку.',
   'welcome.discord.join': 'Присоединиться к Discord',
   'welcome.chest.ready': 'Ежедневный сундук готов',
   'welcome.armory.cta': 'Открыть и просмотреть Арсенал',
+  'welcome.news.viewAll': 'Смотреть все обновления на GitHub',
 };

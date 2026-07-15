@@ -283,6 +283,7 @@ export const shellStrings = {
       lastPlayed: 'Last played {when}',
       continue: 'Enter World',
       continueHint: 'Enter to continue, Esc to skip',
+      continueHintTouch: 'Tap to continue',
       discord: {
         title: 'The community lives on Discord',
         sub: 'Patch previews, events, dev chat, and 2 bonus bank slots for linking.',
@@ -293,6 +294,10 @@ export const shellStrings = {
       },
       armory: {
         cta: 'Enter and browse the Armory',
+      },
+      news: {
+        new: 'New',
+        viewAll: 'View all updates on GitHub',
       },
     },
   },

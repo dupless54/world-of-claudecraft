@@ -72,23 +72,39 @@ export function renderReleaseBody(md: string): string {
   return out.join('');
 }
 
+function newsItemFoot(url: string): string {
+  return url
+    ? `<div class="news-item-foot"><a class="news-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${t('news.viewOnGithub')}</a></div>`
+    : '';
+}
+
 /** One release rendered as the "News & Updates" article markup (expanded form). */
-export function renderReleaseArticle(r: NewsReleaseEntry): string {
+export function renderReleaseArticle(r: NewsReleaseEntry, opts?: { isNew?: boolean }): string {
   const when = r.publishedAt
     ? `<span class="news-date">${formatDateTime(new Date(r.publishedAt), { dateStyle: 'medium' })}</span>`
     : '';
   const tag = r.tag ? `<span class="news-tag">${escapeHtml(r.tag)}</span>` : '';
+  const newBadge = opts?.isNew ? `<span class="news-badge">${t('welcome.news.new')}</span>` : '';
   const badge = r.prerelease ? `<span class="news-badge">${t('news.prerelease')}</span>` : '';
   const title = escapeHtml(r.name || r.tag || '');
-  const link = r.url
-    ? `<div class="news-item-foot"><a class="news-link" href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer">${t('news.viewOnGithub')}</a></div>`
-    : '';
   return (
     `<article class="news-item">` +
     `<div class="news-item-head">` +
-    `<h3 class="news-item-title">${title}</h3><div class="news-item-meta">${tag}${badge}${when}</div></div>` +
-    `<div class="news-body">${renderReleaseBody(r.body)}</div>${link}</article>`
+    `<h3 class="news-item-title">${title}</h3><div class="news-item-meta">${tag}${newBadge}${badge}${when}</div></div>` +
+    `<div class="news-body">${renderReleaseBody(r.body)}</div>${newsItemFoot(r.url)}</article>`
   );
+}
+
+export function newsLoadingHtml(): string {
+  return `<div class="news-loading">${t('news.loading')}</div>`;
+}
+
+export function newsErrorHtml(): string {
+  return `<div class="news-error">${t('news.error')}</div>`;
+}
+
+export function newsEmptyHtml(): string {
+  return `<div class="news-empty">${t('news.empty')}</div>`;
 }
 
 let newsLoading = false;
@@ -97,6 +113,9 @@ let newsLoading = false;
  * Fetches releases (via the injected loader) and paints them into `host`.
  * Guarded against overlapping calls the same way the original main.ts loop was
  * (a Welcome Screen open + a home-page News panel open could otherwise race).
+ * This is the homepage "News & Updates" panel's full-list view: every fetched
+ * release, fully expanded, uncapped. The Welcome Screen's compact column
+ * (latest expanded, older collapsed, capped at 5) is renderWelcomeNews below.
  */
 export async function loadNewsInto(
   host: HTMLElement | null,
@@ -104,19 +123,58 @@ export async function loadNewsInto(
 ): Promise<void> {
   if (!host || newsLoading) return;
   newsLoading = true;
-  host.innerHTML = `<div class="news-loading">${t('news.loading')}</div>`;
+  host.innerHTML = newsLoadingHtml();
   let releases: NewsReleaseEntry[] = [];
   try {
     releases = await fetchReleases();
   } catch {
-    host.innerHTML = `<div class="news-error">${t('news.error')}</div>`;
+    host.innerHTML = newsErrorHtml();
     newsLoading = false;
     return;
   }
   newsLoading = false;
   if (releases.length === 0) {
-    host.innerHTML = `<div class="news-empty">${t('news.empty')}</div>`;
+    host.innerHTML = newsEmptyHtml();
     return;
   }
-  host.innerHTML = releases.map(renderReleaseArticle).join('');
+  host.innerHTML = releases.map((r) => renderReleaseArticle(r)).join('');
+}
+
+function renderWelcomeNewsCollapsedRow(r: NewsReleaseEntry & { isNew?: boolean }): string {
+  const when = r.publishedAt
+    ? `<span class="ws-news-collapsed-date">${formatDateTime(new Date(r.publishedAt), { dateStyle: 'medium' })}</span>`
+    : '';
+  const newBadge = r.isNew ? `<span class="news-badge">${t('welcome.news.new')}</span>` : '';
+  const label = escapeHtml(r.name || r.tag || '');
+  return (
+    `<details class="ws-news-collapsed">` +
+    `<summary class="ws-news-collapsed-summary">` +
+    `<span class="ws-news-collapsed-version">${label}${newBadge}</span>${when}` +
+    `</summary>` +
+    `<div class="news-body">${renderReleaseBody(r.body)}</div>${newsItemFoot(r.url)}` +
+    `</details>`
+  );
+}
+
+/**
+ * The Welcome Screen's compact "News and Updates" column: the latest release
+ * fully expanded (title, date, NEW badge, rendered body), older releases (the
+ * caller has already capped the list, see markNewReleases/MAX_RELEASES_SHOWN in
+ * welcome_screen_view.ts) collapsed to version + date rows that expand in place
+ * (a native <details>/<summary> disclosure, same pattern as the guide FAQ:
+ * src/guide/pages/faq.ts), plus a "View all updates on GitHub" link at the
+ * bottom. DOM-free: returns a markup string, painted by the caller.
+ */
+export function renderWelcomeNews(
+  releases: (NewsReleaseEntry & { isNew: boolean })[],
+  githubReleasesUrl: string,
+): string {
+  if (releases.length === 0) return newsEmptyHtml();
+  const [latest, ...older] = releases;
+  const parts = [
+    renderReleaseArticle(latest, { isNew: latest.isNew }),
+    ...older.map(renderWelcomeNewsCollapsedRow),
+    `<div class="ws-news-view-all"><a href="${escapeHtml(githubReleasesUrl)}" target="_blank" rel="noopener noreferrer">${t('welcome.news.viewAll')}</a></div>`,
+  ];
+  return parts.join('');
 }

@@ -7379,10 +7379,12 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'welcome.lastPlayed': '最終プレイ：{when}',
   'welcome.continue': 'ワールドに入る',
   'welcome.continueHint': 'Enterで続行、Escでスキップ',
+  'welcome.continueHintTouch': 'タップして続行',
   'welcome.discord.title': 'コミュニティはDiscordで活動しています',
   'welcome.discord.sub':
     'パッチプレビュー、イベント、開発者チャット、連携でボーナス銀行スロット2枠。',
   'welcome.discord.join': 'Discordに参加する',
   'welcome.chest.ready': 'デイリーチェストの準備ができました',
   'welcome.armory.cta': '武器庫を見に行く',
+  'welcome.news.viewAll': 'GitHubですべての更新を見る',
 };

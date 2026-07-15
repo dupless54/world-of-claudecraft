@@ -4816,6 +4816,7 @@ export const ru_RU: EnTranslations = {
     "lastPlayed": "Последняя игра: {when}",
     "continue": "Войти в мир",
     "continueHint": "Enter, чтобы продолжить, Esc, чтобы пропустить",
+    "continueHintTouch": "Нажмите, чтобы продолжить",
     "discord": {
       "title": "Сообщество живёт в Discord",
       "sub": "Превью патчей, события, чат разработчиков и 2 бонусных банковских слота за привязку.",
@@ -4826,6 +4827,10 @@ export const ru_RU: EnTranslations = {
     },
     "armory": {
       "cta": "Открыть и просмотреть Арсенал"
+    },
+    "news": {
+      "new": "New",
+      "viewAll": "Смотреть все обновления на GitHub"
     }
   },
   "hud": {

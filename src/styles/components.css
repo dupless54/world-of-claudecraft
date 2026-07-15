@@ -10242,6 +10242,55 @@
     border-radius: 6px;
     padding: 12px;
   }
+  /* Older releases (the latest stays a full .news-item article): a native
+     <details>/<summary> disclosure so expand-in-place needs no JS wiring,
+     same pattern as the guide FAQ (src/guide/pages/faq.ts). */
+  .ws-news-collapsed {
+    border: 1px solid #463a1c;
+    border-radius: 6px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .ws-news-collapsed[open] {
+    padding-bottom: 10px;
+  }
+  .ws-news-collapsed-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    min-height: 24px;
+    padding: 9px 2px;
+    list-style: none;
+  }
+  .ws-news-collapsed-summary::-webkit-details-marker {
+    display: none;
+  }
+  .ws-news-collapsed-version {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+  }
+  .ws-news-collapsed-date {
+    color: var(--color-text-muted);
+    font-size: 12px;
+    flex: none;
+  }
+  .ws-news-collapsed .news-body {
+    margin-top: 8px;
+  }
+  .ws-news-view-all {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .ws-news-view-all a {
+    color: inherit;
+  }
   .ws-discord-strip {
     display: flex;
     align-items: center;

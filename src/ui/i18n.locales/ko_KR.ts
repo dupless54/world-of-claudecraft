@@ -7365,9 +7365,11 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'welcome.lastPlayed': '마지막 플레이: {when}',
   'welcome.continue': '월드 입장',
   'welcome.continueHint': 'Enter로 계속, Esc로 건너뛰기',
+  'welcome.continueHintTouch': '탭하여 계속',
   'welcome.discord.title': '커뮤니티는 Discord에서 활동합니다',
   'welcome.discord.sub': '패치 미리보기, 이벤트, 개발자 채팅, 연동 시 보너스 은행 슬롯 2개.',
   'welcome.discord.join': 'Discord에 참여하기',
   'welcome.chest.ready': '일일 상자 준비 완료',
   'welcome.armory.cta': '무기고 둘러보기',
+  'welcome.news.viewAll': 'GitHub에서 모든 업데이트 보기',
 };

@@ -4816,6 +4816,7 @@ export const ko_KR: EnTranslations = {
     "lastPlayed": "마지막 플레이: {when}",
     "continue": "월드 입장",
     "continueHint": "Enter로 계속, Esc로 건너뛰기",
+    "continueHintTouch": "탭하여 계속",
     "discord": {
       "title": "커뮤니티는 Discord에서 활동합니다",
       "sub": "패치 미리보기, 이벤트, 개발자 채팅, 연동 시 보너스 은행 슬롯 2개.",
@@ -4826,6 +4827,10 @@ export const ko_KR: EnTranslations = {
     },
     "armory": {
       "cta": "무기고 둘러보기"
+    },
+    "news": {
+      "new": "New",
+      "viewAll": "GitHub에서 모든 업데이트 보기"
     }
   },
   "hud": {

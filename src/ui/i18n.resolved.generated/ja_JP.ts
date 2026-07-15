@@ -4816,6 +4816,7 @@ export const ja_JP: EnTranslations = {
     "lastPlayed": "最終プレイ：{when}",
     "continue": "ワールドに入る",
     "continueHint": "Enterで続行、Escでスキップ",
+    "continueHintTouch": "タップして続行",
     "discord": {
       "title": "コミュニティはDiscordで活動しています",
       "sub": "パッチプレビュー、イベント、開発者チャット、連携でボーナス銀行スロット2枠。",
@@ -4826,6 +4827,10 @@ export const ja_JP: EnTranslations = {
     },
     "armory": {
       "cta": "武器庫を見に行く"
+    },
+    "news": {
+      "new": "New",
+      "viewAll": "GitHubですべての更新を見る"
     }
   },
   "hud": {

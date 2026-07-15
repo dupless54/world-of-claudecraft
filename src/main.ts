@@ -6017,10 +6017,10 @@ function flashWalletError(message: string): void {
 // ── Discord login/onboarding ─────────────────────────────────────────────────
 // Discord UI is available on web and native unless explicitly disabled at build time.
 const DISCORD_BUILD_ENABLED = String(import.meta.env.VITE_DISCORD_DISABLED ?? '').trim() !== '1';
-// Community links for the mobile More tray. The invite mirrors the hardcoded
-// invite on the shells' community links and is the fallback when the server-fed
-// discordInviteUrl() is not known yet (logged out, offline).
-const DISCORD_INVITE_URL = 'https://discord.com/invite/worldofclaudecraft';
+// Community links for the mobile More tray. discordInviteUrl() itself now
+// falls back to DEFAULT_DISCORD_INVITE_URL (discord_status.ts) when the
+// server-fed value is not known yet (logged out, offline), so every caller
+// gets the fail-open behavior for free.
 const DONATE_URL = 'https://ko-fi.com/worldofclaudecraft';
 const DISCORD_ONBOARD_KEY = 'woc_discord_onboard';
 let discordPopup: Window | null = null;
@@ -6386,7 +6386,7 @@ function openDiscordEntry(): void {
     toggleDiscordPanel(true);
     return;
   }
-  window.open(discordInviteUrl() || DISCORD_INVITE_URL, '_blank', 'noopener,noreferrer');
+  window.open(discordInviteUrl(), '_blank', 'noopener,noreferrer');
 }
 
 function wireDiscordCtaBanner(): void {

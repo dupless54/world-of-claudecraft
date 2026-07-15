@@ -7021,9 +7021,11 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'welcome.lastPlayed': '上次遊玩：{when}',
   'welcome.continue': '進入世界',
   'welcome.continueHint': '按 Enter 繼續，按 Esc 跳過',
+  'welcome.continueHintTouch': '點擊繼續',
   'welcome.discord.title': '社群活躍在 Discord',
   'welcome.discord.sub': '版本預告、活動、開發者聊天，綁定還可獲得 2 個額外銀行格。',
   'welcome.discord.join': '加入我們的 Discord',
   'welcome.chest.ready': '每日寶箱已就緒',
   'welcome.armory.cta': '進入並瀏覽軍械庫',
+  'welcome.news.viewAll': '在 GitHub 上查看全部更新',
 };
