@@ -6,8 +6,8 @@
 |---|---|---|---|
 | Phase 1: Degit i18n aggregates | MERGED into release/v0.26.0 (PR #1931, merge 0313a58f6) | 2026-07-14 | 2026-07-14 |
 | Phase 1 QA | complete: PASS-WITH-FOLLOWUPS (criterion 2 re-scoped by the owner's OPEN item 8 decision; pending.ts durable fix specced as a follow-up); 2 SHOULD-FIX fixed | 2026-07-14 | 2026-07-14 |
-| Phase 2: Flat TranslationKey + baseUrl | implemented; DRAFT PR #1940 awaiting Phase 2 QA | 2026-07-14 | |
-| Phase 2 QA | not started | | |
+| Phase 2: Flat TranslationKey + baseUrl | implemented; PR #1940 ready for review after QA PASS (merge owner-scheduled) | 2026-07-14 | 2026-07-14 |
+| Phase 2 QA | complete: PASS (0 BLOCKING; 2 SHOULD-FIX found and resolved: the committed teeth successor test + the recorded cadence deviation; 7 doc corrections) | 2026-07-14 | 2026-07-14 |
 | Phase 3: CI parallel checks + FFmpeg | not started | | |
 | Phase 3 QA | not started | | |
 | Phase 4: Test sharding | not started | | |
@@ -144,7 +144,39 @@ tests added, dead code removed, deferrals.
   green (generate, slimmed freshness diff, coverage summary). The run's overall
   failure is the pre-existing mid-cycle release-tier red (empty-pending check
   plus release version surfaces), identical to the pre-Phase-1 runs.
-- Phase 2 QA:
+- Phase 2 QA: verdict PASS. 0 BLOCKING; 2 SHOULD-FIX found, 2 resolved (the
+  retired membership test's three anti-vacuity teeth self-checks had no committed
+  successor, fixed by the new tests/i18n_union_teeth.test.ts: type-level
+  @ts-expect-error probes plus a string-absorption pin compiled by every tsc run,
+  and runtime pins for per-overlay annotations and the union's D6 line-item
+  shape, which also closed the no-shape-pin NICE-TO-HAVE; and the
+  pin-cadence deviation on the union's reproducibility pins, resolved as an
+  accepted recorded deviation with the PR body amended, see the state.md Phase 2
+  QA notes). 7 doc-record corrections applied (progress.md 21-vs-22 overlays,
+  state.md fallback-rule wording twice, the en_CA range and gzip-tool QA note,
+  dated depth-6 annotations in docs/ui-architecture-hud-modularization/
+  00-design-brief.md and two spots in docs/i18n-scaling/
+  lazy-locales-and-contributor-workflow.md, and the rotted locale-count comment
+  in scripts/i18n_build.mjs). Adversarial panel: the 85-pattern figure VINDICATED
+  by compiler-API measurement of the real old type (a static reconstruction's 86
+  over-counted q_mogger); nothing-got-weaker and baseUrl-removal claims survived
+  dedicated refutation hunts. Deferrals recorded in state.md: the live
+  release-gate arm of the union freshness diff (closes on the first release push
+  after merge), the ci.yml freshness comment wording (Phase 3), the ambient
+  I18N_OUT_DIR inheritance in the regen tests, and the unreachable empty-catalog
+  emitter edge. Validation re-run by QA: tsc 12.4 to 12.5s exit 0; TS 7.0.2
+  probe exit 0 at 2.31s (newest stable 7.x confirmed); i18n:gen twice clean at
+  HEAD and once clean at the base tip with zero resolved-slice diffs in the
+  range; live negative probes (canonical pair, corrupted call site, corrupted
+  overlay row, union-member removal, staled-union freshness red, contributor
+  stale-union error text with the header hint); the validation-matrix vitest
+  rows plus tests/i18n_emit_shape.test.ts and the new teeth suite all green;
+  gate steps 1 to 6 green including the full vitest suite (13,939 passed, which
+  includes the new teeth suite); browser regressions red ONLY at the known
+  environmental armory_mobile_layout pixel assertion (PR CI green is the
+  arbiter); typecheck and the env, server, and client builds green. PR #1940
+  marked ready for review after PR CI green on the QA head; merge timing
+  owner-scheduled.
 - Phase 3 QA:
 - Phase 4 QA:
 - Phase 5 QA (includes the packet-teardown offer):
@@ -160,8 +192,10 @@ tests added, dead code removed, deferrals.
   and into the catalog otherwise; without that, the perturbed-env determinism runs
   would have written the committed file from inside the test harness. The stronger
   tsc checking surfaced zero latent violations: no real code depended on the 85
-  template-literal pattern members (the stopping rule stayed dormant), and all 22
-  overlays were already clean against the exact leaf set. The OPEN item 8 rider
+  template-literal pattern members (the stopping rule stayed dormant), and all 21
+  overlays were already clean against the exact leaf set (corrected from 22 by
+  Phase 2 QA: src/ui/i18n.locales/ holds 21 overlay files; the generator's LOCALES
+  list has 22 entries only because it includes en, which has no overlay). The OPEN item 8 rider
   spike ran after the main deliverables and recorded a measured deferral in
   state.md (mechanism sound, 21/21 derivation equivalence; bundle premise false:
   sameAsEnglish is 3,753 keys, one-file emit costs ~8 KB gzip eager at release).
