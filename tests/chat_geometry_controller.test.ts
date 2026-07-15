@@ -22,7 +22,10 @@ class MemoryStorage {
   }
 }
 
-function makeHarness(initialStorage: Record<string, string> = {}) {
+function makeHarness(
+  initialStorage: Record<string, string> = {},
+  options: { mobile?: boolean } = {},
+) {
   const document = new FakeDocument();
   const window = new FakeWindow(1280, 720);
   const wrap = document.element('chatlog-wrap');
@@ -37,7 +40,7 @@ function makeHarness(initialStorage: Record<string, string> = {}) {
     document: document as unknown as Document,
     window: window as unknown as Window,
     storage,
-    isMobileLayout: () => false,
+    isMobileLayout: () => options.mobile ?? false,
     hasStorePromoCard: () => false,
     uiScale: () => 1,
   });
@@ -90,6 +93,30 @@ describe('ChatGeometryController', () => {
       width: 370,
       height: 184,
     });
+  });
+
+  it('resizes the mobile panel from its body handle and persists only on gesture end', () => {
+    const harness = makeHarness({}, { mobile: true });
+    harness.controller.init();
+    const handle = harness.document.body.querySelector<HTMLElement>('.chat-mobile-resize');
+    expect(handle).not.toBeNull();
+
+    handle?.dispatchEvent(pointerEvent('pointerdown', { pointerId: 11, clientX: 0, clientY: 300 }));
+    handle?.dispatchEvent(pointerEvent('pointermove', { pointerId: 12, clientX: 0, clientY: 200 }));
+    expect(harness.document.documentElement.style.getPropertyValue('--mobile-chat-bottom')).toBe(
+      '',
+    );
+
+    handle?.dispatchEvent(pointerEvent('pointermove', { pointerId: 11, clientX: 0, clientY: 200 }));
+    expect(harness.document.documentElement.style.getPropertyValue('--mobile-chat-bottom')).toBe(
+      '152px',
+    );
+    expect(harness.storage.getItem('woc_mobile_chat_bottom')).toBeNull();
+    expect(harness.document.body.classList.contains('chat-box-dragging')).toBe(true);
+
+    handle?.dispatchEvent(pointerEvent('pointerup', { pointerId: 11, clientX: 0, clientY: 200 }));
+    expect(harness.storage.getItem('woc_mobile_chat_bottom')).toBe('152px');
+    expect(harness.document.body.classList.contains('chat-box-dragging')).toBe(false);
   });
 
   it('resets persisted geometry and every inline placement owned by chat', () => {
