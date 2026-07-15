@@ -18,10 +18,12 @@ describe('CI workflow parity', () => {
   });
 
   it('provisions FFmpeg from the static npm packages instead of apt', () => {
-    // The gate and the SFX suites resolve ffmpeg/ffprobe via
-    // scripts/sfx/ffmpeg_paths.mjs (ffmpeg-static/ffprobe-static with a PATH
-    // fallback), so no CI job apt-installs system FFmpeg; reintroducing the
-    // install step would put its cost back on every job it touches.
+    // The gate preflight and the Studio playback/encode spawns resolve
+    // ffmpeg/ffprobe via scripts/sfx/ffmpeg_paths.mjs (ffmpeg-static/
+    // ffprobe-static with a PATH fallback); the conformance-measuring call sites
+    // (sfx_conform.mjs, export_bundle.mjs) bind to the static packages directly.
+    // Either way no CI job apt-installs system FFmpeg; reintroducing the install
+    // step would put its cost back on every job it touches.
     expect(workflow).not.toContain('apt-get');
     expect(gate).toContain("from './sfx/ffmpeg_paths.mjs'");
   });

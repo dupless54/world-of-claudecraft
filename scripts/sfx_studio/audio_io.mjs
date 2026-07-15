@@ -41,7 +41,6 @@ import {
 import { LOSSLESS_EXTENSIONS, MIN_SOURCE_BITRATE } from '../sfx/sfx_conform_rules.mjs';
 import { discoverSfxTracks } from '../sfx/sfx_manifest_builder.mjs';
 import { SFX } from '../sfx/sfx_prompts.mjs';
-import { writeSfxProductionBundle } from './export_bundle.mjs';
 import {
   buildAuthoringPcmArgs,
   buildFfmpegGraph,
@@ -1577,6 +1576,11 @@ export async function exportProductionBundle(expectedProfileHash, expectedWorksp
     }
     const studio = ensureDirs();
     const exportRoot = existingPlainDirectory(join(studio, 'exports'), studio);
+    // Loaded lazily: export_bundle.mjs throws at import time when ffmpeg-static
+    // exports null (unsupported platform), and a top-level import here would take
+    // down the whole Studio module graph, including the playback/encode paths that
+    // deliberately keep working through the resolver's PATH fallback.
+    const { writeSfxProductionBundle } = await import('./export_bundle.mjs');
     const {
       zip: _zip,
       runtimePack: _runtimePack,

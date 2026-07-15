@@ -28,6 +28,28 @@ describe('SFX gate toolchain preflight', () => {
     expect(result.stdout).not.toContain('[gate] i18n artifacts');
   });
 
+  it('names only the broken tool when the other one resolves and runs', () => {
+    // Per-dimension red path: only ffmpeg is forced onto a nonexistent override
+    // while ffprobe resolves normally (the static package binary, PATH-independent),
+    // so the failure message's per-tool selection is exercised, not just the
+    // both-tools arm above.
+    const result = spawnSync(process.execPath, ['scripts/gate.mjs'], {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        PATH: '',
+        WOC_FFMPEG_PATH: '/nonexistent/woc-preflight/ffmpeg',
+        WOC_FFPROBE_PATH: undefined,
+      },
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('missing required SFX audio tooling: ffmpeg');
+    expect(result.stderr).not.toMatch(/missing required SFX audio tooling: [^\n]*ffprobe/);
+    expect(result.stdout).not.toContain('[gate] i18n artifacts');
+  });
+
   it('probes by execution, not existence: a present but broken binary still fails', () => {
     // A file that exists but cannot run (no exec bit) must fail the preflight;
     // this pins the spawn probe so it can never silently degrade to existsSync.
