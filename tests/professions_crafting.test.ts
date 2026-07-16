@@ -92,6 +92,8 @@ describe('caster-stat (int/spi) crafting recipes', () => {
   it('COMMON_RECIPES has one free-floor caster piece per tailoring/leatherworking/armorcrafting', () => {
     const casterCommon = COMMON_RECIPES.filter((r) => CASTER_COMMON_IDS.includes(r.id));
     expect(casterCommon.length).toBe(3);
+    const professionIds = casterCommon.map((r) => r.professionId).sort();
+    expect(professionIds).toEqual(['armorcrafting', 'leatherworking', 'tailoring']);
     for (const recipe of casterCommon) {
       expect(recipe.skillReq).toBe(0);
       expect(recipe.requiresHubStation).toBeUndefined();

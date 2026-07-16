@@ -1026,7 +1026,11 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     buyValue: 2200,
   },
   // Hub-tier (level-20, crafting-hub-gated) caster pieces, one per craft,
-  // mirroring TOOL_RECIPES' thorium tier.
+  // mirroring TOOL_RECIPES' thorium tier. Budgeted at the recipe's resulting ITEM
+  // level (source level 20 + the rare QUALITY_ILVL_BONUS of 3 = 23, see
+  // item_budget.ts and item_level.ts), matching the level-20 rares in the same
+  // slots (boundstone_helm, gravewyrm_gauntlets, gravewyrm_mantle; pinned by
+  // tests/item_level.test.ts): helmet 11, gloves 9, shoulder 10.
   wardweave_cowl: {
     id: 'wardweave_cowl',
     name: 'Wardweave Cowl',
@@ -1034,7 +1038,7 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     armorType: 'cloth',
     slot: 'helmet',
     quality: 'rare',
-    stats: { armor: 44, int: 5, spi: 3 },
+    stats: { armor: 44, int: 7, spi: 4 },
     sellValue: 440,
   },
   duskhide_wraps: {
@@ -1044,7 +1048,7 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     armorType: 'leather',
     slot: 'gloves',
     quality: 'rare',
-    stats: { armor: 46, int: 5, spi: 3 },
+    stats: { armor: 46, int: 6, spi: 3 },
     sellValue: 420,
   },
   sootscale_mantle: {
@@ -1054,7 +1058,7 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     armorType: 'mail',
     slot: 'shoulder',
     quality: 'rare',
-    stats: { armor: 78, int: 5, spi: 3 },
+    stats: { armor: 78, int: 6, spi: 4 },
     sellValue: 470,
   },
   // --- Hollow Crypt rewards (rare/blue) ---
