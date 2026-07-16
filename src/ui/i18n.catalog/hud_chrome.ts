@@ -71,6 +71,7 @@ export const hudChromeStrings = {
     remainingLessThanMinute: '<1m',
     remainingMinutes: '{minutes}m',
     remainingHoursMinutes: '{hours}h {minutes}m',
+    remainingDaysHours: '{days}d {hours}h',
     score: 'Score',
     walletValue: 'Wallet Value (WOC)',
     usd: '{amount} USD',
@@ -111,6 +112,8 @@ export const hudChromeStrings = {
       under_minimum: 'Wallet is below the $20 USD WOC minimum.',
       price_unavailable: 'WOC price is unavailable, rewards are temporarily locked.',
       banned: 'You are banned from Daily Rewards. Reason: {reason}',
+      bannedUntil:
+        'You are banned from Daily Rewards for another {remaining}. Access returns {until}. Reason: {reason}',
     },
   },
   wocStore: {
@@ -191,6 +194,7 @@ export const hudChromeStrings = {
     balanceLabel: 'Balance',
     balanceUnit: '{amount} Claudium',
     solBalance: 'SOL: {amount}',
+    usdcBalance: 'USDC: {amount}',
     wocBalance: 'WOC: {amount}',
     unavailable:
       'The Claudium store is unavailable right now. Your balance and purchases are unaffected; please check back shortly.',
@@ -200,10 +204,11 @@ export const hudChromeStrings = {
     railLabel: 'Payment method',
     railStripe: 'Card',
     railSol: 'SOL',
+    railUsdc: 'USDC',
     railWoc: 'WOC',
     railWocDiscount: '20% off',
     railWocUnavailable: 'WOC pricing is unavailable right now.',
-    railNativeUnavailable: 'SOL/WOC off.',
+    railNativeUnavailable: 'Crypto off.',
     amountLabel: 'Amount',
     showAmounts: 'Show all Claudium amounts',
     hideAmounts: 'Hide extra Claudium amounts',

@@ -351,6 +351,7 @@ export const ru_RU: EnTranslations = {
       "remainingLessThanMinute": "<1м",
       "remainingMinutes": "{minutes}м",
       "remainingHoursMinutes": "{hours}ч {minutes}м",
+      "remainingDaysHours": "{days}д {hours}ч",
       "score": "Счёт",
       "walletValue": "Стоимость кошелька (WOC)",
       "usd": "{amount} USD",
@@ -389,7 +390,8 @@ export const ru_RU: EnTranslations = {
         "no_wallet": "Подключите кошелек с не менее чем $20 USD в WOC.",
         "under_minimum": "Кошелек ниже минимума в $20 USD WOC.",
         "price_unavailable": "Цена WOC недоступна, награды временно заблокированы.",
-        "banned": "Вам запрещено участвовать в ежедневных наградах. Причина: {reason}"
+        "banned": "Вам запрещено участвовать в ежедневных наградах. Причина: {reason}",
+        "bannedUntil": "Запрет на участие в ежедневных наградах действует еще {remaining}. Доступ вернется {until}. Причина: {reason}"
       }
     },
     "wocStore": {
@@ -614,6 +616,7 @@ export const ru_RU: EnTranslations = {
       "balanceLabel": "Баланс",
       "balanceUnit": "{amount} Claudium",
       "solBalance": "SOL: {amount}",
+      "usdcBalance": "USDC: {amount}",
       "wocBalance": "WOC: {amount}",
       "unavailable": "Магазин Claudium сейчас недоступен. Ваш баланс и покупки не затронуты; повторите попытку позже.",
       "disclosure": "Claudium — односторонняя игровая валюта: её можно купить за деньги и потратить на косметические предметы. Её нельзя вернуть, передать или обналичить.",
@@ -621,6 +624,7 @@ export const ru_RU: EnTranslations = {
       "railLabel": "Способ оплаты",
       "railStripe": "Карта",
       "railSol": "SOL",
+      "railUsdc": "USDC",
       "railWoc": "WOC",
       "railWocDiscount": "Скидка 20%",
       "railWocUnavailable": "Цена WOC сейчас недоступна.",
@@ -6815,6 +6819,24 @@ export const ru_RU: EnTranslations = {
       },
       "eastbrook_wool_trousers": {
         "name": "Истврукские шерстяные штаны"
+      },
+      "eastbrook_ritual_vestments": {
+        "name": "Ритуальные одеяния Иствбрука"
+      },
+      "eastbrook_druids_hide": {
+        "name": "Друидская шкура Иствбрука"
+      },
+      "eastbrook_warded_leggings": {
+        "name": "Заговорённые поножи Иствбрука"
+      },
+      "wardweave_cowl": {
+        "name": "Капюшон Стражеткани"
+      },
+      "duskhide_wraps": {
+        "name": "Обмотки Сумеречной шкуры"
+      },
+      "sootscale_mantle": {
+        "name": "Мантия Пепельной чешуи"
       },
       "gravecaller_blade": {
         "name": "Широкий клинок Могильного Зова"
