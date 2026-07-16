@@ -116,24 +116,39 @@ const SPECIES_ASSET_URL: Record<Species, string> = {
   bird: '/models/creatures/songbird_critter.glb',
 };
 
-// Some Tripo-generated critter GLBs are authored with their nose-to-tail axis
-// along world X instead of this system's Z-forward convention (the merged-
-// primitive fallback body in buildSpeciesGeo is elongated along Z, and the
-// per-frame heading rotation below assumes that). Confirmed against the
-// shipped assets (`npx gltf-transform inspect`): squirrel_critter.glb's
-// horizontal footprint is ~1.00 x ~0.43 (X x Z, a 2.3:1 mismatch), while
-// rabbit_critter.glb (~0.76 x ~0.92) and songbird_critter.glb (~0.60 x ~1.00)
-// already run Z-long. A >15% margin only flips the genuinely mismatched case.
-const FORWARD_AXIS_MISMATCH_MARGIN = 1.15;
+// Each Tripo-generated critter GLB is authored with its own nose-to-tail
+// direction, which does not reliably line up with this module's Z-forward
+// convention (the merged-primitive fallback body in buildSpeciesGeo is
+// elongated along Z, and the per-frame heading rotation below assumes that).
+// A horizontal-bounding-box heuristic (long axis = forward) is NOT a valid
+// proxy here: it measures widest silhouette, not nose-to-tail, and gets both
+// the axis and the sign wrong on two of the three species (#1862 review):
+// - songbird_critter.glb is Z-long (~0.60 x ~1.00) because of wingspan, but
+//   its beak actually points along +X, so a bbox heuristic returns "no
+//   correction needed" and the bird stays broadside to its travel direction.
+// - squirrel_critter.glb's nose is along +X (head/nose/front paw at +X,
+//   bushy tail at -X); the correction has to be a SIGNED yaw (-PI/2, so +X
+//   lands on +Z) and a bbox heuristic has no way to know the sign, only the
+//   axis, so a naive +PI/2 correction faces the model tail-first instead.
+// Since this is a small, fixed set of exactly three species, an explicit
+// per-species table (verified against the live scene: local +X rotated by
+// each entry below lands nose-first along +Z) is simpler and correct where
+// the bbox heuristic was not; rabbit_critter.glb's nose already leads +Z
+// (~0.76 x ~0.92), so it needs no correction.
+const CREATURE_FORWARD_YAW: Record<Species, number> = {
+  rabbit: 0,
+  squirrel: -Math.PI / 2,
+  bird: -Math.PI / 2,
+};
 
 /**
- * Extra yaw (radians) to bake into a loaded creature GLB so its long
- * horizontal axis lines up with local +Z before the per-frame heading
- * rotation is applied. Pure and Object3D-free so it is unit-testable
- * against the real asset bounding boxes without a GLB fixture (#1862).
+ * Extra yaw (radians) to bake into a loaded creature GLB so its authored
+ * nose-to-tail direction lines up with local +Z before the per-frame heading
+ * rotation is applied. Pure and Object3D-free so it is unit-testable without
+ * a GLB fixture (#1862).
  */
-export function creatureForwardCorrectionYaw(extentX: number, extentZ: number): number {
-  return extentX > extentZ * FORWARD_AXIS_MISMATCH_MARGIN ? Math.PI / 2 : 0;
+export function creatureForwardCorrectionYaw(species: Species): number {
+  return CREATURE_FORWARD_YAW[species];
 }
 
 /**
@@ -143,10 +158,8 @@ export function creatureForwardCorrectionYaw(extentX: number, extentZ: number): 
  * props: the GLB's own origin is not guaranteed to sit at the model's feet
  * (#1862, "critters ... clip trough the ground").
  */
-function seatAndOrientCreatureInstance(inst: THREE.Object3D): void {
-  const size = new THREE.Vector3();
-  new THREE.Box3().setFromObject(inst).getSize(size);
-  inst.rotation.y = creatureForwardCorrectionYaw(size.x, size.z);
+function seatAndOrientCreatureInstance(species: Species, inst: THREE.Object3D): void {
+  inst.rotation.y = creatureForwardCorrectionYaw(species);
   const seated = new THREE.Box3().setFromObject(inst);
   inst.position.y -= seated.min.y;
 }
@@ -227,7 +240,7 @@ export function buildCritters(seed: number): CritterField {
       inst.traverse((child) => {
         if (child instanceof THREE.Mesh) child.castShadow = GFX.standardMaterials;
       });
-      seatAndOrientCreatureInstance(inst);
+      seatAndOrientCreatureInstance(species, inst);
       // The per-frame loop below does a hard c.obj.position.set(...)/rotation.y
       // write every tick (world placement + heading), which would otherwise
       // clobber the seat/orient correction just applied to inst. Wrap it in an
