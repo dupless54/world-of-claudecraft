@@ -8,6 +8,25 @@ Filled 2026-07-15 by Phase 5 QA on feature/typescript-7 (tip = the two toolchain
 commits on top of the release/v0.27.0 merge 1d2943a19). Every row was re-measured on
 that tip, not inherited from pre-merge records.
 
+Addendum (2026-07-16, the same QA session): release/v0.27.0 moved twice more during
+the close and both deltas were merged in under the packet's merge protocol
+(merge, i18n:gen, one commit, release-merge-audit each time): first the chat-log and
+dungeon-reset fixes (PRs 1975 and 1972; the 13 new hudChrome.dungeonDifficulty keys
+legitimately reintroduced 195 pending rows, per the row 7 clause), then the v0.27.0
+version bump plus the dep-bump batch, welcome screen, HUD refactor, daily rewards,
+and the i18n backlog fill that returned pending to 0 (PRs 1963, 1926, 1964, 2004,
+2007, 2015, and more). The second merge conflicted only on package.json (the
+@typescript/native line adjacent to the bumped vitest pins; both kept) and
+package-lock.json (regenerated from the release side with npx npm@10, diff exactly
+the @typescript/* family, npm ci --dry-run in sync under npm 10 and npm 12). The
+version bump also retired the expected pre-bump version-gate red. On the FINAL tip
+the load-bearing rows were re-verified: the full gate ran a third time (steps 1 to 6
+green, 1,165 test files with 14,554 tests passed, the suite grown by the incoming
+features; the same single environmental armory browser red; manual tail green:
+check:types and all builds exit 0), both toolchain pins and the golden child green
+under TS7 against the new endpoint append-targets, tsc --noEmit clean, i18n double
+regen clean, and the final-head CI run recorded in the progress.md Phase 5 QA note.
+
 - Behavior preservation: the resolved i18n output is byte-identical to before the packet
   (npm run i18n:gen twice leaves a clean tree; the committed locale slices carry no
   diff attributable to this packet). No runtime module changed except the TranslationKey

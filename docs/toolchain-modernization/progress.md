@@ -387,8 +387,34 @@ tests added, dead code removed, deferrals.
   suite failures (pre-existing, out of packet scope); the gitignored
   src/ui/i18n.status.json can go stale across branch switches and trip the
   universe-coverage test until the next regen (self-healing under gate and CI,
-  which regenerate first). Final QA-head CI run recorded below in the Phase 5 QA
-  note; the trailing docs stamp rides after it per the packet convention.
+  which regenerate first). Base movement continued through the close:
+  release/v0.27.0 moved twice more and both deltas were merged under the same
+  protocol. Merge 2 (the chat-log and dungeon-reset fixes, PRs 1975 and 1972):
+  clean auto-merge, i18n:gen a no-op, audit clean (empty branch-owned
+  intersection, additive-only SimContext members, no endpoints, no db mocks);
+  its 13 new hudChrome.dungeonDifficulty keys reintroduced 195 pending rows,
+  the legitimate post-fill case row 7's clause anticipates, recorded exactly.
+  Merge 3 (the v0.27.0 version bump, the dep-bump batch with three 0.185.1,
+  vitest 4.1.10, and biome 2.5.4, the welcome screen, the HUD action-bar
+  relocation, daily rewards, and the i18n backlog fill that returned pending
+  to 0 at 7,586 keys): conflicted exactly on the two toolchain-owned files;
+  package.json resolved keeping the dual alias beside the bumped vitest pins,
+  package-lock.json regenerated from the release side with npx npm@10
+  (install --package-lock-only; the diff against the release lockfile is
+  exactly the @typescript/* family, the svelte-check nested picomatch entry
+  present, npm ci --dry-run in sync under both npm 10.9.8 and npm 12), and the
+  version bump retired the expected pre-bump version-gate red. The full gate
+  re-ran green on each merged tip (final tip: 1,165 test files, 14,554 tests
+  passed, the same single environmental armory browser red, manual tail green),
+  with the toolchain pins, the golden child (now exercising the daily-rewards
+  append-targets), tsc --noEmit, and the double regen all re-verified on the
+  final tip. Final QA-head CI run 29506788526/29506788642 all green on
+  2456f5f08 at 196s wall (run createdAt to last job completion, the packet
+  convention): all four pr-gate shards, pr-checks (freshness, typecheck,
+  builds), browser, and lint green, release jobs correctly skipped on a PR
+  branch; CI's green browser job confirms the local armory red is
+  environmental. The trailing docs stamp of this record rides after it per
+  the packet convention.
 
 ## Notes per phase
 
