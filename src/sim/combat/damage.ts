@@ -367,7 +367,6 @@ export function dealDamage(
   // tick carries crit=false so it can never re-ignite itself. Draws no rng.
   igniteOnCrit(ctx, source, target, amount, crit, school, ability);
 
-
   // absorb shields soak damage first
   let totalAbsorbed = 0;
   if (amount > 0) {

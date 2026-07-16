@@ -240,11 +240,7 @@ export function handleDevChat(
     const vendorId = ctx.spawnDevVendor(pid);
     if (vendorId < 0) ctx.error(pid, '[dev] Could not spawn the test vendor.');
     else {
-      emitDevLog(
-        ctx,
-        pid,
-        '[dev] Spawned the Test Quartermaster (free epic gear) next to you.',
-      );
+      emitDevLog(ctx, pid, '[dev] Spawned the Test Quartermaster (free epic gear) next to you.');
     }
     return null;
   }
