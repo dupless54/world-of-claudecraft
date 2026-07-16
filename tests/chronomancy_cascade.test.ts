@@ -364,6 +364,61 @@ describe('UI visibility: only the local player sees its own echoes', () => {
     expect(row?.auras?.[0]).toEqual({ id: 'renew', kind: 'hot', remaining: 12 });
   });
 
+  it('keeps debuffs and the own echo mark ahead of other relevant auras at the cap', () => {
+    const { sim, p } = chronoMage();
+    const ally = addAlly(sim, p.pos.x + 1, p.pos.z, 'CapPriorityAlly');
+    sim.partyInvite(ally.id, p.id);
+    sim.partyAccept(ally.id);
+    const hots: Aura[] = Array.from({ length: 8 }, (_, index) => ({
+      id: `hot_${index}`,
+      name: `Hot ${index}`,
+      kind: 'hot',
+      remaining: 12,
+      duration: 12,
+      value: 20,
+      sourceId: ally.id,
+      school: 'holy',
+    }));
+    ally.auras = [
+      ...hots,
+      {
+        id: 'rend',
+        name: 'Rend',
+        kind: 'dot',
+        remaining: 9,
+        duration: 9,
+        value: -5,
+        sourceId: 9999,
+        school: 'physical',
+      },
+      {
+        id: 'temporal_echo',
+        name: 'Temporal Echo',
+        kind: 'temporal_echo',
+        remaining: 15,
+        duration: 15,
+        value: 0,
+        sourceId: p.id,
+        school: 'arcane',
+      },
+    ];
+
+    const row = sim.partyInfo?.members.find((member) => member.pid === ally.id);
+    const ids = (row?.auras ?? []).map((aura) => aura.id);
+    // Debuff first, the viewer's own echo mark second, then the HoTs in natural
+    // order until the cap; hot_6 and hot_7 are the ones squeezed out.
+    expect(ids).toEqual([
+      'rend',
+      'temporal_echo',
+      'hot_0',
+      'hot_1',
+      'hot_2',
+      'hot_3',
+      'hot_4',
+      'hot_5',
+    ]);
+  });
+
   it('auras_view drops a foreign temporal_echo but renders an own one and other auras', () => {
     const OWN = 7;
     const deps: AurasDeps = {

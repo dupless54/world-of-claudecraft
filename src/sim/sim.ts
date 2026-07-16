@@ -44,7 +44,7 @@ import {
   updateCasting as updateCastingImpl,
 } from './combat/casting_lifecycle';
 import { isLockedOut, isRooted, isSilenced, isStunned } from './combat/cc';
-import { aetherSurgeCostMult, echoVisibleTo, partyAuraPriority } from './combat/chronomancy';
+import { aetherSurgeCostMult, echoVisibleTo } from './combat/chronomancy';
 import {
   dealDamage as dealDamageImpl,
   grantXp as grantXpImpl,
