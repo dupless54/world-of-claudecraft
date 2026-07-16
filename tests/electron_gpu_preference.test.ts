@@ -168,6 +168,18 @@ describe('forceHighPerformanceGpu', () => {
     expect(execFileSync).not.toHaveBeenCalled();
   });
 
+  it('fails closed when isPackaged is missing entirely (gate is strictly === true)', () => {
+    // A fake or partial app object without the isPackaged boolean must skip the registry
+    // lever too, so the gate can only ever fail closed.
+    const app = {
+      commandLine: { appendSwitch: () => {} },
+      getPath: () => EXE,
+    };
+    const execFileSync = vi.fn();
+    forceHighPerformanceGpu({ app, platform: 'win32', execFileSync, regExe: 'reg.exe' });
+    expect(execFileSync).not.toHaveBeenCalled();
+  });
+
   it('writes the high-performance preference on Windows when no value is stored yet', () => {
     const { app, switches } = fakeApp();
     // reg query throws (value/key absent) -> reg add runs.
