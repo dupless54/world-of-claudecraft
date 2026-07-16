@@ -2650,8 +2650,8 @@ export class Hud {
     this.chatWindow.applyInputPresentation();
   }
 
-  noteSentChannel(sentLine: string): void {
-    this.chatWindow.noteSentChannel(sentLine);
+  noteSentChannel(sentLine: string, online: boolean): void {
+    this.chatWindow.noteSentChannel(sentLine, online);
   }
 
   composeChatSend(typed: string): string {
