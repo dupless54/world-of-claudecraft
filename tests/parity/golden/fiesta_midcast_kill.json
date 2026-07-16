@@ -31,7 +31,7 @@
       "tick": 25,
       "time": 1.25,
       "nextId": 412,
-      "state": "6f6d9a51",
+      "state": "56de2fb8",
       "events": "5ce63f3d",
       "rng": {
         "draws": 0,
@@ -42,7 +42,7 @@
       "tick": 50,
       "time": 2.5,
       "nextId": 412,
-      "state": "e3532726",
+      "state": "3071ac85",
       "events": "b46d41a9",
       "rng": {
         "draws": 28,
@@ -53,7 +53,7 @@
       "tick": 75,
       "time": 3.75,
       "nextId": 412,
-      "state": "1c6fb864",
+      "state": "e97c8813",
       "events": "3a440865",
       "rng": {
         "draws": 138,
@@ -64,7 +64,7 @@
       "tick": 100,
       "time": 5,
       "nextId": 412,
-      "state": "79ae8a6b",
+      "state": "f2117d76",
       "events": "8025fc6d",
       "rng": {
         "draws": 294,
@@ -75,8 +75,8 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 412,
-      "state": "5aaf2e6f",
-      "events": "ea0dab16",
+      "state": "35a47ea3",
+      "events": "1f5aecd1",
       "rng": {
         "draws": 300,
         "digest": "bf906891"
@@ -141,7 +141,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "war_row_double_charge"
+              "5": "war_row_double_charge",
+              "8": "war_row_second_wind",
+              "11": "war_row_piercing_howl",
+              "14": "war_row_anger_management",
+              "17": "war_row_recklessness",
+              "20": "war_row_colossal_might"
             },
             "spec": "arms"
           },
@@ -204,7 +209,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "mag_r5_firestarter"
+              "5": "mag_r5_ice_floes",
+              "8": "mag_r8_warded",
+              "11": "mag_r11_rings_of_frost",
+              "14": "mag_r14_power_echo",
+              "17": "mag_r17_convergence",
+              "20": "mag_r20_rune_of_power"
             },
             "spec": "arcane"
           },
@@ -264,7 +274,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "rog_r5_relentless_strikes"
+              "5": "rog_r5_relentless_strikes",
+              "8": "rog_r8_smoke_screen",
+              "11": "rog_r11_preparation",
+              "14": "rog_r14_seal_fate",
+              "17": "rog_r17_cloak_of_shadows",
+              "20": "rog_r20_shadowstep"
             },
             "spec": "assassination"
           },
@@ -327,7 +342,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "hun_r5_improved_serpent_sting"
+              "5": "hun_r5_improved_serpent_sting",
+              "8": "hun_r8_startle_shot",
+              "11": "hun_r11_mend_pet",
+              "14": "hun_r14_multi_shot",
+              "17": "hun_r17_deterrence",
+              "20": "hun_r20_improved_volley"
             },
             "spec": "beast_mastery"
           },
@@ -374,7 +394,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 6.826645,
+          "resource": 8.533306,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -412,7 +432,7 @@
           "level": 20,
           "lootFfaTimer": "Infinity",
           "maxHp": 418,
-          "maxResource": 1506,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -422,14 +442,13 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 1506,
+          "resource": 1581,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
             "y": 1.5,
             "z": -2
           },
-          "spellHaste": 0.1,
           "spellPower": 41,
           "stats": {
             "agi": 12,
@@ -555,8 +574,8 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 412,
-      "state": "7adf1650",
-      "events": "988754a2",
+      "state": "70837de5",
+      "events": "90e7589b",
       "rng": {
         "draws": 300,
         "digest": "bf906891"
@@ -621,7 +640,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "war_row_double_charge"
+              "5": "war_row_double_charge",
+              "8": "war_row_second_wind",
+              "11": "war_row_piercing_howl",
+              "14": "war_row_anger_management",
+              "17": "war_row_recklessness",
+              "20": "war_row_colossal_might"
             },
             "spec": "arms"
           },
@@ -684,7 +708,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "mag_r5_firestarter"
+              "5": "mag_r5_ice_floes",
+              "8": "mag_r8_warded",
+              "11": "mag_r11_rings_of_frost",
+              "14": "mag_r14_power_echo",
+              "17": "mag_r17_convergence",
+              "20": "mag_r20_rune_of_power"
             },
             "spec": "arcane"
           },
@@ -744,7 +773,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "rog_r5_relentless_strikes"
+              "5": "rog_r5_relentless_strikes",
+              "8": "rog_r8_smoke_screen",
+              "11": "rog_r11_preparation",
+              "14": "rog_r14_seal_fate",
+              "17": "rog_r17_cloak_of_shadows",
+              "20": "rog_r20_shadowstep"
             },
             "spec": "assassination"
           },
@@ -807,7 +841,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "hun_r5_improved_serpent_sting"
+              "5": "hun_r5_improved_serpent_sting",
+              "8": "hun_r8_startle_shot",
+              "11": "hun_r11_mend_pet",
+              "14": "hun_r14_multi_shot",
+              "17": "hun_r17_deterrence",
+              "20": "hun_r20_improved_volley"
             },
             "spec": "beast_mastery"
           },
@@ -854,7 +893,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 13.653289,
+          "resource": 17.066612,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -892,7 +931,7 @@
           "level": 20,
           "lootFfaTimer": "Infinity",
           "maxHp": 418,
-          "maxResource": 1506,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -902,14 +941,13 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 1506,
+          "resource": 1581,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
             "y": 1.5,
             "z": -2
           },
-          "spellHaste": 0.1,
           "spellPower": 41,
           "stats": {
             "agi": 12,
@@ -1033,8 +1071,8 @@
       "tick": 101,
       "time": 5.05,
       "nextId": 412,
-      "state": "bcc92ae1",
-      "events": "d0d9c966",
+      "state": "cb7ac95c",
+      "events": "43da5f5f",
       "rng": {
         "draws": 300,
         "digest": "bf906891"
@@ -1102,7 +1140,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "war_row_double_charge"
+              "5": "war_row_double_charge",
+              "8": "war_row_second_wind",
+              "11": "war_row_piercing_howl",
+              "14": "war_row_anger_management",
+              "17": "war_row_recklessness",
+              "20": "war_row_colossal_might"
             },
             "spec": "arms"
           },
@@ -1165,7 +1208,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "mag_r5_firestarter"
+              "5": "mag_r5_ice_floes",
+              "8": "mag_r8_warded",
+              "11": "mag_r11_rings_of_frost",
+              "14": "mag_r14_power_echo",
+              "17": "mag_r17_convergence",
+              "20": "mag_r20_rune_of_power"
             },
             "spec": "arcane"
           },
@@ -1226,7 +1274,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "rog_r5_relentless_strikes"
+              "5": "rog_r5_relentless_strikes",
+              "8": "rog_r8_smoke_screen",
+              "11": "rog_r11_preparation",
+              "14": "rog_r14_seal_fate",
+              "17": "rog_r17_cloak_of_shadows",
+              "20": "rog_r20_shadowstep"
             },
             "spec": "assassination"
           },
@@ -1289,7 +1342,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "hun_r5_improved_serpent_sting"
+              "5": "hun_r5_improved_serpent_sting",
+              "8": "hun_r8_startle_shot",
+              "11": "hun_r11_mend_pet",
+              "14": "hun_r14_multi_shot",
+              "17": "hun_r17_deterrence",
+              "20": "hun_r20_improved_volley"
             },
             "spec": "beast_mastery"
           },
@@ -1336,7 +1394,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 13.653289,
+          "resource": 17.066612,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -1374,7 +1432,7 @@
           "level": 20,
           "lootFfaTimer": "Infinity",
           "maxHp": 418,
-          "maxResource": 1506,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -1384,14 +1442,13 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 1506,
+          "resource": 1581,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
             "y": 1.5,
             "z": -2
           },
-          "spellHaste": 0.1,
           "spellPower": 41,
           "stats": {
             "agi": 12,
@@ -1515,7 +1572,7 @@
       "tick": 125,
       "time": 6.25,
       "nextId": 412,
-      "state": "2ed53de3",
+      "state": "db0e33f0",
       "events": "741638a5",
       "rng": {
         "draws": 429,
@@ -1526,7 +1583,7 @@
       "tick": 142,
       "time": 7.1,
       "nextId": 412,
-      "state": "7b965ca2",
+      "state": "f60db4af",
       "events": "741638a5",
       "rng": {
         "draws": 524,
@@ -1595,7 +1652,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "war_row_double_charge"
+              "5": "war_row_double_charge",
+              "8": "war_row_second_wind",
+              "11": "war_row_piercing_howl",
+              "14": "war_row_anger_management",
+              "17": "war_row_recklessness",
+              "20": "war_row_colossal_might"
             },
             "spec": "arms"
           },
@@ -1658,7 +1720,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "mag_r5_firestarter"
+              "5": "mag_r5_ice_floes",
+              "8": "mag_r8_warded",
+              "11": "mag_r11_rings_of_frost",
+              "14": "mag_r14_power_echo",
+              "17": "mag_r17_convergence",
+              "20": "mag_r20_rune_of_power"
             },
             "spec": "arcane"
           },
@@ -1719,7 +1786,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "rog_r5_relentless_strikes"
+              "5": "rog_r5_relentless_strikes",
+              "8": "rog_r8_smoke_screen",
+              "11": "rog_r11_preparation",
+              "14": "rog_r14_seal_fate",
+              "17": "rog_r17_cloak_of_shadows",
+              "20": "rog_r20_shadowstep"
             },
             "spec": "assassination"
           },
@@ -1782,7 +1854,12 @@
           "nodeHarvestReadyAt": {},
           "talents": {
             "rows": {
-              "5": "hun_r5_improved_serpent_sting"
+              "5": "hun_r5_improved_serpent_sting",
+              "8": "hun_r8_startle_shot",
+              "11": "hun_r11_mend_pet",
+              "14": "hun_r14_multi_shot",
+              "17": "hun_r17_deterrence",
+              "20": "hun_r20_improved_volley"
             },
             "spec": "beast_mastery"
           },
@@ -1830,7 +1907,7 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 13.653289,
+          "resource": 17.066612,
           "resourceType": "rage",
           "spawnPos": {
             "x": 2,
@@ -1868,7 +1945,7 @@
           "level": 20,
           "lootFfaTimer": "Infinity",
           "maxHp": 418,
-          "maxResource": 1506,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -1878,14 +1955,13 @@
             "z": -1264
           },
           "potionCooldownUntil": -1,
-          "resource": 1506,
+          "resource": 1581,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
             "y": 1.5,
             "z": -2
           },
-          "spellHaste": 0.1,
           "spellPower": 41,
           "stats": {
             "agi": 12,

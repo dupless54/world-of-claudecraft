@@ -3093,8 +3093,8 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 419,
-      "state": "03f55cd5",
-      "events": "a0add570",
+      "state": "02ed5e0b",
+      "events": "bed3dccb",
       "rng": {
         "draws": 448,
         "digest": "7a0cf6db"
@@ -3267,7 +3267,8 @@
           "nodeHarvestReadyAt": {},
           "renown": 55,
           "talents": {
-            "rows": {}
+            "rows": {},
+            "spec": "arcane"
           },
           "townFocus": {}
         },
@@ -3677,14 +3678,14 @@
           "dodgeChance": 0.056,
           "fallStartY": -3.247367,
           "gcdRemaining": 1.5,
-          "hp": 50000,
+          "hp": 418,
           "id": 409,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 50000,
-          "maxResource": 1506,
+          "maxHp": 418,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -3695,7 +3696,7 @@
             "z": -45
           },
           "potionCooldownUntil": -1,
-          "resource": 1446,
+          "resource": 1521,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
@@ -4175,8 +4176,8 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 420,
-      "state": "eb59ae94",
-      "events": "8f581585",
+      "state": "7fda582a",
+      "events": "5a85d3d9",
       "rng": {
         "draws": 453,
         "digest": "7e3f8a61"
@@ -4349,7 +4350,8 @@
           "nodeHarvestReadyAt": {},
           "renown": 55,
           "talents": {
-            "rows": {}
+            "rows": {},
+            "spec": "arcane"
           },
           "townFocus": {}
         },
@@ -4763,14 +4765,14 @@
           "dodgeChance": 0.056,
           "fallStartY": -3.247367,
           "gcdRemaining": 1.5,
-          "hp": 50000,
+          "hp": 418,
           "id": 409,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 50000,
-          "maxResource": 1506,
+          "maxHp": 418,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -4781,7 +4783,7 @@
             "z": -45
           },
           "potionCooldownUntil": -1,
-          "resource": 1446,
+          "resource": 1521,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
@@ -5334,8 +5336,8 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 421,
-      "state": "28fc61dd",
-      "events": "6c53b9fc",
+      "state": "0738139f",
+      "events": "56b9b8eb",
       "rng": {
         "draws": 454,
         "digest": "b431b368"
@@ -5508,7 +5510,8 @@
           "nodeHarvestReadyAt": {},
           "renown": 55,
           "talents": {
-            "rows": {}
+            "rows": {},
+            "spec": "arcane"
           },
           "townFocus": {}
         },
@@ -5926,14 +5929,14 @@
           "dodgeChance": 0.056,
           "fallStartY": -3.247367,
           "gcdRemaining": 1.5,
-          "hp": 50000,
+          "hp": 418,
           "id": 409,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 50000,
-          "maxResource": 1506,
+          "maxHp": 418,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -5944,7 +5947,7 @@
             "z": -45
           },
           "potionCooldownUntil": -1,
-          "resource": 1446,
+          "resource": 1521,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
@@ -6573,7 +6576,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 422,
-      "state": "0c237cf7",
+      "state": "062d7163",
       "events": "0d619ac6",
       "rng": {
         "draws": 454,
@@ -6747,7 +6750,8 @@
           "nodeHarvestReadyAt": {},
           "renown": 55,
           "talents": {
-            "rows": {}
+            "rows": {},
+            "spec": "arcane"
           },
           "townFocus": {}
         },
@@ -7165,14 +7169,14 @@
           "dodgeChance": 0.056,
           "fallStartY": -3.247367,
           "gcdRemaining": 1.5,
-          "hp": 50000,
+          "hp": 418,
           "id": 409,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 50000,
-          "maxResource": 1506,
+          "maxHp": 418,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -7183,7 +7187,7 @@
             "z": -45
           },
           "potionCooldownUntil": -1,
-          "resource": 1446,
+          "resource": 1521,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
@@ -7866,7 +7870,7 @@
       "tick": 133,
       "time": 6.65,
       "nextId": 422,
-      "state": "0c237cf7",
+      "state": "062d7163",
       "events": "741638a5",
       "rng": {
         "draws": 454,
@@ -8040,7 +8044,8 @@
           "nodeHarvestReadyAt": {},
           "renown": 55,
           "talents": {
-            "rows": {}
+            "rows": {},
+            "spec": "arcane"
           },
           "townFocus": {}
         },
@@ -8458,14 +8463,14 @@
           "dodgeChance": 0.056,
           "fallStartY": -3.247367,
           "gcdRemaining": 1.5,
-          "hp": 50000,
+          "hp": 418,
           "id": 409,
           "inCombat": true,
           "kind": "player",
           "level": 20,
           "lootFfaTimer": "Infinity",
-          "maxHp": 50000,
-          "maxResource": 1506,
+          "maxHp": 418,
+          "maxResource": 1581,
           "moveSpeed": 7,
           "onGround": true,
           "overpowerUntil": -1,
@@ -8476,7 +8481,7 @@
             "z": -45
           },
           "potionCooldownUntil": -1,
-          "resource": 1446,
+          "resource": 1521,
           "resourceType": "mana",
           "spawnPos": {
             "x": 2,
