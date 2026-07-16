@@ -615,9 +615,9 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
   // exact ratio, with linen_pouch and spring_water close by at 4.17x), not
   // a new balance number.
   // Crafting materials are common (white): they are reagents, not vendor trash, so
-  // they must never fall into the "sell junk" (quality 'poor') sweep. Their tier is
-  // read from sellValue/buyValue, not the rarity color. Enforced by
-  // tests/crafting_materials_quality.test.ts.
+  // they must never fall into the junk sweep (sellAllJunk in src/sim/items.ts vendors
+  // every quality 'poor' item). Their tier is read from sellValue/buyValue, not the
+  // rarity color. Enforced by tests/crafting_materials_quality.test.ts.
   thorium_ore: {
     id: 'thorium_ore',
     name: 'Thorium Ore',
@@ -1328,8 +1328,9 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     sellValue: 5,
   },
   // These three are crafting reagents (COMMON_RECIPES), so they are common (white),
-  // NOT quality 'poor', or the "sell junk" sweep would vendor them. See the enchanting
-  // materials note below and tests/crafting_materials_quality.test.ts.
+  // NOT quality 'poor', or the junk sweep (sellAllJunk in src/sim/items.ts) would
+  // vendor them. See the enchanting materials note below and
+  // tests/crafting_materials_quality.test.ts.
   spider_leg: {
     id: 'spider_leg',
     name: 'Twitching Spider Leg',
@@ -1355,9 +1356,12 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
   // --- Enchanting materials ------------------------------------------------
   // Disenchant yield (src/sim/professions/enchanting.ts), tiered by the
   // disenchanted item's rarity: common/uncommon -> dust, rare -> essence,
-  // epic/legendary -> shard. Consumed as reagents by the ENCHANTS table
-  // (content/enchants.ts). Reuses the 'junk' kind, same as bone_fragments/
-  // linen_scrap/spider_leg above (this repo has no dedicated material kind).
+  // epic/legendary -> shard. The material qualities mirror that ladder on
+  // purpose (dust white, essence uncommon, shard rare); only quality 'poor' is
+  // swept by sellAllJunk, so none of them are at risk. Consumed as reagents by
+  // the ENCHANTS table (content/enchants.ts). Reuses the 'junk' kind, same as
+  // bone_fragments/linen_scrap/spider_leg above (this repo has no dedicated
+  // material kind).
   arcane_dust: {
     id: 'arcane_dust',
     name: 'Arcane Dust',
@@ -1369,7 +1373,7 @@ export const BASE_ITEMS: Record<string, ItemDef> = {
     id: 'arcane_essence',
     name: 'Arcane Essence',
     kind: 'junk',
-    quality: 'common',
+    quality: 'uncommon',
     sellValue: 18,
   },
   arcane_shard: {
