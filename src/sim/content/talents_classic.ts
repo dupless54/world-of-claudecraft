@@ -109,17 +109,22 @@ const HUNTER_SPECS: SpecDef[] = [
 ];
 
 const MAGE_SPECS: SpecDef[] = [
+  // Chronomancy (docs/prd/mage-chronomancy.md Phase 1): the healer that
+  // replaced the Aethermancy DPS. The INTERNAL id stays 'arcane' so existing
+  // characters, loadouts and persisted builds survive untouched (the PRD
+  // records this decision); only the presentation and role changed. The old
+  // signature arcane_power is now unreferenced content debt (PRD, section 14).
   spec(
     'arcane',
     'mage',
-    'Aethermancy',
-    'dps',
+    'Chronomancy',
+    'healer',
     '*',
-    'A precision caster using mana efficiency and focused arcane barrages.',
-    'arcane_power',
-    'Aetheric Flux',
-    'Increases your spell damage by 15% and your spell haste by 10%.',
-    { global: { spellDmgPct: 0.15, spellHastePct: 0.1 } },
+    'A mage who manipulates time and aether to protect allies. They can anticipate wounds, repeat healing, and reverse damage before it is too late.',
+    'temporal_mend',
+    'Chronoweave',
+    'Increases all healing you do by 15%, your maximum mana by 5%, and your mana regeneration by 20%.',
+    { global: { healPct: 0.15, manaPct: 0.05, manaRegenPct: 0.2 } },
   ),
   spec(
     'fire',
@@ -127,11 +132,17 @@ const MAGE_SPECS: SpecDef[] = [
     'Pyromancy',
     'dps',
     'x',
-    'A volatile caster built around fast, high-damage Fire spells.',
-    'combustion',
-    'Afterflame',
-    'Your spell critical strikes deal double damage. Increases critical strike chance by 2%.',
-    { global: { critDmgSpellPct: 0.5 }, stats: { crit: 0.02 } },
+    'A master of flame who chains critical strikes into devastating explosions. Fast, aggressive, and capable of igniting many enemies.',
+    // Signature swapped to the Hot Streak spender (owner leveling pass 2026-07-14):
+    // Phoenix Trance moved into the spec kit at level 12, and a signature grant would
+    // bypass that learnLevel gate (grants always do).
+    'pyroblast',
+    'Ignition',
+    'Your spell critical strikes burn the target for 40% of the damage dealt over 6 sec, stacking. Increases critical strike chance by 2%.',
+    // The burn fraction is the scalable mastery axis (runtime: fire_mage's
+    // igniteOnCrit copies the resolved crit damage); crit chance is the static
+    // secondary.
+    { global: { ignitionPct: 0.4 }, stats: { crit: 0.02 } },
   ),
   spec(
     'frost',
@@ -139,8 +150,10 @@ const MAGE_SPECS: SpecDef[] = [
     'Cryomancy',
     'dps',
     '#',
-    'A controlling caster who trades peak burst for survival and slows.',
-    'icy_veins',
+    'A spellcaster who controls the battlefield with ice, slows, and freezes. They build glacial power to destroy enemies with precise attacks.',
+    // Signature swapped to the proc spender (owner leveling pass 2026-07-14):
+    // Icy Veins moved into the spec kit at level 12 (see combustion above).
+    'ice_lance',
     'Brittlebreak',
     'Increases your Frost spell damage by 25%. Increases armor by 10%.',
     // The scalable mastery axis is the Frost-kit damage (ability-scoped so the

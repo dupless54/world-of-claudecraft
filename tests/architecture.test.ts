@@ -120,6 +120,7 @@ const simFiles = walk(simRoot);
 // import), so it is registered here even though it lives in src/game. Paths are
 // repo-relative for the failure messages.
 const UI_PURE_CORES = [
+  'src/ui/proc_overlay_view.ts',
   'src/ui/camera_prompt_core.ts',
   'src/ui/chat_ignore_core.ts',
   'src/ui/char_bags_pairing_core.ts',
@@ -144,6 +145,7 @@ const UI_PURE_CORES = [
   'src/ui/target_rank_view.ts',
   'src/ui/mob_tooltip_view.ts',
   'src/ui/talents_view.ts',
+  'src/ui/talent_rows_view.ts',
   'src/ui/social_view.ts',
   'src/ui/bags_view.ts',
   'src/ui/bank_view.ts',

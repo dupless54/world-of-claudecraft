@@ -174,12 +174,6 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Spadone di Highwatch',
   'entities.items.highwatch_wallshield.name': 'Scudo da muro di Highwatch',
   'entities.items.eastbrook_buckler.name': 'Brocchiero di Eastbrook',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Ti trasformi in un colosso per 20 s, liberandoti da tutti gli effetti di controllo e aumentando del 20% i danni inflitti.',
-  'entities.abilities.bladestorm.name': 'Tempesta di Lame',
-  'entities.abilities.bladestorm.description':
-    'Diventi una tempesta d’acciaio vorticante che colpisce tutti i nemici entro 8 m, infliggendo {damage} danni ogni secondo per 4 s.',
   'entities.abilities.battle_stance.description':
     'Posizione di combattimento aggressiva: generi il 10% di rabbia in più. La posizione predefinita per Armi e Protezione.',
   'entities.abilities.battle_stance.name': 'Posizione di Battaglia',
@@ -280,119 +274,42 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Scelte',
   'hudChrome.talentRows.readoutSummary': 'Talenti: {head}, {spent}/{total} righe selezionate.',
   'entities.abilities.aspect_of_the_wild.name': 'Aspetto Zannaferina',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Infondi forza selvaggia negli alleati entro 30 m, aumentando la loro potenza d’attacco di 45 e la velocità d’attacco del 5% per 5 min. (talento del Cacciatore)',
-  'entities.abilities.aura_surge.name': "Rimbalzo dell'Alba",
-  'entities.abilities.aura_surge.description':
-    "Scaglia uno scudo forgiato all'alba che infligge {damage} danni Sacri, silenzia il bersaglio principale per 2 sec. e rimbalza su un massimo di 2 nemici aggiuntivi entro 10 metri, infliggendo il 75% dei danni per rimbalzo. (talento del Paladino)",
   'entities.abilities.avenging_wrath.name': 'Alavendetta',
-  'entities.abilities.avenging_wrath.description':
-    'Invoca un potere vendicativo, aumentando la tua potenza d’attacco di 60 e la potenza magica di 30 per 20 sec. (talento del Paladino)',
   'entities.abilities.berserk.name': 'Bruma Rossa',
-  'entities.abilities.berserk.description':
-    'Aumenta la tua potenza d’attacco di 70 per 15 sec. (talento del Druido)',
   'entities.abilities.blink.name': 'Passo Baleno',
-  'entities.abilities.blink.description':
-    'Ti teletrasporta di 15 m in avanti e spezza gli effetti di immobilizzazione. (talento del Mago)',
   'entities.abilities.bloodlust.name': 'Tamburi di Guerra',
-  'entities.abilities.bloodlust.description':
-    'Spinge gli alleati entro 30 m alla frenesia, aumentando la loro velocità d’attacco del 30% per 15 sec. (talento dello Sciamano)',
   'entities.abilities.chain_lightning.name': 'Fulmine Biforcuto',
-  'entities.abilities.chain_lightning.description':
-    'Scaglia un fulmine nell’area bersaglio, infliggendo {damage} danni ai nemici vicini. (talento dello Sciamano)',
   'entities.abilities.chaos_bolt.name': 'Dardo della Rovina',
-  'entities.abilities.chaos_bolt.description':
-    'Scaglia un dardo di fuoco caotico che infligge {damage} danni da Fuoco. (talento dello Stregone)',
   'entities.abilities.cloak_of_shadows.name': 'Manto d’Ombra',
-  'entities.abilities.cloak_of_shadows.description':
-    'Ti avvolge nelle ombre, assorbendo 420 danni per 5 sec. (talento del Ladro)',
   'entities.abilities.cone_of_cold.name': 'Spazzata Gelida',
-  'entities.abilities.cone_of_cold.description':
-    'Investe i nemici vicini con il gelo, infliggendo {damage} danni da Gelo. (abilità distintiva del Gelo)',
   'entities.abilities.curse_of_exhaustion.name': 'Maleficio Plum beo',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Maledice il bersaglio, riducendone la velocità di movimento del 30% per 12 sec. (talento dello Stregone)',
   'entities.abilities.death_coil.name': 'Spira Sepolcrale',
-  'entities.abilities.death_coil.description':
-    'Colpisce il nemico infliggendo {damage} danni da Ombra, poi lo terrorizza per 3 sec. (talento dello Stregone)',
   'entities.abilities.deep_freeze.name': 'Gelo Morto',
-  'entities.abilities.deep_freeze.description':
-    'Congela profondamente il bersaglio, infliggendo {damage} danni da Gelo e stordendolo per 4 sec. (talento del Mago)',
   'entities.abilities.desperate_prayer.name': 'Ultima Preghiera',
-  'entities.abilities.desperate_prayer.description':
-    'Ti cura istantaneamente di {damage}. (talento del Sacerdote)',
   'entities.abilities.deterrence.name': 'Guardia Ispida',
-  'entities.abilities.deterrence.description':
-    'Aumenta la tua probabilità di schivata di 50 punti percentuali per 10 sec. (talento del Cacciatore)',
   'entities.abilities.divine_shield.name': 'Custodia di Luce',
-  'entities.abilities.divine_shield.description':
-    'Ti protegge con il potere sacro, assorbendo 900 danni per 8 sec. (talento del Paladino)',
   'entities.abilities.earthbind.name': 'Terra Avvinghiante',
-  'entities.abilities.earthbind.description':
-    'Lega alla terra i nemici vicini, immobilizzandoli per 2 sec. (talento dello Sciamano)',
   'entities.abilities.evocation.name': 'Pozzo d’Etere',
-  'entities.abilities.evocation.description':
-    'Ripristina istantaneamente 220 mana. (talento del Mago)',
   'entities.abilities.frenzied_regeneration.name': 'Rammendo Selvaggio',
-  'entities.abilities.frenzied_regeneration.description':
-    'Ripristina 180 salute in 10 sec. Utilizzabile solo in Forma d’Orso. (talento del Druido)',
   'entities.abilities.frost_trap.name': 'Trappola di Brina',
-  'entities.abilities.frost_trap.description':
-    'Congela i nemici nell’area bersaglio per 3 sec., impedendo loro di muoversi e agire. (talento del Cacciatore)',
   'entities.abilities.ghostly_strike.name': 'Colpo Spettrale',
-  'entities.abilities.ghostly_strike.description':
-    'Colpisce il nemico infliggendo i danni dell’arma più {damage}, aumenta brevemente la schivata e assegna 1 punto combo. (talento del Ladro)',
   'entities.abilities.hammer_of_wrath.name': 'Martello Rintoccante',
-  'entities.abilities.hammer_of_wrath.description':
-    'Scaglia un martello sacro contro un nemico ferito, infliggendo {damage} danni sacri. Utilizzabile solo sotto il 20% di salute. (talento del Paladino)',
   'entities.abilities.healing_stream.name': 'Fonte Viva',
-  'entities.abilities.healing_stream.description':
-    'Ripristina 120 salute a un bersaglio alleato in 12 sec. (talento dello Sciamano)',
   'entities.abilities.holy_wrath.name': 'Ira del Santo',
-  'entities.abilities.holy_wrath.description':
-    'Scatena il potere sacro, infliggendo {damage} danni ai nemici vicini. (talento del Paladino)',
   'entities.abilities.howl_of_terror.name': 'Ululato del Terrore',
-  'entities.abilities.howl_of_terror.description':
-    'Terrorizza i nemici vicini per un massimo di 3 sec. I danni possono interrompere l’effetto. (talento dello Stregone)',
   'entities.abilities.ice_block.name': 'Bara Fredda',
-  'entities.abilities.ice_block.description':
-    'Ti racchiude nel ghiaccio, assorbendo 600 danni per 8 sec. Non puoi agire mentre sei racchiuso. Lancia di nuovo per annullare. (talento del Mago)',
   'entities.abilities.inner_focus.name': 'Mente Quietata',
-  'entities.abilities.inner_focus.description':
-    'Rende gratuita la tua prossima magia. Dura 60 sec. (talento del Sacerdote)',
   'entities.abilities.innervate.name': 'Linfa Vitale',
-  'entities.abilities.innervate.description':
-    'La linfa vivente scorre in te per 10 sec. e ripristina a ondate 20 della tua risorsa attuale: mana, rabbia o energia. Cambiare forma non la interrompe. Sonno, stordimento o stasi arrestano la linfa. (talento del Druido)',
   'entities.abilities.meteor.name': 'Pietra Celeste',
-  'entities.abilities.meteor.description':
-    'Richiama una meteora sull’area bersaglio, infliggendo {damage} danni da Fuoco, poi brucia i nemici nell’area per 12-18 danni da Fuoco ogni 2 sec. per 6 sec. (talento del Mago)',
   'entities.abilities.mind_sear.name': 'Bruciamente',
-  'entities.abilities.mind_sear.description':
-    'Incanala energia d’Ombra nell’area bersaglio, infliggendo {damage} danni ogni secondo ai nemici vicini. (talento del Sacerdote)',
   'entities.abilities.multi_shot.name': 'Tiro Sdoppiato',
-  'entities.abilities.multi_shot.description':
-    'Scaglia una raffica sull’area bersaglio, infliggendo {damage} danni fisici ai nemici entro un raggio di 8 m. (talento del Cacciatore)',
   'entities.abilities.prayer_of_healing.name': 'Cura del Coro',
-  'entities.abilities.prayer_of_healing.description':
-    'Cura gli alleati vicini di {damage}. (talento del Sacerdote)',
   'entities.abilities.preparation.name': 'Contingenza',
-  'entities.abilities.preparation.description':
-    'Azzera il tempo di recupero di Scatto, Evasione e Sparizione. (talento del Ladro)',
   'entities.abilities.presence_of_mind.name': 'Mente Rapida',
-  'entities.abilities.presence_of_mind.description':
-    'Rende istantanea la tua prossima magia con tempo di lancio. Dura 60 sec. (talento del Mago)',
   'entities.abilities.psychic_scream.name': 'Urlo Psichico',
-  'entities.abilities.psychic_scream.description':
-    'Terrorizza i nemici vicini per un massimo di 4 sec. I danni possono interrompere l’effetto. (talento del Sacerdote)',
   'entities.abilities.shadowstep.name': 'Scivolo d’Ombra',
-  'entities.abilities.shadowstep.description':
-    'Avanzi attraverso le ombre verso il tuo bersaglio. (talento del Ladro)',
   'entities.abilities.silence.name': 'Silenzio',
-  'entities.abilities.silence.description':
-    'Silenzia il bersaglio per 4 sec. (talento del Sacerdote)',
   'entities.abilities.tranquility.name': 'Canto della Radura',
-  'entities.abilities.tranquility.description':
-    'Incanala energia rigenerante per 4 sec., curando ogni secondo gli alleati entro 30 m di 42-52. (talento del Druido)',
   'entities.abilities.cleansing_verdict.name': 'Verdetto Purificante',
   'entities.abilities.cleansing_verdict.description':
     'Dissipa un effetto magico dannoso da un bersaglio alleato e lo cura di {damage} con magia Sacra.',
@@ -3251,6 +3168,42 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.frostbolt.name': 'Lancia di Brina',
   'entities.abilities.frostbolt.description':
     'Lancia un dardo di gelo, infliggendo {damage} danni da Gelo e rallentando il movimento del 40%.',
+  'entities.abilities.blazing_barrier.name': 'Barriera ardente',
+  'entities.abilities.blazing_barrier.description':
+    'Ti avvolge nelle fiamme, assorbendo 130 danni per 60 s. (Fuoco)',
+  'entities.abilities.cold_snap.name': 'Colpo di freddo',
+  'entities.abilities.cold_snap.description':
+    'Termina il tempo di recupero di Passo fulmineo, Velo di Gelo e Invisibilità superiore. (Talento del mago)',
+  'entities.abilities.greater_invisibility.name': 'Invisibilità superiore',
+  'entities.abilities.greater_invisibility.description':
+    'Svanisci per 20 s: rimuove 2 effetti di danno periodico e riduce i danni subiti del 90% mentre sei invisibile e per breve tempo dopo. (Talento del mago)',
+  'entities.abilities.hot_streak.name': 'Vampata',
+  'entities.abilities.hot_streak.description':
+    "Passivo: due colpi critici consecutivi con le tue magie di Fuoco (Palla di Fuoco, Esplosione di Fuoco, Bruciatura, Pirosfera o Colonna di Fuoco) rendono la tua prossima Pirosfera o Colonna di Fuoco istantanea e gratuita. Le magie che consumano l'effetto contano per la serie SUCCESSIVA, inclusi i lanci gratuiti; Colonna di Fuoco conta una sola volta, indipendentemente dal numero di nemici colpiti, e può contare solo l'impatto iniziale. (Fuoco)",
+  'entities.abilities.ice_floes.name': 'Banchi di ghiaccio',
+  'entities.abilities.ice_floes.description':
+    'Le tue prossime due magie con tempo di lancio possono essere lanciate in movimento. Dura 15 s. (Talento del mago)',
+  'entities.abilities.ignition.name': 'Ignizione',
+  'entities.abilities.ignition.description':
+    "Passivo: i colpi critici delle tue magie incendiano il bersaglio, infliggendo il 40% dei danni causati nell'arco di 6 s; si accumula. (Maestria del Fuoco)",
+  'entities.abilities.mass_barrier.name': 'Barriera di massa',
+  'entities.abilities.mass_barrier.description':
+    'Protegge te e fino a 4 alleati vicini entro 30 m; ogni scudo assorbe 130 danni per 60 s. (Talento del mago)',
+  'entities.abilities.overload.name': 'Sovraccarico',
+  'entities.abilities.overload.description':
+    'La tua prossima magia viene amplificata del 40%, ma costa il 50% di mana in più. Dura 10 s. (Talento del mago)',
+  'entities.abilities.power_echo.name': 'Eco di potere',
+  'entities.abilities.power_echo.description':
+    'La tua prossima magia diretta si ripete con il 50% della potenza sullo stesso bersaglio. Dura 10 s. (Talento del mago)',
+  'entities.abilities.rings_of_frost.name': 'Anello di gelo',
+  'entities.abilities.rings_of_frost.description':
+    'Evoca un anello per 10 s. I nemici che ne attraversano il perimetro restano congelati per 4 s. (Talento del mago)',
+  'entities.abilities.rune_of_power.name': 'Runa del potere',
+  'entities.abilities.rune_of_power.description':
+    'Incide una runa del potere ai tuoi piedi per 15 s: gli alleati entro 8 m infliggono il 10% di danni in più. (Talento del mago)',
+  'entities.abilities.summon_water_elemental.name': "Evoca Elementale dell'Acqua",
+  'entities.abilities.summon_water_elemental.description':
+    "Evoca un Elementale dell'Acqua che combatte al tuo fianco, scaglia Dardi d'Acqua sul tuo bersaglio e canalizza Getto d'Acqua. (Gelo)",
   'entities.abilities.conjure_water.name': "Vincolo dell'Acqua",
   'entities.abilities.conjure_water.description':
     "Evoca 2 bottiglie d'acqua che ripristinano mana quando bevute. I ranghi superiori evocano acqua più pura.",
@@ -3748,6 +3701,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_water.name': 'Acqua piovana evocata',
   'entities.items.conjured_water2.name': 'Acqua di pozzo evocata',
   'entities.items.conjured_water3.name': 'Acqua limpida evocata',
+  'entities.items.conjured_water4.name': 'Acqua sorgiva evocata',
   'entities.items.eastbrook_arming_sword.name': "Spada d'arme di Eastbrook",
   'entities.items.bronzework_mace.name': 'Mazza bronzata',
   'entities.items.vale_carving_knife.name': 'Coltello da intaglio della Valle',
@@ -4726,6 +4680,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_bread.name': "Focaccia d'avena evocata",
   'entities.items.conjured_bread2.name': 'Pagnotta nera evocata',
   'entities.items.conjured_bread3.name': 'Dolce al miele evocato',
+  'entities.items.conjured_bread4.name': 'Pane da banchetto evocato',
   'entities.items.glimmerfin_koi.name': 'Koi dalle pinne scintillanti',
   'entities.items.raw_bog_eel.name': 'Anguilla di palude cruda',
   'entities.items.raw_frostgill_trout.name': 'Trota dalle branchie gelide cruda',
@@ -7122,6 +7077,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
     "Lacera l'armatura del bersaglio, riducendola del {damage}% per applicazione. Si accumula fino a 5 volte. Genera una grande quantità di minaccia.",
   'entities.mobs.training_dummy.name': "Manichino d'allenamento",
   'entities.mobs.yumi_cat.name': 'Yumi',
+  'entities.mobs.water_elemental.name': "Elementale dell'Acqua",
   'guide.arenaPage.yumiBody':
     'Proteggi Yumi è una modalità a obiettivi di squadra che si gioca in un labirinto: ogni fazione protegge il proprio famiglio felino mentre dà la caccia a quello avversario. Di tanto in tanto entrambi i gatti si teletrasportano in nuovi angoli del labirinto, così lo scontro oscilla tra difesa, caccia e corsa per ritrovarli. Mettiti in coda in tre contro tre o cinque contro cinque; cadere in battaglia ti tiene in panchina solo per un momento.',
   'guide.arenaPage.yumiHeading': 'Proteggi Yumi',
@@ -7862,4 +7818,95 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Colpisce i nemici davanti a te e può diventare gratuita dopo una schivata o una parata.',
   'guide.abilityHook.hamstring': 'Ostacola il movimento di un nemico per impedirgli di fuggire.',
+  'game.talents.choicesTab': 'Scelte',
+  'game.talents.rowUnlockToast': 'Nuova scelta di talento disponibile!',
+  'game.talents.rowUnlocks': 'Si sblocca al livello {level}',
+  'entities.abilities.aura_surge.name': "Rimbalzo dell'Alba",
+  'entities.abilities.aura_surge.description':
+    "Scaglia uno scudo forgiato all'alba che infligge {damage} danni Sacri, silenzia il bersaglio principale per 2 sec. e rimbalza su un massimo di 2 nemici aggiuntivi entro 10 metri, infliggendo il 75% dei danni per rimbalzo. (talento del Paladino)",
+  'entities.abilities.aspect_of_the_wild.description':
+    'Infondi forza selvaggia negli alleati entro 30 m, aumentando la loro potenza d’attacco di 45 e la velocità d’attacco del 5% per 5 min. (talento del Cacciatore)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Ti trasformi in un colosso per 20 s, liberandoti da tutti gli effetti di controllo e aumentando del 20% i danni inflitti.',
+  'entities.abilities.avenging_wrath.description':
+    'Invoca un potere vendicativo, aumentando la tua potenza d’attacco di 60 e la potenza magica di 30 per 20 sec. (talento del Paladino)',
+  'entities.abilities.berserk.description':
+    'Aumenta la tua potenza d’attacco di 70 per 15 sec. (talento del Druido)',
+  'entities.abilities.bladestorm.name': 'Tempesta di Lame',
+  'entities.abilities.bladestorm.description':
+    'Diventi una tempesta d’acciaio vorticante che colpisce tutti i nemici entro 8 m, infliggendo {damage} danni ogni secondo per 4 s.',
+  'entities.abilities.blink.description':
+    'Ti teletrasporta di 15 m in avanti e spezza gli effetti di immobilizzazione. (talento del Mago)',
+  'entities.abilities.bloodlust.description':
+    'Spinge gli alleati entro 30 m alla frenesia, aumentando la loro velocità d’attacco del 30% per 15 sec. (talento dello Sciamano)',
+  'entities.abilities.chain_lightning.description':
+    'Scaglia un fulmine nell’area bersaglio, infliggendo {damage} danni ai nemici vicini. (talento dello Sciamano)',
+  'entities.abilities.chaos_bolt.description':
+    'Scaglia un dardo di fuoco caotico che infligge {damage} danni da Fuoco. (talento dello Stregone)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Ti avvolge nelle ombre, assorbendo 420 danni per 5 sec. (talento del Ladro)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a vicini nemici con escarcha e inflige {damage} de daño de Gelo. (talento da mago)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Maledice il bersaglio, riducendone la velocità di movimento del 30% per 12 sec. (talento dello Stregone)',
+  'entities.abilities.death_coil.description':
+    'Colpisce il nemico infliggendo {damage} danni da Ombra, poi lo terrorizza per 3 sec. (talento dello Stregone)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a bersaglio, inflige {damage} de daño de Gelo y lo aturde durante 4 s. (talento da mago)',
+  'entities.abilities.desperate_prayer.description':
+    'Ti cura istantaneamente di {damage}. (talento del Sacerdote)',
+  'entities.abilities.deterrence.description':
+    'Aumenta la tua probabilità di schivata di 50 punti percentuali per 10 sec. (talento del Cacciatore)',
+  'entities.abilities.divine_shield.description':
+    'Ti protegge con il potere sacro, assorbendo 900 danni per 8 sec. (talento del Paladino)',
+  'entities.abilities.earthbind.description':
+    'Lega alla terra i nemici vicini, immobilizzandoli per 2 sec. (talento dello Sciamano)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (talento da mago)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Ripristina 180 salute in 10 sec. Utilizzabile solo in Forma d’Orso. (talento del Druido)',
+  'entities.abilities.frost_trap.description':
+    'Congela i nemici nell’area bersaglio per 3 sec., impedendo loro di muoversi e agire. (talento del Cacciatore)',
+  'entities.abilities.ghostly_strike.description':
+    'Colpisce il nemico infliggendo i danni dell’arma più {damage}, aumenta brevemente la schivata e assegna 1 punto combo. (talento del Ladro)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Scaglia un martello sacro contro un nemico ferito, infliggendo {damage} danni sacri. Utilizzabile solo sotto il 20% di salute. (talento del Paladino)',
+  'entities.abilities.healing_stream.description':
+    'Ripristina 120 salute a un bersaglio alleato in 12 sec. (talento dello Sciamano)',
+  'entities.abilities.holy_wrath.description':
+    'Scatena il potere sacro, infliggendo {damage} danni ai nemici vicini. (talento del Paladino)',
+  'entities.abilities.howl_of_terror.description':
+    'Terrorizza i nemici vicini per un massimo di 3 sec. I danni possono interrompere l’effetto. (talento dello Stregone)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 s. (talento da mago)',
+  'entities.abilities.inner_focus.description':
+    'Rende gratuita la tua prossima magia. Dura 60 sec. (talento del Sacerdote)',
+  'entities.abilities.innervate.description':
+    'La linfa vivente scorre in te per 10 sec. e ripristina a ondate 20 della tua risorsa attuale: mana, rabbia o energia. Cambiare forma non la interrompe. Sonno, stordimento o stasi arrestano la linfa. (talento del Druido)',
+  'entities.abilities.mend_pet.name': 'Rattoppo',
+  'entities.abilities.mend_pet.description':
+    'Sana a bersaglio alleato por {damage} durante 15 s. (talento da cacciatore)',
+  'entities.abilities.meteor.description':
+    'Richiama una meteora sull’area bersaglio, infliggendo {damage} danni da Fuoco, poi brucia i nemici nell’area per 12-18 danni da Fuoco ogni 2 sec. per 6 sec. (talento del Mago)',
+  'entities.abilities.mind_sear.description':
+    'Incanala energia d’Ombra nell’area bersaglio, infliggendo {damage} danni ogni secondo ai nemici vicini. (talento del Sacerdote)',
+  'entities.abilities.multi_shot.description':
+    'Scaglia una raffica sull’area bersaglio, infliggendo {damage} danni fisici ai nemici entro un raggio di 8 m. (talento del Cacciatore)',
+  'entities.abilities.prayer_of_healing.description':
+    'Cura gli alleati vicini di {damage}. (talento del Sacerdote)',
+  'entities.abilities.preparation.description':
+    'Azzera il tempo di recupero di Scatto, Evasione e Sparizione. (talento del Ladro)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 s. (talento da mago)',
+  'entities.abilities.psychic_scream.description':
+    'Terrorizza i nemici vicini per un massimo di 4 sec. I danni possono interrompere l’effetto. (talento del Sacerdote)',
+  'entities.abilities.shadowstep.description':
+    'Avanzi attraverso le ombre verso il tuo bersaglio. (talento del Ladro)',
+  'entities.abilities.silence.description':
+    'Silenzia il bersaglio per 4 sec. (talento del Sacerdote)',
+  'entities.abilities.tranquility.description':
+    'Incanala energia rigenerante per 4 sec., curando ogni secondo gli alleati entro 30 m di 42-52. (talento del Druido)',
+  'game.talents.readout.rowsSummary':
+    'Talenti: {head}, selezionate {picked}/{unlocked} righe di scelta.',
+  'hudChrome.fct.absorbed': 'Assorbito {amount}',
 };

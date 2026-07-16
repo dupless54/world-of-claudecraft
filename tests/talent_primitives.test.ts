@@ -298,6 +298,7 @@ describe('talent primitive P3: empower next', () => {
 
   it('next_cast_free zeroes exactly one cost and is consumed', () => {
     const { sim, p } = makeSim('mage');
+    expect(sim.setSpec('fire')).toBe(true); // fire_blast is DPS-spec kit now
     spawnTarget(sim, p);
     p.resource = 0;
     p.auras.push(aura('next_cast_free'));
@@ -387,6 +388,7 @@ describe('talent primitive P3: empower next', () => {
 
   it('a channel neither shortens from next_cast_instant nor consumes the charge', () => {
     const { sim, p } = makeSim('mage');
+    expect(sim.setSpec('arcane')).toBe(true); // Aether Darts is Chronomancy-only.
     spawnTarget(sim, p);
     p.auras.push(aura('next_cast_instant'));
 
@@ -470,6 +472,7 @@ describe('talent primitive P2: cast while moving', () => {
       flatDmg: 0,
       costPct: 0,
       cooldownPct: 0,
+      cooldownFlat: 0,
       castPct: 0,
       buffPct: 0,
       castWhileMoving: true,
@@ -547,6 +550,7 @@ describe('talent primitives P4/P5', () => {
       flatDmg: 0,
       costPct: 0,
       cooldownPct: 0,
+      cooldownFlat: 0,
       castPct: 0,
       buffPct: 0,
       castWhileMoving: false,

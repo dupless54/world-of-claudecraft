@@ -162,12 +162,6 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Wielki miecz z Wysokiej Strażnicy',
   'entities.items.highwatch_wallshield.name': 'Pawęż z Wysokiej Strażnicy',
   'entities.items.eastbrook_buckler.name': 'Puklerz ze Wschodniego Strumienia',
-  'entities.abilities.avatar.name': 'Awatar',
-  'entities.abilities.avatar.description':
-    'Przemieniasz się w kolosa na 20 sek., uwalniając się od wszystkich efektów kontroli i zwiększając zadawane obrażenia o 20%.',
-  'entities.abilities.bladestorm.name': 'Burza Ostrzy',
-  'entities.abilities.bladestorm.description':
-    'Stajesz się wirującą burzą stali i przez 4 sek. co sekundę zadajesz {damage} pkt. obrażeń wszystkim wrogom w promieniu 8 m.',
   'entities.abilities.battle_stance.description':
     'Agresywna postawa bojowa: generujesz o 10% więcej wściekłości. Domyślna postawa specjalizacji Broń i Ochrona.',
   'entities.abilities.battle_stance.name': 'Postawa bojowa',
@@ -268,117 +262,42 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Wybory',
   'hudChrome.talentRows.readoutSummary': 'Talenty: {head}, wybrano {spent}/{total} rzędów.',
   'entities.abilities.aspect_of_the_wild.name': 'Postać Dzikiego Kła',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Napełnia sojuszników w promieniu 30 m dziką siłą, zwiększając ich siłę ataku o 45 i szybkość ataku o 5% na 5 min. (talent Łowcy)',
-  'entities.abilities.aura_surge.name': 'Rykoszet świtu',
-  'entities.abilities.aura_surge.description':
-    'Rzuca wykutą o świcie tarczę, zadając {damage} obrażeń od Świętości i uciszając główny cel na 2 sek., po czym odbija się do maksymalnie 2 kolejnych wrogów w promieniu 10 metrów, zadając 75% obrażeń przy każdym odbiciu. (talent Paladyna)',
   'entities.abilities.avenging_wrath.name': 'Skrzydło Zemsty',
-  'entities.abilities.avenging_wrath.description':
-    'Przyzywa mściwą moc, zwiększając twoją siłę ataku o 60 i moc zaklęć o 30 na 20 sek. (talent Paladyna)',
   'entities.abilities.berserk.name': 'Czerwona Mgła',
-  'entities.abilities.berserk.description':
-    'Zwiększa twoją siłę ataku o 70 na 15 sek. (talent Druida)',
   'entities.abilities.blink.name': 'Migotliwy Krok',
-  'entities.abilities.blink.description':
-    'Teleportuje cię o 15 m do przodu i usuwa efekty unieruchomienia. (talent Maga)',
   'entities.abilities.bloodlust.name': 'Bębny Wojny',
-  'entities.abilities.bloodlust.description':
-    'Wprawia sojuszników w promieniu 30 m w szał, zwiększając ich szybkość ataku o 30% na 15 sek. (talent Szamana)',
   'entities.abilities.chain_lightning.name': 'Rozgałęziona Błyskawica',
-  'entities.abilities.chain_lightning.description':
-    'Ciska błyskawicę w wybrany obszar, zadając pobliskim wrogom {damage} obrażeń. (talent Szamana)',
   'entities.abilities.chaos_bolt.name': 'Pocisk Ruiny',
-  'entities.abilities.chaos_bolt.description':
-    'Ciska pocisk chaotycznego ognia, który zadaje {damage} obrażeń od Ognia. (talent Czarnoksiężnika)',
   'entities.abilities.cloak_of_shadows.name': 'Cieniopłaszcz',
-  'entities.abilities.cloak_of_shadows.description':
-    'Otacza cię cieniami i pochłania 420 obrażeń przez 5 sek. (talent Łotrzyka)',
   'entities.abilities.cone_of_cold.name': 'Mroźny Zamiatacz',
-  'entities.abilities.cone_of_cold.description':
-    'Uderza pobliskich wrogów mrozem, zadając {damage} obrażeń od Mrozu. (zdolność charakterystyczna Mrozu)',
   'entities.abilities.curse_of_exhaustion.name': 'Ołowiana Klątwa',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Przeklina cel, zmniejszając jego szybkość ruchu o 30% na 12 sek. (talent Czarnoksiężnika)',
   'entities.abilities.death_coil.name': 'Grobowa Spirala',
-  'entities.abilities.death_coil.description':
-    'Uderza wroga, zadając {damage} obrażeń od Cienia, a następnie przeraża go na 3 sek. (talent Czarnoksiężnika)',
   'entities.abilities.deep_freeze.name': 'Martwy Mróz',
-  'entities.abilities.deep_freeze.description':
-    'Głęboko zamraża cel, zadając {damage} obrażeń od Mrozu i ogłuszając go na 4 sek. (talent Maga)',
   'entities.abilities.desperate_prayer.name': 'Ostatnia Modlitwa',
-  'entities.abilities.desperate_prayer.description':
-    'Natychmiast leczy cię o {damage}. (talent Kapłana)',
   'entities.abilities.deterrence.name': 'Kolczasta Straż',
-  'entities.abilities.deterrence.description':
-    'Zwiększa twoją szansę na unik o 50 punktów procentowych na 10 sek. (talent Łowcy)',
   'entities.abilities.divine_shield.name': 'Straż Światła',
-  'entities.abilities.divine_shield.description':
-    'Osłania cię świętą mocą, pochłaniając 900 obrażeń przez 8 sek. (talent Paladyna)',
   'entities.abilities.earthbind.name': 'Chwytająca Ziemia',
-  'entities.abilities.earthbind.description':
-    'Przywiązuje pobliskich wrogów do ziemi i unieruchamia ich na 2 sek. (talent Szamana)',
   'entities.abilities.evocation.name': 'Studnia Eteru',
-  'entities.abilities.evocation.description': 'Natychmiast przywraca 220 many. (talent Maga)',
   'entities.abilities.frenzied_regeneration.name': 'Dzikie Gojenie',
-  'entities.abilities.frenzied_regeneration.description':
-    'Przywraca 180 zdrowia przez 10 sek. Tylko w Formie Niedźwiedzia. (talent Druida)',
   'entities.abilities.frost_trap.name': 'Szronowa Pułapka',
-  'entities.abilities.frost_trap.description':
-    'Zamraża wrogów w wybranym obszarze na 3 sek., uniemożliwiając im ruch i działanie. (talent Łowcy)',
   'entities.abilities.ghostly_strike.name': 'Widmowe Uderzenie',
-  'entities.abilities.ghostly_strike.description':
-    'Uderza wroga, zadając obrażenia broni plus {damage}, krótko zwiększa unik i przyznaje 1 punkt kombinacji. (talent Łotrzyka)',
   'entities.abilities.hammer_of_wrath.name': 'Bijący Młot',
-  'entities.abilities.hammer_of_wrath.description':
-    'Ciska święty młot w rannego wroga, zadając {damage} obrażeń od Świętości. Można użyć tylko poniżej 20% zdrowia. (talent Paladyna)',
   'entities.abilities.healing_stream.name': 'Źródlisko',
-  'entities.abilities.healing_stream.description':
-    'Przywraca sojuszniczemu celowi 120 zdrowia przez 12 sek. (talent Szamana)',
   'entities.abilities.holy_wrath.name': 'Gniew Świętego',
-  'entities.abilities.holy_wrath.description':
-    'Wyzwala świętą moc, zadając pobliskim wrogom {damage} obrażeń. (talent Paladyna)',
   'entities.abilities.howl_of_terror.name': 'Wycie Grozy',
-  'entities.abilities.howl_of_terror.description':
-    'Przeraża pobliskich wrogów na maksymalnie 3 sek. Obrażenia mogą przerwać efekt. (talent Czarnoksiężnika)',
   'entities.abilities.ice_block.name': 'Zimna Trumna',
-  'entities.abilities.ice_block.description':
-    'Zamyka cię w lodzie i pochłania 600 obrażeń przez 8 sek. W tym czasie nie możesz działać. Użyj ponownie, aby anulować. (talent Maga)',
   'entities.abilities.inner_focus.name': 'Wyciszony Umysł',
-  'entities.abilities.inner_focus.description':
-    'Sprawia, że twoje następne zaklęcie jest darmowe. Trwa 60 sek. (talent Kapłana)',
   'entities.abilities.innervate.name': 'Życiodajna Soki',
-  'entities.abilities.innervate.description':
-    'Żywe soki wzbierają w tobie przez 10 sek. i falami przywracają 20 twojego bieżącego zasobu: many, szału lub energii. Zmiana postaci ich nie przerywa. Sen, ogłuszenie lub zastój zatrzymują przepływ soków. (talent Druida)',
   'entities.abilities.meteor.name': 'Niebiański Kamień',
-  'entities.abilities.meteor.description':
-    'Przyzywa meteor na wybrany obszar, zadając {damage} obrażeń od Ognia. Następnie przez 6 sek. zadaje znajdującym się tam wrogom od 12 do 18 obrażeń od Ognia co 2 sek. (talent Maga)',
   'entities.abilities.mind_sear.name': 'Myślopalenie',
-  'entities.abilities.mind_sear.description':
-    'Kanalizuje energię Cienia na wybrany obszar, zadając pobliskim wrogom {damage} obrażeń co sekundę. (talent Kapłana)',
   'entities.abilities.multi_shot.name': 'Rozszczepiony Strzał',
-  'entities.abilities.multi_shot.description':
-    'Wystrzeliwuje salwę w wybrany obszar, zadając wrogom w promieniu 8 m {damage} obrażeń fizycznych. (talent Łowcy)',
   'entities.abilities.prayer_of_healing.name': 'Chóralne Uzdrowienie',
-  'entities.abilities.prayer_of_healing.description':
-    'Leczy pobliskich sojuszników o {damage}. (talent Kapłana)',
   'entities.abilities.preparation.name': 'Plan Awaryjny',
-  'entities.abilities.preparation.description':
-    'Kończy czas odnowienia Sprintu, Uniku i Zniknięcia. (talent Łotrzyka)',
   'entities.abilities.presence_of_mind.name': 'Pędzący Umysł',
-  'entities.abilities.presence_of_mind.description':
-    'Sprawia, że twoje następne zaklęcie z czasem rzucania staje się natychmiastowe. Trwa 60 sek. (talent Maga)',
   'entities.abilities.psychic_scream.name': 'Psychiczny Krzyk',
-  'entities.abilities.psychic_scream.description':
-    'Przeraża pobliskich wrogów na maksymalnie 4 sek. Obrażenia mogą przerwać efekt. (talent Kapłana)',
   'entities.abilities.shadowstep.name': 'Cieniokrok',
-  'entities.abilities.shadowstep.description':
-    'Przechodzisz przez cienie w kierunku celu. (talent Łotrzyka)',
   'entities.abilities.silence.name': 'Cisza',
-  'entities.abilities.silence.description': 'Wycisza cel na 4 sek. (talent Kapłana)',
   'entities.abilities.tranquility.name': 'Pieśń Gaju',
-  'entities.abilities.tranquility.description':
-    'Kanalizuje uzdrawiającą energię przez 4 sek., lecząc sojuszników w promieniu 30 m o 42 do 52 co sekundę. (talent Druida)',
   'entities.abilities.cleansing_verdict.name': 'Oczyszczający Wyrok',
   'entities.abilities.cleansing_verdict.description':
     'Usuwa szkodliwy efekt magiczny z przyjaznego celu i leczy go świętą magią za {damage}.',
@@ -7778,4 +7697,132 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Uderza wrogów przed tobą i może stać się darmowa po uniku lub sparowaniu.',
   'guide.abilityHook.hamstring': 'Ogranicza ruch wroga, aby nie mógł uciec.',
+  'entities.abilities.aura_surge.name': 'Rykoszet świtu',
+  'entities.abilities.aura_surge.description':
+    'Rzuca wykutą o świcie tarczę, zadając {damage} obrażeń od Świętości i uciszając główny cel na 2 sek., po czym odbija się do maksymalnie 2 kolejnych wrogów w promieniu 10 metrów, zadając 75% obrażeń przy każdym odbiciu. (talent Paladyna)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Napełnia sojuszników w promieniu 30 m dziką siłą, zwiększając ich siłę ataku o 45 i szybkość ataku o 5% na 5 min. (talent Łowcy)',
+  'entities.abilities.avatar.name': 'Awatar',
+  'entities.abilities.avatar.description':
+    'Przemieniasz się w kolosa na 20 sek., uwalniając się od wszystkich efektów kontroli i zwiększając zadawane obrażenia o 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Przyzywa mściwą moc, zwiększając twoją siłę ataku o 60 i moc zaklęć o 30 na 20 sek. (talent Paladyna)',
+  'entities.abilities.berserk.description':
+    'Zwiększa twoją siłę ataku o 70 na 15 sek. (talent Druida)',
+  'entities.abilities.bladestorm.name': 'Burza Ostrzy',
+  'entities.abilities.bladestorm.description':
+    'Stajesz się wirującą burzą stali i przez 4 sek. co sekundę zadajesz {damage} pkt. obrażeń wszystkim wrogom w promieniu 8 m.',
+  'entities.abilities.blink.description':
+    'Teleportuje cię o 15 m do przodu i usuwa efekty unieruchomienia. (talent Maga)',
+  'entities.abilities.bloodlust.description':
+    'Wprawia sojuszników w promieniu 30 m w szał, zwiększając ich szybkość ataku o 30% na 15 sek. (talent Szamana)',
+  'entities.abilities.chain_lightning.description':
+    'Ciska błyskawicę w wybrany obszar, zadając pobliskim wrogom {damage} obrażeń. (talent Szamana)',
+  'entities.abilities.chaos_bolt.description':
+    'Ciska pocisk chaotycznego ognia, który zadaje {damage} obrażeń od Ognia. (talent Czarnoksiężnika)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Otacza cię cieniami i pochłania 420 obrażeń przez 5 sek. (talent Łotrzyka)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a pobliskich wrogów con escarcha e inflige {damage} de daño de Mrozu. (talent maga)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Przeklina cel, zmniejszając jego szybkość ruchu o 30% na 12 sek. (talent Czarnoksiężnika)',
+  'entities.abilities.death_coil.description':
+    'Uderza wroga, zadając {damage} obrażeń od Cienia, a następnie przeraża go na 3 sek. (talent Czarnoksiężnika)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a cel, inflige {damage} de daño de Mrozu y lo aturde durante 4 s. (talent maga)',
+  'entities.abilities.desperate_prayer.description':
+    'Natychmiast leczy cię o {damage}. (talent Kapłana)',
+  'entities.abilities.deterrence.description':
+    'Zwiększa twoją szansę na unik o 50 punktów procentowych na 10 sek. (talent Łowcy)',
+  'entities.abilities.divine_shield.description':
+    'Osłania cię świętą mocą, pochłaniając 900 obrażeń przez 8 sek. (talent Paladyna)',
+  'entities.abilities.earthbind.description':
+    'Przywiązuje pobliskich wrogów do ziemi i unieruchamia ich na 2 sek. (talent Szamana)',
+  'entities.abilities.evocation.description': 'Restaura manę rápidamente. (talent maga)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Przywraca 180 zdrowia przez 10 sek. Tylko w Formie Niedźwiedzia. (talent Druida)',
+  'entities.abilities.frost_trap.description':
+    'Zamraża wrogów w wybranym obszarze na 3 sek., uniemożliwiając im ruch i działanie. (talent Łowcy)',
+  'entities.abilities.ghostly_strike.description':
+    'Uderza wroga, zadając obrażenia broni plus {damage}, krótko zwiększa unik i przyznaje 1 punkt kombinacji. (talent Łotrzyka)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Ciska święty młot w rannego wroga, zadając {damage} obrażeń od Świętości. Można użyć tylko poniżej 20% zdrowia. (talent Paladyna)',
+  'entities.abilities.healing_stream.description':
+    'Przywraca sojuszniczemu celowi 120 zdrowia przez 12 sek. (talent Szamana)',
+  'entities.abilities.holy_wrath.description':
+    'Wyzwala świętą moc, zadając pobliskim wrogom {damage} obrażeń. (talent Paladyna)',
+  'entities.abilities.howl_of_terror.description':
+    'Przeraża pobliskich wrogów na maksymalnie 3 sek. Obrażenia mogą przerwać efekt. (talent Czarnoksiężnika)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 s. (talent maga)',
+  'entities.abilities.inner_focus.description':
+    'Sprawia, że twoje następne zaklęcie jest darmowe. Trwa 60 sek. (talent Kapłana)',
+  'entities.abilities.innervate.description':
+    'Żywe soki wzbierają w tobie przez 10 sek. i falami przywracają 20 twojego bieżącego zasobu: many, szału lub energii. Zmiana postaci ich nie przerywa. Sen, ogłuszenie lub zastój zatrzymują przepływ soków. (talent Druida)',
+  'entities.abilities.mend_pet.name': 'Opatrunek',
+  'entities.abilities.mend_pet.description':
+    'Sana a przyjazny cel por {damage} durante 15 s. (talent łowcy)',
+  'entities.abilities.meteor.description':
+    'Przyzywa meteor na wybrany obszar, zadając {damage} obrażeń od Ognia. Następnie przez 6 sek. zadaje znajdującym się tam wrogom od 12 do 18 obrażeń od Ognia co 2 sek. (talent Maga)',
+  'entities.abilities.mind_sear.description':
+    'Kanalizuje energię Cienia na wybrany obszar, zadając pobliskim wrogom {damage} obrażeń co sekundę. (talent Kapłana)',
+  'entities.abilities.multi_shot.description':
+    'Wystrzeliwuje salwę w wybrany obszar, zadając wrogom w promieniu 8 m {damage} obrażeń fizycznych. (talent Łowcy)',
+  'entities.abilities.prayer_of_healing.description':
+    'Leczy pobliskich sojuszników o {damage}. (talent Kapłana)',
+  'entities.abilities.preparation.description':
+    'Kończy czas odnowienia Sprintu, Uniku i Zniknięcia. (talent Łotrzyka)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 s. (talent maga)',
+  'entities.abilities.psychic_scream.description':
+    'Przeraża pobliskich wrogów na maksymalnie 4 sek. Obrażenia mogą przerwać efekt. (talent Kapłana)',
+  'entities.abilities.shadowstep.description':
+    'Przechodzisz przez cienie w kierunku celu. (talent Łotrzyka)',
+  'entities.abilities.silence.description': 'Wycisza cel na 4 sek. (talent Kapłana)',
+  'entities.abilities.tranquility.description':
+    'Kanalizuje uzdrawiającą energię przez 4 sek., lecząc sojuszników w promieniu 30 m o 42 do 52 co sekundę. (talent Druida)',
+  'game.talents.readout.rowsSummary': 'Talenty: {head}, wybrano {picked}/{unlocked} rzędów wyboru.',
+  'hudChrome.fct.absorbed': 'Pochłonięto {amount}',
+  'game.talents.choicesTab': 'Wybory',
+  'game.talents.rowUnlockToast': 'Odblokowano nowy wybór talentu!',
+  'game.talents.rowUnlocks': 'Odblokowuje się na poziomie {level}',
+  'entities.abilities.blazing_barrier.name': 'Płonąca bariera',
+  'entities.abilities.blazing_barrier.description':
+    'Otaczasz się płomieniami, pochłaniając 130 obrażeń przez 60 sek. (Ogień)',
+  'entities.abilities.cold_snap.name': 'Nagły chłód',
+  'entities.abilities.cold_snap.description':
+    'Kończy czas odnowienia Migotliwego kroku, Mroźnej zasłony i Większej niewidzialności. (talent maga)',
+  'entities.abilities.greater_invisibility.name': 'Większa niewidzialność',
+  'entities.abilities.greater_invisibility.description':
+    'Znikasz na 20 sek.: usuwa 2 efekty obrażeń rozłożonych w czasie, a podczas niewidzialności i krótko po niej otrzymujesz o 90% mniej obrażeń. (talent maga)',
+  'entities.abilities.hot_streak.name': 'Gorąca seria',
+  'entities.abilities.hot_streak.description':
+    'Bierne: dwa trafienia krytyczne z rzędu twoimi zaklęciami Ognia (Żarowy pocisk, Deszcz żaru, Poparzenie, Ognista lanca lub Ognista nawała) sprawiają, że twoja następna Ognista lanca lub Ognista nawała jest natychmiastowa i darmowa. Zaklęcia zużywające efekt liczą się do NASTĘPNEJ serii, również darmowe użycia; Ognista nawała liczy się raz bez względu na liczbę trafionych wrogów i zawsze liczy się tylko pierwsze uderzenie. (Ogień)',
+  'entities.abilities.ice_floes.name': 'Kry lodowe',
+  'entities.abilities.ice_floes.description':
+    'Następne dwa zaklęcia z czasem rzucania możesz rzucić w ruchu. Trwa 15 sek. (talent maga)',
+  'entities.abilities.ignition.name': 'Zapłon',
+  'entities.abilities.ignition.description':
+    'Bierne: trafienia krytyczne twoich zaklęć podpalają cel, zadając 40% zadanych obrażeń przez 6 sek.; efekt się kumuluje. (mistrzostwo Ognia)',
+  'entities.abilities.mass_barrier.name': 'Masowa bariera',
+  'entities.abilities.mass_barrier.description':
+    'Osłania ciebie i maksymalnie 4 pobliskich sojuszników w promieniu 30 m; każda bariera pochłania 130 obrażeń przez 60 sek. (talent maga)',
+  'entities.abilities.overload.name': 'Przeciążenie',
+  'entities.abilities.overload.description':
+    'Twoje następne zaklęcie jest wzmocnione o 40%, ale kosztuje o 50% więcej many. Trwa 10 sek. (talent maga)',
+  'entities.abilities.power_echo.name': 'Echo mocy',
+  'entities.abilities.power_echo.description':
+    'Twoje następne bezpośrednie zaklęcie powtarza się na tym samym celu z 50% mocy. Trwa 10 sek. (talent maga)',
+  'entities.abilities.rings_of_frost.name': 'Pierścień mrozu',
+  'entities.abilities.rings_of_frost.description':
+    'Przywołuje pierścień na 10 sek. Wrogowie przekraczający jego obwód zostają zamrożeni na 4 sek. (talent maga)',
+  'entities.abilities.rune_of_power.name': 'Runa mocy',
+  'entities.abilities.rune_of_power.description':
+    'Kreślisz u swych stóp runę mocy na 15 sek.: sojusznicy stojący w promieniu 8 m zadają o 10% więcej obrażeń. (talent maga)',
+  'entities.abilities.summon_water_elemental.name': 'Przywołanie żywiołaka wody',
+  'entities.abilities.summon_water_elemental.description':
+    'Przywołuje Żywiołaka Wody, który walczy u twego boku, miota Pociski Wody w twój cel i podtrzymuje Strumień Wody. (Mróz)',
+  'entities.mobs.water_elemental.name': 'Żywiołak wody',
+  'entities.items.conjured_bread4.name': 'Wyczarowany bochen biesiadny',
+  'entities.items.conjured_water4.name': 'Wyczarowana woda źródlana',
 };

@@ -37,6 +37,9 @@ export const DUNGEON_LEASH_DISTANCE = 70;
 // updateMob); the boss id NYTHRAXIS_BOSS_ID lives lower in this file (C1 relocation).
 export const NYTHRAXIS_ADD_ID = 'nythraxis_skeleton_warrior';
 export const GCD = 1.5; // seconds
+// Owner 2026-07-13: spell haste now shortens the global cooldown, floored here so it
+// never collapses to nothing. The base GCD is divided by spellHasteMult at cast time.
+export const MIN_GCD = 0.75; // seconds
 // Combat ratings are gear-facing stats converted to fractions in recalcPlayerStats.
 export const HASTE_RATING_PER_PCT = 10; // 10 haste rating = 1% faster
 export const CRIT_RATING_PER_PCT = 10; // 10 crit rating = +1% crit chance
@@ -121,10 +124,11 @@ export const MELEE_CLASSES: ReadonlySet<PlayerClass> = new Set([
   'druid',
 ]);
 
-// Classes that command a persistent pet (hunter beast, warlock demon). Pure
-// predicate, here so the pet-command slice imports it without a sim.ts cycle.
+// Classes that command a persistent pet (hunter beast, warlock demon, the
+// frost mage's Water Elemental). Pure predicate, here so the pet-command slice
+// imports it without a sim.ts cycle.
 export function isPetClass(cls: PlayerClass): boolean {
-  return cls === 'hunter' || cls === 'warlock';
+  return cls === 'hunter' || cls === 'warlock' || cls === 'mage';
 }
 // '1v1'/'2v2' are the ranked Ashen Coliseum ladders; 'fiesta' is the
 // dopamine-maxxed 2v2 party mode (score-based, respawns, augments, a shrinking
@@ -224,10 +228,21 @@ export type AuraKind =
   | 'buff_speed'
   | 'buff_haste'
   | 'buff_spellpower'
+  // Rallying Cry: value = fraction added to maximum health while worn (the
+  // recalc keeps the hp fraction, so current health scales with it).
   | 'buff_maxhp_pct'
   | 'buff_spellcrit'
   | 'buff_spelldmg'
   | 'buff_spellhaste'
+  // Shared exhaustion marker (Bloodlust / Temporal Acceleration): a pure debuff with
+  // no stat effect. While it rides, a target cannot benefit from another group haste
+  // burst (aoeAllyHaste with exhaust), so the effects can never be chained.
+  | 'sated'
+  // Cauterize lockout (fire mage, combat/fire_mage.ts): a pure debuff marking that
+  // the lethal save already fired. While worn, Cauterize cannot save again. It
+  // SURVIVES death (resurrection.ts aurasSurvivingDeath) and pauses while dead, so
+  // dying, reviving, and dying again inside the window never double-saves.
+  | 'cauterize_fatigue'
   | 'cast_shield'
   | 'hot'
   | 'absorb'
@@ -263,6 +278,23 @@ export type AuraKind =
   | 'sweeping_strikes'
   | 'battle_stance'
   | 'berserker_stance'
+  // Frost mage proc engine (combat/frost_mage.ts, owner design 2026-07-11).
+  // `fingers_of_frost`: self buff, up to 2 stacks; an Ice Lance spends one to
+  // treat its target as frozen (Shatter + its 3x frozen damage).
+  // `brain_freeze`: self buff, single; the next Flurry goes instant, skips its
+  // cooldown and hits 30% harder (consumed in castAbility's override).
+  // `winters_chill`: TARGET debuff with 2 charges; each compatible spell
+  // impact spends one to count the target as frozen.
+  // `icicles`: self buff, up to 5 stacks, built by Rimelance impacts and Frozen
+  // Orb pulses. At 5 it gates Glacial Spike (requiresAuraStacks), which consumes
+  // the whole stack for its slow, heavy hit + a target freeze.
+  | 'fingers_of_frost'
+  | 'brain_freeze'
+  | 'winters_chill'
+  | 'icicles'
+  // Chronomancer offensive cooldown (combat/chronomancy.ts): while worn, Aether
+  // Darts does not consume the caster's Arcane Charges.
+  | 'perfect_moment'
   | 'righteous_fury'
   // Warrior/rogue armor debuff. Now a PERCENTAGE reduction (2% per stack via
   // effectiveArmor), not a flat armor subtraction. Does not stack with faerie_fire
@@ -295,6 +327,8 @@ export type AuraKind =
   | 'next_cast_free'
   | 'next_execute_free'
   | 'next_cast_cheap'
+  // Lifesap (druid): flat resource restored on each classic 2-sec regen tick,
+  // any resource type, combat or not, carried across form shifts.
   | 'resource_sap'
   | 'next_attack_crit'
   | 'heal_echo'
@@ -333,6 +367,38 @@ export type AuraKind =
   | 'victory_rush'
   | 'aoe_echo'
   | 'sure_crit'
+  // Ice Floes (mage choice row): `value` = cast-time spells left that may be
+  // cast while moving. player_motion skips its cancel while worn; finishing a
+  // hard cast decrements the value and removes the aura at 0
+  // (casting_lifecycle). Draws no rng.
+  | 'ice_floes'
+  // Overload (mage choice row): armed amplifier; the next mana spell is baked
+  // 40% stronger and 50% costlier from a scaled copy of its resolved ability
+  // (casting_lifecycle consumeOverload). value = the output fraction (0.4).
+  | 'overload'
+  // Power Echo (mage choice row): the next direct spell repeats its RESOLVED
+  // damage at `value` fraction on the same target (effect_dispatch, beside
+  // Bladed Echo); consumed before the repeat so a copy can never re-echo.
+  | 'power_echo'
+  // Combustion (fire mage signature): while worn, every Fire spell crit roll's
+  // OUTCOME is overridden to true (combat/fire_mage.ts fireGuaranteedCrit; the
+  // roll is still drawn). Guaranteed crits build Hot Streak like any other.
+  | 'combustion'
+  // Inert timer marker: NO combat reader keys on this kind, so it is pure
+  // visible state (an internal cooldown or a capped-window accumulator the
+  // player can watch tick). Kept apart per user by the aura id (Temporal
+  // Rift's 20s ICD, Overflowing Power's 30s shave window).
+  | 'internal_cd'
+  // Chronomancy Temporal Echo mark (docs/prd/mage-chronomancy.md section 13): a
+  // per-caster (sourceId) buff on ONE ally; while it rides, a fraction of the
+  // mage's Arcane damage heals the marked ally. Value is unused (1); the
+  // conversion rate is a constant read at damage time, not stored on the aura.
+  | 'temporal_echo'
+  // Chronomancy Aether Surge charges (docs/prd/mage-chronomancy.md sections
+  // 13.4 / 14): a self buff whose `value`/`stacks` count the Arcane Charges held
+  // (cap 4). Each charge scales the next Aether Surge's damage and cost; Aether
+  // Darts consumes them. Read by aura id 'arcane_surge' in combat/chronomancy.ts.
+  | 'arcane_charge'
   | 'buff_dr'
   | 'buff_dr_phys';
 
@@ -353,14 +419,27 @@ export interface Aura {
   // Lingering Dread lets a break-on-damage fear absorb this much damage before
   // breaking. Undefined retains the normal break-on-any-damage behavior.
   breakThreshold?: number;
-  // Per-application cap bookkeeping for effects such as Endless Dirge.
-  extendedBy?: number;
+  damageAccrued?: number;
   stacks?: number; // sunder armor: applications stack up to the effect's cap
   charges?: number; // thorns: remaining reflect charges (Lightning Shield); undefined => unlimited
   icd?: number; // thorns: internal-cooldown remaining, seconds (counts down each tick)
   icdMax?: number; // thorns: configured internal cooldown, seconds (re-armed on each reflect)
+  // Talent-proc empowerment auras (next_cast_free/instant/cheap): which ability
+  // ids may consume this aura; undefined means any eligible cast.
+  empowerAbilities?: string[];
+  // extendDot bookkeeping: seconds already added to this DoT application, so
+  // the per-application maxBonus cap holds across channel ticks.
+  extendedBy?: number;
   leechPct?: number; // dot only: fraction of tick damage healed back to source
-  empowerAbilities?: readonly string[];
+  // Chronomancy Temporal Echo bookkeeping (temporal_echo auras only). echoGroup
+  // marks the ORIGIN: false/undefined = the single-target Temporal Echo (35% ST /
+  // 15% AoE conversion), true = a Cascada temporal group echo (13% ST / 6% AoE).
+  // echoConvertRate stores the single-target coefficient the mark converts at
+  // (0.35 or 0.13); the AoE rate is derived from echoGroup. Both are read only by
+  // combat/chronomancy.ts during Arcane-damage conversion (server-authoritative and
+  // offline), so they never need to ride the wire.
+  echoGroup?: boolean;
+  echoConvertRate?: number;
 }
 
 export type CrowdControlDrCategory =
@@ -577,6 +656,9 @@ interface BaseItemDef {
   // client composes the display name as "Heroic {base name}" from this (see
   // itemDisplayName), so a variant carries no translated name key of its own.
   heroicOf?: string;
+  // Marks a bespoke heroic-tier item (e.g. the Heroic Nythraxis raid epics) for
+  // tooltip chrome; these keep their own name key, unlike heroicOf variants.
+  heroic?: boolean;
 }
 
 // Item-set bonuses (classic "tier set" style). Flat effects fold into
@@ -798,6 +880,10 @@ export interface LootSlot extends InvSlot {
   personalFor?: number[];
   // Need/greed loot that everyone passed on becomes free-for-all corpse loot.
   openToAll?: boolean;
+  // Shared personal (participation tokens, e.g. Heroic Marks): a single loot
+  // action by ANY listed player grants `count` copies to EVERY player in
+  // `personalFor`, then consumes the slot. No one has to loot their own copy.
+  sharedPersonal?: boolean;
 }
 
 export interface CorpseLoot {
@@ -1418,7 +1504,22 @@ export interface MobTemplate {
   // Pet mechanic: this creature is a ranged caster (warlock Emberkin) — instead of
   // closing to melee, it stays at `range` and hurls bolts of `school` damage.
   // updatePet reads this; the bolt damage comes from the mob's weapon range.
-  petRanged?: { range: number; school: Aura['school'] };
+  petRanged?: {
+    range: number;
+    school: Aura['school'];
+    // Water Jet (mage water elemental): the pet-bar command channels a beam,
+    // leaving `total` damage ticking over `duration` at `interval`.
+    jet?: {
+      total: number;
+      duration: number;
+      interval: number;
+      /** Movement multiplier while the channel connects (0.6 = 40% slow). */
+      slow: number;
+      cooldown: number;
+    };
+  };
+  /** False for utility-free ranged summons such as the mage Water Elemental. */
+  petCanTaunt?: boolean;
   petRole?: PetRole;
   petSpell?: {
     name: string;
@@ -1540,6 +1641,8 @@ export type AbilityEffect =
       weaponMult?: number;
     } // instant special attack (sinister strike, overpower, backstab)
   | { type: 'directDamage'; min: number; max: number; vsRootedMult?: number }
+  // rageOnInterrupt: rage minted when a cast is ACTUALLY cut (Pummel's
+  // incentive design), scaled like ability-granted rage; never on a whiff.
   | { type: 'interrupt'; lockout: number; rageOnInterrupt?: number }
   | {
       type: 'chainDamage';
@@ -1556,19 +1659,72 @@ export type AbilityEffect =
   // stripped enemy benefit to the caster (Spellsteal).
   | { type: 'dispel'; count: number; steal?: boolean }
   | { type: 'silence'; duration: number }
+  // `maxTargets` (Intimidating Shout) caps how many hostiles within radius are
+  // feared; absent = fear every hostile in radius (the warlock-style AoE fear).
   | { type: 'aoeFear'; duration: number; radius: number; maxTargets?: number }
   | { type: 'clearCooldowns'; abilities: string[] }
   | { type: 'breakControl' }
+  // Ice Block: strip EVERY debuff (control, DoTs, stat saps, ...) off the caster.
+  // Broader than breakControl (which covers control auras only). See effect_dispatch.
+  | { type: 'cleanseSelf' }
   | {
       type: 'repositionToAim';
       breakRoots?: boolean;
       landingAoe?: { min: number; max: number; radius: number };
     }
+  // Swept teleport: travel facing-forward (Shadeslip snaps behind the target),
+  // stopping at walls, steep slopes, and deep water.
   | { type: 'blinkForward'; distance: number; breakRoots?: boolean }
   | { type: 'heal'; min: number; max: number } // friendly target (or self)
-  // Chain Heal: heal the primary friendly target, then bounce to the nearest not-yet-healed
-  // ally within `radius`, up to `jumps` extra targets, each jump healing `falloff`x the last.
-  | { type: 'chainHeal'; min: number; max: number; jumps: number; falloff: number; radius: number }
+  // Chronomancy Temporal Echo (docs/prd/mage-chronomancy.md section 13): place a
+  // per-caster mark on the friendly target (or self) for `duration` sec. The
+  // small initial heal is authored as a sibling `heal` effect on the same
+  // ability (so $d shows it); this effect owns only the mark. The Arcane-damage
+  // conversion is handled by combat/chronomancy.ts, not by a stored field.
+  | { type: 'temporalEcho'; duration: number }
+  // Chronomancy Cascada temporal (docs/prd/mage-chronomancy.md Phase 4): the group
+  // version of Temporal Echo. Centered on the friendly target (which must be the
+  // caster or a living group/raid member and is ALWAYS included), it marks up to
+  // `maxTargets` allies (the target plus the nearest others within `radius`) with a
+  // GROUP echo for `duration` sec and gives each a small initial `heal`. Selection,
+  // the individual-echo overlap rule, and the reduced group conversion all live in
+  // combat/chronomancy.ts.
+  | {
+      type: 'massTemporalEcho';
+      duration: number;
+      radius: number;
+      maxTargets: number;
+      heal: { min: number; max: number };
+    }
+  // Chronomancy combat resurrection (Temporal Reversal): rewind a DEAD group/raid
+  // member back to life at their corpse with `hpFrac` of their pools, no sickness.
+  | { type: 'resurrectAlly'; hpFrac: number }
+  // Chronomancer offensive cooldown (Perfect Moment): slam the caster to full
+  // Arcane Charges and open the no-consume window (combat/chronomancy.ts).
+  | { type: 'perfectMoment' }
+  // Chronomancy raid cooldown (Rewind / Rebobinar): instant, no target, centered on
+  // the caster. Restores `fraction` of the REAL damage each living group/raid member
+  // within `radius` took in the last `windowSec` seconds, capped per target at
+  // `maxHpFraction` of their max HP and never above their missing health. No crit,
+  // no Echo, normal heal threat. See combat/rewind.ts.
+  | {
+      type: 'rewind';
+      fraction: number;
+      maxHpFraction: number;
+      windowSec: number;
+      radius: number;
+    }
+  // Chain Heal (shaman): heals the friendly target, then arcs to up to `jumps`
+  // nearby allies within `radius`, each hop healing `falloff` of the previous
+  // hop's amount.
+  | {
+      type: 'chainHeal';
+      min: number;
+      max: number;
+      jumps: number;
+      falloff: number;
+      radius: number;
+    }
   | { type: 'hot'; total: number; duration: number; interval: number } // renew, rejuvenation
   | { type: 'absorb'; amount: number; duration: number } // power word: shield
   | { type: 'imbue'; bonus: number; duration: number; judgeMin?: number; judgeMax?: number } // seals / rockbiter: extra damage per swing
@@ -1617,6 +1773,13 @@ export type AbilityEffect =
       min: number;
       max: number;
       radius: number;
+      // The blast can critically strike: ONE crit decision per CAST (a single
+      // rng draw once at least one target is struck; fireGuaranteedCrit
+      // overrides the outcome), applied to every struck enemy together, and
+      // fed to noteSpellHit exactly once, so an AoE builder (Flamestrike)
+      // counts a whole cast as a single crit toward Hot Streak (owner rule).
+      // Absent: the classic never-crits AoE path, zero extra rng.
+      canCrit?: boolean;
       frontal?: boolean;
       stunSec?: number;
       softCap?: number;
@@ -1630,9 +1793,30 @@ export type AbilityEffect =
       radius: number;
       duration: number;
       interval: number;
+      // Rune of Power (mage choice row): a FRIENDLY zone. When set, each pulse
+      // buffs allies inside (+allyBuffPct damage done) instead of damaging
+      // hostiles; min/max are ignored.
+      allyBuffPct?: number;
+      // Meteor (fire mage): each struck enemy is also Ignited for this
+      // fraction of the RESOLVED pulse damage (combat/fire_mage.ts applyIgnite
+      // copies the number; no re-roll).
+      igniteFrac?: number;
+      // Meteor: skip the on-cast pulse so the FIRST hit lands one interval
+      // after placement (the fall delay); a plain zone still pulses on cast.
+      delayed?: boolean;
+      // Blizzard: each pulse also snares everyone struck (kind 'slow').
+      slowMult?: number;
+      slowDuration?: number;
+      // Blizzard: each struck enemy shaves the running Frozen Orb cooldown
+      // (frost_mage's per-cast budget, reset when the zone is placed).
+      orbCdr?: boolean;
     }
   | { type: 'aoeAttackSpeed'; mult: number; duration: number; radius: number } // thunder clap rider
-  | { type: 'aoeAttackPower'; amount: number; pct?: number; duration: number; radius: number } // demoralizing roar/shout
+  // Demoralizing roar/shout. `amount` = the legacy flat attack-power drain
+  // (debuff_ap); `pct` = a percentage cut to ALL damage the victims deal (a
+  // negative buff_dmg_done aura), the owner's Direhowl rework: mobs carry most
+  // of their damage on the weapon roll, so a flat AP drain barely dents them.
+  | { type: 'aoeAttackPower'; amount?: number; pct?: number; duration: number; radius: number }
   // party-style ALLY buff: +AP aura on the caster and nearby friendlies (Trueshot Aura)
   | {
       type: 'aoeAllyAttackPower';
@@ -1641,7 +1825,22 @@ export type AbilityEffect =
       duration: number;
       radius: number;
     }
-  | { type: 'aoeAllyHaste'; mult: number; duration: number; radius: number }
+  // Group haste buff. Base form (Red Banner): buff_haste (attack speed) to every
+  // friendly in radius. `spell` also grants buff_spellhaste (full haste: casts and
+  // channels too). `exhaust` applies the shared `sated` debuff and refuses the buff
+  // on already-sated targets, so Bloodlust / Temporal Acceleration cannot be chained.
+  // `groupOnly` restricts it to the caster's living group/raid (never external
+  // friendlies), so a shared-exhaustion burst never sates a passing stranger.
+  | {
+      type: 'aoeAllyHaste';
+      mult: number;
+      duration: number;
+      radius: number;
+      spell?: boolean;
+      exhaust?: boolean;
+      groupOnly?: boolean;
+    }
+  | { type: 'aoeAllyDamage'; pct: number; duration: number; radius: number }
   | { type: 'aoeAllySureCrit'; charges: number; duration: number; radius: number }
   | { type: 'aoeSlow'; mult: number; duration: number; radius: number }
   | {
@@ -1651,6 +1850,37 @@ export type AbilityEffect =
       min: number;
       max: number;
       stun?: boolean;
+      // Optional persistent annular trap. `duration` remains the root duration;
+      // the nested duration is how long the ring can catch new enemies.
+      ring?: { duration: number; innerRadius: number };
+    }
+  | {
+      type: 'empoweredCone';
+      angle: number;
+      slowMult?: number;
+      slowDuration?: number;
+      fx?: 'frostCone' | 'fireCone';
+      guaranteedCritLevel?: number;
+      hotStreakOnce?: boolean;
+      stages: readonly {
+        range: number;
+        min: number;
+        max: number;
+        angle?: number;
+        rootDuration?: number;
+        incapacitateDuration?: number;
+      }[];
+    }
+  // Frozen Orb (combat/frozen_orb.ts): releases a slow-drifting orb from the
+  // caster that pulses frost damage + a snare every `interval` for `duration`
+  // seconds and feeds Fingers of Frost (frost mage spec kit).
+  | {
+      type: 'frozenOrb';
+      min: number;
+      max: number;
+      radius: number;
+      duration: number;
+      interval: number;
     }
   | {
       type: 'aoeKnockback';
@@ -1703,6 +1933,29 @@ export type AbilityEffect =
   | { type: 'selfHotPctMax'; pct: number; duration: number; interval: number }
   | { type: 'aoeAllyMaxHp'; pct: number; duration: number; radius: number }
   | { type: 'partyMeleeBuff'; attackSpeedMult: number; dmgPct: number; duration: number }
+  // Mass Barrier (mage choice row): the caster and every friendly within radius
+  // gain an absorb shield (the aoeAlly* family shape with an 'absorb' aura).
+  | {
+      type: 'aoeAllyAbsorb';
+      amount: number;
+      duration: number;
+      radius: number;
+      // When set, only the NEAREST this many friendlies in radius are shielded (the
+      // caster included, distance 0). Absent = every friendly in radius.
+      maxTargets?: number;
+    }
+  // Greater Invisibility (mage choice row): one dispatch applies the whole
+  // package (a 'stealth'-kind vanish for `duration`, a buff_dr damage cut for
+  // `duration` + `linger` so it survives an early break, and strips up to
+  // `removeDotCount` damage-over-time auras). One effect so the two self-auras
+  // get distinct ids (the selfBuff case keys auras by the ability id alone).
+  | {
+      type: 'greaterInvisibility';
+      duration: number;
+      drValue: number;
+      linger: number;
+      removeDotCount: number;
+    }
   | { type: 'charge' }
   // Druid Feral signature (Feral Instinct): a form-gated resource burst. In Cat Form it
   // grants an Energy-regeneration buff; in Bear Form it instantly generates Rage.
@@ -1736,6 +1989,9 @@ export interface AbilityDef {
   class: PlayerClass;
   cost: number; // rage/mana/energy (rank 1; ranks may override)
   castTime: number; // 0 = instant
+  // Hold-to-charge spell. The server derives the released stage from its own
+  // cast clock; clients send only the release intent.
+  empowerStages?: number;
   // A cast/channel with this flag survives the player's own movement (the
   // move-input cancel skips it); talents can also grant it per-ability.
   castWhileMoving?: boolean;
@@ -1743,6 +1999,10 @@ export interface AbilityDef {
   uninterruptible?: boolean;
   channel?: { duration: number; ticks: number }; // arcane missiles
   cooldown: number; // seconds, 0 = none (GCD only)
+  // Charge-limited base kit (Twinstrike): stored uses; the ability's cooldown
+  // becomes the per-charge RECHARGE timer. Resolved into KnownAbility.charges by
+  // abilitiesKnownAt, exactly like the Double Charge talent's bonusCharges.
+  // undefined = 1 (a plain cooldown).
   maxCharges?: number;
   range: number; // yards; 0 = melee range
   minRange?: number;
@@ -1752,11 +2012,19 @@ export interface AbilityDef {
   // casting_lifecycle); a PHYSICAL ranged shot (hunter Aimed / Concussive Shot) must
   // set this explicitly, or it would deal its damage instantly while the arrow is
   // still visibly in flight. Melee physical attacks leave it unset.
+  // Projectile opt-IN for physical ranged shots (hunter Aimed/Concussive), and
+  // opt-OUT for spells: `projectile: false` on a non-physical spell resolves its
+  // damage instantly at cast completion instead of on bolt arrival (Fire Blast).
   projectile?: boolean;
   // Overrides the flying-projectile VISUAL for this spell (the mechanic is
   // unchanged): 'lightning' draws a jagged electric bolt from caster to target
   // instead of the default glowing bolt. Renderer-only; the sim just forwards it.
-  projectileFx?: 'lightning';
+  projectileFx?: 'lightning' | 'heavyBolt';
+  // Instant-cast VISUAL cue (renderer-only; the sim just emits a spellfx with it):
+  // 'shout' plays the caster's roar one-shot + an expanding ground shockwave ring
+  // (the warrior shouts); 'flourish' plays the ability-mapped one-shot clip
+  // (manifest attackByAbility) with no particles: a pure cast gesture. Emitted on
+  // the successful instant resolution.
   castFx?: 'shout' | 'weaponAura' | 'flourish';
   school: 'physical' | 'fire' | 'frost' | 'arcane' | 'shadow' | 'holy' | 'nature';
   // Damage scaling source for the flat directDamage / DoT / AoE riders. Default:
@@ -1766,15 +2034,52 @@ export interface AbilityDef {
   // instead (Arcane Shot, Serpent Sting, Aimed Shot), regardless of school.
   scalesWith?: 'ranged';
   requiresTarget: boolean;
+  // Passive ability (Measured Fury): known and shown in the spellbook, but never
+  // castable and never auto-placed on the action bar. Its benefit is folded
+  // wherever the flat known list is read (e.g. the cost choke point in
+  // resolvedAbility); castAbility refuses it silently.
   passive?: boolean;
+  // Spec-gated base kit: when set, only players whose CHOSEN spec id is in the
+  // list keep this ability in their known list (abilitiesKnownAt). A player who
+  // has not committed to a spec keeps the full kit, and talent/row GRANTS are
+  // never filtered (the tree they come from is already spec-scoped).
   specs?: readonly string[];
+  // Spec EXCLUSION (Reaver Strike vs Revenge): when set, a player whose CHOSEN
+  // spec id is in the list DROPS this ability from their known list, even though
+  // it is otherwise ungated. Used to swap one ability for a spec-exclusive
+  // replacement (heroic_strike excludeSpecs ['prot'], since prot uses revenge).
+  // A no-spec player and any non-listed spec keep it. Grants are never filtered.
   excludeSpecs?: readonly string[];
+  // When set alongside excludeSpecs, the exclusion only kicks in at this player
+  // level: below it the listed specs still know the ability. Models a kit
+  // hand-off (Redhand serves committed Fury as its rage spender until Red
+  // Harvest arrives, then retires). Without it exclusion applies at any level.
   excludeSpecsAtLevel?: number;
-  targetType?: 'enemy' | 'friendly' | 'any'; // friendly = self or allied player (defaults to enemy)
+  // friendly = self or allied player; 'any' = either (defaults to enemy)
+  // An INSTANT that may be pressed in the middle of another cast without
+  // touching it (Fire Blast, Combustion; casting_lifecycle's through-cast
+  // path, the same door Blink While Casting opens by talent).
+  usableWhileCasting?: boolean;
+  // An escape/immunity press (Ice Block) that ignores control: it can be cast while
+  // stunned, polymorphed, incapacitated, silenced, or locked out, so it always frees
+  // the caster. The CC cast gate in casting_lifecycle skips those checks for it.
+  usableWhileControlled?: boolean;
+  targetType?: 'enemy' | 'friendly' | 'any';
+  // Restrict a friendly-target ability to the caster or a member of the caster's
+  // group/raid (never an external friendly player, pet, or friendly NPC). Cascada
+  // temporal uses this so the cast is refused (no cost/cooldown) on an out-of-group
+  // target rather than resolving to an empty selection. Checked in casting_lifecycle.
+  partyOnlyTarget?: boolean;
+  // Combat resurrection (Temporal Reversal): the target must be a DEAD group/raid
+  // member (not the living-friendly self-cast path). Resolved in casting_lifecycle.
+  targetsDead?: boolean;
   // Ground-targeted ability: instead of an entity target, the cast is aimed at a
   // world point (the client proposes it, the server clamps it to `range`). Its area
   // effects (aoeDamage / groundAoE) center on that point. Implies requiresTarget:false.
   targetMode?: 'position';
+  // A `targetMode: 'position'` channel that follows the CASTER instead of a
+  // fixed aimed point (Bladestorm): each tick recenters on the live position
+  // and the client never opens the ground-aim reticle for it.
   selfCentered?: boolean;
   onNextSwing?: boolean; // heroic strike style: no GCD, queues on swing
   offGcd?: boolean;
@@ -1798,8 +2103,20 @@ export interface AbilityDef {
   exclusiveGroup?: string;
   requiresStealth?: boolean; // ambush
   requiresOutOfCombat?: boolean; // stealth
+  // Usable only while the caster wears an aura of this kind (Victory Rush's
+  // on-kill window); runEffects consumes the enabling aura on a successful cast.
   requiresAuraKind?: AuraKind;
+  // Minimum stacks of requiresAuraKind needed to cast (Glacial Spike needs the
+  // full 5-stack Icicles buff). Absent means any presence of the aura suffices.
+  // The whole aura is still consumed on cast (consumeAuraKind removes it).
+  requiresAuraStacks?: number;
+  // Spend-ALL ability (Iron Resolve): `cost` is only the MINIMUM gate; the
+  // actual bill is the caster's resource bar (capped by spendResourceCap when
+  // set), snapshotted into the resolved cost at apply time so both the spend and
+  // the effects (e.g. absorbSpentResource) read the true spent amount.
   spendsAllResource?: boolean;
+  // Optional ceiling on a spendsAllResource bill: the ability spends at most this
+  // much resource (Iron Resolve caps at 40 rage), keeping the effect it feeds bounded.
   spendResourceCap?: number;
   learnLevel: number;
   effects: AbilityEffect[];
@@ -1821,6 +2138,10 @@ export interface NpcDef {
   color: number;
   questIds: string[];
   vendorItems?: string[];
+  // PTR / dev-only free-epic vendor (src/sim/content/ptr_dev_vendor.ts): buyItem
+  // sells its stock for free when the realm has ALLOW_DEV_COMMANDS. Never placed
+  // as permanent content; spawned on demand by /dev vendor.
+  devVendor?: boolean;
   // The Merchant: talking to this NPC opens the player-driven World Market
   // (auction house) instead of a fixed vendor stock.
   market?: boolean;
@@ -2047,8 +2368,70 @@ export interface HeroicLeapFlight {
   school: AbilityDef['school'];
 }
 
+// DEV-ONLY Cascada temporal playtest tally (see Entity.cascadeDevStats). All sums
+// are since the /dev cascade session began; DPS/HPS derive from `startTime` against
+// the deterministic sim clock. `centerId` is the scenario's primary ally, used to
+// log each selected target's distance to the center.
+export interface CascadeDevStats {
+  startTime: number; // sim seconds at session start
+  centerId: number; // the scenario primary/center ally
+  arcaneDamage: number; // effective Arcane damage the mage has dealt
+  convertedHeal: number; // Echo conversion healing applied
+  convertedOverheal: number; // Echo conversion healing lost to the missing-hp clamp
+  initialHeal: number; // Cascada initial per-target healing applied
+}
+
+// One recorded slice of REAL HP loss for the Rewind damage history: the sim tick
+// it landed on and the post-mitigation/post-absorb amount that actually reduced HP.
+export interface DamageTick {
+  tick: number;
+  amount: number;
+}
+
 export interface Entity {
+  // Transient talent-proc counters and internal cooldowns (combat/talent_procs.ts).
+  // Never serialized; reset on death.
   procState?: { counters: Record<string, number>; icds: Record<string, number> };
+  // Chronomancy Rewind (combat/damage_history.ts): a bounded ring of the REAL HP
+  // loss this player took, tagged by sim tick, pruned to the last few seconds on
+  // every write. Recorded only for players, only at the canonical post-mitigation/
+  // post-absorb point in dealDamage. Runtime-only: never serialized, wired, or
+  // pinned by the parity digest (excluded in tests/parity/trace.ts ENTITY_EXCLUDE);
+  // it lives on the entity so it is dropped automatically when the entity is removed.
+  damageHistory?: DamageTick[];
+  // Transient per-cast budget: how much Frozen Orb cooldown this Blizzard
+  // channel has already refunded (combat/frost_mage.ts, reset at channel
+  // start). Never serialized or wired.
+  blizzardOrbCdr?: number;
+  // Transient Aether Darts dump state (combat/chronomancy.ts, reset at channel
+  // start): whether THIS Aether Darts channel still owes the one-time Arcane
+  // Charge consume, and the flat per-missile bonus locked in when it consumed.
+  // Never serialized or wired.
+  aetherDartsConsumePending?: boolean;
+  aetherDartsBonusPerBolt?: number;
+  // Missile count for THIS Aether Darts channel: 0/undefined = the ability default
+  // (3), or a full-charge barrage (5 at max Arcane Charges). Never wired.
+  aetherDartsTicks?: number;
+  // DEV-ONLY (ALLOW_DEV_COMMANDS): the running Cascada temporal playtest tally,
+  // set by /dev cascade and fed by the dev-gated hooks in combat/chronomancy.ts.
+  // Pure observation for the manual playtest readout: it is NEVER read by any
+  // gameplay decision, never serialized, never wired, and is absent in production.
+  cascadeDevStats?: CascadeDevStats;
+  abilityCharges?: Record<
+    string,
+    {
+      charges: number;
+      maxCharges: number;
+      recharge: number;
+      rechargeLength: number;
+    }
+  >;
+  // Charge-limited abilities (Double Charge): per-ability spent count plus the
+  // full recharge duration. While spent > 0 the ability's cooldowns entry is
+  // the RECHARGE timer; expiry refunds one charge and re-arms (updateTimers).
+  // Created lazily on first charged cast (undefined = no charge bookkeeping),
+  // so entities without the talent serialize/trace exactly as before.
+  charges?: Map<string, { spent: number; cdMax: number }>;
   id: number;
   kind: EntityKind;
   templateId: string; // mob/npc template id, or class for player
@@ -2150,11 +2533,14 @@ export interface Entity {
   channeling: boolean;
   channelTickTimer: number;
   channelTickEvery: number;
+  // Ticks still owed on the current channel. The tick timer and the channel's
+  // end (castRemaining) advance on separate accumulators, so floating-point drift
+  // can leave the final tick a hair short when they coincide; tracking a count and
+  // flushing any remainder on close guarantees a channel lands exactly its ticks
+  // (e.g. Arcane Missiles' 5-missile barrage). 0 when not channeling.
+  channelTicksLeft: number;
   gcdRemaining: number;
   cooldowns: Map<string, number>;
-  // Native multi-charge abilities recharge sequentially through cooldowns.
-  // Missing state means every authored charge is ready.
-  charges?: Map<string, { spent: number; cdMax: number }>;
   queuedOnSwing: string | null; // heroic strike
   queuedOnSwingFree?: boolean; // next_cast_free consumed at queue time
   queuedOnSwingCostMultiplier?: number; // next_cast_cheap consumed at queue time
@@ -2203,10 +2589,12 @@ export interface Entity {
   bossDamagers: Set<number>;
   forcedTargetId: number | null; // taunt/growl: attack this target while the timer runs
   forcedTargetTimer: number; // seconds left on the forced-attack window
+  shuffleTargetTimer?: number; // seconds until a special AI may reroll its preferred target
   ownerId: number | null; // controlled pets: owning player's entity id (null = wild)
   petMode: PetMode; // hunter pet behavior stance
   petTauntTimer: number; // controlled pet Growl cooldown
   petAutoTaunt?: boolean; // right-click autocast toggle for controlled pet Growl
+  petAutoWaterJet?: boolean; // right-click autocast toggle for the Water Elemental's Water Jet
   petManualTauntPending?: boolean; // manual Growl command waiting until the pet reaches range
   petPath: Vec3[]; // controlled pet heel route around obstacles; consumed front-to-back (like chargePath)
   petPathCooldown: number; // seconds until this pet may recompute its heel path again
@@ -2289,6 +2677,7 @@ export interface Entity {
   // npc
   questIds: string[];
   vendorItems: string[];
+  devVendor?: boolean; // dev free-epic vendor (ptr_dev_vendor.ts)
   // object (ground interactable)
   objectItemId: string | null;
   dungeonId: string | null; // set on dungeon door/exit portals
@@ -2473,6 +2862,7 @@ export type SimEvent = { pid?: number } & (
       school: string;
       ability: string | null;
       kind: 'hit' | 'miss' | 'dodge' | 'parry' | 'resist';
+      absorbed?: number;
       // Presentation-only correlation: this hit belongs to a ranged shot whose
       // one-shot animation already began at projectile launch.
       attackAnimationStarted?: true;
@@ -2737,21 +3127,43 @@ export type SimEvent = { pid?: number } & (
       school: string;
       fx:
         | 'projectile'
+        // The same homing bolt drawn heavier (Pyroblast's boulder): mechanics
+        // identical to 'projectile', only the renderer scales it up.
+        | 'heavyBolt'
         | 'beam'
+        | 'bubbleBeam'
         | 'tick'
         | 'nova'
+        | 'chainHeal'
         | 'windup'
         | 'lightning'
-        | 'chainHeal'
+        | 'shout'
+        | 'weaponAura'
+        | 'flourish'
+        // Talent-moment effects: a proc arming (procSurge), a ward appearing
+        // (wardBloom), a stored heal-echo firing (echoBurst), and a DoT being
+        // detonated (detonate). Visual-only; whole-JSON wire needs no schema change.
         | 'procSurge'
         | 'wardBloom'
         | 'echoBurst'
         | 'detonate'
-        | 'shout'
-        | 'weaponAura'
-        | 'flourish';
-      // Stable presentation discriminator for authored cast cues.
+        // Chronomancy Temporal Echo (docs/prd/mage-chronomancy.md section 13):
+        // a brief temporal glyph blooming directly OVER the marked ally on apply.
+        // Target-anchored, no projectile travels to the ally. Visual-only.
+        | 'temporalGlyph'
+        | 'frostCone'
+        | 'fireCone'
+        // A teleport step (Flickerstep / Shadowstep): the renderer SNAPS the
+        // mover instead of arcing the reposition like a leap.
+        | 'blinkStep';
+      // The casting ability's id, carried only by fx kinds whose visual varies per
+      // ability (shouts pick their wave colour; weapon auras identify the buff).
       ability?: string;
+      /** Lifetime of a persistent visual such as Water Jet's bubble stream. */
+      duration?: number;
+      range?: number;
+      angle?: number;
+      level?: number;
       // Stable presentation discriminator; renderers must not infer a player
       // attack animation from school or an English ability label.
       attackAnimation?: 'ranged-shot';
@@ -2762,16 +3174,33 @@ export type SimEvent = { pid?: number } & (
     }
   // visual-only cue anchored to a WORLD POINT rather than an entity: a
   // ground-targeted spell's impact (the burst/nova lands where it was aimed, not
-  // on the caster). The renderer drapes it onto the terrain at (x, z).
+  // on the caster). The renderer drapes it onto the terrain at (x, z). An 'orb'
+  // is the roaming Frozen Orb release: its flight is a straight line at fixed
+  // speed, so this ONE event carries the whole path (origin, direction, speed,
+  // duration) and the client animates the sphere locally; the sim's orb state
+  // (ctx.frozenOrbs) is never wired.
   | {
       type: 'spellfxAt';
       x: number;
       z: number;
       school: string;
-      fx: 'burst' | 'nova';
+      fx: 'burst' | 'nova' | 'orb' | 'meteorFall' | 'runeCircle' | 'snowZone';
       // blast radius in yards; when set the renderer flashes a terrain-draped
       // AoE ring of this size under the burst so the impact area reads clearly
       radius?: number;
+      // 'orb' only: unit drift direction, yards-per-second speed, and lifetime
+      // in seconds of the roaming visual
+      dirX?: number;
+      dirZ?: number;
+      speed?: number;
+      duration?: number;
+      // 'orb' only: which flight moment this is. 'release' starts the local
+      // animation; 'halt'/'resume' freeze and restart it at the server's real
+      // coordinates when the orb latches onto (and outlives) an enemy.
+      phase?: 'release' | 'halt' | 'resume';
+      // 'orb' only: the casting entity, keying halt/resume to their live orb
+      // (one orb per caster: the cooldown far outlasts the flight).
+      sourceId?: number;
     }
   // entityId (when set) anchors the log to that entity so the server only
   // delivers it to nearby players; anchorless logs broadcast server-wide

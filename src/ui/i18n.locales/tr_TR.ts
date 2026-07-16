@@ -159,12 +159,6 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Yükseknöbet Büyük Kılıcı',
   'entities.items.highwatch_wallshield.name': 'Yükseknöbet Sur Kalkanı',
   'entities.items.eastbrook_buckler.name': 'Doğudere Kalkanı',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    '20 sn boyunca bir devcüsseye dönüşür, üzerindeki tüm kontrol etkilerini kırar ve verdiğin hasarı %20 artırırsın.',
-  'entities.abilities.bladestorm.name': 'Kılıç Fırtınası',
-  'entities.abilities.bladestorm.description':
-    'Dönen bir çelik fırtınasına dönüşerek 4 sn boyunca 8 metre içindeki tüm düşmanlara her saniye {damage} hasar verirsin.',
   'entities.abilities.battle_stance.description':
     'Saldırgan bir dövüş duruşu: %10 daha fazla öfke üretirsin. Silahşor ve Koruma için varsayılan duruş.',
   'entities.abilities.battle_stance.name': 'Savaş Duruşu',
@@ -265,117 +259,42 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Seçimler',
   'hudChrome.talentRows.readoutSummary': 'Yetenekler: {head}, {spent}/{total} sıra seçildi.',
   'entities.abilities.aspect_of_the_wild.name': 'Yaban Dişi Sureti',
-  'entities.abilities.aspect_of_the_wild.description':
-    '30 m içindeki müttefikleri vahşi güçle cesaretlendirir, saldırı güçlerini 45 ve saldırı hızlarını 5 dk. boyunca %5 artırır. (Avcı yeteneği)',
-  'entities.abilities.aura_surge.name': 'Şafak Sekmesi',
-  'entities.abilities.aura_surge.description':
-    'Şafakta dövülmüş bir kalkan fırlatarak {damage} Kutsal hasar verir, ana hedefi 2 sn susturur ve ardından 10 metre içindeki en fazla 2 ek düşmana sekerek her sekmede %75 hasar verir. (Paladin yeteneği)',
   'entities.abilities.avenging_wrath.name': 'İntikam Kanadı',
-  'entities.abilities.avenging_wrath.description':
-    'İntikam gücünü çağırır, saldırı gücünü 20 sn. boyunca 60 ve büyü gücünü 30 artırır. (Paladin yeteneği)',
   'entities.abilities.berserk.name': 'Kızıl Sis',
-  'entities.abilities.berserk.description':
-    'Saldırı gücünü 15 sn. boyunca 70 artırır. (Druid yeteneği)',
   'entities.abilities.blink.name': 'Titreşim Adımı',
-  'entities.abilities.blink.description':
-    'Seni 15 m ileri ışınlar ve kök salma etkilerini bozar. (Büyücü yeteneği)',
   'entities.abilities.bloodlust.name': 'Savaş Davulları',
-  'entities.abilities.bloodlust.description':
-    '30 m içindeki müttefikleri çılgınlığa sürükler ve saldırı hızlarını 15 sn. boyunca %30 artırır. (Şaman yeteneği)',
   'entities.abilities.chain_lightning.name': 'Çatallı Yıldırım',
-  'entities.abilities.chain_lightning.description':
-    'Hedef alana yıldırım savurarak yakındaki düşmanlara {damage} hasar verir. (Şaman yeteneği)',
   'entities.abilities.chaos_bolt.name': 'Yıkım Oku',
-  'entities.abilities.chaos_bolt.description':
-    '{damage} Ateş hasarı veren kaotik bir ateş oku fırlatır. (Karabüyücü yeteneği)',
   'entities.abilities.cloak_of_shadows.name': 'Gölge Pelerini',
-  'entities.abilities.cloak_of_shadows.description':
-    'Seni gölgelerle sarar ve 5 sn. boyunca 420 hasar soğurur. (Haydut yeteneği)',
   'entities.abilities.cone_of_cold.name': 'Don Süpürüşü',
-  'entities.abilities.cone_of_cold.description':
-    'Yakındaki düşmanları ayazla vurarak {damage} Buz hasarı verir. (Buz imza yeteneği)',
   'entities.abilities.curse_of_exhaustion.name': 'Kurşun Lanet',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Hedefi lanetler ve hareket hızını 12 sn. boyunca %30 azaltır. (Karabüyücü yeteneği)',
   'entities.abilities.death_coil.name': 'Mezar Sarmalı',
-  'entities.abilities.death_coil.description':
-    'Düşmana {damage} Gölge hasarı verir, ardından onu 3 sn. boyunca dehşete düşürür. (Karabüyücü yeteneği)',
   'entities.abilities.deep_freeze.name': 'Ölüdon',
-  'entities.abilities.deep_freeze.description':
-    'Hedefi derinden dondurur, {damage} Buz hasarı verir ve 4 sn. boyunca sersemletir. (Büyücü yeteneği)',
   'entities.abilities.desperate_prayer.name': 'Son Dua',
-  'entities.abilities.desperate_prayer.description':
-    'Seni anında {damage} iyileştirir. (Rahip yeteneği)',
   'entities.abilities.deterrence.name': 'Diken Muhafızı',
-  'entities.abilities.deterrence.description':
-    'Kaçınma şansını 10 sn. boyunca 50 yüzde puan artırır. (Avcı yeteneği)',
   'entities.abilities.divine_shield.name': 'Işık Siperi',
-  'entities.abilities.divine_shield.description':
-    'Seni kutsal güçle korur ve 8 sn. boyunca 900 hasar soğurur. (Paladin yeteneği)',
   'entities.abilities.earthbind.name': 'Kavrayan Toprak',
-  'entities.abilities.earthbind.description':
-    'Yakındaki düşmanları toprağa bağlar ve 2 sn. boyunca kökler. (Şaman yeteneği)',
   'entities.abilities.evocation.name': 'Eter Kuyusu',
-  'entities.abilities.evocation.description': 'Anında 220 mana yeniler. (Büyücü yeteneği)',
   'entities.abilities.frenzied_regeneration.name': 'Yaban Onarımı',
-  'entities.abilities.frenzied_regeneration.description':
-    '10 sn. boyunca 180 sağlık yeniler. Yalnızca Ayı Formunda kullanılabilir. (Druid yeteneği)',
   'entities.abilities.frost_trap.name': 'Kırağı Tuzağı',
-  'entities.abilities.frost_trap.description':
-    'Hedef alandaki düşmanları 3 sn. boyunca dondurarak hareket etmelerini ve eyleme geçmelerini engeller. (Avcı yeteneği)',
   'entities.abilities.ghostly_strike.name': 'Hayalet Vuruş',
-  'entities.abilities.ghostly_strike.description':
-    'Düşmana silah hasarı artı {damage} vurur, kaçınmayı kısa süreliğine artırır ve 1 kombo puanı kazandırır. (Haydut yeteneği)',
   'entities.abilities.hammer_of_wrath.name': 'Çınlayan Çekiç',
-  'entities.abilities.hammer_of_wrath.description':
-    'Yaralı bir düşmana kutsal çekiç fırlatarak {damage} Kutsal hasar verir. Yalnızca %20 sağlığın altında kullanılabilir. (Paladin yeteneği)',
   'entities.abilities.healing_stream.name': 'Kaynak Kuyusu',
-  'entities.abilities.healing_stream.description':
-    'Bir müttefik hedefe 12 sn. boyunca 120 sağlık yeniler. (Şaman yeteneği)',
   'entities.abilities.holy_wrath.name': 'Aziz Hiddeti',
-  'entities.abilities.holy_wrath.description':
-    'Kutsal güç salarak yakındaki düşmanlara {damage} hasar verir. (Paladin yeteneği)',
   'entities.abilities.howl_of_terror.name': 'Dehşet Uluması',
-  'entities.abilities.howl_of_terror.description':
-    'Yakındaki düşmanları 3 sn. kadar korkutur. Hasar etkiyi bozabilir. (Karabüyücü yeteneği)',
   'entities.abilities.ice_block.name': 'Soğuk Tabut',
-  'entities.abilities.ice_block.description':
-    'Seni buza hapseder ve 8 sn. boyunca 600 hasar soğurur. Hapis durumundayken eyleme geçemezsin. İptal etmek için tekrar kullan. (Büyücü yeteneği)',
   'entities.abilities.inner_focus.name': 'Dingin Zihin',
-  'entities.abilities.inner_focus.description':
-    'Bir sonraki büyünü ücretsiz yapar. 60 sn. sürer. (Rahip yeteneği)',
   'entities.abilities.innervate.name': 'Yaşam Özsuyu',
-  'entities.abilities.innervate.description':
-    'Canlı özsu 10 sn. boyunca içinde kabarır ve mevcut kaynağından dalgalar halinde 20 yeniler: mana, öfke veya enerji. Form değiştirmek bunu bozmaz. Uyku, sersemletme veya durağanlık özsuyu durdurur. (Druid yeteneği)',
   'entities.abilities.meteor.name': 'Göktaşı',
-  'entities.abilities.meteor.description':
-    'Hedef alana bir meteor indirerek {damage} Ateş hasarı verir, ardından bölgedeki düşmanlara 6 sn. boyunca 2 sn. arayla 12 ile 18 Ateş hasarı verir. (Büyücü yeteneği)',
   'entities.abilities.mind_sear.name': 'Düşünce Yanığı',
-  'entities.abilities.mind_sear.description':
-    'Hedef alana Gölge enerjisi yönlendirerek yakındaki düşmanlara her saniye {damage} hasar verir. (Rahip yeteneği)',
   'entities.abilities.multi_shot.name': 'Bölük Atış',
-  'entities.abilities.multi_shot.description':
-    'Hedef alana bir yaylım atışı yaparak 8 m içindeki düşmanlara {damage} Fiziksel hasar verir. (Avcı yeteneği)',
   'entities.abilities.prayer_of_healing.name': 'Koro Şifası',
-  'entities.abilities.prayer_of_healing.description':
-    'Yakındaki müttefikleri {damage} iyileştirir. (Rahip yeteneği)',
   'entities.abilities.preparation.name': 'Acil Plan',
-  'entities.abilities.preparation.description':
-    'Sprint, Kaçınma ve Kaybolmanın bekleme süresini bitirir. (Haydut yeteneği)',
   'entities.abilities.presence_of_mind.name': 'Atılgan Zihin',
-  'entities.abilities.presence_of_mind.description':
-    'Kullanım süresi olan bir sonraki büyünü anında kullanılır hâle getirir. 60 sn. sürer. (Büyücü yeteneği)',
   'entities.abilities.psychic_scream.name': 'Psişik Çığlık',
-  'entities.abilities.psychic_scream.description':
-    'Yakındaki düşmanları 4 sn. kadar korkutur. Hasar etkiyi bozabilir. (Rahip yeteneği)',
   'entities.abilities.shadowstep.name': 'Gölge Kayışı',
-  'entities.abilities.shadowstep.description':
-    'Gölgelerin içinden hedefine doğru adım atarsın. (Haydut yeteneği)',
   'entities.abilities.silence.name': 'Sessizlik',
-  'entities.abilities.silence.description': 'Hedefi 4 sn. boyunca susturur. (Rahip yeteneği)',
   'entities.abilities.tranquility.name': 'Koru Şarkısı',
-  'entities.abilities.tranquility.description':
-    '4 sn. boyunca iyileştirici enerji yönlendirir ve 30 m içindeki müttefikleri her saniye 42 ile 52 iyileştirir. (Druid yeteneği)',
   'entities.abilities.cleansing_verdict.name': 'Arındırıcı Hüküm',
   'entities.abilities.cleansing_verdict.description':
     'Dost bir hedeften zararlı bir büyü etkisini kaldırır ve onu {damage} Kutsal iyileştirir.',
@@ -7740,4 +7659,133 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Önündeki düşmanları biçer ve bir kaçınma veya savuşturmadan sonra ücretsiz olabilir.',
   'guide.abilityHook.hamstring': 'Bir düşmanın hareketini sakatlayarak kaçmasını engeller.',
+  'entities.abilities.aura_surge.name': 'Şafak Sekmesi',
+  'entities.abilities.aura_surge.description':
+    'Şafakta dövülmüş bir kalkan fırlatarak {damage} Kutsal hasar verir, ana hedefi 2 sn susturur ve ardından 10 metre içindeki en fazla 2 ek düşmana sekerek her sekmede %75 hasar verir. (Paladin yeteneği)',
+  'entities.abilities.aspect_of_the_wild.description':
+    '30 m içindeki müttefikleri vahşi güçle cesaretlendirir, saldırı güçlerini 45 ve saldırı hızlarını 5 dk. boyunca %5 artırır. (Avcı yeteneği)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    '20 sn boyunca bir devcüsseye dönüşür, üzerindeki tüm kontrol etkilerini kırar ve verdiğin hasarı %20 artırırsın.',
+  'entities.abilities.avenging_wrath.description':
+    'İntikam gücünü çağırır, saldırı gücünü 20 sn. boyunca 60 ve büyü gücünü 30 artırır. (Paladin yeteneği)',
+  'entities.abilities.berserk.description':
+    'Saldırı gücünü 15 sn. boyunca 70 artırır. (Druid yeteneği)',
+  'entities.abilities.bladestorm.name': 'Kılıç Fırtınası',
+  'entities.abilities.bladestorm.description':
+    'Dönen bir çelik fırtınasına dönüşerek 4 sn boyunca 8 metre içindeki tüm düşmanlara her saniye {damage} hasar verirsin.',
+  'entities.abilities.blink.description':
+    'Seni 15 m ileri ışınlar ve kök salma etkilerini bozar. (Büyücü yeteneği)',
+  'entities.abilities.bloodlust.description':
+    '30 m içindeki müttefikleri çılgınlığa sürükler ve saldırı hızlarını 15 sn. boyunca %30 artırır. (Şaman yeteneği)',
+  'entities.abilities.chain_lightning.description':
+    'Hedef alana yıldırım savurarak yakındaki düşmanlara {damage} hasar verir. (Şaman yeteneği)',
+  'entities.abilities.chaos_bolt.description':
+    '{damage} Ateş hasarı veren kaotik bir ateş oku fırlatır. (Karabüyücü yeteneği)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Seni gölgelerle sarar ve 5 sn. boyunca 420 hasar soğurur. (Haydut yeteneği)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a yakındaki düşmanları con escarcha e inflige {damage} de daño de Buz. (büyücü yeteneği)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Hedefi lanetler ve hareket hızını 12 sn. boyunca %30 azaltır. (Karabüyücü yeteneği)',
+  'entities.abilities.death_coil.description':
+    'Düşmana {damage} Gölge hasarı verir, ardından onu 3 sn. boyunca dehşete düşürür. (Karabüyücü yeteneği)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a hedefi, inflige {damage} de daño de Buz y lo aturde durante 4 sn. (büyücü yeteneği)',
+  'entities.abilities.desperate_prayer.description':
+    'Seni anında {damage} iyileştirir. (Rahip yeteneği)',
+  'entities.abilities.deterrence.description':
+    'Kaçınma şansını 10 sn. boyunca 50 yüzde puan artırır. (Avcı yeteneği)',
+  'entities.abilities.divine_shield.description':
+    'Seni kutsal güçle korur ve 8 sn. boyunca 900 hasar soğurur. (Paladin yeteneği)',
+  'entities.abilities.earthbind.description':
+    'Yakındaki düşmanları toprağa bağlar ve 2 sn. boyunca kökler. (Şaman yeteneği)',
+  'entities.abilities.evocation.description': 'Restaura manayı rápidamente. (büyücü yeteneği)',
+  'entities.abilities.frenzied_regeneration.description':
+    '10 sn. boyunca 180 sağlık yeniler. Yalnızca Ayı Formunda kullanılabilir. (Druid yeteneği)',
+  'entities.abilities.frost_trap.description':
+    'Hedef alandaki düşmanları 3 sn. boyunca dondurarak hareket etmelerini ve eyleme geçmelerini engeller. (Avcı yeteneği)',
+  'entities.abilities.ghostly_strike.description':
+    'Düşmana silah hasarı artı {damage} vurur, kaçınmayı kısa süreliğine artırır ve 1 kombo puanı kazandırır. (Haydut yeteneği)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Yaralı bir düşmana kutsal çekiç fırlatarak {damage} Kutsal hasar verir. Yalnızca %20 sağlığın altında kullanılabilir. (Paladin yeteneği)',
+  'entities.abilities.healing_stream.description':
+    'Bir müttefik hedefe 12 sn. boyunca 120 sağlık yeniler. (Şaman yeteneği)',
+  'entities.abilities.holy_wrath.description':
+    'Kutsal güç salarak yakındaki düşmanlara {damage} hasar verir. (Paladin yeteneği)',
+  'entities.abilities.howl_of_terror.description':
+    'Yakındaki düşmanları 3 sn. kadar korkutur. Hasar etkiyi bozabilir. (Karabüyücü yeteneği)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 sn. (büyücü yeteneği)',
+  'entities.abilities.inner_focus.description':
+    'Bir sonraki büyünü ücretsiz yapar. 60 sn. sürer. (Rahip yeteneği)',
+  'entities.abilities.innervate.description':
+    'Canlı özsu 10 sn. boyunca içinde kabarır ve mevcut kaynağından dalgalar halinde 20 yeniler: mana, öfke veya enerji. Form değiştirmek bunu bozmaz. Uyku, sersemletme veya durağanlık özsuyu durdurur. (Druid yeteneği)',
+  'entities.abilities.mend_pet.name': 'Yama Yap',
+  'entities.abilities.mend_pet.description':
+    'Sana a dost hedefi por {damage} durante 15 sn. (avcı yeteneği)',
+  'entities.abilities.meteor.description':
+    'Hedef alana bir meteor indirerek {damage} Ateş hasarı verir, ardından bölgedeki düşmanlara 6 sn. boyunca 2 sn. arayla 12 ile 18 Ateş hasarı verir. (Büyücü yeteneği)',
+  'entities.abilities.mind_sear.description':
+    'Hedef alana Gölge enerjisi yönlendirerek yakındaki düşmanlara her saniye {damage} hasar verir. (Rahip yeteneği)',
+  'entities.abilities.multi_shot.description':
+    'Hedef alana bir yaylım atışı yaparak 8 m içindeki düşmanlara {damage} Fiziksel hasar verir. (Avcı yeteneği)',
+  'entities.abilities.prayer_of_healing.description':
+    'Yakındaki müttefikleri {damage} iyileştirir. (Rahip yeteneği)',
+  'entities.abilities.preparation.description':
+    'Sprint, Kaçınma ve Kaybolmanın bekleme süresini bitirir. (Haydut yeteneği)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 sn. (büyücü yeteneği)',
+  'entities.abilities.psychic_scream.description':
+    'Yakındaki düşmanları 4 sn. kadar korkutur. Hasar etkiyi bozabilir. (Rahip yeteneği)',
+  'entities.abilities.shadowstep.description':
+    'Gölgelerin içinden hedefine doğru adım atarsın. (Haydut yeteneği)',
+  'entities.abilities.silence.description': 'Hedefi 4 sn. boyunca susturur. (Rahip yeteneği)',
+  'entities.abilities.tranquility.description':
+    '4 sn. boyunca iyileştirici enerji yönlendirir ve 30 m içindeki müttefikleri her saniye 42 ile 52 iyileştirir. (Druid yeteneği)',
+  'game.talents.readout.rowsSummary':
+    'Yetenekler: {head}, {picked}/{unlocked} seçim satırı seçildi.',
+  'hudChrome.fct.absorbed': '{amount} soğuruldu',
+  'game.talents.choicesTab': 'Seçimler',
+  'game.talents.rowUnlockToast': 'Yeni bir yetenek seçimi açıldı!',
+  'game.talents.rowUnlocks': '{level}. seviyede açılır',
+  'entities.abilities.blazing_barrier.name': 'Alevli Bariyer',
+  'entities.abilities.blazing_barrier.description':
+    'Kendini alevlerle sararak 60 sn. boyunca 130 hasarı soğurursun. (Ateş)',
+  'entities.abilities.cold_snap.name': 'Soğuk Şok',
+  'entities.abilities.cold_snap.description':
+    'Titrek Adım, Ayaz Örtüsü ve Üstün Görünmezlik yeteneklerinin bekleme süresini bitirir. (büyücü yeteneği)',
+  'entities.abilities.greater_invisibility.name': 'Üstün Görünmezlik',
+  'entities.abilities.greater_invisibility.description':
+    '20 sn. boyunca kaybolursun: 2 zamanla hasar etkisini kaldırır ve görünmezken ve hemen sonrasında %90 daha az hasar alırsın. (büyücü yeteneği)',
+  'entities.abilities.hot_streak.name': 'Sıcak Seri',
+  'entities.abilities.hot_streak.description':
+    'Pasif: Ateş büyülerinle (Köz Oku, Köz Yağmuru, Haşlama, Alev Mızrağı veya Alev Vuruşu) art arda yaptığın iki kritik vuruş, sonraki Alev Mızrağı veya Alev Vuruşu büyünü anında ve bedelsiz hale getirir. Harcayıcılar, bedelsiz kullanımlar dâhil SONRAKİ seriye sayılır; Alev Vuruşu kaç düşmana vurursa vursun bir kez sayılır ve yalnızca ilk çarpma hesaba katılır. (Ateş)',
+  'entities.abilities.ice_floes.name': 'Buz Kütleleri',
+  'entities.abilities.ice_floes.description':
+    'Kullanım süresi olan sonraki iki büyünü hareket ederken yapabilirsin. 15 sn. sürer. (büyücü yeteneği)',
+  'entities.abilities.ignition.name': 'Tutuşma',
+  'entities.abilities.ignition.description':
+    'Pasif: büyülerinin kritik vuruşları hedefi 6 sn. boyunca verilen hasarın %40 kadarı için yakar ve birikir. (Ateş ustalığı)',
+  'entities.abilities.mass_barrier.name': 'Toplu Bariyer',
+  'entities.abilities.mass_barrier.description':
+    'Seni ve 30 m içindeki en fazla 4 yakındaki müttefiki korur; her bariyer 60 sn. boyunca 130 hasarı soğurur. (büyücü yeteneği)',
+  'entities.abilities.overload.name': 'Aşırı Yük',
+  'entities.abilities.overload.description':
+    'Sonraki büyün %40 güçlenir, ancak %50 daha fazla mana harcar. 10 sn. sürer. (büyücü yeteneği)',
+  'entities.abilities.power_echo.name': 'Güç Yankısı',
+  'entities.abilities.power_echo.description':
+    'Sonraki doğrudan büyün aynı hedefte %50 güçle tekrarlanır. 10 sn. sürer. (büyücü yeteneği)',
+  'entities.abilities.rings_of_frost.name': 'Don Halkası',
+  'entities.abilities.rings_of_frost.description':
+    '10 sn. boyunca bir halka çağırır. Çevresinden geçen düşmanlar 4 sn. boyunca donar. (büyücü yeteneği)',
+  'entities.abilities.rune_of_power.name': 'Güç Rünü',
+  'entities.abilities.rune_of_power.description':
+    '15 sn. boyunca ayaklarının altına bir güç rünü kazırsın: 8 m içinde duran müttefikler %10 daha fazla hasar verir. (büyücü yeteneği)',
+  'entities.abilities.summon_water_elemental.name': 'Su Elementali Çağır',
+  'entities.abilities.summon_water_elemental.description':
+    'Yanında savaşması, hedefine Su Okları fırlatması ve Su Jeti yönlendirmesi için bir Su Elementali çağır. (Ayaz)',
+  'entities.mobs.water_elemental.name': 'Su Elementali',
+  'entities.items.conjured_bread4.name': 'Sihirle Yaratılmış Ziyafet Somunu',
+  'entities.items.conjured_water4.name': 'Sihirle Yaratılmış Kaynak Suyu',
 };

@@ -104,6 +104,7 @@ function baseEntity(id: number, pos: Vec3): Entity {
     channeling: false,
     channelTickTimer: 0,
     channelTickEvery: 0,
+    channelTicksLeft: 0,
     gcdRemaining: 0,
     cooldowns: new Map(),
     queuedOnSwing: null,
@@ -150,6 +151,7 @@ function baseEntity(id: number, pos: Vec3): Entity {
     bossDamagers: new Set(),
     forcedTargetId: null,
     forcedTargetTimer: 0,
+    shuffleTargetTimer: 0,
     ownerId: null,
     petMode: 'defensive',
     petTauntTimer: 0,
@@ -227,6 +229,10 @@ function manaFromIntellect(int: number): number {
   // the mana pool below its level-based base into negative territory.
   const i = Math.max(0, int);
   return Math.min(i, 20) + Math.max(0, i - 20) * 15;
+}
+
+export function pctValue(value: number): number {
+  return value > 1 ? value / 100 : value;
 }
 
 // Recompute all derived stats for the player from class, level, gear, buffs, and
@@ -548,7 +554,9 @@ export function recalcPlayerStats(
     critFractionFromRating(e.critRating) +
     (e.auras.some((a) => a.kind === 'berserker_stance') ? BERSERKER_CRIT_CHANCE : 0);
   // Extra crit damage from a spec mastery, per output channel (e.g. Fire mage: SPELL
-  // crits deal more; Holy paladin: HEAL crits; Subtlety/Arms: PHYSICAL crits).
+  // crits deal more; Holy paladin: HEAL crits; Subtlety/Arms: PHYSICAL crits). Each
+  // channel bonus is added at its matching crit site (spell base 1.5, phys base 2,
+  // heal base 1.5).
   e.critDmgSpellBonus = mods?.global.critDmgSpellPct ?? 0;
   e.critDmgPhysBonus = mods?.global.critDmgPhysPct ?? 0;
   e.critDmgHealBonus = mods?.global.critDmgHealPct ?? 0;
@@ -582,7 +590,10 @@ export function recalcPlayerStats(
     const cameFromForm = e.resourceType !== 'mana';
     const manaFrac = e.maxResource > 0 ? e.resource / e.maxResource : 1;
     e.resourceType = 'mana';
-    e.maxResource = def.baseMana + def.manaPerLevel * (lvl - 1) + manaFromIntellect(s.int);
+    e.maxResource = Math.round(
+      (def.baseMana + def.manaPerLevel * (lvl - 1) + manaFromIntellect(s.int)) *
+        (1 + (mods?.global.manaPct ?? 0)),
+    );
     e.resource = cameFromForm
       ? Math.min(e.savedMana, e.maxResource)
       : Math.round(e.maxResource * manaFrac);
@@ -689,6 +700,7 @@ export function createNpc(id: number, def: NpcDef, pos: Vec3): Entity {
   e.color = def.color;
   e.questIds = [...def.questIds];
   e.vendorItems = [...(def.vendorItems ?? [])];
+  e.devVendor = def.devVendor ?? false;
   return e;
 }
 

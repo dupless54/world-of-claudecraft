@@ -3406,6 +3406,97 @@
     padding: 0 8px 8px;
     margin: 0 -8px;
   }
+  /* WoW-style specialization grid: all specs shown at once as full panels. */
+  .ts-specs-grid {
+    display: flex;
+    gap: 8px;
+    margin: 10px 0;
+    align-items: stretch;
+    /* Fill the tall talents body so every sheet has room for its bottom action. */
+    min-height: min(50vh, 540px);
+  }
+  .ts-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    /* The desktop window is intentionally tall; let the sheets stretch to its
+       full height instead of clipping the mastery/examples and View talents action. */
+    aspect-ratio: auto;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 12px;
+    border: 1px solid #463a1c;
+    border-radius: 8px;
+    background: #1a1409;
+    cursor: var(--cursor-point);
+    overflow: hidden;
+  }
+  .ts-class-description {
+    max-width: 820px;
+    margin: 5px auto 8px;
+    color: #c8b888;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .ts-panel.sel {
+    border-color: #ffd100;
+    background: #2c2410;
+    box-shadow:
+      inset 0 0 0 1px #ffd10055,
+      0 0 12px #b8902a55;
+  }
+  .ts-panel-head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .ts-panel .ts-icon {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #15110a;
+    color: #fff;
+    border: 1px solid #5a4a22;
+    font:
+      30px / 1 "Apple Color Emoji",
+      "Segoe UI Emoji",
+      var(--body-font);
+    text-shadow: 0 1px 2px #000;
+  }
+  .ts-panel .ts-icon.ts-icon-art {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: transparent;
+    font-size: 0;
+    text-shadow: none;
+  }
+  .ts-panel.sel .ts-icon {
+    border-color: #ffd100;
+    box-shadow: 0 0 8px #ffd10066;
+  }
+  .ts-panel-title {
+    text-align: center;
+    min-width: 0;
+  }
+  .ts-panel .ts-name {
+    font-size: 15px;
+    color: #fff;
+    font-family: var(--title-font);
+  }
+  .ts-panel .ts-role {
+    font-size: 10px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
   .tal-specs {
     display: flex;
     gap: 8px;
@@ -10233,4 +10324,83 @@
     color: var(--color-text-muted);
     text-align: center;
   }
+}
+#talents-window .tal-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 4px;
+  overflow-y: auto;
+}
+#talents-window .tal-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+#talents-window .tal-row.locked {
+  opacity: 0.55;
+}
+#talents-window .tal-row-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  gap: 2px;
+}
+#talents-window .tal-row-lvl {
+  font-family: var(--font-display, serif);
+  font-size: 18px;
+  color: var(--gold);
+}
+#talents-window .tal-row-lock {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+#talents-window .tal-row-opts {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+#talents-window .tal-row-opt {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--color-border, #6f5a2a);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: var(--cursor-point);
+}
+#talents-window .tal-row-opt:hover:not(:disabled),
+#talents-window .tal-row-opt:focus-visible {
+  background: #ffffff10;
+  border-color: var(--gold);
+}
+#talents-window .tal-row-opt:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+#talents-window .tal-row-opt.sel {
+  background: #2c2410;
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px #ffd10033;
+}
+#talents-window .tal-row-opt:disabled {
+  cursor: default;
+}
+#talents-window .tal-row-opt .tco-icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  background-size: cover;
+  border-radius: 3px;
+}
+#talents-window .tal-row-opt-name {
+  font-size: 12px;
+  line-height: 1.25;
 }

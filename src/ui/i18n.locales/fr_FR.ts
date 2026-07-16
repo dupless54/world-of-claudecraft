@@ -175,12 +175,6 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Espadon de Highwatch',
   'entities.items.highwatch_wallshield.name': 'Pavois de Highwatch',
   'entities.items.eastbrook_buckler.name': "Rondache d'Eastbrook",
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Vous vous transformez en colosse pendant 20 s, ce qui dissipe tous les effets de contrôle vous affectant et augmente de 20% les dégâts que vous infligez.',
-  'entities.abilities.bladestorm.name': 'Tempête de lames',
-  'entities.abilities.bladestorm.description':
-    'Vous devenez une tempête d’acier tourbillonnante qui inflige {damage} points de dégâts chaque seconde pendant 4 s à tous les ennemis à moins de 8 mètres.',
   'entities.abilities.battle_stance.description':
     'Posture de combat agressive: vous générez 10% de rage en plus. La posture par défaut pour Armes et Protection.',
   'entities.abilities.battle_stance.name': 'Posture de combat',
@@ -281,119 +275,42 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Choix',
   'hudChrome.talentRows.readoutSummary': 'Talents : {head}, {spent}/{total} rangées sélectionnées.',
   'entities.abilities.aspect_of_the_wild.name': 'Apparence du Croc-sauvage',
-  'entities.abilities.aspect_of_the_wild.description':
-    "Insuffle une force sauvage aux alliés à moins de 30 m, augmentant leur puissance d'attaque de 45 et leur vitesse d'attaque de 5 % pendant 5 min. (talent de Chasseur)",
-  'entities.abilities.aura_surge.name': "Ricochet de l'aube",
-  'entities.abilities.aura_surge.description':
-    "Projette un bouclier forgé à l'aube qui inflige {damage} dégâts sacrés, réduit la cible principale au silence pendant 2 s, puis rebondit sur jusqu'à 2 ennemis supplémentaires à moins de 10 m, infligeant 75 % des dégâts par rebond. (talent de Paladin)",
   'entities.abilities.avenging_wrath.name': 'Aile vengeresse',
-  'entities.abilities.avenging_wrath.description':
-    "Invoque une puissance vengeresse, augmentant votre puissance d'attaque de 60 et votre puissance des sorts de 30 pendant 20 s. (talent de Paladin)",
   'entities.abilities.berserk.name': 'Brume rouge',
-  'entities.abilities.berserk.description':
-    "Augmente votre puissance d'attaque de 70 pendant 15 s. (talent de Druide)",
   'entities.abilities.blink.name': 'Pas scintillant',
-  'entities.abilities.blink.description':
-    "Vous téléporte de 15 m vers l'avant et brise les immobilisations. (talent de Mage)",
   'entities.abilities.bloodlust.name': 'Tambours de guerre',
-  'entities.abilities.bloodlust.description':
-    "Plonge les alliés à moins de 30 m dans une frénésie, augmentant leur vitesse d'attaque de 30 % pendant 15 s. (talent de Chaman)",
   'entities.abilities.chain_lightning.name': 'Éclair fourchu',
-  'entities.abilities.chain_lightning.description':
-    'Projette de la foudre sur la zone ciblée et inflige {damage} points de dégâts aux ennemis proches. (talent de Chaman)',
   'entities.abilities.chaos_bolt.name': 'Trait de ruine',
-  'entities.abilities.chaos_bolt.description':
-    'Projette un trait de feu chaotique qui inflige {damage} points de dégâts de Feu. (talent de Démoniste)',
   'entities.abilities.cloak_of_shadows.name': 'Cape d’ombre',
-  'entities.abilities.cloak_of_shadows.description':
-    "Vous enveloppe d'ombres et absorbe 420 points de dégâts pendant 5 s. (talent de Voleur)",
   'entities.abilities.cone_of_cold.name': 'Balayage de givre',
-  'entities.abilities.cone_of_cold.description':
-    'Frappe les ennemis proches avec du givre et inflige {damage} points de dégâts de Givre. (technique distinctive de Givre)',
   'entities.abilities.curse_of_exhaustion.name': 'Maléfice de plomb',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Maudit la cible et réduit sa vitesse de déplacement de 30 % pendant 12 s. (talent de Démoniste)',
   'entities.abilities.death_coil.name': 'Spirale funèbre',
-  'entities.abilities.death_coil.description':
-    "Frappe l'ennemi et lui inflige {damage} points de dégâts d'Ombre, puis l'horrifie pendant 3 s. (talent de Démoniste)",
   'entities.abilities.deep_freeze.name': 'Gel mort',
-  'entities.abilities.deep_freeze.description':
-    "Gèle profondément la cible, lui inflige {damage} points de dégâts de Givre et l'étourdit pendant 4 s. (talent de Mage)",
   'entities.abilities.desperate_prayer.name': 'Dernière prière',
-  'entities.abilities.desperate_prayer.description':
-    'Vous rend instantanément {damage} points de vie. (talent de Prêtre)',
   'entities.abilities.deterrence.name': 'Garde-hérissée',
-  'entities.abilities.deterrence.description':
-    "Augmente vos chances d'esquiver de 50 points de pourcentage pendant 10 s. (talent de Chasseur)",
   'entities.abilities.divine_shield.name': 'Garde-lumière',
-  'entities.abilities.divine_shield.description':
-    'Vous protège par la puissance sacrée, absorbant 900 points de dégâts pendant 8 s. (talent de Paladin)',
   'entities.abilities.earthbind.name': 'Terre agrippante',
-  'entities.abilities.earthbind.description':
-    'Lie les ennemis proches à la terre et les immobilise pendant 2 s. (talent de Chaman)',
   'entities.abilities.evocation.name': 'Puits d’éther',
-  'entities.abilities.evocation.description':
-    'Rend instantanément 220 points de mana. (talent de Mage)',
   'entities.abilities.frenzied_regeneration.name': 'Régénération sauvage',
-  'entities.abilities.frenzied_regeneration.description':
-    "Rend 180 points de vie en 10 s. Forme d'ours uniquement. (talent de Druide)",
   'entities.abilities.frost_trap.name': 'Piège de givre',
-  'entities.abilities.frost_trap.description':
-    "Gèle les ennemis dans la zone ciblée pendant 3 s, les empêchant de se déplacer et d'agir. (talent de Chasseur)",
   'entities.abilities.ghostly_strike.name': 'Frappe spectrale',
-  'entities.abilities.ghostly_strike.description':
-    "Frappe l'ennemi et lui inflige les dégâts de l'arme plus {damage}, augmente brièvement l'esquive et octroie 1 point de combo. (talent de Voleur)",
   'entities.abilities.hammer_of_wrath.name': 'Marteau sonnant',
-  'entities.abilities.hammer_of_wrath.description':
-    'Lance un marteau sacré sur un ennemi blessé et lui inflige {damage} points de dégâts du Sacré. Utilisable uniquement sous 20 % de points de vie. (talent de Paladin)',
   'entities.abilities.healing_stream.name': 'Puits de source',
-  'entities.abilities.healing_stream.description':
-    'Rend 120 points de vie à une cible alliée en 12 s. (talent de Chaman)',
   'entities.abilities.holy_wrath.name': 'Courroux du saint',
-  'entities.abilities.holy_wrath.description':
-    'Libère une puissance sacrée et inflige {damage} points de dégâts aux ennemis proches. (talent de Paladin)',
   'entities.abilities.howl_of_terror.name': 'Hurlement d’effroi',
-  'entities.abilities.howl_of_terror.description':
-    "Effraie les ennemis proches pendant un maximum de 3 s. Les dégâts peuvent interrompre l'effet. (talent de Démoniste)",
   'entities.abilities.ice_block.name': 'Cercueil froid',
-  'entities.abilities.ice_block.description':
-    'Vous enferme dans la glace et absorbe 600 points de dégâts pendant 8 s. Vous ne pouvez pas agir tant que vous êtes enfermé. Relancez pour annuler. (talent de Mage)',
   'entities.abilities.inner_focus.name': 'Esprit apaisé',
-  'entities.abilities.inner_focus.description':
-    'Votre prochain sort ne coûte rien. Dure 60 s. (talent de Prêtre)',
   'entities.abilities.innervate.name': 'Sève vitale',
-  'entities.abilities.innervate.description':
-    "De la sève vivante afflue en vous pendant 10 s et restaure par vagues 20 points de votre ressource actuelle : mana, rage ou énergie. Changer de forme ne l'interrompt pas. Le sommeil, l'étourdissement ou la stase immobilisent la sève. (talent de Druide)",
   'entities.abilities.meteor.name': 'Pierre du ciel',
-  'entities.abilities.meteor.description':
-    "Fait tomber un météore sur la zone ciblée et inflige {damage} points de dégâts de Feu, puis brûle les ennemis qui s'y trouvent de 12 à 18 points de dégâts de Feu toutes les 2 s pendant 6 s. (talent de Mage)",
   'entities.abilities.mind_sear.name': 'Brûle-pensée',
-  'entities.abilities.mind_sear.description':
-    "Canalise de l'énergie d'Ombre sur la zone ciblée et inflige {damage} points de dégâts chaque seconde aux ennemis proches. (talent de Prêtre)",
   'entities.abilities.multi_shot.name': 'Tir fendu',
-  'entities.abilities.multi_shot.description':
-    'Décoche une volée sur la zone ciblée et inflige {damage} points de dégâts physiques aux ennemis dans un rayon de 8 m. (talent de Chasseur)',
   'entities.abilities.prayer_of_healing.name': 'Soin du chœur',
-  'entities.abilities.prayer_of_healing.description':
-    'Rend {damage} points de vie aux alliés proches. (talent de Prêtre)',
   'entities.abilities.preparation.name': 'Contingence',
-  'entities.abilities.preparation.description':
-    'Met fin au temps de recharge de Sprint, Évasion et Disparition. (talent de Voleur)',
   'entities.abilities.presence_of_mind.name': 'Esprit fulgurant',
-  'entities.abilities.presence_of_mind.description':
-    "Votre prochain sort avec un temps d'incantation devient instantané. Dure 60 s. (talent de Mage)",
   'entities.abilities.psychic_scream.name': 'Cri psychique',
-  'entities.abilities.psychic_scream.description':
-    "Effraie les ennemis proches pendant un maximum de 4 s. Les dégâts peuvent interrompre l'effet. (talent de Prêtre)",
   'entities.abilities.shadowstep.name': 'Glissement d’ombre',
-  'entities.abilities.shadowstep.description':
-    'Vous fait traverser les ombres en direction de votre cible. (talent de Voleur)',
   'entities.abilities.silence.name': 'Silence',
-  'entities.abilities.silence.description':
-    'Réduit la cible au silence pendant 4 s. (talent de Prêtre)',
   'entities.abilities.tranquility.name': 'Chant du bosquet',
-  'entities.abilities.tranquility.description':
-    "Canalise de l'énergie réparatrice pendant 4 s et rend de 42 à 52 points de vie chaque seconde aux alliés à moins de 30 m. (talent de Druide)",
   'entities.abilities.cleansing_verdict.name': 'Verdict purificateur',
   'entities.abilities.cleansing_verdict.description':
     'Dissipe un effet magique néfaste sur une cible alliée et lui rend {damage} points de vie par la magie du Sacré.',
@@ -3643,6 +3560,42 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.frostbolt.name': 'Rimelance',
   'entities.abilities.frostbolt.description':
     'Lance un éclair de givre, inflige {damage} points de dégâts de Givre et ralentit le déplacement de 40%.',
+  'entities.abilities.blazing_barrier.name': 'Barrière flamboyante',
+  'entities.abilities.blazing_barrier.description':
+    'Vous enveloppe de flammes et absorbe 130 points de dégâts pendant 60 s. (Feu)',
+  'entities.abilities.cold_snap.name': 'Morsure du froid',
+  'entities.abilities.cold_snap.description':
+    'Met fin au temps de recharge de Pas scintillant, Voile de givre et Invisibilité supérieure. (Talent de mage)',
+  'entities.abilities.greater_invisibility.name': 'Invisibilité supérieure',
+  'entities.abilities.greater_invisibility.description':
+    'Vous disparaissez pendant 20 s : dissipe 2 effets de dégâts sur la durée et réduit les dégâts subis de 90% tant que vous êtes invisible et peu après. (Talent de mage)',
+  'entities.abilities.hot_streak.name': 'Bonne série',
+  'entities.abilities.hot_streak.description':
+    "Passif : deux coups critiques consécutifs avec vos sorts de Feu (Boule de feu, Trait de feu, Brûlure, Explosion pyrotechnique ou Choc de flammes) rendent votre prochaine Explosion pyrotechnique ou votre prochain Choc de flammes instantané et gratuit. Les sorts qui consomment cet effet comptent pour la série SUIVANTE, y compris les incantations gratuites ; Choc de flammes ne compte qu'une fois, quel que soit le nombre d'ennemis touchés, et seul l'impact initial peut compter. (Feu)",
+  'entities.abilities.ice_floes.name': 'Floes de glace',
+  'entities.abilities.ice_floes.description':
+    "Vos deux prochains sorts avec un temps d'incantation peuvent être lancés en vous déplaçant. Dure 15 s. (Talent de mage)",
+  'entities.abilities.ignition.name': 'Ignition',
+  'entities.abilities.ignition.description':
+    'Passif : les coups critiques de vos sorts brûlent la cible et infligent 40% des dégâts causés en 6 s, avec cumul. (Maîtrise du Feu)',
+  'entities.abilities.mass_barrier.name': 'Barrière de masse',
+  'entities.abilities.mass_barrier.description':
+    "Vous protège ainsi que jusqu'à 4 alliés proches dans un rayon de 30 m, chaque bouclier absorbant 130 points de dégâts pendant 60 s. (Talent de mage)",
+  'entities.abilities.overload.name': 'Surcharge',
+  'entities.abilities.overload.description':
+    'Votre prochain sort est amplifié de 40%, mais coûte 50% de mana supplémentaire. Dure 10 s. (Talent de mage)',
+  'entities.abilities.power_echo.name': 'Écho de puissance',
+  'entities.abilities.power_echo.description':
+    'Votre prochain sort direct se répète avec 50% de puissance sur la même cible. Dure 10 s. (Talent de mage)',
+  'entities.abilities.rings_of_frost.name': 'Anneau de givre',
+  'entities.abilities.rings_of_frost.description':
+    'Invoque un anneau pendant 10 s. Les ennemis qui en franchissent le périmètre sont gelés pendant 4 s. (Talent de mage)',
+  'entities.abilities.rune_of_power.name': 'Rune de puissance',
+  'entities.abilities.rune_of_power.description':
+    'Inscrit une rune de puissance à vos pieds pendant 15 s : les alliés se tenant dans un rayon de 8 m infligent 10% de dégâts supplémentaires. (Talent de mage)',
+  'entities.abilities.summon_water_elemental.name': "Invocation d'un élémentaire d'eau",
+  'entities.abilities.summon_water_elemental.description':
+    "Invoque un élémentaire d'eau qui combat à vos côtés, lance des Traits d'eau sur votre cible et canalise Jet d'eau. (Givre)",
   'entities.abilities.conjure_water.name': 'Waterbind',
   'entities.abilities.conjure_water.description':
     "Invoque 2 bouteilles d'eau qui restaurent du mana une fois bues. Les rangs supérieurs invoquent une eau plus pure.",
@@ -4139,6 +4092,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_water.name': 'Eau de pluie invoquée',
   'entities.items.conjured_water2.name': 'Eau de puits invoquée',
   'entities.items.conjured_water3.name': 'Eau claire invoquée',
+  'entities.items.conjured_water4.name': 'Eau de source invoquée',
   'entities.items.eastbrook_arming_sword.name': "Épée d'armes d'Eastbrook",
   'entities.items.bronzework_mace.name': 'Masse ouvragée en bronze',
   'entities.items.vale_carving_knife.name': 'Couteau à découper du Val',
@@ -5120,6 +5074,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_bread.name': "Galette d'avoine invoquée",
   'entities.items.conjured_bread2.name': 'Pain noir invoqué',
   'entities.items.conjured_bread3.name': 'Gâteau au miel invoqué',
+  'entities.items.conjured_bread4.name': 'Pain de festin invoqué',
   'entities.items.glimmerfin_koi.name': 'Koï aux nageoires scintillantes',
   'entities.items.raw_bog_eel.name': 'Anguille des marais crue',
   'entities.items.raw_frostgill_trout.name': 'Truite aux ouïes givrées crue',
@@ -7541,6 +7496,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
     "Cisaille l'armure de la cible, la réduisant de {damage}% par application. Cumulable jusqu'à 5 fois. Génère beaucoup de menace.",
   'entities.mobs.training_dummy.name': "Mannequin d'entraînement",
   'entities.mobs.yumi_cat.name': 'Yumi',
+  'entities.mobs.water_elemental.name': "Élémentaire d'eau",
   'guide.arenaPage.yumiBody':
     "Protégez Yumi est un mode d'objectif en équipe qui se joue dans un labyrinthe : chaque camp garde son propre familier félin tout en traquant celui de l'adversaire. De temps à autre, les deux chats se téléportent vers de nouveaux recoins du labyrinthe, si bien que le combat oscille entre défense, chasse et course pour les retrouver. Mettez-vous en file en trois contre trois ou cinq contre cinq ; tomber au combat ne vous met sur la touche qu'un instant.",
   'guide.arenaPage.yumiHeading': 'Protégez Yumi',
@@ -7932,4 +7888,95 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Frappe les ennemis devant vous et peut devenir gratuite après une esquive ou une parade.',
   'guide.abilityHook.hamstring': 'Entrave les déplacements d’un ennemi pour l’empêcher de fuir.',
+  'game.talents.choicesTab': 'Choix',
+  'game.talents.rowUnlockToast': 'Nouveau choix de talent disponible !',
+  'game.talents.rowUnlocks': 'Se débloque au niveau {level}',
+  'entities.abilities.aura_surge.name': "Ricochet de l'aube",
+  'entities.abilities.aura_surge.description':
+    "Projette un bouclier forgé à l'aube qui inflige {damage} dégâts sacrés, réduit la cible principale au silence pendant 2 s, puis rebondit sur jusqu'à 2 ennemis supplémentaires à moins de 10 m, infligeant 75 % des dégâts par rebond. (talent de Paladin)",
+  'entities.abilities.aspect_of_the_wild.description':
+    "Insuffle une force sauvage aux alliés à moins de 30 m, augmentant leur puissance d'attaque de 45 et leur vitesse d'attaque de 5 % pendant 5 min. (talent de Chasseur)",
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Vous vous transformez en colosse pendant 20 s, ce qui dissipe tous les effets de contrôle vous affectant et augmente de 20% les dégâts que vous infligez.',
+  'entities.abilities.avenging_wrath.description':
+    "Invoque une puissance vengeresse, augmentant votre puissance d'attaque de 60 et votre puissance des sorts de 30 pendant 20 s. (talent de Paladin)",
+  'entities.abilities.berserk.description':
+    "Augmente votre puissance d'attaque de 70 pendant 15 s. (talent de Druide)",
+  'entities.abilities.bladestorm.name': 'Tempête de lames',
+  'entities.abilities.bladestorm.description':
+    'Vous devenez une tempête d’acier tourbillonnante qui inflige {damage} points de dégâts chaque seconde pendant 4 s à tous les ennemis à moins de 8 mètres.',
+  'entities.abilities.blink.description':
+    "Vous téléporte de 15 m vers l'avant et brise les immobilisations. (talent de Mage)",
+  'entities.abilities.bloodlust.description':
+    "Plonge les alliés à moins de 30 m dans une frénésie, augmentant leur vitesse d'attaque de 30 % pendant 15 s. (talent de Chaman)",
+  'entities.abilities.chain_lightning.description':
+    'Projette de la foudre sur la zone ciblée et inflige {damage} points de dégâts aux ennemis proches. (talent de Chaman)',
+  'entities.abilities.chaos_bolt.description':
+    'Projette un trait de feu chaotique qui inflige {damage} points de dégâts de Feu. (talent de Démoniste)',
+  'entities.abilities.cloak_of_shadows.description':
+    "Vous enveloppe d'ombres et absorbe 420 points de dégâts pendant 5 s. (talent de Voleur)",
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a proches ennemis con escarcha e inflige {damage} de daño de Givre. (talent de mage)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Maudit la cible et réduit sa vitesse de déplacement de 30 % pendant 12 s. (talent de Démoniste)',
+  'entities.abilities.death_coil.description':
+    "Frappe l'ennemi et lui inflige {damage} points de dégâts d'Ombre, puis l'horrifie pendant 3 s. (talent de Démoniste)",
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a cible, inflige {damage} de daño de Givre y lo aturde durante 4 s. (talent de mage)',
+  'entities.abilities.desperate_prayer.description':
+    'Vous rend instantanément {damage} points de vie. (talent de Prêtre)',
+  'entities.abilities.deterrence.description':
+    "Augmente vos chances d'esquiver de 50 points de pourcentage pendant 10 s. (talent de Chasseur)",
+  'entities.abilities.divine_shield.description':
+    'Vous protège par la puissance sacrée, absorbant 900 points de dégâts pendant 8 s. (talent de Paladin)',
+  'entities.abilities.earthbind.description':
+    'Lie les ennemis proches à la terre et les immobilise pendant 2 s. (talent de Chaman)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (talent de mage)',
+  'entities.abilities.frenzied_regeneration.description':
+    "Rend 180 points de vie en 10 s. Forme d'ours uniquement. (talent de Druide)",
+  'entities.abilities.frost_trap.description':
+    "Gèle les ennemis dans la zone ciblée pendant 3 s, les empêchant de se déplacer et d'agir. (talent de Chasseur)",
+  'entities.abilities.ghostly_strike.description':
+    "Frappe l'ennemi et lui inflige les dégâts de l'arme plus {damage}, augmente brièvement l'esquive et octroie 1 point de combo. (talent de Voleur)",
+  'entities.abilities.hammer_of_wrath.description':
+    'Lance un marteau sacré sur un ennemi blessé et lui inflige {damage} points de dégâts du Sacré. Utilisable uniquement sous 20 % de points de vie. (talent de Paladin)',
+  'entities.abilities.healing_stream.description':
+    'Rend 120 points de vie à une cible alliée en 12 s. (talent de Chaman)',
+  'entities.abilities.holy_wrath.description':
+    'Libère une puissance sacrée et inflige {damage} points de dégâts aux ennemis proches. (talent de Paladin)',
+  'entities.abilities.howl_of_terror.description':
+    "Effraie les ennemis proches pendant un maximum de 3 s. Les dégâts peuvent interrompre l'effet. (talent de Démoniste)",
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 s. (talent de mage)',
+  'entities.abilities.inner_focus.description':
+    'Votre prochain sort ne coûte rien. Dure 60 s. (talent de Prêtre)',
+  'entities.abilities.innervate.description':
+    "De la sève vivante afflue en vous pendant 10 s et restaure par vagues 20 points de votre ressource actuelle : mana, rage ou énergie. Changer de forme ne l'interrompt pas. Le sommeil, l'étourdissement ou la stase immobilisent la sève. (talent de Druide)",
+  'entities.abilities.mend_pet.name': 'Rapiécer',
+  'entities.abilities.mend_pet.description':
+    'Sana a cible alliée por {damage} durante 15 s. (talent de chasseur)',
+  'entities.abilities.meteor.description':
+    "Fait tomber un météore sur la zone ciblée et inflige {damage} points de dégâts de Feu, puis brûle les ennemis qui s'y trouvent de 12 à 18 points de dégâts de Feu toutes les 2 s pendant 6 s. (talent de Mage)",
+  'entities.abilities.mind_sear.description':
+    "Canalise de l'énergie d'Ombre sur la zone ciblée et inflige {damage} points de dégâts chaque seconde aux ennemis proches. (talent de Prêtre)",
+  'entities.abilities.multi_shot.description':
+    'Décoche une volée sur la zone ciblée et inflige {damage} points de dégâts physiques aux ennemis dans un rayon de 8 m. (talent de Chasseur)',
+  'entities.abilities.prayer_of_healing.description':
+    'Rend {damage} points de vie aux alliés proches. (talent de Prêtre)',
+  'entities.abilities.preparation.description':
+    'Met fin au temps de recharge de Sprint, Évasion et Disparition. (talent de Voleur)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 s. (talent de mage)',
+  'entities.abilities.psychic_scream.description':
+    "Effraie les ennemis proches pendant un maximum de 4 s. Les dégâts peuvent interrompre l'effet. (talent de Prêtre)",
+  'entities.abilities.shadowstep.description':
+    'Vous fait traverser les ombres en direction de votre cible. (talent de Voleur)',
+  'entities.abilities.silence.description':
+    'Réduit la cible au silence pendant 4 s. (talent de Prêtre)',
+  'entities.abilities.tranquility.description':
+    "Canalise de l'énergie réparatrice pendant 4 s et rend de 42 à 52 points de vie chaque seconde aux alliés à moins de 30 m. (talent de Druide)",
+  'game.talents.readout.rowsSummary':
+    'Talents : {head}, {picked}/{unlocked} rangées de choix sélectionnées.',
+  'hudChrome.fct.absorbed': 'Absorbé : {amount}',
 };

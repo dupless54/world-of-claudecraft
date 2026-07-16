@@ -1,6 +1,20 @@
+// Talent proc engine: the shared primitive behind behavior-changing choice-row
+// options (docs/design/choice-row-quality-pass.md). A row option carries a
+// declarative ProcDef; combat code reports moments (cast completed, crit,
+// shield consumed, HoT expired, big hit taken, imbued swing) through single
+// delegating calls here, and this module holds the per-player counters and
+// internal cooldowns and applies the response. Everything is plain tick math:
+// no rng, nothing persisted, so replay determinism is untouched.
+
 import type { ProcDef, ProcResponse } from '../content/talents';
+
+// Re-exported for consumers/tests that import the proc types from this module
+// (the engine's former home for them).
+export type { ProcDef, ProcResponse, ProcTrigger } from '../content/talents';
 import type { SimContext } from '../sim_context';
 import type { Entity } from '../types';
+import { convergenceOnCast } from './convergence';
+import { PERSONAL_BARRIER_IDS } from './fire_mage';
 
 function state(player: Entity): NonNullable<Entity['procState']> {
   if (!player.procState) player.procState = { counters: {}, icds: {} };
@@ -129,6 +143,9 @@ export function onCastCompleted(
   abilityId: string,
   target?: Entity | null,
 ): void {
+  // Elemental Convergence (mage choice row): school-alternation memory, kept
+  // here because every completed cast funnels through this hook. Draws no rng.
+  convergenceOnCast(ctx, player, abilityId);
   for (const def of procsFor(ctx, player)) {
     const trigger = def.trigger;
     if (trigger.on !== 'castNth' || !trigger.abilities.includes(abilityId)) continue;
@@ -176,9 +193,16 @@ export function onShieldConsumed(
 ): void {
   for (const def of procsFor(ctx, player)) {
     const trigger = def.trigger;
-    if (trigger.on === 'shieldConsumed' && trigger.ability === shieldAbilityId) {
-      fire(ctx, player, def, owner);
-    }
+    if (trigger.on !== 'shieldConsumed') continue;
+    // 'personal_barrier' is the SLOT sentinel (owner rule): a row talent keyed
+    // to it fires for whichever personal barrier the player's spec provides
+    // (Frostveil or Blazing Barrier), never one hardcoded id.
+    const matches =
+      trigger.ability === 'personal_barrier'
+        ? PERSONAL_BARRIER_IDS.includes(shieldAbilityId)
+        : trigger.ability === shieldAbilityId;
+    if (!matches) continue;
+    fire(ctx, player, def, owner);
   }
 }
 

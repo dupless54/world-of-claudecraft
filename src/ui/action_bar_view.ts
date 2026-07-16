@@ -25,6 +25,7 @@
 // Map, inventory is InvSlot[]); the core never reaches for a Sim-only field.
 
 import { freeCostAuraActive } from '../sim/combat/empower_next';
+import { frostProcGlowActive } from '../sim/combat/frost_mage';
 import {
   type AbilityDef,
   type AuraKind,
@@ -75,6 +76,19 @@ const ATTACK_NAME_KEY: TranslationKey = 'abilityUi.actionBar.attackName';
 export interface ActionBarAbility {
   def: AbilityDef;
   cost: number;
+  /** Talent-resolved stored uses (Double Charge); undefined = 1. */
+  charges?: number;
+  /** Extra stored uses on the abilityCharges recharge model (e.g. Frost's second
+   *  Ice Block); total max = 1 + bonusCharges. undefined = 0. */
+  bonusCharges?: number;
+}
+
+export interface ActionBarAuraInput {
+  kind: AuraKind;
+  value?: number;
+  empowerAbilities?: readonly string[];
+  /** Stacks, for a stack-gated ability (Glacial Spike needs 5 Icicles). */
+  stacks?: number;
 }
 
 /** The aura fields the bar reads to derive the proc glow and next-cast
@@ -141,6 +155,16 @@ export interface ActionBarPlayerInput {
   potionCdRemaining: number;
   queuedOnSwing: string | null;
   pos: Vec3;
+  /** The player's worn auras: the free-cost proc read (Battle Trance /
+   *  next_cast_free) that drives the slot glow and usable state, the kill-window
+   *  gate, and the next-cast empowerment read. Both worlds expose the live aura
+   *  list. */
+  /** Charge-limited abilities' spent counts (Double Charge); the recharge
+   *  timer itself rides `cooldowns`. Optional: absent when nothing is spent. */
+  charges?: { get(id: string): { spent: number } | undefined };
+  /** Live charges on the abilityCharges recharge model (Frost's second Ice Block):
+   *  the current count per ability id. Optional: absent when nothing uses it. */
+  abilityCharges?: { [id: string]: { charges: number } | undefined };
   /** Whether the player currently carries a `kind:'stealth'` aura (Stealth or
    *  Vanish). Gates a `requiresStealth` ability's usable state (issue #1890):
    *  without this the bar never dimmed Cheap Shot/Ambush/Garrote out of
@@ -408,7 +432,25 @@ export function createActionBarView(
               )
             : 0;
         slot.cdText = cd > COOLDOWN_TEXT_THRESHOLD ? deps.formatCount(Math.ceil(cd)) : '';
-        slot.count = '';
+        // Charge-limited (Double Charge): the running cooldown is only the
+        // RECHARGE timer; the badge shows the stored uses left and the slot
+        // stays usable while any remain.
+        // Two stored-use systems (mutually exclusive per ability, casting_lifecycle):
+        // the Double Charge Map (ability.charges + player.charges.spent) and the
+        // abilityCharges recharge model (1 + bonusCharges, live count in
+        // player.abilityCharges). Read whichever the ability uses so the badge shows
+        // for both (e.g. Frost's second Ice Block rode the recharge model, unbadged).
+        const rechargeMax = 1 + (ability.bonusCharges ?? 0);
+        const maxCharges = rechargeMax > 1 ? rechargeMax : (ability.charges ?? 1);
+        const chargesLeft =
+          rechargeMax > 1
+            ? (player.abilityCharges?.[def.id]?.charges ?? maxCharges)
+            : maxCharges > 1
+              ? maxCharges - (player.charges?.get(def.id)?.spent ?? 0)
+              : cd > 0
+                ? 0
+                : 1;
+        slot.count = maxCharges > 1 ? deps.formatCount(chargesLeft) : '';
         // A free-cost proc (Battle Trance / next_cast_free) covers the cost:
         // the slot is usable at any resource and glows (the sim predicate is
         // imported so bar and combat can never disagree on the proc's scope).
@@ -420,7 +462,10 @@ export function createActionBarView(
         if (def.requiresAuraKind) {
           windowOpen = false;
           for (const a of player.auras) {
-            if (a.kind === def.requiresAuraKind) {
+            if (
+              a.kind === def.requiresAuraKind &&
+              (a.stacks ?? 1) >= (def.requiresAuraStacks ?? 1)
+            ) {
               windowOpen = true;
               break;
             }
@@ -430,6 +475,7 @@ export function createActionBarView(
         slot.usable =
           (!(player.resource < ability.cost) || freeByProc) &&
           windowOpen &&
+          !(maxCharges > 1 && chargesLeft <= 0) &&
           (!def.requiresStealth || player.stealthed);
         slot.outOfRange =
           def.requiresTarget &&
@@ -437,7 +483,10 @@ export function createActionBarView(
           (tgtDist > (def.range > 0 ? def.range : MELEE_RANGE) ||
             (def.minRange !== undefined && tgtDist < def.minRange));
         slot.queued = player.queuedOnSwing === def.id;
-        slot.procGlow = freeByProc || windowGlow;
+        // Frost procs (combat/frost_mage.ts): Ice Lance glows on a banked
+        // Fingers of Frost, Flurry on an armed Brain Freeze (the same shared
+        // sim predicate idiom as freeCostAuraActive above).
+        slot.procGlow = freeByProc || windowGlow || frostProcGlowActive(player.auras ?? [], def.id);
         slot.empowered = hasEmpoweringAura(player.auras, ability);
         slot.ariaLabel = deps.t(SLOT_ARIA_KEY, {
           slot: slotLabel,

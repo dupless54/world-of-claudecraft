@@ -9,6 +9,9 @@ import {
   wireStreamerLinks,
 } from '../src/sim/account_flair';
 import { verifyChallenge } from '../src/sim/client_challenge';
+import { echoVisibleTo } from '../src/sim/combat/chronomancy';
+import { damageTakenWithin } from '../src/sim/combat/damage_history';
+import { rewindHealAmount } from '../src/sim/combat/rewind';
 import { DEEDS } from '../src/sim/content/deeds';
 import { isFinderListingTag, isFinderRole } from '../src/sim/content/dungeon_finder';
 import { MECH_CHROMAS, mechChromaItemId, mechChromaSkinIndex } from '../src/sim/content/skins';
@@ -794,6 +797,9 @@ interface WireAura {
   // client badge prefers this over stacks (auras_view). A pure cosmetic count, not actionable
   // information a graphics preset could hide, so it rides the wire unconditionally when present.
   charges?: number;
+  // Next-cast empowerment scope. Omitted for unscoped empowerment auras, which match any
+  // eligible cast just like the sim helper.
+  emp?: string[];
   // The caster's entity id, so the client's target strip can lead with and enlarge the
   // viewer's OWN dots/hots (auras_view ownFirst). A shared per-entity value (never
   // per-viewer), so the per-entity dyn cache keeps eliding; an old client ignores it and
@@ -906,6 +912,9 @@ function wireAura(a: Aura): WireAura {
   // Carry the remaining charges only for a charge-limited aura (Lightning Shield), so the
   // buff icon can badge the count online exactly as offline; undefined for every other aura.
   if (a.charges !== undefined) w.charges = a.charges;
+  // Next-cast empowerment scope. Omitted for unscoped empowerment auras, which match any
+  // eligible cast just like the sim helper.
+  if (a.empowerAbilities !== undefined) w.emp = a.empowerAbilities;
   // The caster's entity id, for the client's own-aura prominence on the target strip
   // (auras_view ownFirst). Omitted for the rare 0/absent source, which decodes to 0.
   if (a.sourceId) w.src = a.sourceId;
@@ -956,6 +965,7 @@ function dynamicFields(e: Entity): Record<string, unknown> {
     out.pm = e.petMode;
     out.pt = round2(e.petTauntTimer);
     if (e.petAutoTaunt) out.pa = 1;
+    if (e.petAutoWaterJet) out.pw = 1;
   }
   if (e.rangedPower) out.rp = e.rangedPower;
   // top hate-table entries so the party threat meter shows real numbers
@@ -3748,6 +3758,9 @@ export class GameServer {
       case 'cast':
         if (typeof msg.ability === 'string') sim.castAbility(msg.ability, pid);
         break;
+      case 'releaseEmpowered':
+        if (typeof msg.ability === 'string') sim.releaseEmpoweredAbility(msg.ability, pid);
+        break;
       case 'cancel_aura':
         if (typeof msg.aura === 'string') sim.cancelAura(msg.aura, pid);
         break;
@@ -4136,11 +4149,17 @@ export class GameServer {
       case 'pet_attack':
         sim.petAttack(pid);
         break;
+      case 'pet_water_jet':
+        sim.petWaterJet(pid);
+        break;
       case 'pet_taunt':
         sim.petTaunt(pid);
         break;
       case 'pet_auto_taunt':
         if (typeof msg.enabled === 'boolean') sim.setPetAutoTaunt(msg.enabled, pid);
+        break;
+      case 'pet_auto_water_jet':
+        if (typeof msg.enabled === 'boolean') sim.setPetAutoWaterJet(msg.enabled, pid);
         break;
       case 'pet_feed':
         if (typeof msg.item === 'string') sim.feedPet(msg.item, pid);
@@ -4824,6 +4843,7 @@ export class GameServer {
       }
     }
     const head = `{"t":"snap","tick":${tick},"time":${round2(this.sim.time)}${tickHzJson}`;
+    const activeFrostRings = this.sim.activeFrostRings;
     // Guard each session: a throw while building one player's snapshot must not
     // starve every other session of its snapshot this tick (server/CLAUDE.md).
     forEachGuarded(
@@ -4919,7 +4939,22 @@ export class GameServer {
         const selfJson = this.selfWireJson(session, anchorEntity, anchorMeta, anchorSession);
         if (this.perfDetailActive) this.bcastSelfNs += process.hrtime.bigint() - selfStart;
         const keepJson = keep.length > 0 ? `,"keep":[${keep.join(',')}]` : '';
-        this.sendRaw(session, `${head},"self":${selfJson},"ents":[${ents.join(',')}]${keepJson}}`);
+        const frostRings = activeFrostRings
+          .filter((ring) => {
+            const dx = ring.x - anchorEntity.pos.x;
+            const dz = ring.z - anchorEntity.pos.z;
+            const limit = INTEREST_QUERY_RADIUS + ring.radius;
+            return dx * dx + dz * dz <= limit * limit;
+          })
+          .map(
+            (ring) =>
+              `{"id":${JSON.stringify(ring.id)},"x":${round2(ring.x)},"z":${round2(ring.z)},"r":${round2(ring.radius)},"i":${round2(ring.innerRadius)},"dur":${round2(ring.duration)},"rem":${round2(ring.remaining)}}`,
+          );
+        const frostRingsJson = frostRings.length > 0 ? `,"rings":[${frostRings.join(',')}]` : '';
+        this.sendRaw(
+          session,
+          `${head},"self":${selfJson},"ents":[${ents.join(',')}]${frostRingsJson}${keepJson}}`,
+        );
       },
       (err, session) =>
         console.error(`[snap] failed to build snapshot for pid ${session.pid}, skipping:`, err),
@@ -5075,6 +5110,22 @@ export class GameServer {
           .filter(([, until]) => until > this.sim.time)
           .map(([k, until]) => [k, round2(until - this.sim.time)]),
       ),
+    );
+    // Charge-limited ability stored-use counts (Double Charge): {abilityId:
+    // spent}. The recharge timer itself rides `cds`; the client derives the
+    // max from its own talent rebake. Empty for everyone untalented.
+    maybe(
+      'chg',
+      p.charges ? Object.fromEntries([...p.charges.entries()].map(([k, v]) => [k, v.spent])) : {},
+    );
+    // Recharge-model live charge counts (abilityCharges: Frost's second Ice Block):
+    // {abilityId: charges}. The recharge timer itself rides `cds`; the client
+    // derives the max from its own known-list rebake (1 + bonusCharges).
+    maybe(
+      'achg',
+      p.abilityCharges
+        ? Object.fromEntries(Object.entries(p.abilityCharges).map(([k, v]) => [k, v.charges]))
+        : {},
     );
     maybe('stats', p.stats);
     maybe('weapon', p.weapon);
@@ -5254,10 +5305,19 @@ export class GameServer {
                 group: party.raidGroups.get(mPid) ?? 1,
                 absorb: partyFrameAbsorb(e.auras),
                 role: partyFrameRole(meta.talentMods.role),
-                connected: this.clients.get(mPid)?.linkdead ? 0 : 1,
+                // Effective health Rewind could currently restore to this member
+                // (combat/rewind.ts); 0 for members with no recent recorded loss.
+                rewind: rewindHealAmount(damageTakenWithin(e, this.sim.tickCount), e.hp, e.maxHp),
+                connected:
+                  meta.isDevBot || (this.clients.has(mPid) && !this.clients.get(mPid)?.linkdead)
+                    ? 1
+                    : 0,
                 hasAggro: aggroTargets.has(mPid) ? 1 : 0,
                 incomingHeal: incomingHeals.get(mPid) ?? 0,
-                auras: partyFrameAuras(e.auras),
+                // Temporal Echo marks are filtered per-viewer to `pid`'s own, so
+                // other chronomancers' echoes (which still heal in the sim) never
+                // show in this player's group/raid strip.
+                auras: partyFrameAuras(e.auras.filter((a) => echoVisibleTo(a, pid))),
               }
             : null;
         })

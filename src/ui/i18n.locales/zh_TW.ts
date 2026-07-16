@@ -124,111 +124,44 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': '抉擇',
   'hudChrome.talentRows.readoutSummary': '天賦：{head}，已選擇 {spent}/{total} 列。',
   'entities.abilities.aspect_of_the_wild.name': '野牙偽裝',
-  'entities.abilities.aspect_of_the_wild.description':
-    '以野性力量激勵30碼內的盟友，使其攻擊強度提高45、攻擊速度提高5%，持續5分鐘。（獵人天賦）',
-  'entities.abilities.aura_surge.name': '曙光彈射',
-  'entities.abilities.aura_surge.description':
-    '擲出曙光鑄造的盾牌，造成{damage}點神聖傷害並使主要目標沉默2秒，隨後彈射至10碼內最多2個額外敵人，每次彈射造成75%傷害。（聖騎士天賦）',
   'entities.abilities.avenging_wrath.name': '復仇之翼',
-  'entities.abilities.avenging_wrath.description':
-    '召喚復仇之力，使你的攻擊強度提高60、法術強度提高30，持續20秒。（聖騎士天賦）',
   'entities.abilities.berserk.name': '赤紅迷霧',
-  'entities.abilities.berserk.description': '使你的攻擊強度提高70，持續15秒。（德魯伊天賦）',
   'entities.abilities.blink.name': '閃爍步',
-  'entities.abilities.blink.description': '使你向前傳送15碼並解除定身效果。（法師天賦）',
   'entities.abilities.bloodlust.name': '戰鼓',
-  'entities.abilities.bloodlust.description':
-    '使30碼內的盟友陷入狂亂，攻擊速度提高30%，持續15秒。（薩滿天賦）',
   'entities.abilities.chain_lightning.name': '叉狀閃電',
-  'entities.abilities.chain_lightning.description':
-    '向目標區域投擲閃電，對附近的敵人造成{damage}點傷害。（薩滿天賦）',
   'entities.abilities.chaos_bolt.name': '毀滅箭',
-  'entities.abilities.chaos_bolt.description':
-    '投擲一枚混沌火焰彈，造成{damage}點火焰傷害。（術士天賦）',
   'entities.abilities.cleansing_verdict.name': '淨化裁決',
   'entities.abilities.cleansing_verdict.description':
     '淨化一個友方目標身上的有害魔法效果，並為其恢復{damage}點生命值。',
   'entities.abilities.cloak_of_shadows.name': '暗影斗篷',
-  'entities.abilities.cloak_of_shadows.description':
-    '以暗影包裹你，在5秒內吸收420點傷害。（潛行者天賦）',
   'entities.abilities.cone_of_cold.name': '寒霜橫掃',
-  'entities.abilities.cone_of_cold.description':
-    '以寒霜衝擊附近的敵人，造成{damage}點冰霜傷害。（冰霜專精招牌技能）',
   'entities.abilities.curse_of_exhaustion.name': '鉛沉妖咒',
-  'entities.abilities.curse_of_exhaustion.description':
-    '詛咒目標，使其移動速度降低30%，持續12秒。（術士天賦）',
   'entities.abilities.death_coil.name': '墓穴纏卷',
-  'entities.abilities.death_coil.description':
-    '攻擊敵人並造成{damage}點暗影傷害，隨後使其恐懼3秒。（術士天賦）',
   'entities.abilities.deep_freeze.name': '死霜',
-  'entities.abilities.deep_freeze.description':
-    '將目標深度凍結，造成{damage}點冰霜傷害並使其昏迷4秒。（法師天賦）',
   'entities.abilities.desperate_prayer.name': '最後祈禱',
-  'entities.abilities.desperate_prayer.description': '立即為你恢復{damage}點生命值。（牧師天賦）',
   'entities.abilities.deterrence.name': '鬃刺守衛',
-  'entities.abilities.deterrence.description':
-    '使你的閃躲幾率提高50個百分點，持續10秒。（獵人天賦）',
   'entities.abilities.divine_shield.name': '聖光守護',
-  'entities.abilities.divine_shield.description':
-    '以神聖之力保護你，在8秒內吸收900點傷害。（聖騎士天賦）',
   'entities.abilities.earthbind.name': '攫握大地',
-  'entities.abilities.earthbind.description': '將附近的敵人束縛於大地，使其定身2秒。（薩滿天賦）',
   'entities.abilities.evocation.name': '乙太之井',
-  'entities.abilities.evocation.description': '立即恢復220點法力值。（法師天賦）',
   'entities.abilities.frenzied_regeneration.name': '野性癒合',
-  'entities.abilities.frenzied_regeneration.description':
-    '在10秒內恢復180點生命值。只能在熊形態下使用。（德魯伊天賦）',
   'entities.abilities.frost_trap.name': '霜紋陷阱',
-  'entities.abilities.frost_trap.description':
-    '凍結目標區域內的敵人3秒，使其無法移動或行動。（獵人天賦）',
   'entities.abilities.ghostly_strike.name': '幽魂打擊',
-  'entities.abilities.ghostly_strike.description':
-    '攻擊敵人，造成武器傷害加{damage}點傷害，短暫提高閃躲並獲得1個連擊點。（潛行者天賦）',
   'entities.abilities.hammer_of_wrath.name': '鳴鐘之錘',
-  'entities.abilities.hammer_of_wrath.description':
-    '向受傷的敵人投擲神聖之錘，造成{damage}點神聖傷害。只能對生命值低於20%的目標使用。（聖騎士天賦）',
   'entities.abilities.healing_stream.name': '泉湧',
-  'entities.abilities.healing_stream.description':
-    '在12秒內為一個友方目標恢復120點生命值。（薩滿天賦）',
   'entities.abilities.holy_wrath.name': '聖徒之怒',
-  'entities.abilities.holy_wrath.description':
-    '釋放神聖之力，對附近的敵人造成{damage}點傷害。（聖騎士天賦）',
   'entities.abilities.howl_of_terror.name': '恐懼嚎叫',
-  'entities.abilities.howl_of_terror.description':
-    '使附近的敵人恐懼，最多持續3秒。受到傷害可能打破該效果。（術士天賦）',
   'entities.abilities.ice_block.name': '寒冰棺',
-  'entities.abilities.ice_block.description':
-    '將你封入寒冰，在8秒內吸收600點傷害。封入期間你無法行動。再次施放可取消效果。（法師天賦）',
   'entities.abilities.inner_focus.name': '靜心',
-  'entities.abilities.inner_focus.description':
-    '使你的下一個法術不消耗資源。持續60秒。（牧師天賦）',
   'entities.abilities.innervate.name': '生命樹液',
-  'entities.abilities.innervate.description':
-    '生命樹液在你體內湧動10秒，分波恢復20點當前資源，可恢復法力、怒氣或能量。變形不會中斷效果。睡眠、昏迷或停滯會使樹液停止湧動。（德魯伊天賦）',
   'entities.abilities.meteor.name': '天石',
-  'entities.abilities.meteor.description':
-    '在目標區域召喚一顆隕石，造成{damage}點火焰傷害，隨後使區域內的敵人在6秒內每2秒受到12至18點火焰傷害。（法師天賦）',
   'entities.abilities.mind_sear.name': '灼思',
-  'entities.abilities.mind_sear.description':
-    '在目標區域引導暗影能量，每秒對附近的敵人造成{damage}點傷害。（牧師天賦）',
   'entities.abilities.multi_shot.name': '分裂射擊',
-  'entities.abilities.multi_shot.description':
-    '向目標區域射出散射箭，對8碼內的敵人造成{damage}點物理傷害。（獵人天賦）',
   'entities.abilities.prayer_of_healing.name': '聖歌癒療',
-  'entities.abilities.prayer_of_healing.description':
-    '為附近的盟友恢復{damage}點生命值。（牧師天賦）',
   'entities.abilities.preparation.name': '應變',
-  'entities.abilities.preparation.description': '結束疾跑、閃避和消失的冷卻時間。（潛行者天賦）',
   'entities.abilities.presence_of_mind.name': '疾思',
-  'entities.abilities.presence_of_mind.description':
-    '使你的下一個有施法時間的法術變為瞬發。持續60秒。（法師天賦）',
   'entities.abilities.psychic_scream.name': '心靈尖嘯',
-  'entities.abilities.psychic_scream.description':
-    '使附近的敵人恐懼，最多持續4秒。受到傷害可能打破該效果。（牧師天賦）',
   'entities.abilities.shadowstep.name': '影步',
-  'entities.abilities.shadowstep.description': '穿過暗影，向你的目標邁進。（潛行者天賦）',
   'entities.abilities.silence.name': '沉默',
-  'entities.abilities.silence.description': '使目標沉默4秒。（牧師天賦）',
   'entities.abilities.smoke_screen.name': '煙幕',
   'entities.abilities.smoke_screen.description': '遁入煙霧之中，使你的閃躲幾率提高30%，持續8秒。',
   'entities.abilities.spellsteal.name': '奪法',
@@ -237,8 +170,6 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.startle_shot.description':
     '狂野射擊使目標迷惑{duration}秒。受到任何傷害都會打破此效果。',
   'entities.abilities.tranquility.name': '林地之歌',
-  'entities.abilities.tranquility.description':
-    '引導恢復能量4秒，每秒為30碼內的盟友恢復42至52點生命值。（德魯伊天賦）',
   'entities.abilities.typhoon.name': '颱風',
   'entities.abilities.typhoon.description':
     '一陣狂風將8碼內的所有敵人擊退並使其昏亂，使其移動速度降低50%，持續4秒。',
@@ -7298,4 +7229,200 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'guide.social.slashHeading': '實用的斜線指令',
   'guide.abilityHook.revenge': '橫掃你前方的敵人，並可能在閃躲或招架後不消耗資源。',
   'guide.abilityHook.hamstring': '妨礙敵人的移動，使其無法逃脫。',
+  'game.talents.choicesTab': '抉擇',
+  'game.talents.readout.rowsSummary': '天賦：{head}，已選擇 {picked}/{unlocked} 列選項。',
+  'game.talents.rowUnlockToast': '新的天賦抉擇已解鎖！',
+  'game.talents.rowUnlocks': '在 {level} 級解鎖',
+  'hudChrome.fct.absorbed': '吸收 {amount}',
+  'entities.abilities.temporal_mend.name': '時光縫合',
+  'entities.abilities.temporal_mend.description':
+    '將盟友向前拉動一瞬，在身體安定於更健康的未來形態時治療{damage}點生命值。(時光術特色技能)',
+  'entities.abilities.temporal_barrier.name': '時光屏障',
+  'entities.abilities.temporal_barrier.description':
+    '將目標移出當下一瞬:時光之殼在10秒內吸收{damage}點傷害，隨後時間線彈回原位。',
+  'entities.abilities.temporal_echo.name': '時光迴響',
+  'entities.abilities.temporal_echo.description':
+    '以更健康時刻的迴響標記一名盟友，立即恢復{damage}點生命值。{duration}秒內，你造成的秘法傷害有一部分會透過迴響轉化為對其的治療。',
+  'entities.abilities.aura_surge.name': '曙光彈射',
+  'entities.abilities.aura_surge.description':
+    '擲出曙光鑄造的盾牌，造成{damage}點神聖傷害並使主要目標沉默2秒，隨後彈射至10碼內最多2個額外敵人，每次彈射造成75%傷害。（聖騎士天賦）',
+  'entities.abilities.aspect_of_the_wild.description':
+    '以野性力量激勵30碼內的盟友，使其攻擊強度提高45、攻擊速度提高5%，持續5分鐘。（獵人天賦）',
+  'entities.abilities.avenging_wrath.description':
+    '召喚復仇之力，使你的攻擊強度提高60、法術強度提高30，持續20秒。（聖騎士天賦）',
+  'entities.abilities.berserk.description': '使你的攻擊強度提高70，持續15秒。（德魯伊天賦）',
+  'entities.abilities.blink.description': '使你向前傳送15碼並解除定身效果。（法師天賦）',
+  'entities.abilities.bloodlust.description':
+    '使30碼內的盟友陷入狂亂，攻擊速度提高30%，持續15秒。（薩滿天賦）',
+  'entities.abilities.chain_lightning.description':
+    '向目標區域投擲閃電，對附近的敵人造成{damage}點傷害。（薩滿天賦）',
+  'entities.abilities.chaos_bolt.description':
+    '投擲一枚混沌火焰彈，造成{damage}點火焰傷害。（術士天賦）',
+  'entities.abilities.cloak_of_shadows.description':
+    '以暗影包裹你，在5秒內吸收420點傷害。（潛行者天賦）',
+  'entities.abilities.curse_of_exhaustion.description':
+    '詛咒目標，使其移動速度降低30%，持續12秒。（術士天賦）',
+  'entities.abilities.death_coil.description':
+    '攻擊敵人並造成{damage}點暗影傷害，隨後使其恐懼3秒。（術士天賦）',
+  'entities.abilities.deep_freeze.description':
+    '將目標深度凍結，造成 {damage} 點冰霜傷害並使其昏迷 4 秒。（法師天賦）',
+  'entities.abilities.desperate_prayer.description': '立即為你恢復{damage}點生命值。（牧師天賦）',
+  'entities.abilities.deterrence.description':
+    '使你的閃躲幾率提高50個百分點，持續10秒。（獵人天賦）',
+  'entities.abilities.divine_shield.description':
+    '以神聖之力保護你，在8秒內吸收900點傷害。（聖騎士天賦）',
+  'entities.abilities.earthbind.description': '將附近的敵人束縛於大地，使其定身2秒。（薩滿天賦）',
+  'entities.abilities.evocation.description': '快速恢復法力。（法師天賦）',
+  'entities.abilities.frenzied_regeneration.description':
+    '在10秒內恢復180點生命值。只能在熊形態下使用。（德魯伊天賦）',
+  'entities.abilities.frost_trap.description':
+    '凍結目標區域內的敵人3秒，使其無法移動或行動。（獵人天賦）',
+  'entities.abilities.ghostly_strike.description':
+    '攻擊敵人，造成武器傷害加{damage}點傷害，短暫提高閃躲並獲得1個連擊點。（潛行者天賦）',
+  'entities.abilities.hammer_of_wrath.description':
+    '向受傷的敵人投擲神聖之錘，造成{damage}點神聖傷害。只能對生命值低於20%的目標使用。（聖騎士天賦）',
+  'entities.abilities.healing_stream.description':
+    '在12秒內為一個友方目標恢復120點生命值。（薩滿天賦）',
+  'entities.abilities.holy_wrath.description':
+    '釋放神聖之力，對附近的敵人造成{damage}點傷害。（聖騎士天賦）',
+  'entities.abilities.howl_of_terror.description':
+    '使附近的敵人恐懼，最多持續3秒。受到傷害可能打破該效果。（術士天賦）',
+  'entities.abilities.ice_block.description':
+    '將你封入寒冰之中，吸收大量傷害，持續 8 秒。（法師天賦）',
+  'entities.abilities.inner_focus.description':
+    '使你的下一個法術不消耗資源。持續60秒。（牧師天賦）',
+  'entities.abilities.innervate.description':
+    '生命樹液在你體內湧動10秒，分波恢復20點當前資源，可恢復法力、怒氣或能量。變形不會中斷效果。睡眠、昏迷或停滯會使樹液停止湧動。（德魯伊天賦）',
+  'entities.abilities.mend_pet.name': '修補',
+  'entities.abilities.mend_pet.description':
+    '在 15 秒內為友方目標治療 {damage} 點生命值。（獵人天賦）',
+  'entities.abilities.meteor.description':
+    '在目標區域召喚一顆隕石，造成{damage}點火焰傷害，隨後使區域內的敵人在6秒內每2秒受到12至18點火焰傷害。（法師天賦）',
+  'entities.abilities.mind_sear.description':
+    '在目標區域引導暗影能量，每秒對附近的敵人造成{damage}點傷害。（牧師天賦）',
+  'entities.abilities.multi_shot.description':
+    '向目標區域射出散射箭，對8碼內的敵人造成{damage}點物理傷害。（獵人天賦）',
+  'entities.abilities.prayer_of_healing.description':
+    '為附近的盟友恢復{damage}點生命值。（牧師天賦）',
+  'entities.abilities.preparation.description': '結束疾跑、閃避和消失的冷卻時間。（潛行者天賦）',
+  'entities.abilities.presence_of_mind.description':
+    '使你的下一個有施法時間的法術立即完成。持續 60 秒。（法師天賦）',
+  'entities.abilities.psychic_scream.description':
+    '使附近的敵人恐懼，最多持續4秒。受到傷害可能打破該效果。（牧師天賦）',
+  'entities.abilities.shadowstep.description': '穿過暗影，向你的目標邁進。（潛行者天賦）',
+  'entities.abilities.silence.description': '使目標沉默4秒。（牧師天賦）',
+  'entities.abilities.tranquility.description':
+    '引導恢復能量4秒，每秒為30碼內的盟友恢復42至52點生命值。（德魯伊天賦）',
+  'hudChrome.auraEffect.combustionCrit': '你的火焰法術必定造成致命一擊',
+  'hudChrome.auraEffect.overloadNext': '下一個法術效果提高{pct}%，但法力消耗增加50%',
+  'hudChrome.auraEffect.powerEchoNext': '下一個直接法術以{pct}%的威力對同一目標重複施放',
+  'hudChrome.auraEffect.iceFloesCasts': '接下來{n}個有施法時間的法術可在移動中施放',
+  'hudChrome.auraEffect.freeCast': '下一次施法不消耗任何資源',
+  'hudChrome.auraEffect.instantCast': '下一個有施法時間的法術變為瞬發',
+  'hudChrome.auraEffect.cheapCast': '下一個法術消耗降低{pct}%',
+  'hudChrome.auraEffect.increase.sp': '法術強度提高 {value}',
+  'hudChrome.specPanel.specUnlockBanner': '專精已解鎖！',
+  'hudChrome.specPanel.specUnlockHint': '按 N 選擇你的專精。',
+  'entities.abilities.cone_of_cold.description':
+    '以冰霜轟擊附近的敵人，造成 {damage} 點冰霜傷害。（冰霜專精標誌技能）',
+  'guide.abilityHook.ice_lance': '用來消耗冰霜觸發效果的瞬發冰刺，對凍結目標造成的傷害大幅提高。',
+  'guide.abilityHook.flurry': '快速射出三枚冰彈，使目標寒冷，讓你接下來的冰霜法術視其為已凍結。',
+  'guide.abilityHook.fingers_of_frost':
+    '你的冰霜箭有時會強化一次冰槍術，使其命中時將目標視為已凍結。',
+  'guide.abilityHook.brain_freeze': '你的冰霜箭有時會使下一次冰風暴瞬發且造成更高傷害。',
+  'guide.abilityHook.shatter': '你的法術對凍結目標的致命一擊機率大幅提高。',
+  'guide.abilityHook.frozen_orb': '讓一顆緩慢的冰球穿過敵群，冰凍沿途的一切並觸發你的冰霜效果。',
+  'guide.abilityHook.blizzard': '以冰雪覆蓋一片區域，持續傷害並緩速整群敵人。',
+  'guide.abilityHook.blink': '向前瞬移一小段距離，並在離開時解除定身。',
+  'hud.pet.waterJet': '水流噴射',
+  'hud.pet.waterJetTitle': '水流噴射',
+  'hud.pet.waterJetDesc':
+    '命令你的水元素引導緩速水流，持續 3 秒。冷卻時間 8 秒。按右鍵可在冷卻結束後自動施放。',
+  'entities.abilities.ice_lance.name': '冰槍術',
+  'entities.abilities.ice_lance.description':
+    '投擲一枚冰刺，造成 {damage} 點冰霜傷害；對凍結目標造成三倍傷害。消耗寒冰指或一層凜冬之寒，使目標視為已凍結。（冰霜）',
+  'entities.abilities.flurry.name': '冰風暴',
+  'entities.abilities.flurry.description':
+    '連續射出三枚冰彈，每枚造成 {damage} 點冰霜傷害，並對目標施加凜冬之寒：接下來 2 個相容法術會將其視為已凍結。思維凍結會使冰風暴瞬發、傷害提高 30%，並跳過冷卻時間。（冰霜）',
+  'entities.abilities.frozen_orb.name': '寒冰寶珠',
+  'entities.abilities.frozen_orb.description':
+    '釋放一顆旋轉的寒冰寶珠，向前飄移 8 秒，每秒對附近敵人造成 {damage} 點冰霜傷害並使其緩速 30%。寶珠命中時會產生寒冰指。（冰霜）',
+  'entities.abilities.blizzard.name': '暴風雪',
+  'entities.abilities.blizzard.description':
+    '在目標區域召喚持續 6 秒的冰風暴，每秒造成 {damage} 點冰霜傷害並使敵人緩速 40%。每命中一名敵人，寒冰寶珠的冷卻時間縮短 0.5 秒，每次施法最多縮短 3 秒。（冰霜）',
+  'entities.abilities.glacial_spike.name': '冰川尖刺',
+  'entities.abilities.glacial_spike.description':
+    '凝聚一根巨大的冰刺，消耗 5 枚冰柱，造成 {damage} 點冰霜傷害，並將目標凍結在原地 4 秒。（冰霜）',
+  'entities.abilities.glacial_front.name': '冰川鋒線',
+  'entities.abilities.glacial_front.description':
+    '按住以積聚逐漸擴大的冰霜鋒線，隨後以錐形釋放。蓄力越久，距離越遠、傷害越高。所有命中的敵人緩速 50%，持續 4 秒；蓄力至最大還會將其定身 1 秒。（冰霜）',
+  'entities.abilities.dragons_breath.name': '龍之吐息',
+  'entities.abilities.dragons_breath.description':
+    '按住以積聚逐漸擴大的烈焰吐息，隨後以錐形釋放。蓄力越久，距離越遠、傷害越高。命中的敵人會迷惑，受到傷害時效果解除；蓄力至最大必定造成致命一擊，並計為一次熾熱連擊。（火焰）',
+  'entities.abilities.fingers_of_frost.name': '寒冰指',
+  'entities.abilities.fingers_of_frost.description':
+    '霜緣之矛有 15% 機率賦予寒冰指，最多 2 層：你的下一次冰槍術會將目標視為已凍結。（冰霜）',
+  'entities.abilities.brain_freeze.name': '思維凍結',
+  'entities.abilities.brain_freeze.description':
+    '霜緣之矛有 20% 機率使你的下一次冰風暴變為瞬發、傷害提高 30%，並且不受冷卻時間限制。（冰霜）',
+  'entities.abilities.shatter.name': '碎冰',
+  'entities.abilities.shatter.description':
+    '你的法術對凍結目標的致命一擊機率提高 50%，這些致命一擊造成的傷害提高 20%。寒冰指和凜冬之寒會將目標視為已凍結。（冰霜）',
+  'entities.abilities.temporal_cascade.name': '時光奔流',
+  'entities.abilities.temporal_cascade.description':
+    '讓一道回音在隊伍中奔流：立即治療目標及其至多四名最近的盟友，並為每人施加持續 {duration} 秒的印記；你造成的部分秘法傷害會透過回音轉化為對他們的治療。（時光術）',
+  'entities.abilities.temporal_reversal.name': '時光逆轉',
+  'entities.abilities.temporal_reversal.description':
+    '倒轉一名陣亡盟友的時間線，使其在遺體處以部分生命值與法力值復活，即使正在激烈戰鬥中也能使用。（時光術）',
+  'entities.abilities.temporal_rewind.name': '回溯',
+  'entities.abilities.temporal_rewind.description':
+    '向隊伍或團隊發出一道秘法波，回溯時間，為 40 碼內每名盟友恢復其過去 5 秒所受傷害的 30%（最多為其最大生命值的 35%）。此效果無法造成致命一擊。（時光術）',
+  'entities.abilities.temporal_acceleration.name': '時間加速',
+  'entities.abilities.temporal_acceleration.description':
+    '加快隊伍或團隊的時間流速，使攻擊、施法與引導速度提高 30%，持續 15 秒。近期受到時間加速或嗜血影響的盟友過於疲憊，無法再次受益。（時光術）',
+  'entities.abilities.perfect_moment.name': '完美時刻',
+  'entities.abilities.perfect_moment.description':
+    '抓住完美時刻：立即獲得 4 層秘法充能，並且在 10 秒內，以太飛矢不會消耗這些充能。（時光術）',
+  'entities.abilities.arcane_surge.name': '以太湧動',
+  'entities.abilities.arcane_surge.description':
+    '以原始秘法能量衝擊敵人，造成 {damage} 點傷害。每次施放都會留下秘法充能，使你的下一次以太湧動傷害提高、施法加快（每層快 5%），但法力消耗也會急遽提高，最多堆疊 4 層；以太飛矢會消耗這些充能。每次施放還有機會觸發以太奔流，使你的下一次以太湧動不消耗法力且施法速度加倍。',
+  'entities.items.conjured_bread4.name': '魔法盛宴麵包',
+  'entities.items.conjured_water4.name': '魔法泉水',
+  'entities.abilities.blazing_barrier.name': '烈焰屏障',
+  'entities.abilities.blazing_barrier.description':
+    '以烈焰環繞自身，吸收 130 點傷害，持續 60 秒。（火焰）',
+  'entities.abilities.cold_snap.name': '急速冷卻',
+  'entities.abilities.cold_snap.description':
+    '立即結束閃爍步、霜幕與強效隱形術的冷卻時間。（法師天賦）',
+  'entities.abilities.greater_invisibility.name': '強效隱形術',
+  'entities.abilities.greater_invisibility.description':
+    '消失 20 秒：移除 2 個持續傷害效果，並使你在隱形期間及結束後短時間內受到的傷害降低 90%。（法師天賦）',
+  'entities.abilities.hot_streak.name': '熾熱連擊',
+  'entities.abilities.hot_streak.description':
+    '被動：你的火焰法術（火球術、火焰衝擊、灼燒、炎爆術或烈焰風暴）連續造成兩次致命一擊後，下一次炎爆術或烈焰風暴變為瞬發且不消耗法力。消耗技能會計入下一次連擊，包括免費施法；烈焰風暴無論命中多少敵人都只計一次，且只有首次衝擊會被計入。（火焰）',
+  'entities.abilities.ice_floes.name': '浮冰',
+  'entities.abilities.ice_floes.description':
+    '你接下來兩個有施法時間的法術可以在移動中施放。持續 15 秒。（法師天賦）',
+  'entities.abilities.ignition.name': '點燃',
+  'entities.abilities.ignition.description':
+    '被動：你的法術致命一擊會灼燒目標，在 6 秒內造成相當於該次傷害 40% 的傷害，可堆疊。（火焰精通）',
+  'entities.abilities.mass_barrier.name': '群體屏障',
+  'entities.abilities.mass_barrier.description':
+    '為你與 30 公尺內至多 4 名附近盟友施加護盾，每個護盾吸收 130 點傷害，持續 60 秒。（法師天賦）',
+  'entities.abilities.overload.name': '超載',
+  'entities.abilities.overload.description':
+    '你的下一個法術效果提高 40%，但法力消耗提高 50%。持續 10 秒。（法師天賦）',
+  'entities.abilities.power_echo.name': '力量回音',
+  'entities.abilities.power_echo.description':
+    '你的下一個直接法術會以 50% 的威力對同一目標重複施放。持續 10 秒。（法師天賦）',
+  'entities.abilities.rings_of_frost.name': '冰霜之環',
+  'entities.abilities.rings_of_frost.description':
+    '召喚一個持續 10 秒的冰霜之環。穿過邊緣的敵人會被凍結 4 秒。（法師天賦）',
+  'entities.abilities.rune_of_power.name': '能量符文',
+  'entities.abilities.rune_of_power.description':
+    '在腳下銘刻一個持續 15 秒的能量符文：站在 8 公尺範圍內的盟友造成的傷害提高 10%。（法師天賦）',
+  'entities.abilities.summon_water_elemental.name': '召喚水元素',
+  'entities.abilities.summon_water_elemental.description':
+    '召喚一個水元素與你並肩作戰，向你的目標投擲水箭並引導水流噴射。（冰霜）',
+  'entities.mobs.water_elemental.name': '水元素',
 };

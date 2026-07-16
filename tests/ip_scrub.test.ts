@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { AUGMENTS } from '../src/sim/content/augments';
+import { CHOICE_ROWS } from '../src/sim/content/choice_rows';
 import { ROW_TREES, TALENTS } from '../src/sim/content/talents';
 import { ABILITIES, DUNGEONS, ITEM_SETS, ITEMS, MOBS, NPCS, QUESTS, ZONES } from '../src/sim/data';
 import { en } from '../src/ui/i18n.resolved.generated/en';
@@ -353,6 +354,20 @@ function collectViolations(): Violation[] {
       for (const option of row.options) {
         scanNameValue(
           `talents.${cls}.rows.${row.level}.options.${option.id}.name`,
+          option.id,
+          option.name,
+          false,
+          out,
+        );
+      }
+    }
+  }
+  // Choice rows replaced the node trees: every row option name is player-visible.
+  for (const [cls, rows] of Object.entries(CHOICE_ROWS)) {
+    for (const row of rows.rows) {
+      for (const option of row.options) {
+        scanNameValue(
+          `choiceRows.${cls}.${row.level}.${option.id}.name`,
           option.id,
           option.name,
           false,

@@ -224,6 +224,20 @@ const FLOATING: ClipMap = {
   death: 'Death',
 };
 
+// Procedurally authored Water Elemental. Node transforms ripple its layered
+// translucent body and drive the hands through the Waterbolt casting motion.
+const WATER_ELEMENTAL: ClipMap = {
+  idle: 'Idle',
+  walk: 'Move',
+  run: 'Move',
+  // Waterbolt uses the short one-shot Cast attack; Water Jet holds this
+  // dedicated forward-arms loop for its full server-authoritative channel.
+  cast: 'Channel',
+  attack: ['Cast'],
+  hit: ['Hit'],
+  death: 'Death',
+};
+
 const SPIDER: ClipMap = {
   idle: 'Spider_Idle',
   walk: 'Spider_Walk',
@@ -788,6 +802,13 @@ export const VISUALS: Record<string, VisualDef> = {
     tint: 'entity',
     tintStrength: 0.4,
   },
+  mob_water_elemental: {
+    url: `${CREATURES}/water_elemental.glb`,
+    height: 2.65,
+    hover: 0.12,
+    clips: WATER_ELEMENTAL,
+    attackTimeScale: 1.1,
+  },
   mob_dragonkin: {
     url: `${CREATURES}/dragonevolved.glb`,
     height: 2.4,
@@ -1140,6 +1161,7 @@ const MOB_KEYS: Record<string, string> = {
   // (docs/prd/protect-yumi-assets.md item 1, delivered).
   yumi_cat: 'mob_yumi_cat',
   emberkin: 'mob_demon',
+  water_elemental: 'mob_water_elemental',
   gloomshade: 'mob_demon',
   duskborn: 'mob_demon',
   warlock_imp: 'mob_demon_flying',
@@ -1184,6 +1206,9 @@ const MOB_KEYS: Record<string, string> = {
   sanctum_boneguard: 'skel_warrior',
   nythraxis_scourge_of_thornpeak: 'skel_golem',
   nythraxis_skeleton_warrior: 'skel_warrior',
+  nythraxis_heroic_warrior_add: 'skel_warrior',
+  nythraxis_heroic_priest_add: 'skel_necromancer',
+  nythraxis_heroic_rogue_add: 'skel_rogue',
   brother_aldric_raid: 'npc_aldric',
   hollow_acolyte: 'skel_mage',
   sexton_marrow: 'skel_mage',
@@ -1202,9 +1227,6 @@ const MOB_KEYS: Record<string, string> = {
   // the "Spirit of X" adds reuse each character's crypt visual above. Without these
   // the ids fall through to FAMILY_KEYS.undead (skel_minion) and the whole court
   // renders as identical generic skeletons. See spawnNythraxisHeroicAdds.
-  nythraxis_heroic_warrior_add: 'skel_warrior', // Spirit of Aldren
-  nythraxis_heroic_priest_add: 'skel_necromancer', // Spirit of Malric
-  nythraxis_heroic_rogue_add: 'skel_rogue', // Spirit of Voss
   vision_aldren_warrior: 'player_warrior',
   vision_malric_mage: 'player_mage',
   vision_deathstalker_voss: 'player_rogue',

@@ -35,7 +35,6 @@ import {
   computeTalentModifiers,
   defaultBuild,
   type TalentModifiers,
-  talentPointsAtLevel,
 } from '../content/talents';
 import { abilitiesKnownAt, arenaOrigin } from '../data';
 import * as deedsMod from '../deeds';
@@ -157,6 +156,7 @@ export function mergeAugmentMods(base: TalentModifiers, augIds: string[]): Talen
           flatDmg: 0,
           costPct: 0,
           cooldownPct: 0,
+          cooldownFlat: 0,
           castPct: 0,
           buffPct: 0,
           castWhileMoving: false,
@@ -224,7 +224,9 @@ export function fiestaStandardize(ctx: SimContext, meta: PlayerMeta, e: Entity):
   if (meta.fiestaRestore) return;
   meta.fiestaRestore = { level: e.level, xp: meta.xp, talents: cloneAllocation(meta.talents) };
   e.level = FIESTA_STANDARD_LEVEL;
-  meta.talents = defaultBuild(meta.cls, talentPointsAtLevel(FIESTA_STANDARD_LEVEL));
+  // A standardized default build (spec + first-option rows) so every fighter
+  // enters equal; the player's real allocation returns with fiestaRestoreChar.
+  meta.talents = defaultBuild(meta.cls, FIESTA_STANDARD_LEVEL);
   meta.talentMods = computeTalentModifiers(meta.cls, meta.talents, e.level);
   meta.known = abilitiesKnownAt(meta.cls, e.level, ctx.playerMods(meta));
   meta.wireRev++; // talents/loadouts swapped for the bout, refresh the wire promptly

@@ -160,12 +160,6 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Hoogwacht-Grootzwaard',
   'entities.items.highwatch_wallshield.name': 'Hoogwacht-Muurschild',
   'entities.items.eastbrook_buckler.name': 'Oostbeek-Beukelaar',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Verander 20 sec. lang in een kolos, verbreek alle controle-effecten op jezelf en verhoog je toegebrachte schade met 20%.',
-  'entities.abilities.bladestorm.name': 'Messenstorm',
-  'entities.abilities.bladestorm.description':
-    'Word een wervelende storm van staal en tref 4 sec. lang elke seconde alle vijanden binnen 8 meter voor {damage} schade.',
   'entities.abilities.battle_stance.description':
     'Een agressieve gevechtshouding: je genereert 10% meer woede. De standaardhouding voor Wapens en Protectie.',
   'entities.abilities.battle_stance.name': 'Strijdhouding',
@@ -266,118 +260,42 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Keuzes',
   'hudChrome.talentRows.readoutSummary': 'Talenten: {head}, {spent}/{total} rijen geselecteerd.',
   'entities.abilities.aspect_of_the_wild.name': 'Wildtandgedaante',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Inspireert bondgenoten binnen 30 m met wilde kracht en verhoogt hun aanvalskracht met 45 en aanvalssnelheid met 5% gedurende 5 min. (jagertalent)',
-  'entities.abilities.aura_surge.name': 'Dageraadskets',
-  'entities.abilities.aura_surge.description':
-    'Slingert een bij dageraad gesmeed schild voor {damage} Heilige schade, legt het hoofddoel 2 sec. het zwijgen op en stuitert daarna naar maximaal 2 extra vijanden binnen 10 meter voor 75% schade per stuiter. (Paladijntalent)',
   'entities.abilities.avenging_wrath.name': 'Wraakvleugel',
-  'entities.abilities.avenging_wrath.description':
-    'Roept wrekende kracht op en verhoogt je aanvalskracht met 60 en spreukkracht met 30 gedurende 20 sec. (paladijntalent)',
   'entities.abilities.berserk.name': 'Rode nevel',
-  'entities.abilities.berserk.description':
-    'Verhoogt je aanvalskracht met 70 gedurende 15 sec. (druïdetalent)',
   'entities.abilities.blink.name': 'Flikkerstap',
-  'entities.abilities.blink.description':
-    'Teleporteert je 15 m vooruit en verbreekt worteleffecten. (magiërtalent)',
   'entities.abilities.bloodlust.name': 'Oorlogstrommen',
-  'entities.abilities.bloodlust.description':
-    'Jaagt bondgenoten binnen 30 m tot razernij en verhoogt hun aanvalssnelheid met 30% gedurende 15 sec. (sjamaantalent)',
   'entities.abilities.chain_lightning.name': 'Gevorkte bliksem',
-  'entities.abilities.chain_lightning.description':
-    'Slingert bliksem naar het doelgebied en brengt nabije vijanden {damage} schade toe. (sjamaantalent)',
   'entities.abilities.chaos_bolt.name': 'Ruinenschicht',
-  'entities.abilities.chaos_bolt.description':
-    'Slingert een chaotische vuurstraal die {damage} Vuurschade toebrengt. (tovenaarstalent)',
   'entities.abilities.cloak_of_shadows.name': 'Schaduwmantel',
-  'entities.abilities.cloak_of_shadows.description':
-    'Hult je in schaduwen en absorbeert 420 schade gedurende 5 sec. (schurkentalent)',
   'entities.abilities.cone_of_cold.name': 'Vorstveeg',
-  'entities.abilities.cone_of_cold.description':
-    'Treft nabije vijanden met vorst en brengt {damage} Vorstschade toe. (kenmerkende Vorstvaardigheid)',
   'entities.abilities.curse_of_exhaustion.name': 'Loden vloek',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Vervloekt het doelwit en vermindert de bewegingssnelheid met 30% gedurende 12 sec. (tovenaarstalent)',
   'entities.abilities.death_coil.name': 'Grafspiraal',
-  'entities.abilities.death_coil.description':
-    'Treft de vijand voor {damage} Schaduwschade en vervult hem daarna 3 sec. met afgrijzen. (tovenaarstalent)',
   'entities.abilities.deep_freeze.name': 'Doodsvorst',
-  'entities.abilities.deep_freeze.description':
-    'Bevriest het doelwit diep, brengt {damage} Vorstschade toe en verdooft het 4 sec. (magiërtalent)',
   'entities.abilities.desperate_prayer.name': 'Laatste gebed',
-  'entities.abilities.desperate_prayer.description':
-    'Geneest je direct voor {damage}. (priestertalent)',
   'entities.abilities.deterrence.name': 'Borstelwacht',
-  'entities.abilities.deterrence.description':
-    'Verhoogt je ontwijkingskans met 50 procentpunten gedurende 10 sec. (jagertalent)',
   'entities.abilities.divine_shield.name': 'Lichtwacht',
-  'entities.abilities.divine_shield.description':
-    'Beschermt je met heilige kracht en absorbeert 900 schade gedurende 8 sec. (paladijntalent)',
   'entities.abilities.earthbind.name': 'Grijpende aarde',
-  'entities.abilities.earthbind.description':
-    'Bindt nabije vijanden aan de aarde en wortelt ze 2 sec. (sjamaantalent)',
   'entities.abilities.evocation.name': 'Etherbron',
-  'entities.abilities.evocation.description': 'Herstelt direct 220 mana. (magiërtalent)',
   'entities.abilities.frenzied_regeneration.name': 'Wilde genezing',
-  'entities.abilities.frenzied_regeneration.description':
-    'Herstelt 180 gezondheid gedurende 10 sec. Alleen in Berenvorm. (druïdetalent)',
   'entities.abilities.frost_trap.name': 'Rijpval',
-  'entities.abilities.frost_trap.description':
-    'Bevriest vijanden in het doelgebied 3 sec. en verhindert dat ze bewegen of handelen. (jagertalent)',
   'entities.abilities.ghostly_strike.name': 'Spookslag',
-  'entities.abilities.ghostly_strike.description':
-    'Treft de vijand voor wapenschade plus {damage}, verhoogt kort de ontwijking en kent 1 combinatiepunt toe. (schurkentalent)',
   'entities.abilities.hammer_of_wrath.name': 'Klinkende hamer',
-  'entities.abilities.hammer_of_wrath.description':
-    'Slingert een heilige hamer naar een gewonde vijand en brengt {damage} Heilige schade toe. Alleen bruikbaar onder 20% gezondheid. (paladijntalent)',
   'entities.abilities.healing_stream.name': 'Bronwel',
-  'entities.abilities.healing_stream.description':
-    'Herstelt 120 gezondheid van een bevriend doelwit gedurende 12 sec. (sjamaantalent)',
   'entities.abilities.holy_wrath.name': 'Heiligenwoede',
-  'entities.abilities.holy_wrath.description':
-    'Ontketent heilige kracht en brengt nabije vijanden {damage} schade toe. (paladijntalent)',
   'entities.abilities.howl_of_terror.name': 'Huiveringwekkende huil',
-  'entities.abilities.howl_of_terror.description':
-    'Jaagt nabije vijanden tot 3 sec. angst aan. Schade kan het effect verbreken. (tovenaarstalent)',
   'entities.abilities.ice_block.name': 'Koude kist',
-  'entities.abilities.ice_block.description':
-    'Sluit je op in ijs en absorbeert 600 schade gedurende 8 sec. Je kunt niet handelen terwijl je opgesloten bent. Gebruik opnieuw om te annuleren. (magiërtalent)',
   'entities.abilities.inner_focus.name': 'Gestilde geest',
-  'entities.abilities.inner_focus.description':
-    'Maakt je volgende spreuk gratis. Duurt 60 sec. (priestertalent)',
   'entities.abilities.innervate.name': 'Levenssap',
-  'entities.abilities.innervate.description':
-    'Levend sap welt 10 sec. in je op en herstelt in golven 20 van je huidige hulpbron: mana, woede of energie. Van gedaante wisselen onderbreekt het niet. Slaap, verdoving of stasis brengt het sap tot stilstand. (druïdetalent)',
   'entities.abilities.meteor.name': 'Hemelsteen',
-  'entities.abilities.meteor.description':
-    'Roept een meteoor neer op het doelgebied en brengt {damage} Vuurschade toe. Daarna lijden vijanden daar 6 sec. lang elke 2 sec. 12 tot 18 Vuurschade. (magiërtalent)',
   'entities.abilities.mind_sear.name': 'Gedachtenbrand',
-  'entities.abilities.mind_sear.description':
-    'Kanaliseert Schaduwenergie naar het doelgebied en brengt nabije vijanden elke seconde {damage} schade toe. (priestertalent)',
   'entities.abilities.multi_shot.name': 'Splijtschot',
-  'entities.abilities.multi_shot.description':
-    'Vuurt een salvo af op het doelgebied en brengt vijanden binnen een straal van 8 m {damage} Fysieke schade toe. (jagertalent)',
   'entities.abilities.prayer_of_healing.name': 'Koorherstel',
-  'entities.abilities.prayer_of_healing.description':
-    'Geneest nabije bondgenoten voor {damage}. (priestertalent)',
   'entities.abilities.preparation.name': 'Noodplan',
-  'entities.abilities.preparation.description':
-    'Beëindigt de afkoeltijd van Sprint, Ontwijking en Verdwijning. (schurkentalent)',
   'entities.abilities.presence_of_mind.name': 'Razende geest',
-  'entities.abilities.presence_of_mind.description':
-    'Maakt je volgende spreuk met een spreuktijd onmiddellijk. Duurt 60 sec. (magiërtalent)',
   'entities.abilities.psychic_scream.name': 'Psychische schreeuw',
-  'entities.abilities.psychic_scream.description':
-    'Jaagt nabije vijanden tot 4 sec. angst aan. Schade kan het effect verbreken. (priestertalent)',
   'entities.abilities.shadowstep.name': 'Schaduwglip',
-  'entities.abilities.shadowstep.description':
-    'Stapt door de schaduwen naar je doelwit. (schurkentalent)',
   'entities.abilities.silence.name': 'Stilte',
-  'entities.abilities.silence.description':
-    'Legt het doelwit 4 sec. het zwijgen op. (priestertalent)',
   'entities.abilities.tranquility.name': 'Woudlied',
-  'entities.abilities.tranquility.description':
-    'Kanaliseert 4 sec. herstellende energie en geneest bondgenoten binnen 30 m elke seconde voor 42 tot 52. (druïdetalent)',
   'entities.abilities.cleansing_verdict.name': 'Zuiverend Vonnis',
   'entities.abilities.cleansing_verdict.description':
     'Verwijdert een schadelijk magisch effect van een bevriend doelwit en geneest het met Heilige magie voor {damage}.',
@@ -7831,4 +7749,133 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
     'Raakt vijanden voor je en kan gratis worden na een ontwijking of parering.',
   'guide.abilityHook.hamstring':
     'Belemmert de beweging van een vijand zodat die niet kan ontsnappen.',
+  'entities.abilities.aura_surge.name': 'Dageraadskets',
+  'entities.abilities.aura_surge.description':
+    'Slingert een bij dageraad gesmeed schild voor {damage} Heilige schade, legt het hoofddoel 2 sec. het zwijgen op en stuitert daarna naar maximaal 2 extra vijanden binnen 10 meter voor 75% schade per stuiter. (Paladijntalent)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Inspireert bondgenoten binnen 30 m met wilde kracht en verhoogt hun aanvalskracht met 45 en aanvalssnelheid met 5% gedurende 5 min. (jagertalent)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Verander 20 sec. lang in een kolos, verbreek alle controle-effecten op jezelf en verhoog je toegebrachte schade met 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Roept wrekende kracht op en verhoogt je aanvalskracht met 60 en spreukkracht met 30 gedurende 20 sec. (paladijntalent)',
+  'entities.abilities.berserk.description':
+    'Verhoogt je aanvalskracht met 70 gedurende 15 sec. (druïdetalent)',
+  'entities.abilities.bladestorm.name': 'Messenstorm',
+  'entities.abilities.bladestorm.description':
+    'Word een wervelende storm van staal en tref 4 sec. lang elke seconde alle vijanden binnen 8 meter voor {damage} schade.',
+  'entities.abilities.blink.description':
+    'Teleporteert je 15 m vooruit en verbreekt worteleffecten. (magiërtalent)',
+  'entities.abilities.bloodlust.description':
+    'Jaagt bondgenoten binnen 30 m tot razernij en verhoogt hun aanvalssnelheid met 30% gedurende 15 sec. (sjamaantalent)',
+  'entities.abilities.chain_lightning.description':
+    'Slingert bliksem naar het doelgebied en brengt nabije vijanden {damage} schade toe. (sjamaantalent)',
+  'entities.abilities.chaos_bolt.description':
+    'Slingert een chaotische vuurstraal die {damage} Vuurschade toebrengt. (tovenaarstalent)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Hult je in schaduwen en absorbeert 420 schade gedurende 5 sec. (schurkentalent)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a nabije vijanden con escarcha e inflige {damage} de daño de Vorst. (magiertalent)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Vervloekt het doelwit en vermindert de bewegingssnelheid met 30% gedurende 12 sec. (tovenaarstalent)',
+  'entities.abilities.death_coil.description':
+    'Treft de vijand voor {damage} Schaduwschade en vervult hem daarna 3 sec. met afgrijzen. (tovenaarstalent)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a doelwit, inflige {damage} de daño de Vorst y lo aturde durante 4 sec. (magiertalent)',
+  'entities.abilities.desperate_prayer.description':
+    'Geneest je direct voor {damage}. (priestertalent)',
+  'entities.abilities.deterrence.description':
+    'Verhoogt je ontwijkingskans met 50 procentpunten gedurende 10 sec. (jagertalent)',
+  'entities.abilities.divine_shield.description':
+    'Beschermt je met heilige kracht en absorbeert 900 schade gedurende 8 sec. (paladijntalent)',
+  'entities.abilities.earthbind.description':
+    'Bindt nabije vijanden aan de aarde en wortelt ze 2 sec. (sjamaantalent)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (magiertalent)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Herstelt 180 gezondheid gedurende 10 sec. Alleen in Berenvorm. (druïdetalent)',
+  'entities.abilities.frost_trap.description':
+    'Bevriest vijanden in het doelgebied 3 sec. en verhindert dat ze bewegen of handelen. (jagertalent)',
+  'entities.abilities.ghostly_strike.description':
+    'Treft de vijand voor wapenschade plus {damage}, verhoogt kort de ontwijking en kent 1 combinatiepunt toe. (schurkentalent)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Slingert een heilige hamer naar een gewonde vijand en brengt {damage} Heilige schade toe. Alleen bruikbaar onder 20% gezondheid. (paladijntalent)',
+  'entities.abilities.healing_stream.description':
+    'Herstelt 120 gezondheid van een bevriend doelwit gedurende 12 sec. (sjamaantalent)',
+  'entities.abilities.holy_wrath.description':
+    'Ontketent heilige kracht en brengt nabije vijanden {damage} schade toe. (paladijntalent)',
+  'entities.abilities.howl_of_terror.description':
+    'Jaagt nabije vijanden tot 3 sec. angst aan. Schade kan het effect verbreken. (tovenaarstalent)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 sec. (magiertalent)',
+  'entities.abilities.inner_focus.description':
+    'Maakt je volgende spreuk gratis. Duurt 60 sec. (priestertalent)',
+  'entities.abilities.innervate.description':
+    'Levend sap welt 10 sec. in je op en herstelt in golven 20 van je huidige hulpbron: mana, woede of energie. Van gedaante wisselen onderbreekt het niet. Slaap, verdoving of stasis brengt het sap tot stilstand. (druïdetalent)',
+  'entities.abilities.mend_pet.name': 'Oplappen',
+  'entities.abilities.mend_pet.description':
+    'Sana a vriendelijk doelwit por {damage} durante 15 sec. (jagertalent)',
+  'entities.abilities.meteor.description':
+    'Roept een meteoor neer op het doelgebied en brengt {damage} Vuurschade toe. Daarna lijden vijanden daar 6 sec. lang elke 2 sec. 12 tot 18 Vuurschade. (magiërtalent)',
+  'entities.abilities.mind_sear.description':
+    'Kanaliseert Schaduwenergie naar het doelgebied en brengt nabije vijanden elke seconde {damage} schade toe. (priestertalent)',
+  'entities.abilities.multi_shot.description':
+    'Vuurt een salvo af op het doelgebied en brengt vijanden binnen een straal van 8 m {damage} Fysieke schade toe. (jagertalent)',
+  'entities.abilities.prayer_of_healing.description':
+    'Geneest nabije bondgenoten voor {damage}. (priestertalent)',
+  'entities.abilities.preparation.description':
+    'Beëindigt de afkoeltijd van Sprint, Ontwijking en Verdwijning. (schurkentalent)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 sec. (magiertalent)',
+  'entities.abilities.psychic_scream.description':
+    'Jaagt nabije vijanden tot 4 sec. angst aan. Schade kan het effect verbreken. (priestertalent)',
+  'entities.abilities.shadowstep.description':
+    'Stapt door de schaduwen naar je doelwit. (schurkentalent)',
+  'entities.abilities.silence.description':
+    'Legt het doelwit 4 sec. het zwijgen op. (priestertalent)',
+  'entities.abilities.tranquility.description':
+    'Kanaliseert 4 sec. herstellende energie en geneest bondgenoten binnen 30 m elke seconde voor 42 tot 52. (druïdetalent)',
+  'game.talents.readout.rowsSummary': 'Talenten: {head}, {picked}/{unlocked} keuzerijen gekozen.',
+  'hudChrome.fct.absorbed': '{amount} geabsorbeerd',
+  'game.talents.choicesTab': 'Keuzes',
+  'game.talents.rowUnlockToast': 'Een nieuwe talentkeuze is ontgrendeld!',
+  'game.talents.rowUnlocks': 'Wordt ontgrendeld op niveau {level}',
+  'entities.abilities.blazing_barrier.name': 'Vlammende barrière',
+  'entities.abilities.blazing_barrier.description':
+    'Omhul jezelf met vlammen en absorbeer 130 schade gedurende 60 sec. (Vuur)',
+  'entities.abilities.cold_snap.name': 'Koudegolf',
+  'entities.abilities.cold_snap.description':
+    'Voltooit de afkoeltijd van Flitsstap, Vorstsluier en Grotere onzichtbaarheid. (magiërstalent)',
+  'entities.abilities.greater_invisibility.name': 'Grotere onzichtbaarheid',
+  'entities.abilities.greater_invisibility.description':
+    'Verdwijn gedurende 20 sec.: verwijdert 2 effecten met schade over tijd en je loopt 90% minder schade op terwijl je onzichtbaar bent en kort daarna. (magiërstalent)',
+  'entities.abilities.hot_streak.name': 'Hete reeks',
+  'entities.abilities.hot_streak.description':
+    'Passief: twee kritieke treffers achter elkaar met je Vuurspreuken (Sintelbout, Sintelval, Blakeren, Pyrelans of Vlammenslag) maken je volgende Pyrelans of Vlammenslag onmiddellijk en gratis. De verbruikers tellen mee voor de VOLGENDE reeks, inclusief gratis spreuken; Vlammenslag telt één keer, hoeveel vijanden hij ook raakt, en alleen de eerste inslag telt ooit mee. (Vuur)',
+  'entities.abilities.ice_floes.name': 'IJsschotsen',
+  'entities.abilities.ice_floes.description':
+    'Je volgende twee spreuken met een casttijd kunnen tijdens het bewegen worden uitgesproken. Duurt 15 sec. (magiërstalent)',
+  'entities.abilities.ignition.name': 'Ontbranding',
+  'entities.abilities.ignition.description':
+    'Passief: kritieke treffers van je spreuken verbranden het doelwit voor 40% van de toegebrachte schade gedurende 6 sec. en stapelen. (Vuurmeesterschap)',
+  'entities.abilities.mass_barrier.name': 'Massabarrière',
+  'entities.abilities.mass_barrier.description':
+    'Beschermt jou en maximaal 4 nabije bondgenoten binnen 30 m; elke barrière absorbeert 130 schade gedurende 60 sec. (magiërstalent)',
+  'entities.abilities.overload.name': 'Overbelasting',
+  'entities.abilities.overload.description':
+    'Je volgende spreuk wordt met 40% versterkt, maar kost 50% meer mana. Duurt 10 sec. (magiërstalent)',
+  'entities.abilities.power_echo.name': 'Krachtsecho',
+  'entities.abilities.power_echo.description':
+    'Je volgende directe spreuk herhaalt zich met 50% kracht op hetzelfde doelwit. Duurt 10 sec. (magiërstalent)',
+  'entities.abilities.rings_of_frost.name': 'Ring van vorst',
+  'entities.abilities.rings_of_frost.description':
+    'Roept gedurende 10 sec. een ring op. Vijanden die de rand oversteken, worden 4 sec. bevroren. (magiërstalent)',
+  'entities.abilities.rune_of_power.name': 'Krachtrune',
+  'entities.abilities.rune_of_power.description':
+    'Teken gedurende 15 sec. een krachtrune aan je voeten: bondgenoten binnen 8 m brengen 10% meer schade toe. (magiërstalent)',
+  'entities.abilities.summon_water_elemental.name': 'Waterelementaal oproepen',
+  'entities.abilities.summon_water_elemental.description':
+    'Roep een Waterelementaal op om naast je te vechten, Waterbouten naar je doelwit te slingeren en Waterstraal te kanaliseren. (Vorst)',
+  'entities.mobs.water_elemental.name': 'Waterelementaal',
+  'entities.items.conjured_bread4.name': 'Getoverd feestbrood',
+  'entities.items.conjured_water4.name': 'Getoverd bronwater',
 };

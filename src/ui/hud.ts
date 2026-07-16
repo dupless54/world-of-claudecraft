@@ -81,7 +81,6 @@ import { type QuestObjectiveRef, questObjectivesForMob } from '../sim/quest_targ
 import type { ResolvedAbility } from '../sim/sim';
 import type {
   AbilityDef,
-  AuraKind,
   CalendarResultCode,
   EquipSlot,
   HonorReason,
@@ -97,6 +96,7 @@ import type {
 } from '../sim/types';
 import {
   type AbilityEffect,
+  type AuraKind,
   CONSUME_DURATION,
   canPrestige,
   dist2d,
@@ -419,6 +419,15 @@ import {
 import { playerStealthed } from './player_stealthed';
 import { hydratePortraits, portraitChipHtml } from './portrait_chip';
 import { procAuraConsumeSelfNoteText, procAuraGainSelfNoteText } from './proc_fct_notes';
+import { buildProcOverlay } from './proc_overlay_dom';
+import { attachOverlayDrag } from './proc_overlay_drag';
+import { ProcOverlayPainter } from './proc_overlay_painter';
+import {
+  chronoOverlayCharges,
+  combustionOverlayActive,
+  frostOverlayCharges,
+  procOverlayState,
+} from './proc_overlay_view';
 import { maskProfanity } from './profanity';
 import { encodeItemLink, encodeQuestLink, parseChatSegments } from './quest_link';
 import { QuestProgressBanner } from './quest_progress_banner';
@@ -428,6 +437,7 @@ import { lockoutParts, lockoutShape } from './raid_lockout';
 import { type RaidLockoutI18n, raidLockoutPanelHtml } from './raid_lockout_view';
 import { restView } from './rest_indicator';
 import { RiteWindow } from './rite_window';
+import { isTalentRowUnlockLevel } from './row_unlock_toast';
 import { localizeServerText } from './server_i18n';
 import { localizeSimAuraName, localizeSimText } from './sim_i18n';
 import { SocialWindow } from './social_window';
@@ -855,9 +865,9 @@ const CHAT_GEOMETRY_KEY = 'woc_chat_geometry';
 // bottom resize handle. CSS clamps it to a valid range for the live viewport, so a value
 // saved in one orientation stays safe in another (never an off-screen / tiny panel).
 const MOBILE_CHAT_BOTTOM_KEY = 'woc_mobile_chat_bottom';
-// The persisted top-left keys for the movable unit frames live in
-// frame_pos_reset.ts (imported above) so the one-time reset clears the same
-// keys the MovableFrames read.
+// PLAYER_FRAME_POS_KEY and TARGET_FRAME_POS_KEY live in frame_pos_reset.ts
+// (imported above) so the one-time reset clears the same keys the MovableFrames
+// read. The movable party frame is HUD-local, so its key stays here.
 const CHAT_TEMPLATE_KEYS = {
   party: 'hud.chat.templates.party',
   yell: 'hud.chat.templates.yell',
@@ -932,6 +942,8 @@ function yellVoiceKey(text: string): string {
     .slice(0, 60)}`;
 }
 
+const CHEAT_DEATH_SAVE_TEXT = 'Cheat Death saves you!';
+
 export class Hud {
   // Ability slots across both rows: 1..11 on the primary bar, 12..22 on the
   // secondary bar (slot 0 is the fixed Attack toggle on the primary bar). The
@@ -1001,6 +1013,7 @@ export class Hud {
   // the pure vale_cup_charge_view core; only the input timing state lives here.
   private shootChargeSlot: number | null = null;
   private shootChargeStartMs = 0;
+  private empowerCharge: { slot: number; abilityId: string } | null = null;
   private dragAction: {
     action: Exclude<HotbarAction, null>;
     sourceIndex: number | null;
@@ -3088,9 +3101,9 @@ export class Hud {
     this.bindContextMenuActions((act) => {
       if (!isChatOpenTab(act)) return;
       if (this.chatTabs.includes(act)) this.removeChatTab(act);
-      // Focus the whisper tab on open so the effect is visible (channels stay put,
-      // as opening one must not hijack where the player's typed text goes).
-      else this.addChatTab(act, { select: act === WHISPER_TAB });
+      // Choosing a new tab also selects its send channel. This makes the freshly
+      // opened view immediately usable instead of retaining the previous tab.
+      else this.addChatTab(act, { select: true });
     });
   }
 
@@ -3546,6 +3559,24 @@ export class Hud {
     this.swingFillEl,
     this.swingLabelEl,
   );
+  // The spell-activation proc overlay (the Rising Phoenix, owner design
+  // 2026-07-11): built ONCE here (proc_overlay_dom), draggable + persistent
+  // (proc_overlay_drag), class-toggled per frame via the elided writers
+  // (proc_overlay_painter + the pure proc_overlay_view rule).
+  private readonly procOverlayEl = (() => {
+    const el = buildProcOverlay();
+    document.body.appendChild(el);
+    // Owner request: grab the phoenix while it burns and park it anywhere;
+    // the spot persists (viewport fractions, so a resize keeps it sensible).
+    attachOverlayDrag(el, 'procOverlayAnchor', { fx: 0.5, fy: 0.42 });
+    return el;
+  })();
+  private readonly procOverlayPainter = new ProcOverlayPainter(
+    this.writerFacet,
+    this.procOverlayEl,
+  );
+  // One-shot login preview gate for the phoenix (see update()).
+  private procOverlayPreviewed = false;
   // The per-frame FCT painter: the pooled-div ring that replaced the per-event
   // createElement + setTimeout fct() below. handleEvents + showSelfNote feed spawn(), which
   // projects the head anchor ONCE (screen-anchored, byte-faithful to the old fct() and to
@@ -3816,6 +3847,10 @@ export class Hud {
     currentAllocation: () => this.sim.talents,
     activeLoadout: () => this.sim.activeLoadout,
     loadouts: () => this.sim.loadouts,
+    abilityTooltip: (id) => {
+      const res = this.previewResolvedAbility(id);
+      return res ? this.abilityTooltip(res) : null;
+    },
     commitSpec: (specId) => this.sim.setSpec(specId),
     selectRow: (level, optionId) => this.sim.selectTalentRow(level, optionId),
     applyTalents: (allocation) => this.sim.applyTalents(allocation),
@@ -4742,7 +4777,8 @@ export class Hud {
   private itemTooltip(item: ItemDef, compare = true): string {
     const qColor = QUALITY_COLOR[item.quality ?? 'common'] ?? '#fff';
     let html = `<div class="tt-title" style="color:${qColor}">${esc(itemDisplayName(item))}</div>`;
-    // Quality/kind line, e.g. "Epic Armor". Heroic upgraded variants append a gold
+    // Quality/kind line, e.g. "Epic Armor". Heroic items (dungeon upgraded variants
+    // via heroicOf, bespoke heroic-tier raid gear via heroic) append a gold
     // "[HEROIC]" tag here (never in the name) so the drop reads "Epic Armor [HEROIC]".
     let qualityKindHtml = esc(
       t('itemUi.tooltip.qualityKind', {
@@ -4750,7 +4786,7 @@ export class Hud {
         kind: itemKindLabel(item.kind),
       }),
     );
-    if (item.heroicOf) {
+    if (item.heroicOf || item.heroic) {
       qualityKindHtml += ` <span style="color:#e5cc80">${esc(t('hudChrome.itemHeroicTag'))}</span>`;
     }
     html += `<div class="tt-sub">${qualityKindHtml}</div>`;
@@ -5134,6 +5170,32 @@ export class Hud {
     } else {
       this.renderGossip(npc);
     }
+  }
+
+  // Prefers the live resolved entry when the player already knows it (rank +
+  // talent mods reflected), else rebuilds a base resolve picking the highest rank
+  // at the player's level, mirroring abilitiesKnownAt's rank walk.
+  private previewResolvedAbility(id: string): ResolvedAbility | null {
+    const known = this.sim.known.find((k) => k.def.id === id);
+    if (known) return known;
+    const def = ABILITIES[id];
+    if (!def) return null;
+    let rank = 1;
+    let cost = def.cost;
+    let castTime = def.castTime;
+    let effects = def.effects;
+    let threatFlat = def.threat?.flat ?? 0;
+    const threatMult = def.threat?.mult ?? 1;
+    for (const r of def.ranks ?? []) {
+      if (r.level <= this.sim.player.level) {
+        rank = r.rank;
+        cost = r.cost;
+        effects = r.effects;
+        if (r.castTime !== undefined) castTime = r.castTime;
+        if (r.threatFlat !== undefined) threatFlat = r.threatFlat;
+      }
+    }
+    return { def, rank, cost, castTime, cooldown: def.cooldown, effects, threatFlat, threatMult };
   }
 
   private abilityTooltip(res: ResolvedAbility): string {
@@ -5652,6 +5714,11 @@ export class Hud {
     return this.abilityForSlot(slot)?.def.id ?? null;
   }
 
+  private empoweredAbilityIdForSlot(slot: number): string | null {
+    const known = this.abilityForSlot(slot);
+    return known?.def.empowerStages ? known.def.id : null;
+  }
+
   private shootRangeForSlot(slot: number): number {
     if (slot === 0) return this.sim.known[0]?.def.range ?? MELEE_RANGE;
     return this.abilityForSlot(slot)?.def.range ?? MELEE_RANGE;
@@ -5671,12 +5738,26 @@ export class Hud {
       this.updateShootCharge(); // show the meter at 0 this frame
       return;
     }
+    const empowered = this.empoweredAbilityIdForSlot(slot);
+    if (empowered) {
+      if (this.empowerCharge) return;
+      this.empowerCharge = { slot, abilityId: empowered };
+      this.sim.castAbility(empowered);
+      return;
+    }
     this.castSlot(slot);
   }
 
   // Slot key UP: release a charging shoot at the built power (aim distance encodes
   // the charge). A non-charging slot already fired on press, so this is a no-op.
   releaseSlot(slot: number): void {
+    if (this.empowerCharge?.slot === slot) {
+      const charge = this.empowerCharge;
+      this.empowerCharge = null;
+      this.sim.releaseEmpoweredAbility(charge.abilityId);
+      this.flashActionSlot(slot);
+      return;
+    }
     if (this.shootChargeSlot !== slot) return;
     const frac = this.shootChargeFrac();
     const id = this.abilityIdForSlot(slot);
@@ -5687,6 +5768,37 @@ export class Hud {
       this.castSportMove(id, Math.max(1, frac * range));
       this.flashActionSlot(slot);
     }
+  }
+
+  private bindEmpoweredActionHold(btn: HTMLButtonElement, resolveSlot: () => number): void {
+    let heldPointer: number | null = null;
+    let heldSlot: number | null = null;
+    btn.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      const slot = resolveSlot();
+      if (!this.empoweredAbilityIdForSlot(slot)) return;
+      if (this.empowerCharge) return;
+      heldPointer = event.pointerId;
+      heldSlot = slot;
+      this.pressSlot(slot);
+      try {
+        btn.setPointerCapture?.(event.pointerId);
+      } catch {
+        /* pointer already released */
+      }
+      event.preventDefault();
+    });
+    const release = (event: PointerEvent, suppressClick: boolean) => {
+      if (heldPointer !== event.pointerId || heldSlot === null) return;
+      const slot = heldSlot;
+      heldPointer = null;
+      heldSlot = null;
+      this.releaseSlot(slot);
+      if (suppressClick) this.suppressNextActionClick = true;
+      event.preventDefault();
+    };
+    btn.addEventListener('pointerup', (event) => release(event, true));
+    btn.addEventListener('pointercancel', (event) => release(event, false));
   }
 
   // Per-frame: paint the power meter off the pure view core; the core's `cancel`
@@ -5823,7 +5935,17 @@ export class Hud {
       // so the client-side slot remap never desyncs slot semantics
       const resolved = this.abilityForSlot(barSlot);
       if (resolved) {
-        if (resolved.def.targetMode === 'position') {
+        // A keyboard-generated button click has no pointer hold. Resolve it as
+        // a minimum-charge tap so an empowered spell can never stay stuck.
+        if (resolved.def.empowerStages) {
+          this.sim.castAbility(action.id);
+          this.sim.releaseEmpoweredAbility(action.id);
+          this.flashActionSlot(barSlot);
+          return;
+        }
+        // A self-centered channel (Bladestorm) casts at the caster's own feet:
+        // no ground-aim reticle, straight to the normal cast path.
+        if (resolved.def.targetMode === 'position' && !resolved.def.selfCentered) {
           if (this.isSportAbilityId(action.id)) {
             // Sport moves autocast toward facing (no reticle, no point-and-click).
             this.castSportTap(action.id, resolved.def.range);
@@ -5961,6 +6083,7 @@ export class Hud {
       btn.dataset.hotbarSlot = String(slot);
       // slot 0 is Attack for every class (auto-attack toggle — players
       // without right-click need a way in); the kit fills slots 1+
+      this.bindEmpoweredActionHold(btn, () => slot);
       btn.addEventListener('click', () => {
         if (this.suppressNextActionClick) {
           this.suppressNextActionClick = false;
@@ -6294,6 +6417,7 @@ export class Hud {
       attackBtn.blur();
     });
     slotBtns.forEach((btn, i) => {
+      this.bindEmpoweredActionHold(btn, () => sourceSlotForMobileButton(this.mobileActionPage, i));
       bindTouchTap(btn, () => {
         // A tap that ends a long-press drag (even one released back on its own
         // slot, a cancel) must not also cast: bindMobileRingDrag arms this flag
@@ -6561,6 +6685,7 @@ export class Hud {
   private bindMobileActionDrag(btn: HTMLButtonElement, slot: number): void {
     btn.addEventListener('pointerdown', (e) => {
       if (!document.body.classList.contains('mobile-touch') || e.pointerType !== 'touch') return;
+      if (this.empoweredAbilityIdForSlot(slot)) return;
       // Any populated slot (ability or item) can be picked up and swapped by
       // touch, matching desktop drag-and-drop which does not special-case
       // items either.
@@ -6654,6 +6779,7 @@ export class Hud {
     btn.addEventListener('pointerdown', (e) => {
       if (!document.body.classList.contains('mobile-touch') || e.pointerType !== 'touch') return;
       const sourceSlot = sourceSlotForMobileButton(this.mobileActionPage, ringIndex);
+      if (this.empoweredAbilityIdForSlot(sourceSlot)) return;
       if (!this.actionForSlot(sourceSlot)) return;
       this.clearMobileHotbarDrag();
       const sourceIndex = sourceSlot - 1;
@@ -6862,14 +6988,22 @@ export class Hud {
     const mode = pet.petMode ?? 'defensive';
     const cd = Math.ceil(Math.max(0, pet.petTauntTimer));
     const autoTaunt = pet.petAutoTaunt === true;
+    const autoWaterJet = pet.petAutoWaterJet === true;
+    const canTaunt = MOBS[pet.templateId]?.petCanTaunt !== false;
     const ownerClass = this.sim.cfg.playerClass;
+    const actionCooldownSig =
+      pet.templateId === 'water_elemental'
+        ? `water-jet:${cd}:${autoWaterJet ? 'auto' : 'manual'}`
+        : canTaunt
+          ? `${cd}:${autoTaunt ? 'auto' : 'manual'}`
+          : 'no-taunt';
     // Feed-button reason (full HP / no food) folds in so the pet bar redraws
     // when either flips, even while the pet stays otherwise unchanged.
     const feedSig =
       ownerClass === 'warlock'
         ? ''
         : (petFeedButtonState(pet.hp, pet.maxHp, this.hasPetFood()).reasonKey ?? 'ok');
-    const sig = `${pet.id}:${ownerClass}:${mode}:${cd}:${autoTaunt ? 'auto' : 'manual'}:${this.pendingPetFeed ? 'feed' : ''}:${this.petModeMenuOpen ? 'modes' : ''}:${feedSig}`;
+    const sig = `${pet.id}:${ownerClass}:${mode}:${actionCooldownSig}:${this.pendingPetFeed ? 'feed' : ''}:${this.petModeMenuOpen ? 'modes' : ''}:${feedSig}`;
     bar.style.display = 'flex';
     if (sig === this.lastPetBarSig) return;
     this.lastPetBarSig = sig;
@@ -7038,25 +7172,50 @@ export class Hud {
       petTooltip(t('hud.pet.petAttackTitle'), t('hud.pet.petAttackDesc')),
       () => this.sim.petAttack(),
     );
-    addButton(
-      commands,
-      PET_ACTION_ICONS.taunt,
-      t('hud.pet.taunt'),
-      petTooltip(t('hud.pet.petTauntTitle'), t('hud.pet.petTauntDesc')),
-      () => this.sim.petTaunt(),
-      {
-        autocast: autoTaunt,
-        cooldownText: cd > 0 ? `${cd}` : undefined,
-        onContextMenu: () => {
-          this.sim.setPetAutoTaunt(!autoTaunt);
-          this.lastPetBarSig = '';
+    if (pet.templateId === 'water_elemental') {
+      addButton(
+        commands,
+        PET_ACTION_ICONS.waterJet,
+        t('hud.pet.waterJet'),
+        petTooltip(t('hud.pet.waterJetTitle'), t('hud.pet.waterJetDesc')),
+        () => this.sim.petWaterJet(),
+        {
+          autocast: autoWaterJet,
+          cooldownText: cd > 0 ? `${cd}` : undefined,
+          // Right-click (desktop) or touch-hold (mobile) toggles autocast: the pet
+          // then fires Water Jet on cooldown on its own, the same as pet Growl.
+          onContextMenu: () => {
+            this.sim.setPetAutoWaterJet(!autoWaterJet);
+            this.lastPetBarSig = '';
+          },
+          onTouchHold: () => {
+            this.sim.setPetAutoWaterJet(!autoWaterJet);
+            this.lastPetBarSig = '';
+          },
         },
-        onTouchHold: () => {
-          this.sim.setPetAutoTaunt(!autoTaunt);
-          this.lastPetBarSig = '';
+      );
+    }
+    if (canTaunt) {
+      addButton(
+        commands,
+        PET_ACTION_ICONS.taunt,
+        t('hud.pet.taunt'),
+        petTooltip(t('hud.pet.petTauntTitle'), t('hud.pet.petTauntDesc')),
+        () => this.sim.petTaunt(),
+        {
+          autocast: autoTaunt,
+          cooldownText: cd > 0 ? `${cd}` : undefined,
+          onContextMenu: () => {
+            this.sim.setPetAutoTaunt(!autoTaunt);
+            this.lastPetBarSig = '';
+          },
+          onTouchHold: () => {
+            this.sim.setPetAutoTaunt(!autoTaunt);
+            this.lastPetBarSig = '';
+          },
         },
-      },
-    );
+      );
+    }
     if (ownerClass === 'warlock') {
       addButton(
         commands,
@@ -7559,6 +7718,33 @@ export class Hud {
     this.swingPeriod = swing.nextPeriod;
     this.lastSwingTimer = swing.nextTimer;
     this.swingTimerPainter.paint(swing);
+    // The phoenix: Heating Up lights its left half, Hot Streak completes it,
+    // spending puts it out (pure rule in proc_overlay_view; an unchanged state
+    // writes nothing). On the FIRST frame in-world, preview the unlit bird for
+    // a few seconds so the player can find it and drag it into place (one-shot
+    // timer, not per-frame work; the painter's two classes never conflict).
+    // The login preview only makes sense where the bird is otherwise RARE: the
+    // fire mage (Hot Streak procs occasionally). It is gated to fire so it never
+    // flashes on a warrior/other class, and never on a Chronomancer (whose bird
+    // is on screen constantly, one quarter per Aether Surge charge, so a preview
+    // would just be noise). Gated inside the one-shot guard so a mage whose spec
+    // loads a frame late still previews once.
+    if (!this.procOverlayPreviewed && this.sim.talentSpec === 'fire') {
+      this.procOverlayPreviewed = true;
+      this.procOverlayEl.classList.add('preview');
+      window.setTimeout(() => this.procOverlayEl.classList.remove('preview'), 8000);
+    }
+    // Chronomancy (arcane spec) drives the same bird from its Aether Surge
+    // charges (one quarter per charge); every other spec/class keeps the fire
+    // Heating Up / Hot Streak rule. Both routes clear the other's classes, so a
+    // spec swap never strands a half-lit bird.
+    if (this.sim.talentSpec === 'arcane') {
+      this.procOverlayPainter.paintChronoCharges(chronoOverlayCharges(p.auras));
+    } else if (this.sim.talentSpec === 'frost') {
+      this.procOverlayPainter.paintFrostCharges(frostOverlayCharges(p.auras));
+    } else {
+      this.procOverlayPainter.paint(procOverlayState(p.auras), combustionOverlayActive(p.auras));
+    }
 
     // action bar: the slot row, driven by the pure action_bar_view core + the thin
     // ActionBarPainter. Every per-slot icon / cooldown / dimming / count write
@@ -9149,6 +9335,7 @@ export class Hud {
         if (swing && src) {
           this.combat(swing, src.pos.x, src.pos.y, src.pos.z, 0.5, { cooldown: 0.08 });
         }
+        if ((ev.absorbed ?? 0) > 0) this.combat('combat_block', tp.x, tp.y, tp.z, 0.55);
         if (ev.kind === 'miss' || ev.kind === 'dodge' || ev.kind === 'resist') {
           this.combat('combat_dodge', tp.x, tp.y, tp.z, 0.5);
           return;
@@ -9354,6 +9541,20 @@ export class Hud {
           const isPlayerSource = ev.sourceId === sim.playerId;
           const isPlayerTarget = ev.targetId === sim.playerId;
           if (isPlayerSource || isPlayerTarget) this.lastCombatEventAt = performance.now();
+          if (isPlayerTarget && (ev.absorbed ?? 0) > 0) {
+            const absorbShape = fctSpawnShape({ type: 'absorb' });
+            if (absorbShape)
+              this.fctPainter.spawn(
+                {
+                  ...absorbShape,
+                  text: t('hudChrome.fct.absorbed', {
+                    amount: formatNumber(ev.absorbed ?? 0, { maximumFractionDigits: 0 }),
+                  }),
+                  target: tgt,
+                },
+                now,
+              );
+          }
           if (ev.kind === 'miss' || ev.kind === 'dodge' || ev.kind === 'resist') {
             // self vs other (carried on the shape's isSelf) drives the avoidance colour
             // token (#bbb vs #fff); the localized word stays at the call site. A resisted
@@ -9525,6 +9726,10 @@ export class Hud {
           this.showBanner(t('hud.core.levelBanner', { level: ev.level }));
           this.log(t('hud.core.levelLog', { level: ev.level }), '#ffd100');
           audio.levelUp();
+          if (isTalentRowUnlockLevel(ev.level)) {
+            this.showBanner(t('game.talents.rowUnlockToast'));
+            sfx.playUi('quest_ready', { gain: 4.5 });
+          }
           if (ev.level === 5) {
             const characterId = (this.sim as unknown as { characterId?: number }).characterId;
             trackMetaPixel(
@@ -10443,6 +10648,7 @@ export class Hud {
           if (isCombatFlavorLog(ev.entityId, ev.pid, ev.telegraph))
             this.combatLog(text, ev.color ?? '#ccc');
           else this.log(text, ev.color ?? '#ccc');
+          if (ev.text === CHEAT_DEATH_SAVE_TEXT) audio.fiestaRevive();
           const isNythraxisVisionLine = [
             'My king was a good man.',
             'I swore my blade to him.',

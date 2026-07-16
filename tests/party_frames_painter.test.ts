@@ -397,6 +397,8 @@ describe('PartyFramesPainter: keyed pool over the elided writers', () => {
           auras: [
             { id: 'weapon_imbue', kind: 'imbue' },
             { id: 'well_fed', kind: 'buff_sta' },
+            { id: 'arcane_intellect', kind: 'buff_int_pct' },
+            { id: 'temporal_exhaustion', kind: 'sated' },
             { id: 'power_word_shield', kind: 'absorb' },
             { id: 'deep_wounds', kind: 'dot' },
           ],

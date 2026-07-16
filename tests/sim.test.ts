@@ -186,9 +186,10 @@ describe('classic formulas', () => {
     expect(w10.map((k) => k.def.id)).toContain('overpower');
     const hs10 = w10.find((k) => k.def.id === 'heroic_strike')!;
     expect(hs10.rank).toBe(2);
-    const m8 = abilitiesKnownAt('mage', 8).map((k) => k.def.id);
-    expect(m8).toContain('polymorph');
-    expect(m8).not.toContain('frost_nova'); // level 10
+    // Bewitch trains at 7 in the reworked mage kit; Icebind at 5.
+    const m7 = abilitiesKnownAt('mage', 7).map((k) => k.def.id);
+    expect(m7).toContain('polymorph');
+    expect(m7).toContain('frost_nova');
   });
 
   it('ranks and new abilities carry the kit through the 10-20 band', () => {
@@ -653,6 +654,8 @@ describe('spell pushback', () => {
 
   it('a hit shaves a quarter off a channel instead of cancelling it', () => {
     const { sim, wolf } = castingMage(8);
+    // Aether Darts is Chronomancy-gated in the reworked kit; commit the spec first.
+    sim.setSpec('arcane');
     sim.castAbility('arcane_missiles');
     expect(sim.player.channeling).toBe(true);
     const remBefore = sim.player.castRemaining;

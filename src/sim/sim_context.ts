@@ -12,6 +12,7 @@
 // game/net/DOM/Three, no `Math.random`/`Date.now`), so it runs unchanged in Node,
 // the browser, and the headless RL env (enforced by tests/architecture.test.ts).
 
+import type { FrozenOrbState } from './combat/frozen_orb';
 import type { TalentModifiers } from './content/talents';
 import type { DeedRuntime } from './deeds';
 import type { DelayedEvent, GroundAoE } from './entity_roster';
@@ -99,6 +100,10 @@ export interface SimContextPrimitives {
   // delayedEvents.
   pendingProjectiles: PendingProjectile[];
   readonly groundAoEs: GroundAoE[];
+  // Live frost-mage Frozen Orbs (combat/frozen_orb.ts): released by the cast's
+  // frozenOrb effect, drifted/pulsed by tickFrozenOrbs in the tick prologue.
+  // Mutated in place (push/splice) like groundAoEs, so read-only.
+  readonly frozenOrbs: FrozenOrbState[];
   // dungeon-door registry (I1) appended to on dungeon_door spawn; null until built.
   // Read-write: I1's updateDoorTriggers lazily assigns the array on first build.
   dungeonDoorIds: number[] | null;
@@ -275,6 +280,10 @@ export interface SimContextCallbacks {
     // Amount is already fully source-modified (redirect shares); skip source-output mods.
     alreadyFinal?: boolean,
     abilityId?: string | null,
+    // One iteration of an AREA effect (aoeDamage/groundAoE fan-out). Read only by
+    // the Chronomancy Temporal Echo conversion; area Arcane damage heals the
+    // marked ally at a reduced rate. Defaults false.
+    aoe?: boolean,
   ): void;
   handleDeath(entity: Entity, killer: Entity | null): void;
   cancelCast(entity: Entity): void;
@@ -351,6 +360,7 @@ export interface SimContextCallbacks {
     amount: number,
     ability: string,
     abilityId?: string | null,
+    canCrit?: boolean,
   ): void;
   // Spell crit chance from intellect. STAYS on Sim (shared: the casting/ability
   // paths read it too); exposed here so the extracted heal core can draw its crit.
@@ -376,6 +386,7 @@ export interface SimContextCallbacks {
     duration: number,
   ): number | null;
   hostilesInRadius(source: Entity, pos: Vec3, radius: number): Entity[];
+  friendliesInRadius(source: Entity, pos: Vec3, radius: number): Entity[];
   breakStealth(entity: Entity): void;
 
   // Shared entry point (stays on Sim, exposed here): taunt forces a mob's target.
@@ -540,6 +551,17 @@ export interface SimContextCallbacks {
   swingIntervalMult(e: Entity): number;
   mobCanSwim(template: { family?: string; canSwim?: boolean } | undefined): boolean;
   resolveMovePoint(nx: number, nz: number, r: number, e: Entity): { x: number; z: number };
+  // From-point collision resolve (walls/fences/delve bounds) for swept teleports
+  // (repositionToAim/blinkForward): same body Sim movement uses, exposed on the seam.
+  resolveMove(
+    fromX: number,
+    fromZ: number,
+    nx: number,
+    nz: number,
+    r: number,
+    e: Entity,
+    ignoreFences?: boolean,
+  ): { x: number; z: number };
   // --- pet / delve-companion / boss-mechanic branches (owners: P1 / delve / M3-N1) ---
   updatePet(pet: Entity): void;
   isDelveCompanionMob(mob: Entity): boolean;
@@ -684,6 +706,14 @@ export interface SimContextCallbacks {
   // devCommands). Adds a stationary whisperable player near the primary; returns the
   // new pid, or -1 if the name is blank or already taken. Stays on Sim.
   spawnDevBot(name: string): number;
+  // /dev vendor: spawn the free-epic dev vendor next to the caller. Returns id or -1.
+  spawnDevVendor(pid?: number): number;
+  // /dev cascade: set up the controlled Cascada temporal playtest scenario (dummy +
+  // raid allies at known distances) and start the per-cast metrics session. Stays on Sim.
+  startCascadePlaytest(pid?: number): void;
+  // /dev sandbox: a generic practice scenario (dummy + regen-frozen raid bots at a 10k
+  // pool). Returns the number of allies spawned. Stays on Sim.
+  startDevSandbox(pid?: number): number;
   // Dev-only Dungeon Finder scenario seeding backing "/dev lfg" (dev_commands.ts,
   // gated by devCommands). Spawns finder dev bots around the caller. Stays on Sim.
   seedDungeonFinderDev(
@@ -835,6 +865,9 @@ export function createSimContext(host: SimContextHost): SimContext {
     },
     get groundAoEs() {
       return host.groundAoEs;
+    },
+    get frozenOrbs() {
+      return host.frozenOrbs;
     },
     get dungeonDoorIds() {
       return host.dungeonDoorIds;
@@ -1024,6 +1057,7 @@ export function createSimContext(host: SimContextHost): SimContext {
     applyKnockback: host.applyKnockback,
     diminishedCrowdControlDuration: host.diminishedCrowdControlDuration,
     hostilesInRadius: host.hostilesInRadius,
+    friendliesInRadius: host.friendliesInRadius,
     breakStealth: host.breakStealth,
     applyTaunt: host.applyTaunt,
     summonPet: host.summonPet,
@@ -1091,6 +1125,7 @@ export function createSimContext(host: SimContextHost): SimContext {
     swingIntervalMult: host.swingIntervalMult,
     mobCanSwim: host.mobCanSwim,
     resolveMovePoint: host.resolveMovePoint,
+    resolveMove: host.resolveMove,
     updatePet: host.updatePet,
     isDelveCompanionMob: host.isDelveCompanionMob,
     updateDelveCompanion: host.updateDelveCompanion,
@@ -1153,6 +1188,9 @@ export function createSimContext(host: SimContextHost): SimContext {
     setPlayerLevel: host.setPlayerLevel,
     notice: host.notice,
     spawnDevBot: host.spawnDevBot,
+    spawnDevVendor: host.spawnDevVendor,
+    startCascadePlaytest: host.startCascadePlaytest,
+    startDevSandbox: host.startDevSandbox,
     seedDungeonFinderDev: host.seedDungeonFinderDev,
     // L2 inventory/vendor (W2): the four still-on-Sim helpers the moved useItem dispatches to.
     startFishing: host.startFishing,

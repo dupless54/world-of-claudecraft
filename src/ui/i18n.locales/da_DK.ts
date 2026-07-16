@@ -157,12 +157,6 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Højvagt Storsværd',
   'entities.items.highwatch_wallshield.name': 'Højvagt Murskjold',
   'entities.items.eastbrook_buckler.name': 'Østbæk Rundskjold',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Forvandl dig til en kolos i 20 sek., bryd alle kontroleffekter på dig, og øg din skade med 20%.',
-  'entities.abilities.bladestorm.name': 'Klingestorm',
-  'entities.abilities.bladestorm.description':
-    'Bliv til en hvirvlende storm af stål, og ram alle fjender inden for 8 meter for {damage} skade hvert sekund i 4 sek.',
   'entities.abilities.battle_stance.description':
     'En aggressiv kampstilling: du genererer 10% mere raseri. Standardstillingen for Arms og Beskyttelse.',
   'entities.abilities.battle_stance.name': 'Kampstilling',
@@ -263,117 +257,42 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Valg',
   'hudChrome.talentRows.readoutSummary': 'Talenter: {head}, {spent}/{total} rækker valgt.',
   'entities.abilities.aspect_of_the_wild.name': 'Vildtands skikkelse',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Indgyder vild styrke i allierede inden for 30 m og øger deres angrebskraft med 45 og angrebshastighed med 5 % i 5 min. (jægertalent)',
-  'entities.abilities.aura_surge.name': 'Daggryets rikochet',
-  'entities.abilities.aura_surge.description':
-    'Kaster et daggrysmedet skjold for {damage} Hellig skade, bringer det primære mål til tavshed i 2 sek. og hopper derefter til op til 2 yderligere fjender inden for 10 meter for 75% skade pr. hop. (Paladintalent)',
   'entities.abilities.avenging_wrath.name': 'Hævnerfløj',
-  'entities.abilities.avenging_wrath.description':
-    'Påkalder hævnende kraft og øger din angrebskraft med 60 og magikraft med 30 i 20 sek. (paladintalent)',
   'entities.abilities.berserk.name': 'Rød dis',
-  'entities.abilities.berserk.description':
-    'Øger din angrebskraft med 70 i 15 sek. (druidentalent)',
   'entities.abilities.blink.name': 'Flimmertrin',
-  'entities.abilities.blink.description':
-    'Teleporterer dig 15 m fremad og bryder forankringseffekter. (magikertalent)',
   'entities.abilities.bloodlust.name': 'Krigstrommer',
-  'entities.abilities.bloodlust.description':
-    'Pisker allierede inden for 30 m ind i et raseri og øger deres angrebshastighed med 30 % i 15 sek. (shamantalent)',
   'entities.abilities.chain_lightning.name': 'Gaffellyn',
-  'entities.abilities.chain_lightning.description':
-    'Kaster lyn mod målområdet og giver {damage} skade til fjender i nærheden. (shamantalent)',
   'entities.abilities.chaos_bolt.name': 'Ruinbolt',
-  'entities.abilities.chaos_bolt.description':
-    'Kaster en kaotisk ildkugle, der giver {damage} Ildskade. (troldmandstalent)',
   'entities.abilities.cloak_of_shadows.name': 'Skyggekappe',
-  'entities.abilities.cloak_of_shadows.description':
-    'Indhyller dig i skygger og absorberer 420 skade i 5 sek. (slyngeltalent)',
   'entities.abilities.cone_of_cold.name': 'Frostfej',
-  'entities.abilities.cone_of_cold.description':
-    'Rammer fjender i nærheden med frost og giver {damage} Frostskade. (Frost-signaturevne)',
   'entities.abilities.curse_of_exhaustion.name': 'Blytung forbandelse',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Forbander målet og reducerer dets bevægelseshastighed med 30 % i 12 sek. (troldmandstalent)',
   'entities.abilities.death_coil.name': 'Gravspiral',
-  'entities.abilities.death_coil.description':
-    'Rammer fjenden for {damage} Skyggeskade og skræmmer den derefter i 3 sek. (troldmandstalent)',
   'entities.abilities.deep_freeze.name': 'Dødfrost',
-  'entities.abilities.deep_freeze.description':
-    'Dybfryser målet, giver {damage} Frostskade og bedøver det i 4 sek. (magikertalent)',
   'entities.abilities.desperate_prayer.name': 'Sidste bøn',
-  'entities.abilities.desperate_prayer.description':
-    'Helbreder dig øjeblikkeligt for {damage}. (præstetalent)',
   'entities.abilities.deterrence.name': 'Børsteværn',
-  'entities.abilities.deterrence.description':
-    'Øger din undvigelseschance med 50 procentpoint i 10 sek. (jægertalent)',
   'entities.abilities.divine_shield.name': 'Lysværn',
-  'entities.abilities.divine_shield.description':
-    'Beskytter dig med hellig kraft og absorberer 900 skade i 8 sek. (paladintalent)',
   'entities.abilities.earthbind.name': 'Gribende jord',
-  'entities.abilities.earthbind.description':
-    'Binder fjender i nærheden til jorden og forankrer dem i 2 sek. (shamantalent)',
   'entities.abilities.evocation.name': 'Æterbrønd',
-  'entities.abilities.evocation.description': 'Genopretter øjeblikkeligt 220 mana. (magikertalent)',
   'entities.abilities.frenzied_regeneration.name': 'Vild heling',
-  'entities.abilities.frenzied_regeneration.description':
-    'Genopretter 180 helbred over 10 sek. Kun i Bjørneform. (druidentalent)',
   'entities.abilities.frost_trap.name': 'Rimfælde',
-  'entities.abilities.frost_trap.description':
-    'Fryser fjender i målområdet i 3 sek., så de hverken kan bevæge sig eller handle. (jægertalent)',
   'entities.abilities.ghostly_strike.name': 'Genfærdsslag',
-  'entities.abilities.ghostly_strike.description':
-    'Rammer fjenden for våbenskade plus {damage}, øger kortvarigt undvigelse og giver 1 kombinationspoint. (slyngeltalent)',
   'entities.abilities.hammer_of_wrath.name': 'Klanghammer',
-  'entities.abilities.hammer_of_wrath.description':
-    'Kaster en hellig hammer mod en såret fjende for {damage} Hellig skade. Kan kun bruges under 20 % helbred. (paladintalent)',
   'entities.abilities.healing_stream.name': 'Kildebrønd',
-  'entities.abilities.healing_stream.description':
-    'Genopretter 120 helbred hos et allieret mål over 12 sek. (shamantalent)',
   'entities.abilities.holy_wrath.name': 'Helgenvrede',
-  'entities.abilities.holy_wrath.description':
-    'Udløser hellig kraft og giver {damage} skade til fjender i nærheden. (paladintalent)',
   'entities.abilities.howl_of_terror.name': 'Rædselshyl',
-  'entities.abilities.howl_of_terror.description':
-    'Skræmmer fjender i nærheden i op til 3 sek. Skade kan bryde effekten. (troldmandstalent)',
   'entities.abilities.ice_block.name': 'Kold kiste',
-  'entities.abilities.ice_block.description':
-    'Indkapsler dig i is og absorberer 600 skade i 8 sek. Du kan ikke handle, mens du er indkapslet. Kast igen for at annullere. (magikertalent)',
   'entities.abilities.inner_focus.name': 'Stillet sind',
-  'entities.abilities.inner_focus.description':
-    'Gør din næste besværgelse gratis. Varer 60 sek. (præstetalent)',
   'entities.abilities.innervate.name': 'Livssaft',
-  'entities.abilities.innervate.description':
-    'Levende saft vælder op i dig i 10 sek. og genopretter 20 af din aktuelle ressource i bølger: mana, raseri eller energi. Formskifte afbryder den ikke. Søvn, bedøvelse eller stase standser saften. (druidentalent)',
   'entities.abilities.meteor.name': 'Himmelsten',
-  'entities.abilities.meteor.description':
-    'Nedkalder en meteor på målområdet og giver {damage} Ildskade. Derefter brændes fjender i området for 12 til 18 Ildskade hvert 2. sek. i 6 sek. (magikertalent)',
   'entities.abilities.mind_sear.name': 'Tankebrand',
-  'entities.abilities.mind_sear.description':
-    'Kanaliserer skyggeenergi mod målområdet og giver {damage} skade hvert sekund til fjender i nærheden. (præstetalent)',
   'entities.abilities.multi_shot.name': 'Splitskud',
-  'entities.abilities.multi_shot.description':
-    'Affyrer en salve mod målområdet og giver {damage} Fysisk skade til fjender inden for en radius af 8 m. (jægertalent)',
   'entities.abilities.prayer_of_healing.name': 'Korhelbredelse',
-  'entities.abilities.prayer_of_healing.description':
-    'Helbreder allierede i nærheden for {damage}. (præstetalent)',
   'entities.abilities.preparation.name': 'Nødplan',
-  'entities.abilities.preparation.description':
-    'Afslutter nedkølingen på Sprint, Undvigelse og Forsvinden. (slyngeltalent)',
   'entities.abilities.presence_of_mind.name': 'Ræsende sind',
-  'entities.abilities.presence_of_mind.description':
-    'Gør din næste besværgelse med kastetid øjeblikkelig. Varer 60 sek. (magikertalent)',
   'entities.abilities.psychic_scream.name': 'Psykisk skrig',
-  'entities.abilities.psychic_scream.description':
-    'Skræmmer fjender i nærheden i op til 4 sek. Skade kan bryde effekten. (præstetalent)',
   'entities.abilities.shadowstep.name': 'Skyggesmut',
-  'entities.abilities.shadowstep.description':
-    'Træder gennem skyggerne mod dit mål. (slyngeltalent)',
   'entities.abilities.silence.name': 'Tavshed',
-  'entities.abilities.silence.description': 'Bringer målet til tavshed i 4 sek. (præstetalent)',
   'entities.abilities.tranquility.name': 'Lundens sang',
-  'entities.abilities.tranquility.description':
-    'Kanaliserer helbredende energi i 4 sek. og helbreder allierede inden for 30 m for 42 til 52 hvert sekund. (druidentalent)',
   'entities.abilities.cleansing_verdict.name': 'Rensende Dom',
   'entities.abilities.cleansing_verdict.description':
     'Fjerner en skadelig magisk effekt fra et venligt mål og helbreder det med Hellig magi for {damage}.',
@@ -7716,4 +7635,132 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Svinger gennem fjender foran dig og kan blive gratis efter en undvigelse eller parering.',
   'guide.abilityHook.hamstring': 'Hæmmer en fjendes bevægelse, så den ikke kan flygte.',
+  'entities.abilities.aura_surge.name': 'Daggryets rikochet',
+  'entities.abilities.aura_surge.description':
+    'Kaster et daggrysmedet skjold for {damage} Hellig skade, bringer det primære mål til tavshed i 2 sek. og hopper derefter til op til 2 yderligere fjender inden for 10 meter for 75% skade pr. hop. (Paladintalent)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Indgyder vild styrke i allierede inden for 30 m og øger deres angrebskraft med 45 og angrebshastighed med 5 % i 5 min. (jægertalent)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Forvandl dig til en kolos i 20 sek., bryd alle kontroleffekter på dig, og øg din skade med 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Påkalder hævnende kraft og øger din angrebskraft med 60 og magikraft med 30 i 20 sek. (paladintalent)',
+  'entities.abilities.berserk.description':
+    'Øger din angrebskraft med 70 i 15 sek. (druidentalent)',
+  'entities.abilities.bladestorm.name': 'Klingestorm',
+  'entities.abilities.bladestorm.description':
+    'Bliv til en hvirvlende storm af stål, og ram alle fjender inden for 8 meter for {damage} skade hvert sekund i 4 sek.',
+  'entities.abilities.blink.description':
+    'Teleporterer dig 15 m fremad og bryder forankringseffekter. (magikertalent)',
+  'entities.abilities.bloodlust.description':
+    'Pisker allierede inden for 30 m ind i et raseri og øger deres angrebshastighed med 30 % i 15 sek. (shamantalent)',
+  'entities.abilities.chain_lightning.description':
+    'Kaster lyn mod målområdet og giver {damage} skade til fjender i nærheden. (shamantalent)',
+  'entities.abilities.chaos_bolt.description':
+    'Kaster en kaotisk ildkugle, der giver {damage} Ildskade. (troldmandstalent)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Indhyller dig i skygger og absorberer 420 skade i 5 sek. (slyngeltalent)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a nærliggende fjender con escarcha e inflige {damage} de daño de Frost. (magikertalent)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Forbander målet og reducerer dets bevægelseshastighed med 30 % i 12 sek. (troldmandstalent)',
+  'entities.abilities.death_coil.description':
+    'Rammer fjenden for {damage} Skyggeskade og skræmmer den derefter i 3 sek. (troldmandstalent)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a målet, inflige {damage} de daño de Frost y lo aturde durante 4 sek. (magikertalent)',
+  'entities.abilities.desperate_prayer.description':
+    'Helbreder dig øjeblikkeligt for {damage}. (præstetalent)',
+  'entities.abilities.deterrence.description':
+    'Øger din undvigelseschance med 50 procentpoint i 10 sek. (jægertalent)',
+  'entities.abilities.divine_shield.description':
+    'Beskytter dig med hellig kraft og absorberer 900 skade i 8 sek. (paladintalent)',
+  'entities.abilities.earthbind.description':
+    'Binder fjender i nærheden til jorden og forankrer dem i 2 sek. (shamantalent)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (magikertalent)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Genopretter 180 helbred over 10 sek. Kun i Bjørneform. (druidentalent)',
+  'entities.abilities.frost_trap.description':
+    'Fryser fjender i målområdet i 3 sek., så de hverken kan bevæge sig eller handle. (jægertalent)',
+  'entities.abilities.ghostly_strike.description':
+    'Rammer fjenden for våbenskade plus {damage}, øger kortvarigt undvigelse og giver 1 kombinationspoint. (slyngeltalent)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Kaster en hellig hammer mod en såret fjende for {damage} Hellig skade. Kan kun bruges under 20 % helbred. (paladintalent)',
+  'entities.abilities.healing_stream.description':
+    'Genopretter 120 helbred hos et allieret mål over 12 sek. (shamantalent)',
+  'entities.abilities.holy_wrath.description':
+    'Udløser hellig kraft og giver {damage} skade til fjender i nærheden. (paladintalent)',
+  'entities.abilities.howl_of_terror.description':
+    'Skræmmer fjender i nærheden i op til 3 sek. Skade kan bryde effekten. (troldmandstalent)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 sek. (magikertalent)',
+  'entities.abilities.inner_focus.description':
+    'Gør din næste besværgelse gratis. Varer 60 sek. (præstetalent)',
+  'entities.abilities.innervate.description':
+    'Levende saft vælder op i dig i 10 sek. og genopretter 20 af din aktuelle ressource i bølger: mana, raseri eller energi. Formskifte afbryder den ikke. Søvn, bedøvelse eller stase standser saften. (druidentalent)',
+  'entities.abilities.mend_pet.name': 'Lappe sammen',
+  'entities.abilities.mend_pet.description':
+    'Sana a et venligt mål por {damage} durante 15 sek. (jægertalent)',
+  'entities.abilities.meteor.description':
+    'Nedkalder en meteor på målområdet og giver {damage} Ildskade. Derefter brændes fjender i området for 12 til 18 Ildskade hvert 2. sek. i 6 sek. (magikertalent)',
+  'entities.abilities.mind_sear.description':
+    'Kanaliserer skyggeenergi mod målområdet og giver {damage} skade hvert sekund til fjender i nærheden. (præstetalent)',
+  'entities.abilities.multi_shot.description':
+    'Affyrer en salve mod målområdet og giver {damage} Fysisk skade til fjender inden for en radius af 8 m. (jægertalent)',
+  'entities.abilities.prayer_of_healing.description':
+    'Helbreder allierede i nærheden for {damage}. (præstetalent)',
+  'entities.abilities.preparation.description':
+    'Afslutter nedkølingen på Sprint, Undvigelse og Forsvinden. (slyngeltalent)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 sek. (magikertalent)',
+  'entities.abilities.psychic_scream.description':
+    'Skræmmer fjender i nærheden i op til 4 sek. Skade kan bryde effekten. (præstetalent)',
+  'entities.abilities.shadowstep.description':
+    'Træder gennem skyggerne mod dit mål. (slyngeltalent)',
+  'entities.abilities.silence.description': 'Bringer målet til tavshed i 4 sek. (præstetalent)',
+  'entities.abilities.tranquility.description':
+    'Kanaliserer helbredende energi i 4 sek. og helbreder allierede inden for 30 m for 42 til 52 hvert sekund. (druidentalent)',
+  'game.talents.readout.rowsSummary': 'Talenter: {head}, {picked}/{unlocked} valgrupper valgt.',
+  'hudChrome.fct.absorbed': '{amount} absorberet',
+  'game.talents.choicesTab': 'Valg',
+  'game.talents.rowUnlockToast': 'Et nyt talentvalg er låst op!',
+  'game.talents.rowUnlocks': 'Låses op på niveau {level}',
+  'entities.abilities.blazing_barrier.name': 'Flammende barriere',
+  'entities.abilities.blazing_barrier.description':
+    'Indhyl dig i flammer og absorber 130 skade i 60 sek. (Ild)',
+  'entities.abilities.cold_snap.name': 'Kuldechok',
+  'entities.abilities.cold_snap.description':
+    'Afslutter nedkølingen for Flimmertrin, Frostslør og Større usynlighed. (magikertalent)',
+  'entities.abilities.greater_invisibility.name': 'Større usynlighed',
+  'entities.abilities.greater_invisibility.description':
+    'Forsvind i 20 sek.: fjerner 2 skader over tid-effekter, og du tager 90% mindre skade, mens du er usynlig og kort tid derefter. (magikertalent)',
+  'entities.abilities.hot_streak.name': 'Hed stime',
+  'entities.abilities.hot_streak.description':
+    'Passiv: to kritiske træffere i træk med dine Ildbesværgelser (Glødlyn, Gløderfald, Skoldning, Bållanse eller Flammeslag) gør din næste Bållanse eller dit næste Flammeslag øjeblikkeligt og gratis. Forbrugerne tæller med til den NÆSTE stime, også gratis kast; et Flammeslag tæller én gang, uanset hvor mange fjender det rammer, og kun det første nedslag tæller nogensinde. (Ild)',
+  'entities.abilities.ice_floes.name': 'Isflager',
+  'entities.abilities.ice_floes.description':
+    'Dine næste to besværgelser med kastetid kan kastes, mens du bevæger dig. Varer i 15 sek. (magikertalent)',
+  'entities.abilities.ignition.name': 'Antændelse',
+  'entities.abilities.ignition.description':
+    'Passiv: kritiske træffere med dine besværgelser brænder målet for 40% af den påførte skade over 6 sek. og kan stables. (Ildbeherskelse)',
+  'entities.abilities.mass_barrier.name': 'Massebarriere',
+  'entities.abilities.mass_barrier.description':
+    'Beskytter dig og op til 4 nærliggende allierede inden for 30 m; hver barriere absorberer 130 skade i 60 sek. (magikertalent)',
+  'entities.abilities.overload.name': 'Overbelastning',
+  'entities.abilities.overload.description':
+    'Din næste besværgelse forstærkes med 40%, men koster 50% mere mana. Varer i 10 sek. (magikertalent)',
+  'entities.abilities.power_echo.name': 'Kraftekko',
+  'entities.abilities.power_echo.description':
+    'Din næste direkte besværgelse gentages med 50% kraft på det samme mål. Varer i 10 sek. (magikertalent)',
+  'entities.abilities.rings_of_frost.name': 'Frostring',
+  'entities.abilities.rings_of_frost.description':
+    'Hidkalder en ring i 10 sek. Fjender, der krydser dens kant, fryses i 4 sek. (magikertalent)',
+  'entities.abilities.rune_of_power.name': 'Kraftrune',
+  'entities.abilities.rune_of_power.description':
+    'Indskriv en kraftrune ved dine fødder i 15 sek.: allierede, der står inden for 8 m, gør 10% mere skade. (magikertalent)',
+  'entities.abilities.summon_water_elemental.name': 'Hidkald vandelementar',
+  'entities.abilities.summon_water_elemental.description':
+    'Hidkald en vandelementar, der kæmper ved din side, slynger Vandprojektiler mod dit mål og kanaliserer Vandstråle. (Frost)',
+  'entities.mobs.water_elemental.name': 'Vandelementar',
+  'entities.items.conjured_bread4.name': 'Fremmanet festbrød',
+  'entities.items.conjured_water4.name': 'Fremmanet kildevand',
 };

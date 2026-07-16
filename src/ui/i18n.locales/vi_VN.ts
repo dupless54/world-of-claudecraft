@@ -156,12 +156,6 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Đại Kiếm Highwatch',
   'entities.items.highwatch_wallshield.name': 'Khiên Tường Highwatch',
   'entities.items.eastbrook_buckler.name': 'Khiên Nhỏ Đông Khê',
-  'entities.abilities.avatar.name': 'Hóa Thân',
-  'entities.abilities.avatar.description':
-    'Hóa thành một khổng tượng trong 20 giây, phá bỏ mọi hiệu ứng khống chế lên bạn và tăng 20% sát thương gây ra.',
-  'entities.abilities.bladestorm.name': 'Bão Kiếm',
-  'entities.abilities.bladestorm.description':
-    'Hóa thành một cơn bão thép cuồng xoáy, đánh trúng mọi kẻ địch trong phạm vi 8 mét với {damage} sát thương mỗi giây trong 4 giây.',
   'entities.abilities.battle_stance.description':
     'Thế đứng tấn công hung hãn: bạn tạo nộ khí nhiều hơn 10%. Thế đứng mặc định của nhánh Vũ Khí và nhánh Hộ Vệ.',
   'entities.abilities.battle_stance.name': 'Thế Công',
@@ -262,118 +256,42 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Lựa chọn',
   'hudChrome.talentRows.readoutSummary': 'Thiên phú: {head}, đã chọn {spent}/{total} hàng.',
   'entities.abilities.aspect_of_the_wild.name': 'Dáng Nanh Hoang',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Truyền sức mạnh hoang dã cho đồng minh trong phạm vi 30 m, tăng 45 sức mạnh công kích và 5% tốc độ đánh của họ trong 5 phút. (thiên phú Thợ săn)',
-  'entities.abilities.aura_surge.name': 'Khiên Dội Bình Minh',
-  'entities.abilities.aura_surge.description':
-    'Ném một tấm khiên rèn từ bình minh gây {damage} sát thương Thánh, khiến mục tiêu chính câm lặng trong 2 giây, rồi dội sang tối đa 2 kẻ địch khác trong phạm vi 10 mét, gây 75% sát thương mỗi lần dội. (thiên phú Paladin)',
   'entities.abilities.avenging_wrath.name': 'Cánh Báo Thù',
-  'entities.abilities.avenging_wrath.description':
-    'Triệu hồi sức mạnh báo thù, tăng 60 sức mạnh công kích và 30 sức mạnh phép thuật của bạn trong 20 giây. (thiên phú Paladin)',
   'entities.abilities.berserk.name': 'Sương Đỏ',
-  'entities.abilities.berserk.description':
-    'Tăng 70 sức mạnh công kích của bạn trong 15 giây. (thiên phú Druid)',
   'entities.abilities.blink.name': 'Bước Chớp',
-  'entities.abilities.blink.description':
-    'Dịch chuyển bạn 15 m về phía trước và phá hiệu ứng trói chân. (thiên phú Pháp sư)',
   'entities.abilities.bloodlust.name': 'Trống Chiến',
-  'entities.abilities.bloodlust.description':
-    'Khiến đồng minh trong phạm vi 30 m trở nên cuồng nộ, tăng 30% tốc độ đánh của họ trong 15 giây. (thiên phú Shaman)',
   'entities.abilities.chain_lightning.name': 'Sét Rẽ Nhánh',
-  'entities.abilities.chain_lightning.description':
-    'Phóng sét vào khu vực mục tiêu, gây {damage} sát thương lên kẻ địch ở gần. (thiên phú Shaman)',
   'entities.abilities.chaos_bolt.name': 'Tia Hủy Diệt',
-  'entities.abilities.chaos_bolt.description':
-    'Phóng một luồng lửa hỗn loạn gây {damage} sát thương Lửa. (thiên phú Warlock)',
   'entities.abilities.cloak_of_shadows.name': 'Áo Choàng Bóng',
-  'entities.abilities.cloak_of_shadows.description':
-    'Bao phủ bạn trong bóng tối, hấp thụ 420 sát thương trong 5 giây. (thiên phú Đạo tặc)',
   'entities.abilities.cone_of_cold.name': 'Quét Băng',
-  'entities.abilities.cone_of_cold.description':
-    'Đánh kẻ địch ở gần bằng băng giá, gây {damage} sát thương Băng. (kỹ năng đặc trưng hệ Băng)',
   'entities.abilities.curse_of_exhaustion.name': 'Lời Nguyền Chì',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Nguyền rủa mục tiêu, giảm 30% tốc độ di chuyển trong 12 giây. (thiên phú Warlock)',
   'entities.abilities.death_coil.name': 'Vòng Xoáy Mộ',
-  'entities.abilities.death_coil.description':
-    'Đánh kẻ địch gây {damage} sát thương Bóng tối, rồi khiến chúng kinh hoàng trong 3 giây. (thiên phú Warlock)',
   'entities.abilities.deep_freeze.name': 'Băng Chết',
-  'entities.abilities.deep_freeze.description':
-    'Đóng băng sâu mục tiêu, gây {damage} sát thương Băng và làm choáng trong 4 giây. (thiên phú Pháp sư)',
   'entities.abilities.desperate_prayer.name': 'Lời Cầu Cuối',
-  'entities.abilities.desperate_prayer.description':
-    'Hồi ngay {damage} máu cho bạn. (thiên phú Tu sĩ)',
   'entities.abilities.deterrence.name': 'Hộ Vệ Gai',
-  'entities.abilities.deterrence.description':
-    'Tăng 50 điểm phần trăm khả năng né tránh của bạn trong 10 giây. (thiên phú Thợ săn)',
   'entities.abilities.divine_shield.name': 'Hộ Vệ Ánh Sáng',
-  'entities.abilities.divine_shield.description':
-    'Bảo vệ bạn bằng sức mạnh thần thánh, hấp thụ 900 sát thương trong 8 giây. (thiên phú Paladin)',
   'entities.abilities.earthbind.name': 'Đất Níu Giữ',
-  'entities.abilities.earthbind.description':
-    'Trói kẻ địch ở gần xuống đất trong 2 giây. (thiên phú Shaman)',
   'entities.abilities.evocation.name': 'Giếng Ête',
-  'entities.abilities.evocation.description': 'Hồi ngay 220 mana. (thiên phú Pháp sư)',
   'entities.abilities.frenzied_regeneration.name': 'Hồi Phục Hoang Dã',
-  'entities.abilities.frenzied_regeneration.description':
-    'Hồi 180 máu trong 10 giây. Chỉ dùng được ở Dạng Gấu. (thiên phú Druid)',
   'entities.abilities.frost_trap.name': 'Bẫy Sương Giá',
-  'entities.abilities.frost_trap.description':
-    'Đóng băng kẻ địch trong khu vực mục tiêu trong 3 giây, khiến chúng không thể di chuyển hoặc hành động. (thiên phú Thợ săn)',
   'entities.abilities.ghostly_strike.name': 'Đòn Ma Ảnh',
-  'entities.abilities.ghostly_strike.description':
-    'Đánh kẻ địch gây sát thương vũ khí cộng {damage}, tăng né tránh trong thời gian ngắn và cho 1 điểm liên kích. (thiên phú Đạo tặc)',
   'entities.abilities.hammer_of_wrath.name': 'Búa Ngân Chuông',
-  'entities.abilities.hammer_of_wrath.description':
-    'Ném búa thần thánh vào kẻ địch bị thương, gây {damage} sát thương Thánh. Chỉ dùng được khi còn dưới 20% máu. (thiên phú Paladin)',
   'entities.abilities.healing_stream.name': 'Giếng Suối',
-  'entities.abilities.healing_stream.description':
-    'Hồi 120 máu cho một mục tiêu đồng minh trong 12 giây. (thiên phú Shaman)',
   'entities.abilities.holy_wrath.name': 'Cơn Giận Thánh',
-  'entities.abilities.holy_wrath.description':
-    'Giải phóng sức mạnh thần thánh, gây {damage} sát thương lên kẻ địch ở gần. (thiên phú Paladin)',
   'entities.abilities.howl_of_terror.name': 'Tiếng Hú Kinh Hoàng',
-  'entities.abilities.howl_of_terror.description':
-    'Khiến kẻ địch ở gần sợ hãi trong tối đa 3 giây. Sát thương có thể phá hiệu ứng. (thiên phú Warlock)',
   'entities.abilities.ice_block.name': 'Quan Tài Lạnh',
-  'entities.abilities.ice_block.description':
-    'Bao bọc bạn trong băng, hấp thụ 600 sát thương trong 8 giây. Bạn không thể hành động khi bị bao bọc. Dùng lại để hủy. (thiên phú Pháp sư)',
   'entities.abilities.inner_focus.name': 'Tâm Trí Tĩnh',
-  'entities.abilities.inner_focus.description':
-    'Khiến phép tiếp theo của bạn không tốn tài nguyên. Kéo dài 60 giây. (thiên phú Tu sĩ)',
   'entities.abilities.innervate.name': 'Nhựa Sống',
-  'entities.abilities.innervate.description':
-    'Nhựa sống trào dâng trong bạn trong 10 giây và hồi 20 tài nguyên hiện tại theo từng đợt: mana, nộ khí hoặc năng lượng. Biến hình không làm gián đoạn. Ngủ, choáng hoặc đình trệ sẽ làm dòng nhựa ngừng lại. (thiên phú Druid)',
   'entities.abilities.meteor.name': 'Đá Trời',
-  'entities.abilities.meteor.description':
-    'Gọi thiên thạch xuống khu vực mục tiêu, gây {damage} sát thương Lửa, rồi thiêu đốt kẻ địch tại đó với 12 đến 18 sát thương Lửa mỗi 2 giây trong 6 giây. (thiên phú Pháp sư)',
   'entities.abilities.mind_sear.name': 'Thiêu Ý Nghĩ',
-  'entities.abilities.mind_sear.description':
-    'Niệm năng lượng Bóng tối lên khu vực mục tiêu, gây {damage} sát thương mỗi giây lên kẻ địch ở gần. (thiên phú Tu sĩ)',
   'entities.abilities.multi_shot.name': 'Bắn Tách',
-  'entities.abilities.multi_shot.description':
-    'Bắn một loạt tên vào khu vực mục tiêu, gây {damage} sát thương Vật lý lên kẻ địch trong bán kính 8 m. (thiên phú Thợ săn)',
   'entities.abilities.prayer_of_healing.name': 'Hồi Phục Hợp Xướng',
-  'entities.abilities.prayer_of_healing.description':
-    'Hồi {damage} máu cho đồng minh ở gần. (thiên phú Tu sĩ)',
   'entities.abilities.preparation.name': 'Dự Phòng',
-  'entities.abilities.preparation.description':
-    'Kết thúc thời gian hồi của Chạy nước rút, Né tránh và Biến mất. (thiên phú Đạo tặc)',
   'entities.abilities.presence_of_mind.name': 'Tâm Trí Tăng Tốc',
-  'entities.abilities.presence_of_mind.description':
-    'Khiến phép tiếp theo có thời gian niệm của bạn được thi triển tức thì. Kéo dài 60 giây. (thiên phú Pháp sư)',
   'entities.abilities.psychic_scream.name': 'Tiếng Thét Tâm Linh',
-  'entities.abilities.psychic_scream.description':
-    'Khiến kẻ địch ở gần sợ hãi trong tối đa 4 giây. Sát thương có thể phá hiệu ứng. (thiên phú Tu sĩ)',
   'entities.abilities.shadowstep.name': 'Trượt Bóng',
-  'entities.abilities.shadowstep.description':
-    'Bước xuyên bóng tối về phía mục tiêu. (thiên phú Đạo tặc)',
   'entities.abilities.silence.name': 'Câm Lặng',
-  'entities.abilities.silence.description':
-    'Khiến mục tiêu câm lặng trong 4 giây. (thiên phú Tu sĩ)',
   'entities.abilities.tranquility.name': 'Khúc Ca Rừng Thưa',
-  'entities.abilities.tranquility.description':
-    'Niệm năng lượng hồi phục trong 4 giây, hồi 42 đến 52 máu mỗi giây cho đồng minh trong phạm vi 30 m. (thiên phú Druid)',
   'entities.abilities.cleansing_verdict.name': 'Phán Quyết Thanh Tẩy',
   'entities.abilities.cleansing_verdict.description':
     'Xóa một hiệu ứng phép thuật có hại khỏi mục tiêu đồng minh và hồi cho họ {damage} máu bằng phép Thánh.',
@@ -7757,4 +7675,134 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Quét trúng kẻ địch phía trước và có thể không tốn tài nguyên sau khi né hoặc đỡ đòn.',
   'guide.abilityHook.hamstring': 'Cản trở di chuyển của kẻ địch để chúng không thể chạy thoát.',
+  'entities.abilities.aura_surge.name': 'Khiên Dội Bình Minh',
+  'entities.abilities.aura_surge.description':
+    'Ném một tấm khiên rèn từ bình minh gây {damage} sát thương Thánh, khiến mục tiêu chính câm lặng trong 2 giây, rồi dội sang tối đa 2 kẻ địch khác trong phạm vi 10 mét, gây 75% sát thương mỗi lần dội. (thiên phú Paladin)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Truyền sức mạnh hoang dã cho đồng minh trong phạm vi 30 m, tăng 45 sức mạnh công kích và 5% tốc độ đánh của họ trong 5 phút. (thiên phú Thợ săn)',
+  'entities.abilities.avatar.name': 'Hóa Thân',
+  'entities.abilities.avatar.description':
+    'Hóa thành một khổng tượng trong 20 giây, phá bỏ mọi hiệu ứng khống chế lên bạn và tăng 20% sát thương gây ra.',
+  'entities.abilities.avenging_wrath.description':
+    'Triệu hồi sức mạnh báo thù, tăng 60 sức mạnh công kích và 30 sức mạnh phép thuật của bạn trong 20 giây. (thiên phú Paladin)',
+  'entities.abilities.berserk.description':
+    'Tăng 70 sức mạnh công kích của bạn trong 15 giây. (thiên phú Druid)',
+  'entities.abilities.bladestorm.name': 'Bão Kiếm',
+  'entities.abilities.bladestorm.description':
+    'Hóa thành một cơn bão thép cuồng xoáy, đánh trúng mọi kẻ địch trong phạm vi 8 mét với {damage} sát thương mỗi giây trong 4 giây.',
+  'entities.abilities.blink.description':
+    'Dịch chuyển bạn 15 m về phía trước và phá hiệu ứng trói chân. (thiên phú Pháp sư)',
+  'entities.abilities.bloodlust.description':
+    'Khiến đồng minh trong phạm vi 30 m trở nên cuồng nộ, tăng 30% tốc độ đánh của họ trong 15 giây. (thiên phú Shaman)',
+  'entities.abilities.chain_lightning.description':
+    'Phóng sét vào khu vực mục tiêu, gây {damage} sát thương lên kẻ địch ở gần. (thiên phú Shaman)',
+  'entities.abilities.chaos_bolt.description':
+    'Phóng một luồng lửa hỗn loạn gây {damage} sát thương Lửa. (thiên phú Warlock)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Bao phủ bạn trong bóng tối, hấp thụ 420 sát thương trong 5 giây. (thiên phú Đạo tặc)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a gần đó kẻ địch con escarcha e inflige {damage} de daño de Băng. (thiên phú pháp sư)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Nguyền rủa mục tiêu, giảm 30% tốc độ di chuyển trong 12 giây. (thiên phú Warlock)',
+  'entities.abilities.death_coil.description':
+    'Đánh kẻ địch gây {damage} sát thương Bóng tối, rồi khiến chúng kinh hoàng trong 3 giây. (thiên phú Warlock)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a mục tiêu, inflige {damage} de daño de Băng y lo aturde durante 4 giây. (thiên phú pháp sư)',
+  'entities.abilities.desperate_prayer.description':
+    'Hồi ngay {damage} máu cho bạn. (thiên phú Tu sĩ)',
+  'entities.abilities.deterrence.description':
+    'Tăng 50 điểm phần trăm khả năng né tránh của bạn trong 10 giây. (thiên phú Thợ săn)',
+  'entities.abilities.divine_shield.description':
+    'Bảo vệ bạn bằng sức mạnh thần thánh, hấp thụ 900 sát thương trong 8 giây. (thiên phú Paladin)',
+  'entities.abilities.earthbind.description':
+    'Trói kẻ địch ở gần xuống đất trong 2 giây. (thiên phú Shaman)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (thiên phú pháp sư)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Hồi 180 máu trong 10 giây. Chỉ dùng được ở Dạng Gấu. (thiên phú Druid)',
+  'entities.abilities.frost_trap.description':
+    'Đóng băng kẻ địch trong khu vực mục tiêu trong 3 giây, khiến chúng không thể di chuyển hoặc hành động. (thiên phú Thợ săn)',
+  'entities.abilities.ghostly_strike.description':
+    'Đánh kẻ địch gây sát thương vũ khí cộng {damage}, tăng né tránh trong thời gian ngắn và cho 1 điểm liên kích. (thiên phú Đạo tặc)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Ném búa thần thánh vào kẻ địch bị thương, gây {damage} sát thương Thánh. Chỉ dùng được khi còn dưới 20% máu. (thiên phú Paladin)',
+  'entities.abilities.healing_stream.description':
+    'Hồi 120 máu cho một mục tiêu đồng minh trong 12 giây. (thiên phú Shaman)',
+  'entities.abilities.holy_wrath.description':
+    'Giải phóng sức mạnh thần thánh, gây {damage} sát thương lên kẻ địch ở gần. (thiên phú Paladin)',
+  'entities.abilities.howl_of_terror.description':
+    'Khiến kẻ địch ở gần sợ hãi trong tối đa 3 giây. Sát thương có thể phá hiệu ứng. (thiên phú Warlock)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 giây. (thiên phú pháp sư)',
+  'entities.abilities.inner_focus.description':
+    'Khiến phép tiếp theo của bạn không tốn tài nguyên. Kéo dài 60 giây. (thiên phú Tu sĩ)',
+  'entities.abilities.innervate.description':
+    'Nhựa sống trào dâng trong bạn trong 10 giây và hồi 20 tài nguyên hiện tại theo từng đợt: mana, nộ khí hoặc năng lượng. Biến hình không làm gián đoạn. Ngủ, choáng hoặc đình trệ sẽ làm dòng nhựa ngừng lại. (thiên phú Druid)',
+  'entities.abilities.mend_pet.name': 'Băng Bó',
+  'entities.abilities.mend_pet.description':
+    'Sana a mục tiêu thân thiện por {damage} durante 15 giây. (thiên phú thợ săn)',
+  'entities.abilities.meteor.description':
+    'Gọi thiên thạch xuống khu vực mục tiêu, gây {damage} sát thương Lửa, rồi thiêu đốt kẻ địch tại đó với 12 đến 18 sát thương Lửa mỗi 2 giây trong 6 giây. (thiên phú Pháp sư)',
+  'entities.abilities.mind_sear.description':
+    'Niệm năng lượng Bóng tối lên khu vực mục tiêu, gây {damage} sát thương mỗi giây lên kẻ địch ở gần. (thiên phú Tu sĩ)',
+  'entities.abilities.multi_shot.description':
+    'Bắn một loạt tên vào khu vực mục tiêu, gây {damage} sát thương Vật lý lên kẻ địch trong bán kính 8 m. (thiên phú Thợ săn)',
+  'entities.abilities.prayer_of_healing.description':
+    'Hồi {damage} máu cho đồng minh ở gần. (thiên phú Tu sĩ)',
+  'entities.abilities.preparation.description':
+    'Kết thúc thời gian hồi của Chạy nước rút, Né tránh và Biến mất. (thiên phú Đạo tặc)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 giây. (thiên phú pháp sư)',
+  'entities.abilities.psychic_scream.description':
+    'Khiến kẻ địch ở gần sợ hãi trong tối đa 4 giây. Sát thương có thể phá hiệu ứng. (thiên phú Tu sĩ)',
+  'entities.abilities.shadowstep.description':
+    'Bước xuyên bóng tối về phía mục tiêu. (thiên phú Đạo tặc)',
+  'entities.abilities.silence.description':
+    'Khiến mục tiêu câm lặng trong 4 giây. (thiên phú Tu sĩ)',
+  'entities.abilities.tranquility.description':
+    'Niệm năng lượng hồi phục trong 4 giây, hồi 42 đến 52 máu mỗi giây cho đồng minh trong phạm vi 30 m. (thiên phú Druid)',
+  'game.talents.readout.rowsSummary':
+    'Tài năng: {head}, đã chọn {picked}/{unlocked} hàng lựa chọn.',
+  'hudChrome.fct.absorbed': 'Đã hấp thụ {amount}',
+  'game.talents.choicesTab': 'Lựa chọn',
+  'game.talents.rowUnlockToast': 'Đã mở khóa một lựa chọn tài năng mới!',
+  'game.talents.rowUnlocks': 'Mở khóa ở cấp {level}',
+  'entities.abilities.blazing_barrier.name': 'Lá Chắn Rực Lửa',
+  'entities.abilities.blazing_barrier.description':
+    'Bao bọc bản thân trong lửa, hấp thụ 130 sát thương trong 60 giây. (Lửa)',
+  'entities.abilities.cold_snap.name': 'Cú Lạnh Đột Ngột',
+  'entities.abilities.cold_snap.description':
+    'Hoàn tất thời gian hồi của Bước Chớp, Màn Sương Giá và Tàng Hình Cao Cấp. (tài năng pháp sư)',
+  'entities.abilities.greater_invisibility.name': 'Tàng Hình Cao Cấp',
+  'entities.abilities.greater_invisibility.description':
+    'Biến mất trong 20 giây: xóa 2 hiệu ứng sát thương theo thời gian và bạn nhận ít hơn 90% sát thương khi đang tàng hình và trong chốc lát sau đó. (tài năng pháp sư)',
+  'entities.abilities.hot_streak.name': 'Chuỗi Nóng',
+  'entities.abilities.hot_streak.description':
+    'Nội tại: hai đòn chí mạng liên tiếp bằng phép Lửa của bạn (Tia Tàn Lửa, Mưa Tàn Lửa, Bỏng Rát, Thương Liệt Hỏa hoặc Cú Đánh Lửa) khiến Thương Liệt Hỏa hoặc Cú Đánh Lửa tiếp theo được thi triển tức thì và miễn phí. Phép tiêu hao được tính cho chuỗi TIẾP THEO, kể cả lần thi triển miễn phí; một Cú Đánh Lửa chỉ được tính một lần dù trúng bao nhiêu kẻ địch, và chỉ cú va chạm đầu tiên được tính. (Lửa)',
+  'entities.abilities.ice_floes.name': 'Băng Trôi',
+  'entities.abilities.ice_floes.description':
+    'Hai phép tiếp theo có thời gian niệm có thể được thi triển khi đang di chuyển. Kéo dài 15 giây. (tài năng pháp sư)',
+  'entities.abilities.ignition.name': 'Bốc Cháy',
+  'entities.abilities.ignition.description':
+    'Nội tại: đòn chí mạng từ phép của bạn đốt mục tiêu với 40% sát thương đã gây ra trong 6 giây và có thể cộng dồn. (tinh thông Lửa)',
+  'entities.abilities.mass_barrier.name': 'Lá Chắn Hàng Loạt',
+  'entities.abilities.mass_barrier.description':
+    'Che chắn cho bạn và tối đa 4 đồng minh ở gần trong phạm vi 30 m; mỗi lá chắn hấp thụ 130 sát thương trong 60 giây. (tài năng pháp sư)',
+  'entities.abilities.overload.name': 'Quá Tải',
+  'entities.abilities.overload.description':
+    'Phép tiếp theo của bạn được khuếch đại 40% nhưng tốn thêm 50% mana. Kéo dài 10 giây. (tài năng pháp sư)',
+  'entities.abilities.power_echo.name': 'Vọng Âm Sức Mạnh',
+  'entities.abilities.power_echo.description':
+    'Phép trực tiếp tiếp theo của bạn lặp lại với 50% sức mạnh trên cùng mục tiêu. Kéo dài 10 giây. (tài năng pháp sư)',
+  'entities.abilities.rings_of_frost.name': 'Vòng Băng Giá',
+  'entities.abilities.rings_of_frost.description':
+    'Triệu hồi một vòng tròn trong 10 giây. Kẻ địch vượt qua rìa vòng bị đóng băng trong 4 giây. (tài năng pháp sư)',
+  'entities.abilities.rune_of_power.name': 'Ấn Sức Mạnh',
+  'entities.abilities.rune_of_power.description':
+    'Khắc một ấn sức mạnh dưới chân trong 15 giây: đồng minh đứng trong phạm vi 8 m gây thêm 10% sát thương. (tài năng pháp sư)',
+  'entities.abilities.summon_water_elemental.name': 'Triệu Hồi Nguyên Tố Nước',
+  'entities.abilities.summon_water_elemental.description':
+    'Triệu hồi một Nguyên Tố Nước chiến đấu bên bạn, phóng Tên Nước vào mục tiêu và vận phép Tia Nước. (Băng Giá)',
+  'entities.mobs.water_elemental.name': 'Nguyên Tố Nước',
+  'entities.items.conjured_bread4.name': 'Bánh Đại Tiệc Được Tạo Phép',
+  'entities.items.conjured_water4.name': 'Nước Suối Được Tạo Phép',
 };

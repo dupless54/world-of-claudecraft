@@ -57,8 +57,11 @@ describe('spec masteries', () => {
     expect(TALENTS.warlock?.specs.find((s) => s.id === 'affliction')?.mastery.effect).toEqual({
       global: { dotDmgPct: 0.2 },
     });
+    // Mage rework (owner leveling pass 2026-07-14): Fire's mastery is Ignition, a
+    // crit-triggered burn (ignitionPct) plus a static +2% crit chance, not the old
+    // Afterflame crit-damage bonus.
     expect(TALENTS.mage?.specs.find((s) => s.id === 'fire')?.mastery.effect).toEqual({
-      global: { critDmgSpellPct: 0.5 },
+      global: { ignitionPct: 0.4 },
       stats: { crit: 0.02 },
     });
     expect(TALENTS.mage?.specs.find((s) => s.id === 'frost')?.mastery.effect).toEqual({
@@ -99,8 +102,10 @@ describe('spec masteries', () => {
       global: { meleeDmgPct: 0.15 },
       stats: { agiPct: 0.15 },
     });
+    // Mage rework: the 'arcane' internal id is now the Chronomancy healer (Chronoweave
+    // mastery), so its effect boosts healing/mana, not spell damage.
     expect(TALENTS.mage?.specs.find((s) => s.id === 'arcane')?.mastery.effect).toEqual({
-      global: { spellDmgPct: 0.15, spellHastePct: 0.1 },
+      global: { healPct: 0.15, manaPct: 0.05, manaRegenPct: 0.2 },
     });
     expect(TALENTS.rogue?.specs.find((s) => s.id === 'assassination')?.mastery.effect).toEqual({
       global: { dotDmgPct: 0.2 },
@@ -328,6 +333,26 @@ describe('spec masteries', () => {
     expect(metaOf(sim, sim.player).talentMods.global.hotHealPct).toBeCloseTo(0.25, 10);
   });
 
+  it('re-bakes mastery-scaled passive stats when setPlayerLevel jumps without a respec', () => {
+    // The mage-rework Fire mastery also grants +2% crit chance (stats.crit 0.02) on top of
+    // its crit-damage bonus, and that passive stat must re-bake to the new level.
+    const sim = new Sim({ seed: 12, playerClass: 'mage', autoEquip: true });
+    sim.setPlayerLevel(10);
+    sim.setSpec('fire');
+
+    const noSpec10 = new Sim({ seed: 12, playerClass: 'mage', autoEquip: true });
+    noSpec10.setPlayerLevel(10);
+    const at10MasteryCrit = sim.player.critChance - noSpec10.player.critChance;
+    expect(at10MasteryCrit).toBeCloseTo(0.02 * (10 / 20), 10);
+
+    sim.setPlayerLevel(20);
+    const noSpec20 = new Sim({ seed: 12, playerClass: 'mage', autoEquip: true });
+    noSpec20.setPlayerLevel(20);
+    const at20MasteryCrit = sim.player.critChance - noSpec20.player.critChance;
+    expect(at20MasteryCrit).toBeCloseTo(0.02, 10);
+    expect(at20MasteryCrit).toBeGreaterThan(at10MasteryCrit);
+  });
+
   it('every spec ships its designated mastery-rating axis (PRD: Mastery rating readiness)', () => {
     // The future mastery stat (item rating, unimplemented) scales exactly one axis per
     // spec. This pins that the shipped mastery DATA carries that axis, so the rating PR
@@ -353,8 +378,9 @@ describe('spec masteries', () => {
         survival: { global: 'meleeDmgPct', value: 0.15 },
       },
       mage: {
-        arcane: { global: 'spellDmgPct', value: 0.15 },
-        fire: { global: 'critDmgSpellPct', value: 0.5 },
+        // Mage rework: arcane is the Chronomancy healer (healing axis), fire is Ignition.
+        arcane: { global: 'healPct', value: 0.15 },
+        fire: { global: 'ignitionPct', value: 0.4 },
         frost: { abilities: ['frostbolt', 'frost_nova'], dmgPct: 0.25 },
       },
       rogue: {

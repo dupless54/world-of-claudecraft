@@ -34,7 +34,9 @@ import { type PlayerMeta, Sim } from '../src/sim/sim';
 import { ALL_CLASSES, MAX_LEVEL, type PlayerClass } from '../src/sim/types';
 import { talentRowOptionIconRef } from '../src/ui/talent_icons';
 
-const SYNTHETIC_CAST_IDS = new Set(['auto_shot']);
+// 'personal_barrier' is the shieldConsumed SLOT sentinel (combat/talent_procs.ts):
+// it resolves at runtime to whichever personal barrier the spec provides.
+const SYNTHETIC_CAST_IDS = new Set(['auto_shot', 'personal_barrier']);
 
 function allocation(
   spec: string | null = null,

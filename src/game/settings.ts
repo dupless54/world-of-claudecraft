@@ -117,8 +117,10 @@ export const SETTING_RANGES = {
   // The target frame's twin of playerFrameScale, via --target-frame-scale.
   // Same children-zoom trick (the frame itself is drag-positioned). 1.0 = stock.
   targetFrameScale: { min: 0.7, max: 1.15, def: 1 },
-  // Party/raid frame layout. partyFrameStyle: 0 automatic, 1 classic, 2 raid.
-  // partyFrameHealthText: 0 none, 1 percent, 2 current, 3 current/max.
+  // WoW-style party/raid frame profile. Width/height are CSS pixels before the
+  // independent scale; columns and spacing let raids grow across rather than
+  // covering the whole left edge. style: 0 automatic, 1 classic, 2 raid frames.
+  // healthTextMode: 0 none, 1 percent, 2 current, 3 current/max.
   // partyFrameSort: 0 group, 1 role, 2 name.
   partyFrameStyle: { min: 0, max: 2, def: 0 },
   partyFrameScale: { min: 0.7, max: 1.4, def: 1 },

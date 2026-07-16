@@ -14,6 +14,8 @@ describe('talents_window: no magic values', () => {
   });
 
   it('drives row and accent colors through CSS custom properties', () => {
+    // The tree arrows died with the point trees (Talents 2.0 flip); the surviving
+    // palette is the choice rows plus the spec cards + Choices tab accents.
     for (const token of [
       'var(--color-talent-opt-dim)',
       'var(--color-talent-hint)',
@@ -52,7 +54,11 @@ describe('talents_window: no magic values', () => {
   });
 
   it('renders accessible choice rows and explicit spec actions', () => {
-    expect(painter).toContain("t('hudChrome.specPanel.selectSpec')");
+    // Spec cards are a keyboard radiogroup (click/Enter commits); View talents
+    // is the explicit navigate action.
+    expect(painter).toContain("grid.setAttribute('role', 'radiogroup');");
+    expect(painter).toContain("panel.setAttribute('role', 'radio');");
+    expect(painter).toContain("panel.setAttribute('aria-checked', String(entry.selected));");
     expect(painter).toContain("t('hudChrome.specPanel.viewTalents')");
     expect(styles).toContain('.tal-rows');
     expect(styles).toContain('.tal-row-opts');
@@ -75,5 +81,16 @@ describe('talents_window: no magic values', () => {
     expect(painter).toMatch(/const uiScale = getUiScale\(\);/);
     expect(painter).toMatch(/bodyTop =\s*\([\s\S]*?\) \/ uiScale;/);
     expect(painter).toMatch(/footHeight = foot\.getBoundingClientRect\(\)\.height \/ uiScale;/);
+  });
+
+  it('commits a spec pick to the world (not just the local stage)', () => {
+    // Regression pin: clicking a spec card must reach IWorld.setSpec. Before
+    // this, the pick only mutated the staged buffer, so the spec (its kit,
+    // signature, and mastery) never actually applied unless the player took
+    // the save-a-loadout detour.
+    expect(painter).toContain('commitSpec(specId: string): void;');
+    expect(painter).toContain('this.deps.commitSpec(entry.spec.id);');
+    const hud = readFileSync(new URL('../src/ui/hud.ts', import.meta.url), 'utf8');
+    expect(hud).toContain('commitSpec: (specId) => this.sim.setSpec(specId),');
   });
 });

@@ -28,6 +28,7 @@
 // tests/architecture.test.ts.
 
 import { ITEMS, isDelvePos, MOBS } from '../data';
+import { recalcPlayerStats } from '../entity';
 import { isShieldItem } from '../equipment_rules';
 import { scheduleProjectile } from '../projectile_travel';
 import type { PlayerMeta, ResolvedAbility } from '../sim';
@@ -48,11 +49,18 @@ import {
   FISHING_CAST_ID,
   MELEE_ARC,
   MELEE_RANGE,
+  MIN_GCD,
   normAngle,
 } from '../types';
 import { drawWeapon } from '../weapon_stow';
 import { isInStasis, isLockedOut, isSilenced, isStunned, tonguesMult } from './cc';
 import { extendOwnedDot } from './dot_mutation';
+import {
+  ARCANE_SURGE_ID,
+  aetherDartsBoltBonus,
+  aetherDartsChannelStart,
+  aetherSurgeCastMult,
+} from './chronomancy';
 import {
   consumeFreeCostFor,
   consumeNextAttackCrit,
@@ -63,6 +71,13 @@ import {
   nextCastCheapMultiplier,
 } from './empower_next';
 import { isActionLockingFormAuraKind, isFormAuraKind } from './forms';
+import {
+  applyBrainFreezeOverride,
+  brainFreezeBypassesCooldown,
+  frostMageChannelPulse,
+  frostMageChannelStart,
+} from './frost_mage';
+import { empoweredCastProgress, empoweredStageForProgress } from './glacial_front';
 import {
   hasCastShield,
   noteSpellHit,
@@ -97,7 +112,10 @@ function isToggleBuff(ability: AbilityDef): boolean {
   return ability.effects.some(
     (e) =>
       e.type === 'selfBuff' &&
-      (isFormAuraKind(e.kind) || e.kind === 'defensive_stance' || e.kind === 'stealth'),
+      (isFormAuraKind(e.kind) ||
+        e.kind === 'defensive_stance' ||
+        e.kind === 'stealth' ||
+        e.kind === 'stasis'),
   );
 }
 
@@ -123,6 +141,39 @@ function isShamanShock(abilityId: string): boolean {
     (SHAMAN_SHOCK_COOLDOWN_IDS as readonly string[]).includes(abilityId) ||
     abilityId === 'lightning_shock'
   );
+}
+
+function chargeState(p: Entity, abilityId: string, bonusCharges: number, cooldown: number) {
+  if (bonusCharges <= 0 || cooldown <= 0) return null;
+  p.abilityCharges ??= {};
+  const maxCharges = 1 + Math.max(0, Math.floor(bonusCharges));
+  const existing = p.abilityCharges[abilityId];
+  if (existing && existing.maxCharges === maxCharges && existing.rechargeLength === cooldown) {
+    return existing;
+  }
+  const state =
+    existing ??
+    ({
+      charges: maxCharges,
+      maxCharges,
+      recharge: 0,
+      rechargeLength: cooldown,
+    } satisfies NonNullable<Entity['abilityCharges']>[string]);
+  state.maxCharges = maxCharges;
+  state.rechargeLength = cooldown;
+  state.charges = Math.min(Math.max(state.charges, 0), maxCharges);
+  p.abilityCharges[abilityId] = state;
+  return state;
+}
+
+function hasAbilityCharge(
+  p: Entity,
+  abilityId: string,
+  bonusCharges: number,
+  cooldown: number,
+): boolean {
+  const state = chargeState(p, abilityId, bonusCharges, cooldown);
+  return !!state && state.charges > 0;
 }
 
 export function updateCasting(ctx: SimContext, p: Entity, meta: PlayerMeta): void {
@@ -157,17 +208,38 @@ export function updateCasting(ctx: SimContext, p: Entity, meta: PlayerMeta): voi
   p.castRemaining -= DT;
 
   if (p.channeling) {
+    const fireChannelTick = () => {
+      // Read fresh each tick: a tick that cancels the cast (e.g. a LoS block) nulls
+      // castingAbility, and the guard here stops the flush from firing any more.
+      const abilityId = p.castingAbility;
+      if (abilityId == null) return;
+      if (abilityId === DEMON_HEAL_CAST_ID) {
+        ctx.applyDemonHealTick(p);
+      } else {
+        const res = ctx.resolvedAbility(abilityId, p.id);
+        if (res) applyChannelTick(ctx, p, res);
+      }
+    };
     p.channelTickTimer -= DT;
     if (p.channelTickTimer <= 0) {
       p.channelTickTimer += p.channelTickEvery;
-      if (p.castingAbility === DEMON_HEAL_CAST_ID) {
-        ctx.applyDemonHealTick(p);
-      } else {
-        const res = ctx.resolvedAbility(p.castingAbility, p.id);
-        if (res) applyChannelTick(ctx, p, res);
-      }
+      // channelTicksLeft is only tracked for FIXED-count channels (it starts > 0);
+      // duration-based channels (Demon Heal, boss channels) leave it 0, so they
+      // fire unbounded here exactly as before and never flush below.
+      if (p.channelTicksLeft > 0) p.channelTicksLeft -= 1;
+      fireChannelTick();
     }
     if (p.castRemaining <= CAST_COMPLETE_EPS) {
+      // Flush any fixed-count tick the timer has not reached yet: the tick
+      // accumulator and the channel's end advance separately, so floating-point
+      // drift can leave the final tick a hair short exactly when they coincide,
+      // silently dropping the last missile (the Arcane Missiles 5-barrage bug). A
+      // fixed-count channel must always land exactly channelTicks ticks. Inert for
+      // duration-based channels, whose channelTicksLeft is 0.
+      while (p.channelTicksLeft > 0) {
+        p.channelTicksLeft -= 1;
+        fireChannelTick();
+      }
       p.castingAbility = null;
       p.channeling = false;
       // completed ground-targeted channels drop their aim like every other
@@ -189,14 +261,71 @@ export function updateCasting(ctx: SimContext, p: Entity, meta: PlayerMeta): voi
       ctx.completeFishing(p, meta);
       return;
     }
+    // Ice Floes (mage choice row): a COMPLETED hard cast spends one protected
+    // use whether or not the caster actually moved (the buff is a banked
+    // window, not a refund). Fishing above never spends one. Draws no rng.
+    const floes = p.auras.find((a) => a.kind === 'ice_floes');
+    if (floes) {
+      floes.value -= 1;
+      if (floes.value <= 0) {
+        p.auras.splice(p.auras.indexOf(floes), 1);
+        ctx.emit({ type: 'aura', targetId: p.id, name: floes.name, gained: false });
+      }
+    }
     const res = ctx.resolvedAbility(castId, p.id);
-    if (res) applyAbility(ctx, p, meta, res);
+    if (res) {
+      const resolved = res.def.empowerStages
+        ? { ...res, empowerLevel: res.def.empowerStages }
+        : res;
+      applyAbility(ctx, p, meta, resolved);
+    }
     // the aim point is consumed by the resolved area effects; drop it so a later
     // non-aimed cast can't inherit a stale target point.
     p.castAim = null;
     p.castTargetId = null;
     fireQueuedCast(ctx, p);
   }
+}
+
+/** Release a hold-to-charge cast. The caller supplies no timing data: the
+ * authoritative stage comes exclusively from the simulation's live cast clock. */
+export function releaseEmpoweredAbility(ctx: SimContext, abilityId: string, pid?: number): void {
+  const resolvedPlayer = ctx.resolve(pid);
+  if (!resolvedPlayer) return;
+  const { e: p, meta } = resolvedPlayer;
+  if (p.castingAbility !== abilityId || p.channeling) return;
+  const res = ctx.resolvedAbility(abilityId, p.id);
+  const stageCount = res?.def.empowerStages ?? 0;
+  if (!res || stageCount <= 0) return;
+  if (
+    isStunned(p) ||
+    (res.def.school !== 'physical' && (isSilenced(p) || isLockedOut(p, res.def.school)))
+  ) {
+    cancelCast(ctx, p);
+    return;
+  }
+
+  const level = empoweredStageForProgress(
+    empoweredCastProgress(p.castTotal, p.castRemaining),
+    stageCount,
+  );
+  p.castingAbility = null;
+  p.castRemaining = 0;
+  ctx.emit({ type: 'castStop', entityId: p.id, success: true });
+
+  const floes = p.auras.find((a) => a.kind === 'ice_floes');
+  if (floes) {
+    floes.value -= 1;
+    if (floes.value <= 0) {
+      p.auras.splice(p.auras.indexOf(floes), 1);
+      ctx.emit({ type: 'aura', targetId: p.id, name: floes.name, gained: false });
+    }
+  }
+
+  applyAbility(ctx, p, meta, { ...res, empowerLevel: level });
+  p.castAim = null;
+  p.castTargetId = null;
+  fireQueuedCast(ctx, p);
 }
 
 // Consumes the single-slot spell queue (see CAST_QUEUE_WINDOW_SEC), firing the
@@ -219,6 +348,7 @@ export function cancelCast(ctx: SimContext, p: Entity): void {
   p.castingAbility = null;
   p.castRemaining = 0;
   p.channeling = false;
+  p.channelTicksLeft = 0; // an interrupted channel owes no more ticks
   p.castAim = null;
   p.castTargetId = null;
   // an interrupted cast never completed, so its queued follow-up is dropped too
@@ -255,11 +385,42 @@ export function castAbilityBySlot(
   if (known) castAbility(ctx, known.def.id, pid, aim);
 }
 
+// Mouseover-cast (Clique-style) friendly-target resolution: an explicit
+// override id (from castAbility's castTargetId param at start, or the
+// entity's stored castTargetId at a timed cast's finish) wins while valid;
+// a stale/invalid override falls back to the classic current-friendly-target-
+// else-self rule, byte-identical to the pre-override behavior when null.
+function resolveFriendlyTarget(ctx: SimContext, p: Entity, overrideId: number | null): Entity {
+  if (overrideId !== null) {
+    const o = ctx.entities.get(overrideId);
+    if (o && !o.dead && ctx.isFriendlyTo(p, o)) return o;
+  }
+  const cur = p.targetId !== null ? (ctx.entities.get(p.targetId) ?? null) : null;
+  return cur && !cur.dead && ctx.isFriendlyTo(p, cur) ? cur : p;
+}
+
+// Combat-resurrection target (Temporal Reversal): the mouseover override or current
+// target, but ONLY when it is a DEAD player in the caster's group/raid. No self-cast
+// fallback (you can't rewind yourself). Returns null when there is no valid dead ally.
+function resolveDeadAllyTarget(
+  ctx: SimContext,
+  p: Entity,
+  overrideId: number | null,
+): Entity | null {
+  const id = overrideId ?? p.targetId;
+  if (id === null) return null;
+  const t = ctx.entities.get(id);
+  if (!t || !t.dead || t.kind !== 'player') return null;
+  const party = ctx.partyOf(p.id);
+  return party && party.members.includes(t.id) ? t : null;
+}
+
 export function castAbility(
   ctx: SimContext,
   abilityId: string,
   pid?: number,
   aim?: { x: number; z: number },
+  castTargetId: number | null = null,
 ): void {
   const r = ctx.resolve(pid);
   if (!r) return;
@@ -271,45 +432,72 @@ export function castAbility(
   meta.lastActiveTick = ctx.tickCount; // a cast attempt is a deliberate action
   const ability = res.def;
   if (cancelStasisToggle(ctx, p, ability)) return;
-  if (isInStasis(p)) return;
-  if (isStunned(p)) {
-    ctx.error(p.id, 'You are stunned!');
-    return;
-  }
-  if (ability.school !== 'physical' && isSilenced(p)) {
-    ctx.error(p.id, 'You are silenced!');
-    return;
-  }
-  if (ability.school !== 'physical' && isLockedOut(p, ability.school)) {
-    ctx.error(p.id, 'You are silenced!');
-    return;
-  }
-  if (p.castingAbility) {
-    // classic-era spell queue: a press during the tail of the current cast
-    // queues instead of erroring, and updateCasting fires it on cast completion.
-    // Fishing is exempt (like the silence/lockout guards above): completeFishing
-    // never calls fireQueuedCast, so a press queued against it would strand and
-    // misfire on a later, unrelated cast.
-    if (p.castRemaining <= CAST_QUEUE_WINDOW_SEC && p.castingAbility !== FISHING_CAST_ID) {
-      p.queuedCastAbility = abilityId;
-      p.queuedCastAim = aim ?? null;
+  // Ice Block (usableWhileControlled) ignores control: it may be pressed while
+  // stunned, polymorphed, incapacitated, silenced, or locked out, so it always frees
+  // the caster (its cleanseSelf effect then strips the debuffs). Its own stasis is the
+  // one control it still respects, but the recast toggle above already handles that.
+  if (!ability.usableWhileControlled) {
+    if (isInStasis(p)) return;
+    if (isStunned(p)) {
+      ctx.error(p.id, 'You are stunned!');
       return;
     }
-    ctx.error(p.id, 'You are busy.');
-    return;
+    if (ability.school !== 'physical' && isSilenced(p)) {
+      ctx.error(p.id, 'You are silenced!');
+      return;
+    }
+    if (ability.school !== 'physical' && isLockedOut(p, ability.school)) {
+      ctx.error(p.id, 'You are silenced!');
+      return;
+    }
+  }
+  // Blink While Casting (mage choice row): Flickerstep slips through the busy
+  // guard AND the GCD, an escape button that never touches the cast in
+  // progress (the cast survives the relocation: player_motion only breaks
+  // casts on MOVE INPUT). Everything else keeps the classic rules. No rng.
+  const blinkThrough =
+    p.castingAbility !== null &&
+    p.castingAbility !== FISHING_CAST_ID &&
+    ability.castTime === 0 &&
+    (ability.usableWhileCasting === true ||
+      (abilityId === 'blink' && ctx.playerMods(meta).global.blinkCast > 0));
+  if (p.castingAbility) {
+    if (!blinkThrough) {
+      // classic-era spell queue: a press during the tail of the current cast
+      // queues instead of erroring, and updateCasting fires it on cast completion.
+      // Fishing is exempt (like the silence/lockout guards above): completeFishing
+      // never calls fireQueuedCast, so a press queued against it would strand and
+      // misfire on a later, unrelated cast.
+      if (p.castRemaining <= CAST_QUEUE_WINDOW_SEC && p.castingAbility !== FISHING_CAST_ID) {
+        p.queuedCastAbility = abilityId;
+        p.queuedCastAim = aim ?? null;
+        return;
+      }
+      ctx.error(p.id, 'You are busy.');
+      return;
+    }
   }
   // note: a queued press fires here, re-running the full castAbility gate set
   // (including this GCD check). fireQueuedCast holds the slot instead of calling
   // in when the GCD is still running, so this early return only fires for a
   // same-tick player press racing the GCD, not for a queued follow-up.
-  if (!ability.offGcd && p.gcdRemaining > 0) return; // silent, classic spams this
+  if (!ability.offGcd && p.gcdRemaining > 0 && !blinkThrough) return; // silent, classic spams this
   const togglingOff = isToggleBuff(ability) && p.auras.some((a) => a.id === ability.id);
   const sharedCooldown = isShamanShock(ability.id)
     ? SHAMAN_SHOCK_COOLDOWN_IDS.find((id) => p.cooldowns.has(id))
     : undefined;
-  const maxCharges = res.charges ?? 1;
-  const chargeAvailable = maxCharges > 1 && (p.charges?.get(ability.id)?.spent ?? 0) < maxCharges;
-  if ((sharedCooldown || (p.cooldowns.has(ability.id) && !chargeAvailable)) && !togglingOff) {
+  // Charge-limited abilities (the abilityCharges recharge model, driven by
+  // bonusCharges: Double Charge, extra Blink/Frost Nova/Ice Block): a running
+  // cooldown is only the RECHARGE timer; the cast is blocked only once every
+  // stored use is spent.
+  if (
+    (p.cooldowns.has(ability.id) || sharedCooldown) &&
+    !togglingOff &&
+    !hasAbilityCharge(p, ability.id, res.bonusCharges ?? 0, res.cooldown) &&
+    // An armed Brain Freeze lets Flurry cast through its running cooldown
+    // (combat/frost_mage.ts; the override below consumes the proc).
+    !brainFreezeBypassesCooldown(p, ability.id)
+  ) {
     ctx.error(p.id, 'That ability is not ready yet.');
     return;
   }
@@ -342,7 +530,17 @@ export function castAbility(
     ctx.error(p.id, 'Your target must dodge first.');
     return;
   }
-  if (ability.requiresAuraKind && !p.auras.some((a) => a.kind === ability.requiresAuraKind)) {
+  // Kill-window abilities (Victory Rush): usable only while the enabling aura
+  // is worn; runEffects consumes it on a successful cast. Reuses the existing
+  // not-ready error literal so no new client matcher is needed. requiresAuraStacks
+  // (Glacial Spike's full 5-stack Icicles) additionally gates on the stack count.
+  if (
+    ability.requiresAuraKind &&
+    !p.auras.some(
+      (a) =>
+        a.kind === ability.requiresAuraKind && (a.stacks ?? 1) >= (ability.requiresAuraStacks ?? 1),
+    )
+  ) {
     ctx.error(p.id, 'That ability is not ready yet.');
     return;
   }
@@ -374,10 +572,22 @@ export function castAbility(
   }
 
   let target: Entity | null = null;
-  if (ability.requiresTarget && ability.targetType === 'friendly') {
-    // heals/buffs: current friendly target, else yourself
-    const cur = p.targetId !== null ? (ctx.entities.get(p.targetId) ?? null) : null;
-    target = cur && !cur.dead && ctx.isFriendlyTo(p, cur) ? cur : p;
+  if (ability.requiresTarget && ability.targetsDead) {
+    // Combat res: the target must be a DEAD group/raid member (no self-cast fallback).
+    const dead = resolveDeadAllyTarget(ctx, p, castTargetId);
+    if (!dead) {
+      ctx.error(p.id, 'You must target a dead ally in your group.');
+      return;
+    }
+    if (dist2d(p.pos, dead.pos) > ability.range) {
+      ctx.error(p.id, 'Out of range.');
+      return;
+    }
+    target = dead;
+  } else if (ability.requiresTarget && ability.targetType === 'friendly') {
+    // heals/buffs: the mouseover override when given, else the current
+    // friendly target, else yourself
+    target = resolveFriendlyTarget(ctx, p, castTargetId);
     const d = dist2d(p.pos, target.pos);
     if (d > Math.max(ability.range, 5)) {
       ctx.error(p.id, 'Out of range.');
@@ -386,6 +596,17 @@ export function castAbility(
     if (ctx.lineOfSightBlocked(p, target, ability)) {
       ctx.error(p.id, 'Line of sight.');
       return;
+    }
+    // Group/raid-only friendly target (Cascada temporal): the target must be the
+    // caster or a member of the caster's party/raid, never an external friendly or
+    // NPC. Refuse before any cost/cooldown is paid, so an out-of-group target never
+    // silently burns the cast on an empty selection.
+    if (ability.partyOnlyTarget && target.id !== p.id) {
+      const party = ctx.partyOf(p.id);
+      if (!party || !party.members.includes(target.id)) {
+        ctx.error(p.id, 'That ally is not in your group.');
+        return;
+      }
     }
   } else if (ability.requiresTarget && ability.targetType === 'any') {
     target = p.targetId !== null ? (ctx.entities.get(p.targetId) ?? null) : null;
@@ -530,6 +751,14 @@ export function castAbility(
   if (ability.id !== 'ghost_wolf' && p.auras.some((a) => a.id === 'ghost_wolf')) {
     ctx.breakGhostWolf(p);
   }
+  // An instant slipping through a RUNNING cast (usableWhileCasting /
+  // Flickerstep) must not disturb that cast's aim: castTargetId/castAim belong
+  // to the spell in progress (its finish path re-validates them), so they are
+  // stashed here and restored after the interleaved resolution below. Without
+  // this the running Fireball lost its target (fizzling at completion, the
+  // owner's round-four report) and an aimed Blizzard fell back to the feet.
+  const heldCastTarget = blinkThrough ? p.castTargetId : null;
+  const heldCastAim = blinkThrough ? p.castAim : null;
   // Stash the (clamped) aim so the resolved area effects read it, both for an
   // instant cast (resolved just below) and a cast-time spell (resolved on
   // completion in updateCasting). Cleared there / on cancel.
@@ -553,7 +782,17 @@ export function castAbility(
   }
   p.castTargetId = target?.id ?? null;
 
-  const gcd = ctx.playerGcdFor(meta.cls);
+  // Brain Freeze (combat/frost_mage.ts): consumed HERE, after every gate
+  // above (so a blocked cast never eats the proc) and before the cast-time /
+  // cost / cooldown reads below: the armed Flurry goes instant, skips its
+  // cooldown and carries its 30% baked into the resolved effects.
+  res = applyBrainFreezeOverride(ctx, p, res);
+
+  // Owner 2026-07-13: spell haste shortens the global cooldown (floored at MIN_GCD),
+  // so gear/Bloodlust/Temporal Acceleration haste speeds the whole rotation, not just
+  // cast bars. spellHasteMult is 1 for anyone without spell haste, so their GCD is
+  // unchanged.
+  const gcd = Math.max(MIN_GCD, ctx.playerGcdFor(meta.cls) / spellHasteMult(p));
   // A channel keeps its duration, so it must not eat a next_cast_instant charge.
   const castTime =
     !ability.channel &&
@@ -577,15 +816,28 @@ export function castAbility(
 
   if (ability.channel) {
     spendAbilityCost(ctx, p, meta, res);
-    armAbilityCooldown(p, ability.id, res.cooldown, false, res.charges ?? 1);
+    armAbilityCooldown(p, ability.id, res.cooldown, false, res.bonusCharges ?? 0);
+    // Blizzard's Frozen Orb refund budget resets per cast (combat/frost_mage.ts).
+    frostMageChannelStart(p, ability.id);
+    // Aether Darts arms its one-time Arcane Charge consume for THIS channel
+    // (combat/chronomancy.ts); inert for every other channel.
+    aetherDartsChannelStart(p, ability.id);
     // Spell haste (item-set bonus) shortens the whole channel and so each tick.
     const channelDuration = ability.channel.duration / spellHasteMult(p);
     p.castingAbility = ability.id;
     p.castTotal = channelDuration;
     p.castRemaining = channelDuration;
     p.channeling = true;
-    p.channelTickEvery = channelDuration / ability.channel.ticks;
+    // Aether Darts fires a full-charge barrage (5 missiles) at max Arcane Charges:
+    // aetherDartsChannelStart set p.aetherDartsTicks; every other channel uses the
+    // ability's default tick count.
+    const channelTicks =
+      ability.id === 'arcane_missiles' && p.aetherDartsTicks
+        ? p.aetherDartsTicks
+        : ability.channel.ticks;
+    p.channelTickEvery = channelDuration / channelTicks;
     p.channelTickTimer = p.channelTickEvery;
+    p.channelTicksLeft = channelTicks;
     p.gcdRemaining = Math.max(p.gcdRemaining, gcd);
     ctx.emit({
       type: 'castStart',
@@ -608,7 +860,10 @@ export function castAbility(
     // so meleeHaste always equals spellHaste and the classic melee-haste scaling
     // falls out identically. If the haste channels ever split, give physical casts
     // p.meleeHaste here (and mirror `mh` over the wire for the tooltip).
-    const stretchedCastTime = (castTime * tonguesMult(p)) / spellHasteMult(p);
+    // Aether Surge speeds up with held Arcane Charges and while Aether Rush is armed
+    // (combat/chronomancy.ts); 1x for every other cast, so nothing else is touched.
+    const surgeCastMult = ability.id === ARCANE_SURGE_ID ? aetherSurgeCastMult(p) : 1;
+    const stretchedCastTime = (castTime * tonguesMult(p) * surgeCastMult) / spellHasteMult(p);
     p.castingAbility = ability.id;
     p.castTotal = stretchedCastTime;
     p.castRemaining = stretchedCastTime;
@@ -618,10 +873,14 @@ export function castAbility(
   }
 
   if (!ability.offGcd) p.gcdRemaining = Math.max(p.gcdRemaining, gcd);
-  applyAbility(ctx, p, meta, res);
-  // instant ground-targeted cast: its effects have consumed the aim point.
-  p.castAim = null;
-  p.castTargetId = null;
+  const instantResolved = ability.empowerStages
+    ? { ...res, empowerLevel: ability.empowerStages }
+    : res;
+  applyAbility(ctx, p, meta, instantResolved, castTargetId);
+  // instant ground-targeted cast: its effects have consumed the aim point. An
+  // interleaved instant instead hands the aim back to the cast still running.
+  p.castAim = blinkThrough ? heldCastAim : null;
+  p.castTargetId = blinkThrough ? heldCastTarget : null;
 }
 
 export function spendResource(p: Entity, cost: number): void {
@@ -670,7 +929,91 @@ function spendAbilityCost(
     return;
   }
   spendResource(p, res.cost);
+  // Overflowing Power (mage choice row): every 10% of maximum mana actually
+  // spent shaves manaDefCdrPer10 seconds off the mage defensive cooldowns,
+  // capped per rolling window (the 'internal_cd' aura carries the window's
+  // running total, so no new entity field enters the parity state hash).
+  overflowingPowerCdr(ctx, p, meta, res.cost);
+  // Colossal Might: each point of rage actually spent shaves cdrPerRage seconds
+  // off the tracked offensive cooldowns. 0 for everyone without the capstone.
   applyRageSpendCooldownRefund(ctx, p, meta, spentRage);
+}
+
+// Overflowing Power (mage choice row): the Colossal Might pattern on mana. The
+// defensive set it shaves, the seconds cap, and the rolling window; the cap
+// accumulator rides an 'internal_cd' aura the player can watch tick down.
+const MAGE_DEFENSIVE_COOLDOWNS = [
+  'blink',
+  'ice_barrier',
+  'blazing_barrier',
+  'greater_invisibility',
+] as const;
+const OVERFLOW_CAP_SECONDS = 10;
+const OVERFLOW_CAP_WINDOW = 30;
+
+function overflowingPowerCdr(ctx: SimContext, p: Entity, meta: PlayerMeta, cost: number): void {
+  if (cost <= 0 || p.resourceType !== 'mana' || p.maxResource <= 0) return;
+  const per10 = ctx.playerMods(meta).global.manaDefCdrPer10;
+  if (per10 <= 0) return;
+  const capAura = p.auras.find((a) => a.id === 'overflowing_power_cap');
+  const used = capAura?.value ?? 0;
+  const shave = Math.min((cost / p.maxResource) * 10 * per10, OVERFLOW_CAP_SECONDS - used);
+  if (shave <= 0) return;
+  if (capAura) {
+    capAura.value += shave;
+  } else {
+    ctx.applyAura(p, {
+      id: 'overflowing_power_cap',
+      name: 'Overflowing Power',
+      kind: 'internal_cd',
+      value: shave,
+      remaining: OVERFLOW_CAP_WINDOW,
+      duration: OVERFLOW_CAP_WINDOW,
+      sourceId: p.id,
+      school: 'arcane',
+    });
+  }
+  for (const id of MAGE_DEFENSIVE_COOLDOWNS) {
+    const cur = p.cooldowns.get(id);
+    if (cur === undefined) continue;
+    if (cur <= shave) p.cooldowns.delete(id);
+    else p.cooldowns.set(id, cur - shave);
+  }
+}
+
+// Overload (mage choice row): consume the armed amplifier on a mana spell,
+// returning a scaled copy of the resolved ability (numeric effect fields ride
+// the output amp; the bill rides the cost amp). The original resolved struct
+// is never mutated. Draws no rng.
+const OVERLOAD_COST_MULT = 1.5;
+
+function consumeOverload(ctx: SimContext, p: Entity, res: ResolvedAbility): ResolvedAbility {
+  if (res.def.school === 'physical' || res.cost <= 0) return res;
+  const idx = p.auras.findIndex((a) => a.kind === 'overload');
+  if (idx < 0) return res;
+  const aura = p.auras[idx];
+  const amp = 1 + aura.value;
+  p.auras.splice(idx, 1);
+  ctx.emit({ type: 'aura', targetId: p.id, name: aura.name, gained: false });
+  const effects = res.effects.map((eff) => {
+    if (eff.type === 'empoweredCone') {
+      return {
+        ...eff,
+        stages: eff.stages.map((stage) => ({
+          ...stage,
+          min: Math.round(stage.min * amp),
+          max: Math.round(stage.max * amp),
+        })),
+      };
+    }
+    const scaled: Record<string, unknown> = { ...eff };
+    for (const key of ['min', 'max', 'amount', 'bonus', 'total', 'value'] as const) {
+      const v = scaled[key];
+      if (typeof v === 'number' && v > 0) scaled[key] = Math.round(v * amp);
+    }
+    return scaled as typeof eff;
+  });
+  return { ...res, cost: Math.round(res.cost * OVERLOAD_COST_MULT), effects };
 }
 
 function armAbilityCooldown(
@@ -678,16 +1021,18 @@ function armAbilityCooldown(
   abilityId: string,
   cooldown: number,
   togglingOff = false,
-  maxCharges = 1,
+  // `bonusCharges` drives the abilityCharges recharge model (Double Charge, and
+  // the extra Blink/Frost Nova/Ice Block charges); content resolves it onto the
+  // ResolvedAbility. A running cooldown is the recharge timer once uses are spent.
+  bonusCharges = 0,
 ): void {
   if (cooldown <= 0 || togglingOff) return;
-  if (maxCharges > 1) {
-    p.charges ??= new Map();
-    const state = p.charges.get(abilityId) ?? { spent: 0, cdMax: cooldown };
-    state.spent = Math.min(maxCharges, state.spent + 1);
-    state.cdMax = cooldown;
-    p.charges.set(abilityId, state);
-    if (!p.cooldowns.has(abilityId)) p.cooldowns.set(abilityId, cooldown);
+  const state = chargeState(p, abilityId, bonusCharges, cooldown);
+  if (state) {
+    state.charges = Math.max(0, state.charges - 1);
+    if (state.charges < state.maxCharges && state.recharge <= 0) state.recharge = cooldown;
+    if (state.charges <= 0) p.cooldowns.set(abilityId, state.recharge);
+    else p.cooldowns.delete(abilityId);
     return;
   }
   if (isShamanShock(abilityId)) {
@@ -714,6 +1059,9 @@ function applyChannelTick(ctx: SimContext, p: Entity, res: ResolvedAbility): voi
       radius,
     });
     const channelSp = channelTickBonus(abilityScalingPower(p, res.def), res.def);
+    // How many enemies this pulse actually struck: Blizzard's Frozen Orb
+    // refund (frostMageChannelPulse below) scales with it.
+    let struck = 0;
     for (const eff of res.effects) {
       if (eff.type !== 'aoeDamage') continue;
       for (const m of ctx.hostilesInRadius(p, center, eff.radius)) {
@@ -723,6 +1071,100 @@ function applyChannelTick(ctx: SimContext, p: Entity, res: ResolvedAbility): voi
         // mirroring the instant aoeDamage path in effect_dispatch.
         if (!isSpell) dmg *= 1 - armorReduction(ctx.effectiveArmor(m), p.level);
         ctx.dealDamage(p, m, Math.round(dmg), false, res.def.school, res.def.name, 'hit');
+        struck++;
+      }
+    }
+    // A position channel may also carry an aoeSlow rider (Blizzard): each
+    // pulse re-applies the snare at the aimed point, refresh-by-id like the
+    // instant aoeSlow case in effect_dispatch.
+    for (const eff of res.effects) {
+      if (eff.type !== 'aoeSlow') continue;
+      for (const m of ctx.hostilesInRadius(p, center, eff.radius)) {
+        if (m.dead) continue;
+        if (!ctx.hasLineOfSight(p, m)) continue;
+        ctx.applyAura(m, {
+          id: `${res.def.id}_slow`,
+          name: res.def.name,
+          kind: 'slow',
+          remaining: eff.duration,
+          duration: eff.duration,
+          value: eff.mult,
+          sourceId: p.id,
+          school: res.def.school,
+        });
+      }
+    }
+    frostMageChannelPulse(ctx, p, res.def.id, struck);
+    return;
+  }
+
+  // Self-centered AoE channel (Steel Cyclone / bladestorm): a targetless channel
+  // whose storm follows the CASTER, pulsing its aoeDamage on every hostile in
+  // radius around the caster each tick (center is live p.pos, so it moves with
+  // the warrior). Distinct from the position channel above (which clamps a
+  // ground point) and from the single-target channel below.
+  if (!res.def.requiresTarget && res.effects.some((eff) => eff.type === 'aoeDamage')) {
+    const isSpell = res.def.school !== 'physical';
+    const channelSp = channelTickBonus(abilityScalingPower(p, res.def), res.def);
+    for (const eff of res.effects) {
+      if (eff.type !== 'aoeDamage') continue;
+      ctx.emit({
+        type: 'spellfxAt',
+        x: p.pos.x,
+        z: p.pos.z,
+        school: res.def.school,
+        fx: 'nova',
+        radius: eff.radius,
+      });
+      for (const m of ctx.hostilesInRadius(p, p.pos, eff.radius)) {
+        if (!ctx.hasLineOfSight(p, m)) continue;
+        let dmg = ctx.rng.range(eff.min, eff.max) + channelSp;
+        if (!isSpell) dmg *= 1 - armorReduction(ctx.effectiveArmor(m), p.level);
+        ctx.dealDamage(p, m, Math.round(dmg), false, res.def.school, res.def.name, 'hit');
+      }
+    }
+    return;
+  }
+
+  // Targetless SELF channel (Aetherwell): no aim point, no area, no enemy.
+  // Each tick restores the flat mana AND stacks the channel's spell-power
+  // buff (owner design: the longer you channel, the more spell power), the
+  // aura value growing by the effect value per pulse with its clock
+  // refreshed; the recalc applies the new power at once. Draws no rng.
+  if (!res.def.requiresTarget && res.effects.some((eff) => eff.type === 'gainResource')) {
+    for (const eff of res.effects) {
+      if (eff.type === 'gainResource') {
+        p.resource = Math.min(p.maxResource, p.resource + eff.amount);
+      } else if (eff.type === 'selfBuff' && eff.kind === 'buff_spellpower') {
+        const existing = p.auras.find((a) => a.id === res.def.id && a.kind === 'buff_spellpower');
+        if (existing) {
+          existing.value += eff.value;
+          existing.stacks = (existing.stacks ?? 1) + 1;
+          existing.remaining = eff.duration;
+          existing.duration = eff.duration;
+        } else {
+          ctx.applyAura(p, {
+            id: res.def.id,
+            name: res.def.name,
+            kind: 'buff_spellpower',
+            value: eff.value,
+            remaining: eff.duration,
+            duration: eff.duration,
+            sourceId: p.id,
+            school: res.def.school,
+            stacks: 1,
+          });
+        }
+        const channelMeta = ctx.players.get(p.id);
+        if (channelMeta) {
+          recalcPlayerStats(
+            p,
+            channelMeta.cls,
+            channelMeta.equipment,
+            ctx.playerMods(channelMeta),
+            channelMeta.equipmentInstance,
+          );
+        }
       }
     }
     return;
@@ -782,16 +1224,26 @@ function applyChannelTick(ctx: SimContext, p: Entity, res: ResolvedAbility): voi
   // tick it is fired; a target that dies mid-flight fizzles it (the drain's guard).
   scheduleProjectile(ctx, p, target, (src, tgt) => {
     const channelSp = channelTickBonus(abilityScalingPower(src, res.def), res.def);
+    // Aether Darts: the FIRST landed missile consumes the caster's Arcane Charges
+    // and locks a flat per-missile Arcane bonus (combat/chronomancy.ts); later
+    // missiles reuse it. It is plain Arcane damage, so Temporal Echo heals from it
+    // at the normal rate. Draws no rng; a no-op (0) for any other channel and with
+    // no charges held.
+    const surgeBonus =
+      res.def.id === 'arcane_missiles'
+        ? aetherDartsBoltBonus(ctx, src, res.def.channel?.ticks ?? 1)
+        : 0;
     for (const eff of res.effects) {
       if (eff.type === 'directDamage') {
         const crit = ctx.rng.chance(consumeNextAttackCrit(ctx, src) ? 1 : ctx.spellCrit(src));
-        let dmg = ctx.rng.range(eff.min, eff.max) + channelSp;
+        let dmg = ctx.rng.range(eff.min, eff.max) + channelSp + surgeBonus;
         dmg *= spellDamageMultFromAuras(src);
         // A channeled spell tick (Arcane Missiles) is a spell crit, so it takes the
-        // spell crit-damage channel of the mastery like every other spell crit.
+        // spell crit-damage channel of the mastery (plus the generic bonus) like
+        // every other spell crit.
         if (crit) dmg *= 1.5 + src.critDmgSpellBonus;
         ctx.dealDamage(src, tgt, Math.round(dmg), crit, res.def.school, res.def.name, 'hit');
-        noteSpellHit(ctx, src, crit);
+        noteSpellHit(ctx, src, crit, res.def.id);
       } else if (eff.type === 'drainTick') {
         const dmg = Math.round(ctx.rng.range(eff.min, eff.max) + channelSp);
         ctx.dealDamage(src, tgt, dmg, false, res.def.school, res.def.name, 'hit');
@@ -817,7 +1269,23 @@ function applyChannelTick(ctx: SimContext, p: Entity, res: ResolvedAbility): voi
   });
 }
 
-function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: ResolvedAbility): void {
+function applyAbility(
+  ctx: SimContext,
+  p: Entity,
+  meta: PlayerMeta,
+  res: ResolvedAbility,
+  castTargetId: number | null = null,
+): void {
+  // Consume the mouseover override: an instant cast passes it directly; a
+  // timed cast stored it on the entity at start (updateCasting's finish call
+  // passes nothing). Cleared here so it can never leak into a later cast.
+  const castTarget = castTargetId ?? p.castTargetId;
+  p.castTargetId = null;
+  // Overload (mage choice row): the armed amplifier bakes the next MANA spell
+  // 40% stronger and 50% costlier into a scaled COPY of the resolved ability
+  // before cost and effects resolve (channels are exempt: they bill in the
+  // castAbility channel branch and resolve per tick). Draws no rng.
+  res = consumeOverload(ctx, p, res);
   const ability = res.def;
   const togglingOff = isToggleBuff(ability) && p.auras.some((a) => a.id === ability.id);
   // The free charge is consumed exactly where a cost is actually billed; the
@@ -865,7 +1333,7 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
       return;
     }
     spendResource(p, billableCost());
-    armAbilityCooldown(p, ability.id, res.cooldown, false, res.charges ?? 1);
+    armAbilityCooldown(p, ability.id, res.cooldown, false, res.bonusCharges ?? 0);
     if (pet.dead) {
       ctx.revivePet(p.id);
     } else {
@@ -890,9 +1358,19 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
   }
 
   let target: Entity | null = null;
-  if (ability.requiresTarget && ability.targetType === 'friendly') {
-    const cur = p.castTargetId !== null ? (ctx.entities.get(p.castTargetId) ?? null) : null;
-    target = cur && !cur.dead && ctx.isFriendlyTo(p, cur) ? cur : p;
+  if (ability.requiresTarget && ability.targetsDead) {
+    // Combat res finish: the dead ally's id was stored in castTarget at cast start
+    // (it is auto-deselected from p.targetId once dead, so we cannot re-derive it).
+    const dead = resolveDeadAllyTarget(ctx, p, castTarget);
+    if (!dead) {
+      ctx.error(p.id, 'You must target a dead ally in your group.');
+      return;
+    }
+    target = dead;
+  } else if (ability.requiresTarget && ability.targetType === 'friendly') {
+    // Keep the branch's mouseover-cast resolution (Clique-style): the explicit
+    // override wins while valid, else current-friendly-target-else-self.
+    target = resolveFriendlyTarget(ctx, p, castTarget);
     if (dist2d(p.pos, target.pos) > Math.max(ability.range, 5) + 2) {
       ctx.error(p.id, 'Out of range.');
       return;
@@ -902,7 +1380,7 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
       return;
     }
   } else if (ability.requiresTarget && ability.targetType === 'any') {
-    target = p.castTargetId !== null ? (ctx.entities.get(p.castTargetId) ?? null) : null;
+    target = castTarget !== null ? (ctx.entities.get(castTarget) ?? null) : null;
     if (!target || target.dead || (!ctx.isHostileTo(p, target) && !ctx.isFriendlyTo(p, target))) {
       ctx.error(p.id, 'You have no target.');
       return;
@@ -918,7 +1396,7 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
       return;
     }
   } else if (ability.requiresTarget) {
-    target = p.castTargetId !== null ? (ctx.entities.get(p.castTargetId) ?? null) : null;
+    target = castTarget !== null ? (ctx.entities.get(castTarget) ?? null) : null;
     if (!target || target.dead || !ctx.isHostileTo(p, target)) {
       ctx.error(p.id, 'You have no target.');
       return;
@@ -961,7 +1439,7 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
     (ability.targetType === 'any' && target && ctx.isFriendlyTo(p, target))
   ) {
     spendAbilityCost(ctx, p, meta, res);
-    armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.charges ?? 1);
+    armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.bonusCharges ?? 0);
     ctx.runEffects(p, meta, target, res);
     // 'spellCast' means SPELLS: a physical friendly ability never rolls.
     if (p.kind === 'player' && ability.school !== 'physical')
@@ -976,11 +1454,12 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
   // opts in with projectile:true. Without this a physical shot deals its damage
   // instantly while the arrow is still visibly in flight (health drops, or the mob
   // dies, before it arrives).
-  const firesProjectile = ability.school !== 'physical' || ability.projectile === true;
+  // `projectile: false` opts a spell OUT (Fire Blast bites instantly).
+  const firesProjectile = ability.projectile ?? ability.school !== 'physical';
   if (target && firesProjectile) {
     const isSpell = ability.school !== 'physical';
     spendAbilityCost(ctx, p, meta, res);
-    armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.charges ?? 1);
+    armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.bonusCharges ?? 0);
     ctx.emit({
       type: 'spellfx',
       sourceId: p.id,
@@ -1028,7 +1507,9 @@ function applyAbility(ctx: SimContext, p: Entity, meta: PlayerMeta, res: Resolve
   }
 
   spendAbilityCost(ctx, p, meta, res);
-  armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.charges ?? 1);
+  armAbilityCooldown(p, ability.id, res.cooldown, togglingOff, res.bonusCharges ?? 0);
+  // A shout announces itself: world-visible cue so the caster roars and the
+  // shockwave ring reads for everyone nearby (renderer-only; no mechanic).
   if (ability.castFx && !togglingOff) {
     ctx.emit({
       type: 'spellfx',

@@ -10,7 +10,7 @@
 // `Sim` method verbatim, with `this.X` rewritten to `ctx.X` (the SimContext seam) or to
 // a sibling function in this module. Statement order, branch order, validation order,
 // and the in-place mutation (the refactor's immutability waiver: `r.meta.talents = ...`,
-// `loadouts.push`, `delete cand.ranks[id]`, `meta.talentMods = ...`) are preserved
+// `loadouts.push`, `meta.talentMods = ...`) are preserved
 // exactly so the parity gate's full-state trace AND rng draw-order log stay byte-
 // identical. Talent application draws NO rng.
 //
@@ -32,6 +32,8 @@
 // `src/sim`-pure: no DOM/Three/render/ui/game/net imports, no Math.random/Date.now
 // (enforced by tests/architecture.test.ts).
 
+import { stripTemporalEchoes } from '../combat/chronomancy';
+import { abilitiesKnownAt } from '../content/classes';
 import {
   cloneAllocation,
   computeTalentModifiers,
@@ -49,7 +51,9 @@ import {
   talentsFor,
   validateAllocation,
 } from '../content/talents';
+import { ABILITIES } from '../data';
 import { recalcPlayerStats } from '../entity';
+import { despawnPersistentPet, petOf } from '../pet/pet_commands';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
 import type { Entity } from '../types';
@@ -207,6 +211,19 @@ function commitTalentAllocation(
   meta.talents = sanitized;
   recomputeTalents(ctx, meta);
   if (previousSpec !== sanitized.spec) ctx.revalidateOffhandForSpec(player.id);
+  // A spec-locked pet outlives its spec otherwise (owner report: the frost
+  // Water Elemental kept fighting for a fire mage): if the ability that
+  // summons the ACTIVE pet is no longer in the new build's known list, the
+  // companion returns home. Tamed hunter pets are never spec-gated, so they
+  // are untouched; deterministic, no rng.
+  dismissSpecLockedPet(ctx, player, meta);
+  // Chronomancy: leaving the healer spec (the new build no longer knows Temporal
+  // Echo) clears any Temporal Echo marks this mage placed, so a fire/frost mage
+  // never keeps feeding a stale echo. Keyed by sourceId; marks the mage carries
+  // from another chronomancer are untouched. No-op for every non-mage build.
+  if (!meta.known.some((known) => known.def.id === 'temporal_echo')) {
+    stripTemporalEchoes(ctx, player.id);
+  }
   if (successText) ctx.emit({ type: 'log', pid: player.id, text: successText, color: '#ffd100' });
   return true;
 }
@@ -223,8 +240,37 @@ export function applyTalentAllocation(
   return commitTalentAllocation(ctx, r.meta, r.e, alloc, 'Talents updated.');
 }
 
-// Spend a single point into a node (incremental API; the UI mostly stages then
-// applies). Validated identically by building + checking a candidate alloc.
+// The active pet's summoning ability under the OLD build may be gone under
+// the new one (Summon Water Elemental is frost-only): send the pet home. The
+// summon->pet link is data-driven: any known summonDemon ability whose mobId
+// matches the live pet keeps it; no match, no pet.
+function dismissSpecLockedPet(ctx: SimContext, e: Entity, meta: PlayerMeta): void {
+  const pet = petOf(ctx, e.id);
+  if (!pet) return;
+  const summons = (def: (typeof ABILITIES)[string]) =>
+    def.effects.some(
+      (eff) =>
+        (eff.type === 'summonDemon' && eff.mobId === pet.templateId) ||
+        (eff.type === 'summonPet' && eff.templateId === pet.templateId),
+    );
+  // A pet no class summon creates (a tamed hunter beast) is never spec-bound.
+  const summonable = Object.values(ABILITIES).some((d) => d.class === meta.cls && summons(d));
+  if (!summonable) return;
+  const known = abilitiesKnownAt(meta.cls, e.level, ctx.playerMods(meta));
+  if (known.some((k) => summons(k.def))) return;
+  despawnPersistentPet(ctx, pet);
+  // The registered despawn line (log.petFadesVoid, localized for every locale
+  // in sim_i18n), the same farewell a warlock demon gives.
+  ctx.emit({
+    type: 'log',
+    pid: e.id,
+    text: `${pet.name} fades back into the void.`,
+    color: '#b894ff',
+  });
+}
+
+// Legacy incremental API retained for old scripts. The node system is gone, so
+// this no longer changes state.
 export function spendTalentPoint(ctx: SimContext, nodeId: string, pid?: number): boolean {
   const r = ctx.resolve(pid);
   if (!r) return false;
@@ -232,8 +278,7 @@ export function spendTalentPoint(ctx: SimContext, nodeId: string, pid?: number):
   return false;
 }
 
-// Choose / change specialization. Switching specs drops the previous spec
-// tree's points (they belonged to that tree); the class tree is untouched.
+// Choose / change specialization. Choice rows are independent of specialization.
 export function setTalentSpec(ctx: SimContext, specId: string | null, pid?: number): boolean {
   const r = ctx.resolve(pid);
   if (!r) return false;
@@ -271,7 +316,7 @@ export function selectTalentRow(
   return applyTalentAllocation(ctx, cand, pid);
 }
 
-// Free respec (out of combat): wipe all talent points. Spec is retained.
+// Free respec (out of combat): wipe choice rows. Spec is retained.
 export function respecTalents(ctx: SimContext, pid?: number): boolean {
   const r = ctx.resolve(pid);
   if (!r) return false;

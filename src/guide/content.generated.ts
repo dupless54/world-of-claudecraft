@@ -925,26 +925,27 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
     "color": "#69ccf0",
     "resource": "mana",
     "roles": [
+      "healer",
       "dps"
     ],
     "specs": [
       {
         "id": "arcane",
-        "name": "Aethermancy",
-        "role": "dps",
-        "signature": "arcane_power"
+        "name": "Chronomancy",
+        "role": "healer",
+        "signature": "temporal_mend"
       },
       {
         "id": "fire",
         "name": "Pyromancy",
         "role": "dps",
-        "signature": "combustion"
+        "signature": "pyroblast"
       },
       {
         "id": "frost",
         "name": "Cryomancy",
         "role": "dps",
-        "signature": "icy_veins"
+        "signature": "ice_lance"
       }
     ],
     "signatureAbilities": [
@@ -969,8 +970,8 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
         "name": "Waterbind"
       },
       {
-        "id": "conjure_food",
-        "name": "Breadbind"
+        "id": "blink",
+        "name": "Flickerstep"
       }
     ],
     "abilities": [
@@ -995,6 +996,54 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
         "name": "Waterbind"
       },
       {
+        "id": "blink",
+        "name": "Flickerstep"
+      },
+      {
+        "id": "ice_block",
+        "name": "Cold Coffin"
+      },
+      {
+        "id": "ignition",
+        "name": "Ignition"
+      },
+      {
+        "id": "hot_streak",
+        "name": "Hot Streak"
+      },
+      {
+        "id": "blazing_barrier",
+        "name": "Blazing Barrier"
+      },
+      {
+        "id": "meteor",
+        "name": "Meteor"
+      },
+      {
+        "id": "combustion",
+        "name": "Phoenix Trance"
+      },
+      {
+        "id": "summon_water_elemental",
+        "name": "Summon Water Elemental"
+      },
+      {
+        "id": "ice_lance",
+        "name": "Ice Lance"
+      },
+      {
+        "id": "fingers_of_frost",
+        "name": "Fingers of Frost"
+      },
+      {
+        "id": "brain_freeze",
+        "name": "Brain Freeze"
+      },
+      {
+        "id": "shatter",
+        "name": "Brittle Ruin"
+      },
+      {
         "id": "conjure_food",
         "name": "Breadbind"
       },
@@ -1011,12 +1060,40 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
         "name": "Aether Darts"
       },
       {
+        "id": "flurry",
+        "name": "Winterlash"
+      },
+      {
         "id": "polymorph",
         "name": "Bewitch"
       },
       {
         "id": "frost_nova",
         "name": "Icebind"
+      },
+      {
+        "id": "frozen_orb",
+        "name": "Frozen Orb"
+      },
+      {
+        "id": "blizzard",
+        "name": "Blizzard"
+      },
+      {
+        "id": "icy_veins",
+        "name": "Icy Veins"
+      },
+      {
+        "id": "glacial_spike",
+        "name": "Glacial Spike"
+      },
+      {
+        "id": "glacial_front",
+        "name": "Glacial Front"
+      },
+      {
+        "id": "dragons_breath",
+        "name": "Dragon's Breath"
       },
       {
         "id": "arcane_explosion",
@@ -1039,8 +1116,36 @@ export const GUIDE_CLASSES: GuideClassInfo[] = [
         "name": "Flamestrike"
       },
       {
-        "id": "counterspell",
-        "name": "Spellbreak"
+        "id": "temporal_barrier",
+        "name": "Temporal Barrier"
+      },
+      {
+        "id": "temporal_echo",
+        "name": "Temporal Echo"
+      },
+      {
+        "id": "arcane_surge",
+        "name": "Aether Surge"
+      },
+      {
+        "id": "temporal_cascade",
+        "name": "Temporal Cascade"
+      },
+      {
+        "id": "temporal_reversal",
+        "name": "Temporal Reversal"
+      },
+      {
+        "id": "temporal_rewind",
+        "name": "Rewind"
+      },
+      {
+        "id": "temporal_acceleration",
+        "name": "Temporal Acceleration"
+      },
+      {
+        "id": "perfect_moment",
+        "name": "Perfect Moment"
       },
       {
         "id": "fireball_form",

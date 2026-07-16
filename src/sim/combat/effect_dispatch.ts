@@ -17,9 +17,11 @@
 
 import { isDebuffAura } from '../aura_classify';
 import { ABILITIES, isDelvePos } from '../data';
+import { logCascadeCast, recordCascadeInitial } from '../dev/cascade_playtest';
 import { recalcPlayerStats } from '../entity';
 import type { GroundAoE } from '../entity_roster';
 import { SCRIPTED_INTERRUPTIBLE_CHANNELS } from '../mob/healer_channel';
+import { scheduleProjectile } from '../projectile_travel';
 import type { PlayerMeta, ResolvedAbility } from '../sim';
 import type { SimContext } from '../sim_context';
 import {
@@ -29,6 +31,7 @@ import {
   dotTickBonus,
   hotTickBonus,
 } from '../spell_scaling';
+import { revivePlayerAt } from '../spirit';
 import { stunDrCategory } from '../stun_dr';
 import { addThreat } from '../threat';
 import type { AbilityDef, Entity } from '../types';
@@ -53,12 +56,34 @@ import {
   sweepStrikeDamage,
 } from './area_echo';
 import { isRootedOrChilled } from './cc';
+import {
+  ARCANE_SURGE_ID,
+  aetherSurgeAddStack,
+  aetherSurgeDamageMult,
+  applyPerfectMoment,
+  placeGroupEcho,
+  placeTemporalEcho,
+  selectCascadeTargets,
+} from './chronomancy';
 import { extendOwnedDot } from './dot_mutation';
 import { consumeAuraKind, consumeNextAttackCrit } from './empower_next';
 import { runWeaponProcs } from './equip_procs';
 import { exclusiveAuraConflicts } from './exclusive_aura';
+import { fireGuaranteedCrit } from './fire_mage';
 import { isFormAuraKind, isTravelFormAuraKind } from './forms';
+import {
+  frostMageAfterCast,
+  frostMageChannelStart,
+  resolveFrozenCast,
+  SHATTER_CRIT_BONUS,
+  SHATTER_CRIT_DMG_BONUS,
+} from './frost_mage';
+import { spawnFrozenOrb } from './frozen_orb';
+import { glacialFrontContains } from './glacial_front';
+import { applyGroupHaste } from './haste_burst';
 import { armHeroicLeap, relocateSwept } from './heroic_leap';
+import { applyRewind } from './rewind';
+import { spawnRingOfFrost } from './ring_of_frost';
 import { hasCastShield, noteSpellHit, spellDamageMultFromAuras } from './spell_combat';
 import { consumeSureCritCharge, hasSureCritAura } from './sure_crit';
 
@@ -75,6 +100,18 @@ function preservesStealth(ability: AbilityDef): boolean {
   // melee swing, so unlike Cheap Shot/Ambush/Garrote it must not blow the
   // caster's own stealth (issue #1890).
   return isStealthToggle(ability) || ability.id === 'sprint' || ability.id === 'sap';
+}
+
+// Resolve the exclusiveGroup for an AURA id: either a plain ability id (a
+// selfBuff aura) or the `<abilityId>_ap` id the aoeAllyAttackPower case stamps
+// (Iron Bellow's group shout), so a group buff and a self buff sharing one
+// exclusiveGroup cancel each other (battle_shout vs commanding_shout). Ids
+// whose base ability has no group (trueshot_aura_ap) resolve to undefined,
+// exactly as before.
+function exclusiveGroupOfAura(id: string): string | undefined {
+  const direct = ABILITIES[id]?.exclusiveGroup;
+  if (direct) return direct;
+  return id.endsWith('_ap') ? ABILITIES[id.slice(0, -3)]?.exclusiveGroup : undefined;
 }
 
 function removeRootAuras(ctx: SimContext, entity: Entity): void {
@@ -148,6 +185,11 @@ export function runEffects(
   // Dynamic DoT riders snapshot a fraction of the preceding resolved direct
   // hit, including its scaling and critical multiplier.
   let lastDirectDamage = 0;
+  // Frost mage (combat/frost_mage.ts): resolved ONCE per cast, so a multi-hit
+  // cast shares one frozen resolution and spends at most one Fingers of Frost
+  // stack / Winter's Chill charge. Inert (and free) for everyone who is not a
+  // committed-frost mage. Deterministic, no rng.
+  const frozen = resolveFrozenCast(ctx, p, meta, ability, target);
   // acting breaks stealth (the opener itself still lands first inside the swing).
   // Stealth toggles and Rogue Sprint are allowed while remaining hidden.
   if (!preservesStealth(ability)) ctx.breakStealth(p);
@@ -274,11 +316,14 @@ export function runEffects(
         if (!ctx.isHostileTo(p, target)) break;
         const rooted = isRootedOrChilled(target);
         const critChance =
-          isSpell && rooted
-            ? ctx.spellCrit(p) + ctx.playerMods(meta).global.critVsRooted
+          (isSpell && rooted
+            ? ctx.spellCrit(p) + mods.global.critVsRooted
             : isSpell
               ? ctx.spellCrit(p)
-              : p.critChance;
+              : p.critChance) +
+          // Shatter (combat/frost_mage.ts): bonus spell crit chance against a
+          // target this cast treats as frozen. 0 for everyone else.
+          (isSpell && frozen.treatAsFrozen ? SHATTER_CRIT_BONUS : 0);
         let dmg = ctx.rng.range(eff.min, eff.max);
         // The flat rider scales with the school's rating: Spell Power for spells,
         // Ranged AP for hunter shots, melee Attack Power for physical specials.
@@ -286,6 +331,9 @@ export function runEffects(
         // applies the AP scale-down. A non-scaling effect just contributes 0.
         dmg += directHitBonus(abilityScalingPower(p, ability), ability, res.castTime);
         if (eff.vsRootedMult !== undefined && rooted) dmg *= eff.vsRootedMult;
+        // Ice Lance against a frozen-counting target (combat/frost_mage.ts):
+        // the per-cast resolution carries its 3x; 1 for every other cast.
+        if (isSpell && frozen.treatAsFrozen) dmg *= frozen.damageMult;
         const abilityMod = mods.abilities[ability.id];
         const vsDotted = abilityMod?.dmgPctVsDotted ?? 0;
         const requiredDot = abilityMod?.dmgPctVsDottedAbility;
@@ -300,11 +348,26 @@ export function runEffects(
         ) {
           dmg *= 1 + vsDotted;
         }
-        const crit = ctx.rng.chance(consumeNextAttackCrit(ctx, p) ? 1 : critChance) || sureCrit;
+        const crit =
+          ctx.rng.chance(consumeNextAttackCrit(ctx, p) ? 1 : critChance) ||
+          sureCrit ||
+          // Fire spec (combat/fire_mage.ts): Combustion / Fire Blast / Scorch
+          // execute override the OUTCOME; the roll above is still drawn.
+          fireGuaranteedCrit(ctx, p, ability.id, ability.school, target);
         if (sureCrit) sureCritRolled = true;
-        if (crit) dmg *= (isSpell ? 1.5 : 2) + (isSpell ? p.critDmgSpellBonus : p.critDmgPhysBonus);
+        if (crit)
+          dmg *=
+            (isSpell ? 1.5 : 2) +
+            (isSpell ? p.critDmgSpellBonus : p.critDmgPhysBonus) +
+            // Shatter: crits against a frozen-counting target hit harder.
+            (isSpell && frozen.treatAsFrozen ? SHATTER_CRIT_DMG_BONUS : 0);
         if (isSpell) dmg *= spellDamageMultFromAuras(p);
         if (!isSpell) dmg *= 1 - armorReduction(ctx.effectiveArmor(target), p.level);
+        // Aether Surge (Chronomancy Phase 3): each held Arcane Charge scales the
+        // FULL post-spell-power, post-crit damage. The extra damage is what feeds
+        // more Temporal Echo healing (no hidden heal bonus). Deterministic; reads
+        // the caster's charge aura (combat/chronomancy.ts).
+        if (ability.id === ARCANE_SURGE_ID) dmg *= aetherSurgeDamageMult(p);
         const finalDamage = Math.round(dmg);
         lastDirectDamage = finalDamage;
         ctx.dealDamage(
@@ -328,7 +391,52 @@ export function runEffects(
         }
         if (sweeping)
           sweepStrikeDamage(ctx, p, target, finalDamage, ability.school, ability.name, threatOpts);
-        if (isSpell) noteSpellHit(ctx, p, crit);
+        // Power Echo (mage choice row): the armed echo repeats the SAME
+        // resolved amount at its fraction on the same target (already rolled,
+        // post crit; no new rng draw), consumed BEFORE the repeat so a copy
+        // can never re-echo. Mirrors the Bladed Echo copy rule above.
+        if (isSpell) {
+          const echoIdx = p.auras.findIndex((a) => a.kind === 'power_echo');
+          if (echoIdx >= 0) {
+            const echoAura = p.auras[echoIdx];
+            p.auras.splice(echoIdx, 1);
+            ctx.emit({ type: 'aura', targetId: p.id, name: echoAura.name, gained: false });
+            if (!target.dead) {
+              // The echo is a REAL second projectile (owner playtest: the
+              // instant copy looked superimposed): it visibly leaves the
+              // caster when the first hit lands and deals the copied amount
+              // on arrival, fizzling if the target dies in flight.
+              const echoAmt = Math.max(1, Math.round(finalDamage * echoAura.value));
+              ctx.emit({
+                type: 'spellfx',
+                sourceId: p.id,
+                targetId: target.id,
+                school: ability.school,
+                fx: 'projectile',
+              });
+              scheduleProjectile(ctx, p, target, (src, tgt) => {
+                ctx.dealDamage(
+                  src,
+                  tgt,
+                  echoAmt,
+                  crit,
+                  ability.school,
+                  ability.name,
+                  'hit',
+                  false,
+                  threatOpts,
+                );
+              });
+            }
+          }
+        }
+        if (isSpell) noteSpellHit(ctx, p, crit, ability.id);
+        // Aether Surge (Chronomancy Phase 3): this cast used the pre-cast charges
+        // for cost and damage above; now bank one more Arcane Charge (cap 4) and
+        // refresh the window, so the NEXT cast reads the higher count.
+        // projectile:false guarantees this runs after the damage and before any
+        // recast can read the count (combat/chronomancy.ts).
+        if (ability.id === ARCANE_SURGE_ID) aetherSurgeAddStack(ctx, p);
         if (!target.dead && ability.awardsCombo && !comboAwarded) {
           ctx.awardCombo(p, target, ability.awardsCombo);
           comboAwarded = true;
@@ -347,7 +455,10 @@ export function runEffects(
           eff.perCombo * spentCombo +
           ctx.rng.range(0, eff.variance) +
           ctx.effectiveAttackPower(p) / 14;
-        const crit = ctx.rng.chance(consumeNextAttackCrit(ctx, p) ? 1 : p.critChance) || sureCrit;
+        const crit =
+          ctx.rng.chance(consumeNextAttackCrit(ctx, p) ? 1 : p.critChance) ||
+          sureCrit ||
+          fireGuaranteedCrit(ctx, p, ability.id, ability.school, target ?? null);
         if (sureCrit) sureCritRolled = true;
         if (crit) dmg *= 2 + p.critDmgPhysBonus;
         dmg *= 1 - armorReduction(ctx.effectiveArmor(target), p.level);
@@ -422,6 +533,88 @@ export function runEffects(
       }
       case 'weaponDamage':
         break;
+      case 'temporalEcho': {
+        // Chronomancy Temporal Echo: place (or MOVE) the caster's per-caster mark
+        // on a friendly target or self. The small initial heal is the sibling
+        // 'heal' effect on this ability, handled by the 'heal' case; this case
+        // owns only the mark + its glyph. The Arcane-damage conversion lives in
+        // combat/chronomancy.ts. (docs/prd/mage-chronomancy.md section 13)
+        const echoTarget = target ?? p;
+        if (echoTarget !== p && ctx.isHostileTo(p, echoTarget)) break;
+        placeTemporalEcho(ctx, p, echoTarget, eff.duration);
+        break;
+      }
+      case 'massTemporalEcho': {
+        // Cascada temporal: the group version of Temporal Echo. The friendly target
+        // is the CENTER and must be the caster or a living group/raid member.
+        // selectCascadeTargets resolves and ORDERS the whole list (primary first,
+        // then the members nearest the primary within radius, capped at maxTargets)
+        // BEFORE any heal or aura is applied. Each target then takes a small initial
+        // heal (Spell-Power-scaled, can crit) and a 13% group echo; the overlap rule
+        // in placeGroupEcho keeps a pre-existing individual mark at 35%. The Arcane
+        // conversion lives in combat/chronomancy.ts. (mage-chronomancy.md Phase 4)
+        const primary = target ?? p;
+        if (primary !== p && ctx.isHostileTo(p, primary)) break;
+        const targets = selectCascadeTargets(ctx, p, primary, eff.radius, eff.maxTargets);
+        // DEV playtest readout only (Entity.cascadeDevStats, set by /dev cascade):
+        // capture the landed initial heal per target so logCascadeCast can print it.
+        // Absent in production, so the capture and log are fully skipped.
+        const devPlaytest = p.cascadeDevStats !== undefined;
+        const initialApplied: number[] = [];
+        for (const ally of targets) {
+          const before = devPlaytest ? ally.hp : 0;
+          const healAmount =
+            ctx.rng.range(eff.heal.min, eff.heal.max) + directHealBonus(p.spellPower, res.castTime);
+          ctx.applyHeal(p, ally, healAmount, ability.name);
+          if (devPlaytest) {
+            const applied = ally.hp - before;
+            initialApplied.push(applied);
+            recordCascadeInitial(p, applied);
+          }
+          placeGroupEcho(ctx, p, ally, eff.duration);
+        }
+        if (devPlaytest) logCascadeCast(ctx, p, targets, initialApplied);
+        break;
+      }
+      case 'resurrectAlly': {
+        // Temporal Reversal: rewind a dead group/raid member to life at their corpse
+        // (resolved upstream as a dead party/raid member), no resurrection sickness.
+        const ally = target;
+        if (!ally || !ally.dead) break;
+        revivePlayerAt(ctx, ally.id, ally.corpsePos ?? ally.pos, eff.hpFrac);
+        ctx.emit({
+          type: 'spellfx',
+          sourceId: p.id,
+          targetId: ally.id,
+          school: 'arcane',
+          fx: 'temporalGlyph',
+        });
+        break;
+      }
+      case 'perfectMoment': {
+        // Perfect Moment (combat/chronomancy.ts): slam the caster to full Arcane
+        // Charges and open the window in which Aether Darts stops consuming them.
+        applyPerfectMoment(ctx, p);
+        break;
+      }
+      case 'rewind': {
+        // Chronomancy Rewind (combat/rewind.ts): instant, no target, centered on the
+        // caster. Restores a fraction of the recent REAL damage every living group/
+        // raid member in range took, capped per target. No crit / no rng / no Echo /
+        // no Arcane conversion; normal heal threat via the shared applyHeal route.
+        applyRewind(
+          ctx,
+          p,
+          {
+            fraction: eff.fraction,
+            maxHpFraction: eff.maxHpFraction,
+            windowSec: eff.windowSec,
+            radius: eff.radius,
+          },
+          ability.name,
+        );
+        break;
+      }
       case 'heal': {
         const healTarget = target ?? p;
         if (healTarget !== p && ctx.isHostileTo(p, healTarget)) break;
@@ -603,7 +796,7 @@ export function runEffects(
           false,
           ability.id,
         );
-        noteSpellHit(ctx, p, crit);
+        noteSpellHit(ctx, p, crit, ability.id);
         break;
       }
       case 'interrupt': {
@@ -745,6 +938,19 @@ export function runEffects(
         }
         break;
       }
+      case 'cleanseSelf': {
+        // Ice Block: strip EVERY debuff off the caster (control, DoTs, stat saps, ...),
+        // broader than breakControl. Uses the shared classifier so the split matches
+        // the buff/debuff frame exactly. Emits the aura-lost event so client bars clear.
+        for (let i = p.auras.length - 1; i >= 0; i--) {
+          const aura = p.auras[i];
+          if (isDebuffAura(aura.kind, aura.value)) {
+            p.auras.splice(i, 1);
+            ctx.emit({ type: 'aura', targetId: p.id, name: aura.name, gained: false });
+          }
+        }
+        break;
+      }
       case 'lifeTap': {
         if (p.hp <= eff.hp) {
           ctx.error(p.id, 'Not enough health.');
@@ -757,11 +963,19 @@ export function runEffects(
           targetId: p.id,
           amount: eff.hp,
           crit: false,
-          school: 'shadow',
+          school: ability.school,
           ability: ability.name,
           kind: 'hit',
         });
         p.resource = Math.min(p.maxResource, p.resource + eff.mana);
+        // The sap is a MOMENT: the life-fountain burst sells health becoming power.
+        ctx.emit({
+          type: 'spellfx',
+          sourceId: p.id,
+          targetId: p.id,
+          school: ability.school,
+          fx: 'echoBurst',
+        });
         break;
       }
       case 'drainTick':
@@ -1041,30 +1255,54 @@ export function runEffects(
           res.castTime,
           true,
         );
-        const targets: Entity[] = [];
+        // Collect the eligible targets FIRST (LoS + frontal gate) so a soft
+        // target cap can know the count before any hit lands. The skips draw no
+        // rng (they happen before the damage roll), so the stream position is
+        // identical to the uncapped path for every filtered enemy.
+        const aoeTargets: Entity[] = [];
         for (const m of ctx.hostilesInRadius(p, aoeCenter, eff.radius)) {
           if (!ctx.hasLineOfSight(p, m)) continue;
+          // Frontal-arc variant (Faultline / Revenge): only enemies within the
+          // melee facing arc are hit, the same MELEE_ARC check castAbility's
+          // facing gate uses.
           if (eff.frontal) {
             const facingDiff = Math.abs(normAngle(angleTo(p.pos, m.pos) - p.facing));
             if (facingDiff > MELEE_ARC) continue;
           }
-          targets.push(m);
+          aoeTargets.push(m);
         }
+        // Classic AoE soft cap (Revenge): above `softCap` targets, hold the TOTAL
+        // to softCap x per-target by scaling every rolled hit. Scales the already-
+        // rolled amount, so it draws no extra rng.
         const capScale =
-          eff.softCap && targets.length > eff.softCap ? eff.softCap / targets.length : 1;
-        for (const m of targets) {
+          eff.softCap && aoeTargets.length > eff.softCap ? eff.softCap / aoeTargets.length : 1;
+        // canCrit (Flamestrike): ONE crit decision for the whole cast, rolled
+        // only when something was struck (a whiff draws nothing and feeds the
+        // streak counter nothing), outcome overridable by Combustion. Every
+        // struck enemy crits together, mirroring the owner rule that a single
+        // Flamestrike is a single crit toward Hot Streak however many it hits.
+        const aoeCrit =
+          (eff.canCrit ?? false) &&
+          aoeTargets.length > 0 &&
+          (ctx.rng.chance(ctx.spellCrit(p)) ||
+            fireGuaranteedCrit(ctx, p, ability.id, ability.school, null));
+        for (const m of aoeTargets) {
           let dmg = ctx.rng.range(eff.min, eff.max) + aoeSpBonus;
           if (isSpell) dmg *= spellDamageMultFromAuras(p);
+          if (aoeCrit)
+            dmg *= (isSpell ? 1.5 : 2) + (isSpell ? p.critDmgSpellBonus : p.critDmgPhysBonus);
           // Armor only mitigates physical damage, mirroring the single-target
           // path above — spell-school AoE (Arcane Explosion, Consecration) is
           // not reduced by the target's armor.
           if (!isSpell) dmg *= 1 - armorReduction(ctx.effectiveArmor(m), p.level);
+          // Soft-cap scale (Revenge above 5 targets): applied after the roll and
+          // armor so the total, not any single hit, is what the cap bounds.
           dmg *= capScale;
           ctx.dealDamage(
             p,
             m,
             Math.round(dmg),
-            false,
+            aoeCrit,
             ability.school,
             ability.name,
             'hit',
@@ -1074,7 +1312,13 @@ export function runEffects(
             attackAnimationStarted,
             false,
             ability.id,
+            // aoe: area Arcane damage (Aetherburst) converts to Temporal Echo
+            // healing at the reduced 15% rate. Non-arcane AoE is unaffected.
+            true,
           );
+          // Paired stun rider (Faultline): each enemy actually struck is also
+          // stunned, mirroring the single-target 'stun' case (shared PvP DR,
+          // no rng drawn; diminishedCrowdControlDuration is deterministic).
           if (eff.stunSec !== undefined && !m.dead) {
             const duration = ctx.diminishedCrowdControlDuration(
               p,
@@ -1097,12 +1341,17 @@ export function runEffects(
           }
         }
         if (eff.rageOnHit && meta.cls === 'warrior' && p.resourceType === 'rage') {
-          const hitCount = Math.min(targets.length, eff.rageOnHit.capTargets);
+          const hitCount = Math.min(aoeTargets.length, eff.rageOnHit.capTargets);
           const amount =
             (eff.rageOnHit.base + eff.rageOnHit.perTarget * hitCount) *
             warriorAbilityRageMult(ctx, p, meta);
           p.resource = Math.min(p.maxResource, p.resource + amount);
         }
+        // The Hot Streak feed, ONCE per cast (owner rule): a canCrit blast that
+        // struck anything counts as exactly one hit, crit or not, however many
+        // enemies it caught. A whiff feeds nothing (no draw happened either).
+        if ((eff.canCrit ?? false) && aoeTargets.length > 0 && isSpell)
+          noteSpellHit(ctx, p, aoeCrit, ability.id);
         break;
       }
       case 'chainDamage': {
@@ -1191,6 +1440,18 @@ export function runEffects(
         }
         break;
       }
+      case 'frozenOrb': {
+        // Frozen Orb (combat/frozen_orb.ts): release the drifting orb from the
+        // caster, snapshotting the per-pulse spell-power rider like a groundAoE.
+        spawnFrozenOrb(
+          ctx,
+          p,
+          eff,
+          ability.name,
+          directHitBonus(abilityScalingPower(p, ability), ability, res.castTime, true),
+        );
+        break;
+      }
       case 'groundAoE': {
         // Ground-targeted casts drop the zone where they were aimed; others lay it
         // under the caster (e.g. Consecration at your feet).
@@ -1209,7 +1470,52 @@ export function runEffects(
           // Each pulse is an AoE hit; scale per tick off the school's rating
           // (Spell Power, Ranged AP, or melee Attack Power for physical pulses).
           spBonus: directHitBonus(abilityScalingPower(p, ability), ability, res.castTime, true),
+          allyBuffPct: eff.allyBuffPct,
+          igniteFrac: eff.igniteFrac,
+          slowMult: eff.slowMult,
+          slowDuration: eff.slowDuration,
+          orbCdr: eff.orbCdr,
         };
+        // A fresh Blizzard zone gets a fresh Frozen Orb refund budget (the
+        // same per-cast budget the old channel reset at channel start).
+        if (eff.orbCdr) frostMageChannelStart(p, ability.id);
+        // Visual riders (owner playtest): a delayed FIRE zone is a falling
+        // meteor (the ball drops over the fall delay); a friendly zone is an
+        // inscribed rune circle for its whole life. Cosmetic only.
+        if (eff.delayed && ability.school === 'fire') {
+          ctx.emit({
+            type: 'spellfxAt',
+            x: zoneCenter.x,
+            z: zoneCenter.z,
+            school: ability.school,
+            fx: 'meteorFall',
+            radius: eff.radius,
+            duration: eff.interval,
+          });
+        }
+        if (eff.allyBuffPct) {
+          ctx.emit({
+            type: 'spellfxAt',
+            x: zoneCenter.x,
+            z: zoneCenter.z,
+            school: ability.school,
+            fx: 'runeCircle',
+            radius: eff.radius,
+            duration: eff.duration,
+          });
+        }
+        // A snaring frost zone (Blizzard) snows over its area for its life.
+        if (eff.slowMult && ability.school === 'frost') {
+          ctx.emit({
+            type: 'spellfxAt',
+            x: zoneCenter.x,
+            z: zoneCenter.z,
+            school: ability.school,
+            fx: 'snowZone',
+            radius: eff.radius,
+            duration: eff.duration,
+          });
+        }
         if (p.castAim) {
           ctx.emit({
             type: 'spellfxAt',
@@ -1228,7 +1534,9 @@ export function runEffects(
             fx: 'nova',
           });
         }
-        ctx.pulseGroundAoE(groundEffect, threatOpts, true);
+        // A delayed zone (Meteor's fall) skips the on-cast pulse: its first
+        // hit lands one interval later, exactly the fall time.
+        if (!eff.delayed) ctx.pulseGroundAoE(groundEffect, threatOpts, true);
         ctx.groundAoEs.push(groundEffect);
         break;
       }
@@ -1252,30 +1560,33 @@ export function runEffects(
       case 'aoeAttackPower': {
         for (const m of ctx.hostilesInRadius(p, p.pos, eff.radius)) {
           if (m.dead) continue;
-          ctx.applyAura(
-            m,
-            eff.pct === undefined
-              ? {
-                  id: `${ability.id}_ap`,
-                  name: ability.name,
-                  kind: 'debuff_ap',
-                  remaining: eff.duration,
-                  duration: eff.duration,
-                  value: eff.amount,
-                  sourceId: p.id,
-                  school: ability.school,
-                }
-              : {
-                  id: `${ability.id}_ap`,
-                  name: ability.name,
-                  kind: 'buff_dmg_done',
-                  remaining: eff.duration,
-                  duration: eff.duration,
-                  value: -eff.pct,
-                  sourceId: p.id,
-                  school: ability.school,
-                },
-          );
+          // pct form (Direhowl rework): a NEGATIVE buff_dmg_done aura cuts a
+          // fraction of ALL damage the victim deals (the dealDamage amp fold
+          // handles the negative side); the legacy amount form stays the flat
+          // debuff_ap drain (demoralizing roar).
+          if (eff.pct !== undefined) {
+            ctx.applyAura(m, {
+              id: `${ability.id}_ap`,
+              name: ability.name,
+              kind: 'buff_dmg_done',
+              remaining: eff.duration,
+              duration: eff.duration,
+              value: -eff.pct,
+              sourceId: p.id,
+              school: ability.school,
+            });
+          } else {
+            ctx.applyAura(m, {
+              id: `${ability.id}_ap`,
+              name: ability.name,
+              kind: 'debuff_ap',
+              remaining: eff.duration,
+              duration: eff.duration,
+              value: eff.amount ?? 0,
+              sourceId: p.id,
+              school: ability.school,
+            });
+          }
           ctx.enterCombat(p, m);
           if (m.kind === 'mob' && m.hostile)
             addThreat(m, p.id, 10 * ctx.threatMod(p, ability.school));
@@ -1283,6 +1594,9 @@ export function runEffects(
         break;
       }
       case 'aoeSlow': {
+        // Piercing Howl: the aoeAttackPower loop shape with a `slow` aura (the
+        // same kind hamstring applies, so movement math needs no new read).
+        // Emits a nova and gates each victim on line of sight (PTR).
         ctx.emit({
           type: 'spellfx',
           sourceId: p.id,
@@ -1290,9 +1604,10 @@ export function runEffects(
           school: ability.school,
           fx: 'nova',
         });
-        for (const hostile of ctx.hostilesInRadius(p, p.pos, eff.radius)) {
-          if (hostile.dead || !ctx.hasLineOfSight(p, hostile)) continue;
-          ctx.applyAura(hostile, {
+        for (const m of ctx.hostilesInRadius(p, p.pos, eff.radius)) {
+          if (m.dead) continue;
+          if (!ctx.hasLineOfSight(p, m)) continue;
+          ctx.applyAura(m, {
             id: `${ability.id}_slow`,
             name: ability.name,
             kind: 'slow',
@@ -1302,21 +1617,124 @@ export function runEffects(
             sourceId: p.id,
             school: ability.school,
           });
-          ctx.enterCombat(p, hostile);
-          if (hostile.kind === 'mob' && hostile.hostile)
-            addThreat(hostile, p.id, 10 * ctx.threatMod(p, ability.school));
+          ctx.enterCombat(p, m);
+          if (m.kind === 'mob' && m.hostile)
+            addThreat(m, p.id, 10 * ctx.threatMod(p, ability.school));
         }
+        break;
+      }
+      case 'empoweredCone': {
+        const level = Math.max(1, Math.min(eff.stages.length, res.empowerLevel ?? 1));
+        const stage = eff.stages[level - 1];
+        const angle = stage.angle ?? eff.angle;
+        const fx = eff.fx ?? 'frostCone';
+        let hotStreakHit = false;
+        let hotStreakCrit = false;
+        ctx.emit({
+          type: 'spellfx',
+          sourceId: p.id,
+          targetId: p.id,
+          school: ability.school,
+          fx,
+          range: stage.range,
+          angle,
+          level,
+        });
+        const spellPower = directHitBonus(
+          abilityScalingPower(p, ability),
+          ability,
+          res.castTime * (level / eff.stages.length),
+          true,
+        );
+        for (const m of ctx.hostilesInRadius(p, p.pos, stage.range)) {
+          if (m.dead || !ctx.hasLineOfSight(p, m)) continue;
+          if (!glacialFrontContains(p.pos, p.facing, m.pos, stage.range, angle)) continue;
+          const critRoll = ctx.rng.chance(ctx.spellCrit(p));
+          const crit =
+            critRoll ||
+            fireGuaranteedCrit(ctx, p, ability.id, ability.school, m) ||
+            (eff.guaranteedCritLevel !== undefined && level === eff.guaranteedCritLevel);
+          let damage = ctx.rng.range(stage.min, stage.max) + spellPower;
+          damage *= spellDamageMultFromAuras(p);
+          if (crit) damage *= 1.5 + p.critDmgSpellBonus;
+          ctx.dealDamage(p, m, Math.round(damage), crit, ability.school, ability.name, 'hit');
+          if (eff.hotStreakOnce) {
+            hotStreakHit = true;
+            hotStreakCrit ||= crit;
+          } else noteSpellHit(ctx, p, crit, ability.id);
+          if (m.dead) continue;
+          if (eff.slowMult !== undefined && eff.slowDuration !== undefined) {
+            ctx.applyAura(m, {
+              id: `${ability.id}_slow`,
+              name: ability.name,
+              kind: 'slow',
+              remaining: eff.slowDuration,
+              duration: eff.slowDuration,
+              value: eff.slowMult,
+              sourceId: p.id,
+              school: ability.school,
+            });
+          }
+          if (stage.incapacitateDuration) {
+            const duration = ctx.diminishedCrowdControlDuration(
+              p,
+              m,
+              'fear',
+              stage.incapacitateDuration,
+            );
+            if (duration === null) continue;
+            ctx.applyAura(m, {
+              id: `${ability.id}_incap`,
+              name: ability.name,
+              kind: 'incapacitate',
+              remaining: duration,
+              duration,
+              value: 0,
+              sourceId: p.id,
+              school: ability.school,
+              breaksOnDamage: true,
+            });
+          }
+          if (stage.rootDuration) {
+            ctx.applyRootAura(
+              p,
+              m,
+              ability.name,
+              `${ability.id}_root`,
+              stage.rootDuration,
+              ability.school,
+            );
+          }
+          ctx.enterCombat(p, m);
+        }
+        if (eff.hotStreakOnce && hotStreakHit) noteSpellHit(ctx, p, hotStreakCrit, ability.id);
         break;
       }
       case 'aoeAllyAttackPower': {
         // The friendly mirror of aoeAttackPower: an AP BUFF on the caster and
-        // nearby allies (Trueshot Aura), riding the PR3a friendlies seam.
+        // nearby allies (Trueshot Aura, Iron Bellow), riding the friendlies seam.
+        // No party requirement: friendliesInRadius includes the caster and every
+        // friendly entity within radius. A flat amount stamps buff_ap; a percent
+        // (apPct) stamps buff_ap_pct.
+        //
+        // An exclusiveGroup ability here (battle_shout, group 'warrior_shout')
+        // first cancels the caster's sibling buffs, mirroring the selfBuff case;
+        // a re-cast's own `<id>_ap` aura is skipped (applyAura refreshes it in
+        // place). Trueshot Aura has no group, so this is a no-op for it.
+        for (const i of exclusiveAuraConflicts(
+          ability.exclusiveGroup,
+          `${ability.id}_ap`,
+          p.auras,
+          exclusiveGroupOfAura,
+        )) {
+          const a = p.auras[i];
+          p.auras.splice(i, 1);
+          ctx.emit({ type: 'aura', targetId: p.id, name: a.name, gained: false });
+        }
         const kind = eff.apPct !== undefined ? 'buff_ap_pct' : 'buff_ap';
         const value = eff.apPct ?? eff.amount ?? 0;
-        const party = ctx.partyOf(p.id);
-        for (const m of friendliesInRadius(ctx, p, eff.radius)) {
-          if (m.id !== p.id && !party?.members.includes(m.id)) continue;
-          ctx.applyAura(m, {
+        for (const mE of ctx.friendliesInRadius(p, p.pos, eff.radius)) {
+          ctx.applyAura(mE, {
             id: `${ability.id}_ap`,
             name: ability.name,
             kind,
@@ -1326,11 +1744,13 @@ export function runEffects(
             sourceId: p.id,
             school: ability.school,
           });
-          if (m.kind === 'player') {
-            const targetMeta = ctx.players.get(m.id);
+          // A percent AP buff folds through recalcPlayerStats, so re-derive the
+          // affected player's stats (the flat buff_ap form is read live).
+          if (mE.kind === 'player') {
+            const targetMeta = ctx.players.get(mE.id);
             if (targetMeta)
               recalcPlayerStats(
-                m,
+                mE,
                 targetMeta.cls,
                 targetMeta.equipment,
                 ctx.playerMods(targetMeta),
@@ -1341,14 +1761,112 @@ export function runEffects(
         break;
       }
       case 'aoeAllyHaste': {
-        for (const m of friendliesInRadius(ctx, p, eff.radius)) {
-          ctx.applyAura(m, {
+        // Base form (Red Banner): attack-speed haste to friendlies in radius. Bloodlust
+        // and Temporal Acceleration opt into full haste (spell), the shared exhaustion
+        // (exhaust), and group/raid scoping (groupOnly) via combat/haste_burst.ts.
+        applyGroupHaste(
+          ctx,
+          p,
+          {
+            mult: eff.mult,
+            duration: eff.duration,
+            radius: eff.radius,
+            spell: eff.spell,
+            exhaust: eff.exhaust,
+            groupOnly: eff.groupOnly,
+          },
+          ability.id,
+          ability.name,
+          ability.school,
+        );
+        break;
+      }
+      case 'aoeAllyAbsorb': {
+        // Mass Barrier: an absorb shield on the caster and friendlies in radius.
+        // When eff.maxTargets is set (owner 2026-07-13: 5), only the NEAREST that
+        // many are shielded (the caster is distance 0, so always covered). Draws no rng.
+        let recipients = ctx.friendliesInRadius(p, p.pos, eff.radius);
+        if (eff.maxTargets && recipients.length > eff.maxTargets) {
+          recipients = [...recipients]
+            .sort((a, b) => {
+              if (a.id === p.id) return -1;
+              if (b.id === p.id) return 1;
+              const da = (a.pos.x - p.pos.x) ** 2 + (a.pos.z - p.pos.z) ** 2;
+              const db = (b.pos.x - p.pos.x) ** 2 + (b.pos.z - p.pos.z) ** 2;
+              return da - db || a.id - b.id;
+            })
+            .slice(0, eff.maxTargets);
+        }
+        const resolved = ctx.resolve(p.id);
+        const spec = resolved ? ctx.playerMods(resolved.meta).spec : null;
+        const barrierSchool =
+          ability.id === 'mass_barrier' && spec === 'arcane'
+            ? 'arcane'
+            : ability.id === 'mass_barrier' && spec === 'fire'
+              ? 'fire'
+              : ability.school;
+        for (const mE of recipients) {
+          ctx.applyAura(mE, {
             id: ability.id,
             name: ability.name,
-            kind: 'buff_haste',
+            kind: 'absorb',
             remaining: eff.duration,
             duration: eff.duration,
-            value: eff.mult,
+            value: eff.amount,
+            sourceId: p.id,
+            school: barrierSchool,
+          });
+        }
+        break;
+      }
+      case 'greaterInvisibility': {
+        // One dispatch applies the whole package so the two self-auras carry
+        // distinct ids (the selfBuff case keys auras by the ability id alone):
+        // strip up to N DoTs (newest first), vanish via the stealth machinery
+        // (applyAura sets stealthed), and a buff_dr cut that outlives the
+        // vanish by `linger` so it survives an early break. Draws no rng.
+        let removed = 0;
+        for (let i = p.auras.length - 1; i >= 0 && removed < eff.removeDotCount; i--) {
+          if (p.auras[i].kind !== 'dot') continue;
+          const gone = p.auras[i];
+          p.auras.splice(i, 1);
+          removed++;
+          ctx.emit({ type: 'aura', targetId: p.id, name: gone.name, gained: false });
+        }
+        // The stealth kind doubles as a MOVEMENT factor in moveSpeedMult
+        // (rogue stealth walks slower); an invisible mage keeps full speed,
+        // so the aura value must be 1, never 0 (0 pins the caster in place).
+        ctx.applyAura(p, {
+          id: ability.id,
+          name: ability.name,
+          kind: 'stealth',
+          remaining: eff.duration,
+          duration: eff.duration,
+          value: 1,
+          sourceId: p.id,
+          school: ability.school,
+        });
+        ctx.applyAura(p, {
+          id: `${ability.id}_dr`,
+          name: ability.name,
+          kind: 'buff_dr',
+          remaining: eff.duration + eff.linger,
+          duration: eff.duration + eff.linger,
+          value: eff.drValue,
+          sourceId: p.id,
+          school: ability.school,
+        });
+        break;
+      }
+      case 'aoeAllyDamage': {
+        for (const mE of ctx.friendliesInRadius(p, p.pos, eff.radius)) {
+          ctx.applyAura(mE, {
+            id: `${ability.id}_dmg`,
+            name: ability.name,
+            kind: 'buff_dmg_done',
+            remaining: eff.duration,
+            duration: eff.duration,
+            value: eff.pct,
             sourceId: p.id,
             school: ability.school,
           });
@@ -1398,7 +1916,22 @@ export function runEffects(
         break;
       }
       case 'aoeRoot': {
+        // A ground-targeted cast (Ring of Frost) roots where it was AIMED; the
+        // self-centered novas (Frost Nova, Gripping Earth) keep the caster center.
         const center = p.castAim ?? p.pos;
+        // Optional persistent annular trap (Ring of Frost): hand the whole cast to
+        // the ring module, which owns placement, arming, and the catch pulses.
+        if (eff.ring) {
+          spawnRingOfFrost(
+            ctx,
+            p,
+            center,
+            { ...eff, ring: eff.ring },
+            ability.name,
+            ability.id,
+          );
+          break;
+        }
         if (p.castAim) {
           ctx.emit({
             type: 'spellfxAt',
@@ -1502,7 +2035,7 @@ export function runEffects(
           if (crit)
             dmg *= (isSpell ? 1.5 : 2) + (isSpell ? p.critDmgSpellBonus : p.critDmgPhysBonus);
           if (!isSpell) dmg *= 1 - armorReduction(ctx.effectiveArmor(target), p.level);
-          if (isSpell) noteSpellHit(ctx, p, crit);
+          if (isSpell) noteSpellHit(ctx, p, crit, ability.id);
           ctx.dealDamage(
             p,
             target,
@@ -1564,6 +2097,16 @@ export function runEffects(
           x: p.pos.x + Math.sin(facing) * distance,
           y: p.pos.y,
           z: p.pos.z + Math.cos(facing) * distance,
+        });
+        // The step is INSTANT: the renderer snaps the mover on this cue
+        // (without it, the self-reposition heuristic reads the jump as a
+        // leap and plays an arc, owner playtest 2026-07-11).
+        ctx.emit({
+          type: 'spellfx',
+          sourceId: p.id,
+          targetId: p.id,
+          school: ability.school,
+          fx: 'blinkStep',
         });
         break;
       }
@@ -1934,6 +2477,11 @@ export function runEffects(
     }
     if (target?.dead) target = null;
   }
+
+  // Frost mage post-impact rider (combat/frost_mage.ts): frostbolt rolls its
+  // two procs (committed frost only, so no existing golden moves); Flurry
+  // plants Winter's Chill on its surviving target. Inert for everyone else.
+  frostMageAfterCast(ctx, p, meta, ability, target);
 
   if (ability.spendsCombo && spentCombo > 0) {
     p.comboPoints = 0;

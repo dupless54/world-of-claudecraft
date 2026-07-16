@@ -171,12 +171,6 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Highwatch-Großschwert',
   'entities.items.highwatch_wallshield.name': 'Highwatch-Mauerschild',
   'entities.items.eastbrook_buckler.name': 'Eastbrook-Faustschild',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Verwandelt Euch 20 Sek. lang in einen Koloss, brecht alle Kontrolleffekte auf Euch und erhöht Euren verursachten Schaden um 20%.',
-  'entities.abilities.bladestorm.name': 'Klingensturm',
-  'entities.abilities.bladestorm.description':
-    'Werdet zu einem wirbelnden Sturm aus Stahl und trefft 4 Sek. lang jede Sekunde alle Gegner im Umkreis von 8 Metern für {damage} Schaden.',
   'entities.abilities.battle_stance.description':
     'Eine aggressive Kampfhaltung: Ihr erzeugt 10% mehr Wut. Die Standardhaltung für Waffen und Schutz.',
   'entities.abilities.battle_stance.name': 'Kampfhaltung',
@@ -277,118 +271,42 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Auswahl',
   'hudChrome.talentRows.readoutSummary': 'Talente: {head}, {spent}/{total} Reihen ausgewählt.',
   'entities.abilities.aspect_of_the_wild.name': 'Wildfanggewand',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Inspiriert Verbündete im Umkreis von 30 m mit wilder Kraft und erhöht ihre Angriffskraft 5 Min. lang um 45 und ihr Angriffstempo um 5 %. (Jägertalent)',
-  'entities.abilities.aura_surge.name': 'Dämmerprall',
-  'entities.abilities.aura_surge.description':
-    'Schleudert einen dämmergeschmiedeten Schild für {damage} Heiligschaden, bringt das Primärziel 2 Sek. zum Schweigen und springt dann auf bis zu 2 weitere Gegner innerhalb von 10 Metern über, wobei jeder Sprung 75% Schaden verursacht. (Paladintalent)',
   'entities.abilities.avenging_wrath.name': 'Zornschwinge',
-  'entities.abilities.avenging_wrath.description':
-    'Ruft rächende Macht herbei und erhöht Eure Angriffskraft 20 Sek. lang um 60 und Eure Zaubermacht um 30. (Paladintalent)',
   'entities.abilities.berserk.name': 'Roter Dunst',
-  'entities.abilities.berserk.description':
-    'Erhöht Eure Angriffskraft 15 Sek. lang um 70. (Druidentalent)',
   'entities.abilities.blink.name': 'Flimmerschritt',
-  'entities.abilities.blink.description':
-    'Teleportiert Euch 15 m nach vorn und löst Bewegungsunfähigkeitseffekte. (Magiertalent)',
   'entities.abilities.bloodlust.name': 'Kriegstrommeln',
-  'entities.abilities.bloodlust.description':
-    'Versetzt Verbündete im Umkreis von 30 m in Raserei und erhöht ihr Angriffstempo 15 Sek. lang um 30 %. (Schamanentalent)',
   'entities.abilities.chain_lightning.name': 'Gabelblitz',
-  'entities.abilities.chain_lightning.description':
-    'Schleudert einen Blitz auf das Zielgebiet und fügt Gegnern in der Nähe {damage} Schaden zu. (Schamanentalent)',
   'entities.abilities.chaos_bolt.name': 'Verderbensblitz',
-  'entities.abilities.chaos_bolt.description':
-    'Schleudert einen chaotischen Feuerblitz, der {damage} Feuerschaden verursacht. (Hexenmeistertalent)',
   'entities.abilities.cloak_of_shadows.name': 'Schattenmantel',
-  'entities.abilities.cloak_of_shadows.description':
-    'Hüllt Euch in Schatten und absorbiert 5 Sek. lang 420 Schaden. (Schurkentalent)',
   'entities.abilities.cone_of_cold.name': 'Frostfeger',
-  'entities.abilities.cone_of_cold.description':
-    'Trifft Gegner in der Nähe mit Frost und verursacht {damage} Frostschaden. (Frost-Signatur)',
   'entities.abilities.curse_of_exhaustion.name': 'Bleierner Fluch',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Verflucht das Ziel und verringert sein Bewegungstempo 12 Sek. lang um 30 %. (Hexenmeistertalent)',
   'entities.abilities.death_coil.name': 'Grabspirale',
-  'entities.abilities.death_coil.description':
-    'Trifft den Gegner für {damage} Schattenschaden und versetzt ihn anschließend 3 Sek. lang in Entsetzen. (Hexenmeistertalent)',
   'entities.abilities.deep_freeze.name': 'Totenfrost',
-  'entities.abilities.deep_freeze.description':
-    'Friert das Ziel tief ein, verursacht {damage} Frostschaden und betäubt es 4 Sek. lang. (Magiertalent)',
   'entities.abilities.desperate_prayer.name': 'Letztes Gebet',
-  'entities.abilities.desperate_prayer.description':
-    'Heilt Euch sofort um {damage}. (Priestertalent)',
   'entities.abilities.deterrence.name': 'Borstenwacht',
-  'entities.abilities.deterrence.description':
-    'Erhöht Eure Ausweichchance 10 Sek. lang um 50 Prozentpunkte. (Jägertalent)',
   'entities.abilities.divine_shield.name': 'Lichtwacht',
-  'entities.abilities.divine_shield.description':
-    'Schützt Euch mit heiliger Macht, die 8 Sek. lang 900 Schaden absorbiert. (Paladintalent)',
   'entities.abilities.earthbind.name': 'Greifende Erde',
-  'entities.abilities.earthbind.description':
-    'Bindet Gegner in der Nähe an die Erde und macht sie 2 Sek. lang bewegungsunfähig. (Schamanentalent)',
   'entities.abilities.evocation.name': 'Ätherbrunnen',
-  'entities.abilities.evocation.description': 'Stellt sofort 220 Mana wieder her. (Magiertalent)',
   'entities.abilities.frenzied_regeneration.name': 'Wilde Heilung',
-  'entities.abilities.frenzied_regeneration.description':
-    'Stellt im Verlauf von 10 Sek. 180 Gesundheit wieder her. Nur in Bärengestalt. (Druidentalent)',
   'entities.abilities.frost_trap.name': 'Reifschlinge',
-  'entities.abilities.frost_trap.description':
-    'Friert Gegner im Zielgebiet 3 Sek. lang ein, sodass sie sich weder bewegen noch handeln können. (Jägertalent)',
   'entities.abilities.ghostly_strike.name': 'Geisterschlag',
-  'entities.abilities.ghostly_strike.description':
-    'Trifft den Gegner für Waffenschaden plus {damage}, erhöht kurzzeitig die Ausweichchance und gewährt 1 Combopunkt. (Schurkentalent)',
   'entities.abilities.hammer_of_wrath.name': 'Läutender Hammer',
-  'entities.abilities.hammer_of_wrath.description':
-    'Schleudert einen heiligen Hammer auf einen verwundeten Gegner und verursacht {damage} Heiligschaden. Nur unter 20 % Gesundheit einsetzbar. (Paladintalent)',
   'entities.abilities.healing_stream.name': 'Quellbrunnen',
-  'entities.abilities.healing_stream.description':
-    'Stellt bei einem verbündeten Ziel im Verlauf von 12 Sek. 120 Gesundheit wieder her. (Schamanentalent)',
   'entities.abilities.holy_wrath.name': 'Heiligenzorn',
-  'entities.abilities.holy_wrath.description':
-    'Entfesselt heilige Macht und fügt Gegnern in der Nähe {damage} Schaden zu. (Paladintalent)',
   'entities.abilities.howl_of_terror.name': 'Schreckensheulen',
-  'entities.abilities.howl_of_terror.description':
-    'Versetzt Gegner in der Nähe bis zu 3 Sek. lang in Furcht. Schaden kann den Effekt aufheben. (Hexenmeistertalent)',
   'entities.abilities.ice_block.name': 'Kalter Sarg',
-  'entities.abilities.ice_block.description':
-    'Hüllt Euch in Eis, das 8 Sek. lang 600 Schaden absorbiert. Währenddessen könnt Ihr nicht handeln. Erneut wirken, um den Effekt abzubrechen. (Magiertalent)',
   'entities.abilities.inner_focus.name': 'Stiller Geist',
-  'entities.abilities.inner_focus.description':
-    'Euer nächster Zauber kostet nichts. Hält 60 Sek. lang an. (Priestertalent)',
   'entities.abilities.innervate.name': 'Lebenssaft',
-  'entities.abilities.innervate.description':
-    'Lebendiger Pflanzensaft quillt 10 Sek. lang in Euch auf und stellt in Wellen 20 Eurer aktuellen Ressource wieder her: Mana, Wut oder Energie. Gestaltwandel unterbricht ihn nicht. Schlaf, Betäubung oder Stasis bringen den Saft zum Stillstand. (Druidentalent)',
   'entities.abilities.meteor.name': 'Himmelsstein',
-  'entities.abilities.meteor.description':
-    'Ruft einen Meteor auf das Zielgebiet herab, der {damage} Feuerschaden verursacht. Anschließend erleiden Gegner dort 6 Sek. lang alle 2 Sek. 12 bis 18 Feuerschaden. (Magiertalent)',
   'entities.abilities.mind_sear.name': 'Gedankenbrand',
-  'entities.abilities.mind_sear.description':
-    'Kanalisiert Schattenenergie auf das Zielgebiet und fügt Gegnern in der Nähe jede Sekunde {damage} Schaden zu. (Priestertalent)',
   'entities.abilities.multi_shot.name': 'Spaltschuss',
-  'entities.abilities.multi_shot.description':
-    'Feuert einen Geschosshagel auf das Zielgebiet ab und fügt Gegnern im Umkreis von 8 m {damage} körperlichen Schaden zu. (Jägertalent)',
   'entities.abilities.prayer_of_healing.name': 'Chorheilung',
-  'entities.abilities.prayer_of_healing.description':
-    'Heilt Verbündete in der Nähe um {damage}. (Priestertalent)',
   'entities.abilities.preparation.name': 'Notfallplan',
-  'entities.abilities.preparation.description':
-    'Schließt die Abklingzeiten von Sprint, Entrinnen und Verschwinden ab. (Schurkentalent)',
   'entities.abilities.presence_of_mind.name': 'Rasender Geist',
-  'entities.abilities.presence_of_mind.description':
-    'Euer nächster Zauber mit Wirkzeit wird sofort gewirkt. Hält 60 Sek. lang an. (Magiertalent)',
   'entities.abilities.psychic_scream.name': 'Schreckensschrei',
-  'entities.abilities.psychic_scream.description':
-    'Versetzt Gegner in der Nähe bis zu 4 Sek. lang in Furcht. Schaden kann den Effekt aufheben. (Priestertalent)',
   'entities.abilities.shadowstep.name': 'Schattengleiten',
-  'entities.abilities.shadowstep.description':
-    'Tretet durch die Schatten auf Euer Ziel zu. (Schurkentalent)',
   'entities.abilities.silence.name': 'Stille',
-  'entities.abilities.silence.description':
-    'Bringt das Ziel 4 Sek. lang zum Schweigen. (Priestertalent)',
   'entities.abilities.tranquility.name': 'Hainlied',
-  'entities.abilities.tranquility.description':
-    'Kanalisiert 4 Sek. lang heilende Energie und heilt Verbündete im Umkreis von 30 m jede Sekunde um 42 bis 52. (Druidentalent)',
   'entities.abilities.cleansing_verdict.name': 'Läuterndes Urteil',
   'entities.abilities.cleansing_verdict.description':
     'Entfernt einen schädlichen magischen Effekt von einem verbündeten Ziel und heilt es mit heiliger Magie um {damage}.',
@@ -3266,6 +3184,42 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.frostbolt.name': 'Rimelance',
   'entities.abilities.frostbolt.description':
     'Schleudert einen Frostblitz, verursacht {damage} Frostschaden und verlangsamt die Bewegung um 40%.',
+  'entities.abilities.blazing_barrier.name': 'Flammende Barriere',
+  'entities.abilities.blazing_barrier.description':
+    'Hüllt Euch in Flammen und absorbiert 60 Sek. lang 130 Schaden. (Feuer)',
+  'entities.abilities.cold_snap.name': 'Kälteeinbruch',
+  'entities.abilities.cold_snap.description':
+    'Beendet die Abklingzeit von Flimmerschritt, Frostschleier und Großer Unsichtbarkeit. (Magiertalent)',
+  'entities.abilities.greater_invisibility.name': 'Große Unsichtbarkeit',
+  'entities.abilities.greater_invisibility.description':
+    'Ihr verschwindet 20 Sek. lang: Entfernt 2 Effekte mit regelmäßigem Schaden und verringert Euren erlittenen Schaden während der Unsichtbarkeit und kurz danach um 90%. (Magiertalent)',
+  'entities.abilities.hot_streak.name': 'Heiße Serie',
+  'entities.abilities.hot_streak.description':
+    'Passiv: Zwei aufeinanderfolgende kritische Treffer mit Euren Feuerzaubern (Feuerball, Feuerschlag, Versengen, Pyroschlag oder Flammenstoß) machen Euren nächsten Pyroschlag oder Flammenstoß zu einem kostenlosen Spontanzauber. Die verbrauchenden Zauber zählen für die NÄCHSTE Serie, auch kostenlose Einsätze; Flammenstoß zählt unabhängig von der Zahl getroffener Gegner nur einmal, und nur der erste Einschlag kann zählen. (Feuer)',
+  'entities.abilities.ice_floes.name': 'Eisschollen',
+  'entities.abilities.ice_floes.description':
+    'Eure nächsten zwei Zauber mit Zauberzeit können aus der Bewegung gewirkt werden. Hält 15 Sek. lang an. (Magiertalent)',
+  'entities.abilities.ignition.name': 'Entzündung',
+  'entities.abilities.ignition.description':
+    'Passiv: Kritische Treffer Eurer Zauber verbrennen das Ziel und verursachen im Verlauf von 6 Sek. 40% des verursachten Schadens; stapelbar. (Feuermeisterschaft)',
+  'entities.abilities.mass_barrier.name': 'Massenbarriere',
+  'entities.abilities.mass_barrier.description':
+    'Schützt Euch und bis zu 4 Verbündete im Umkreis von 30 m; jeder Schild absorbiert 60 Sek. lang 130 Schaden. (Magiertalent)',
+  'entities.abilities.overload.name': 'Überladung',
+  'entities.abilities.overload.description':
+    'Euer nächster Zauber wird um 40% verstärkt, kostet aber 50% mehr Mana. Hält 10 Sek. lang an. (Magiertalent)',
+  'entities.abilities.power_echo.name': 'Machtecho',
+  'entities.abilities.power_echo.description':
+    'Euer nächster direkter Zauber wiederholt sich mit 50% seiner Stärke auf demselben Ziel. Hält 10 Sek. lang an. (Magiertalent)',
+  'entities.abilities.rings_of_frost.name': 'Frostring',
+  'entities.abilities.rings_of_frost.description':
+    'Beschwört 10 Sek. lang einen Ring. Gegner, die seinen Rand überqueren, werden 4 Sek. lang eingefroren. (Magiertalent)',
+  'entities.abilities.rune_of_power.name': 'Rune der Macht',
+  'entities.abilities.rune_of_power.description':
+    'Schreibt 15 Sek. lang eine Rune der Macht zu Euren Füßen: Verbündete im Umkreis von 8 m verursachen 10% mehr Schaden. (Magiertalent)',
+  'entities.abilities.summon_water_elemental.name': 'Wasserelementar beschwören',
+  'entities.abilities.summon_water_elemental.description':
+    'Beschwört einen Wasserelementar, der an Eurer Seite kämpft, Wasserblitze auf Euer Ziel schleudert und Wasserstrahl kanalisiert. (Frost)',
   'entities.abilities.conjure_water.name': 'Waterbind',
   'entities.abilities.conjure_water.description':
     'Beschwört 2 Flaschen Wasser, die beim Trinken Mana wiederherstellen. Höhere Ränge beschwören reineres Wasser.',
@@ -3758,6 +3712,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_water.name': 'Herbeigezaubertes Regenwasser',
   'entities.items.conjured_water2.name': 'Herbeigezaubertes Brunnenwasser',
   'entities.items.conjured_water3.name': 'Herbeigezaubertes Klarwasser',
+  'entities.items.conjured_water4.name': 'Herbeigezaubertes Quellwasser',
   'entities.items.eastbrook_arming_sword.name': 'Eastbrook-Wehrschwert',
   'entities.items.bronzework_mace.name': 'Bronzewerkstreitkolben',
   'entities.items.vale_carving_knife.name': 'Talschnitzmesser',
@@ -4744,6 +4699,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_bread.name': 'Herbeigezauberter Haferkuchen',
   'entities.items.conjured_bread2.name': 'Herbeigezaubertes Schwarzbrot',
   'entities.items.conjured_bread3.name': 'Herbeigezauberter Honigkuchen',
+  'entities.items.conjured_bread4.name': 'Herbeigezauberter Festschmauslaib',
   'entities.items.glimmerfin_koi.name': 'Schimmerflossen-Koi',
   'entities.items.raw_bog_eel.name': 'Roher Mooraal',
   'entities.items.raw_frostgill_trout.name': 'Rohe Frostkiemen-Forelle',
@@ -7151,6 +7107,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Spaltet die Rüstung des Ziels und verringert sie pro Anwendung um {damage}%. Stapelt sich bis zu 5-mal. Erzeugt sehr viel Bedrohung.',
   'entities.mobs.training_dummy.name': 'Trainingspuppe',
   'entities.mobs.yumi_cat.name': 'Yumi',
+  'entities.mobs.water_elemental.name': 'Wasserelementar',
   'guide.arenaPage.yumiBody':
     'Yumi beschützen ist ein Team-Zielmodus, der in einem Labyrinth ausgetragen wird: Jede Seite bewacht ihren eigenen Katzenbegleiter und jagt zugleich den der Gegner. Immer wieder blinzeln beide Katzen in neue Ecken des Labyrinths, sodass der Kampf zwischen Verteidigen, Jagen und dem Wettlauf, sie erneut aufzuspüren, hin und her schwingt. Melde dich als drei gegen drei oder fünf gegen fünf an; wer im Kampf fällt, muss nur einen Moment pausieren.',
   'guide.arenaPage.yumiHeading': 'Yumi beschützen',
@@ -7899,4 +7856,95 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Trifft Gegner vor Euch und kann nach einem Ausweichen oder Parieren kostenlos werden.',
   'guide.abilityHook.hamstring':
     'Beeinträchtigt die Bewegung eines Gegners, damit er nicht entkommen kann.',
+  'game.talents.choicesTab': 'Entscheidungen',
+  'game.talents.rowUnlockToast': 'Neue Talentwahl verfügbar!',
+  'game.talents.rowUnlocks': 'Wird auf Stufe {level} freigeschaltet',
+  'entities.abilities.aura_surge.name': 'Dämmerprall',
+  'entities.abilities.aura_surge.description':
+    'Schleudert einen dämmergeschmiedeten Schild für {damage} Heiligschaden, bringt das Primärziel 2 Sek. zum Schweigen und springt dann auf bis zu 2 weitere Gegner innerhalb von 10 Metern über, wobei jeder Sprung 75% Schaden verursacht. (Paladintalent)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Inspiriert Verbündete im Umkreis von 30 m mit wilder Kraft und erhöht ihre Angriffskraft 5 Min. lang um 45 und ihr Angriffstempo um 5 %. (Jägertalent)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Verwandelt Euch 20 Sek. lang in einen Koloss, brecht alle Kontrolleffekte auf Euch und erhöht Euren verursachten Schaden um 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Ruft rächende Macht herbei und erhöht Eure Angriffskraft 20 Sek. lang um 60 und Eure Zaubermacht um 30. (Paladintalent)',
+  'entities.abilities.berserk.description':
+    'Erhöht Eure Angriffskraft 15 Sek. lang um 70. (Druidentalent)',
+  'entities.abilities.bladestorm.name': 'Klingensturm',
+  'entities.abilities.bladestorm.description':
+    'Werdet zu einem wirbelnden Sturm aus Stahl und trefft 4 Sek. lang jede Sekunde alle Gegner im Umkreis von 8 Metern für {damage} Schaden.',
+  'entities.abilities.blink.description':
+    'Teleportiert Euch 15 m nach vorn und löst Bewegungsunfähigkeitseffekte. (Magiertalent)',
+  'entities.abilities.bloodlust.description':
+    'Versetzt Verbündete im Umkreis von 30 m in Raserei und erhöht ihr Angriffstempo 15 Sek. lang um 30 %. (Schamanentalent)',
+  'entities.abilities.chain_lightning.description':
+    'Schleudert einen Blitz auf das Zielgebiet und fügt Gegnern in der Nähe {damage} Schaden zu. (Schamanentalent)',
+  'entities.abilities.chaos_bolt.description':
+    'Schleudert einen chaotischen Feuerblitz, der {damage} Feuerschaden verursacht. (Hexenmeistertalent)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Hüllt Euch in Schatten und absorbiert 5 Sek. lang 420 Schaden. (Schurkentalent)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a nahe Gegner con escarcha e inflige {damage} de daño de Frost. (Magier-Talent)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Verflucht das Ziel und verringert sein Bewegungstempo 12 Sek. lang um 30 %. (Hexenmeistertalent)',
+  'entities.abilities.death_coil.description':
+    'Trifft den Gegner für {damage} Schattenschaden und versetzt ihn anschließend 3 Sek. lang in Entsetzen. (Hexenmeistertalent)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a Ziel, inflige {damage} de daño de Frost y lo aturde durante 4 Sek.. (Magier-Talent)',
+  'entities.abilities.desperate_prayer.description':
+    'Heilt Euch sofort um {damage}. (Priestertalent)',
+  'entities.abilities.deterrence.description':
+    'Erhöht Eure Ausweichchance 10 Sek. lang um 50 Prozentpunkte. (Jägertalent)',
+  'entities.abilities.divine_shield.description':
+    'Schützt Euch mit heiliger Macht, die 8 Sek. lang 900 Schaden absorbiert. (Paladintalent)',
+  'entities.abilities.earthbind.description':
+    'Bindet Gegner in der Nähe an die Erde und macht sie 2 Sek. lang bewegungsunfähig. (Schamanentalent)',
+  'entities.abilities.evocation.description': 'Restaura Mana rápidamente. (Magier-Talent)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Stellt im Verlauf von 10 Sek. 180 Gesundheit wieder her. Nur in Bärengestalt. (Druidentalent)',
+  'entities.abilities.frost_trap.description':
+    'Friert Gegner im Zielgebiet 3 Sek. lang ein, sodass sie sich weder bewegen noch handeln können. (Jägertalent)',
+  'entities.abilities.ghostly_strike.description':
+    'Trifft den Gegner für Waffenschaden plus {damage}, erhöht kurzzeitig die Ausweichchance und gewährt 1 Combopunkt. (Schurkentalent)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Schleudert einen heiligen Hammer auf einen verwundeten Gegner und verursacht {damage} Heiligschaden. Nur unter 20 % Gesundheit einsetzbar. (Paladintalent)',
+  'entities.abilities.healing_stream.description':
+    'Stellt bei einem verbündeten Ziel im Verlauf von 12 Sek. 120 Gesundheit wieder her. (Schamanentalent)',
+  'entities.abilities.holy_wrath.description':
+    'Entfesselt heilige Macht und fügt Gegnern in der Nähe {damage} Schaden zu. (Paladintalent)',
+  'entities.abilities.howl_of_terror.description':
+    'Versetzt Gegner in der Nähe bis zu 3 Sek. lang in Furcht. Schaden kann den Effekt aufheben. (Hexenmeistertalent)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 Sek.. (Magier-Talent)',
+  'entities.abilities.inner_focus.description':
+    'Euer nächster Zauber kostet nichts. Hält 60 Sek. lang an. (Priestertalent)',
+  'entities.abilities.innervate.description':
+    'Lebendiger Pflanzensaft quillt 10 Sek. lang in Euch auf und stellt in Wellen 20 Eurer aktuellen Ressource wieder her: Mana, Wut oder Energie. Gestaltwandel unterbricht ihn nicht. Schlaf, Betäubung oder Stasis bringen den Saft zum Stillstand. (Druidentalent)',
+  'entities.abilities.mend_pet.name': 'Zusammenflicken',
+  'entities.abilities.mend_pet.description':
+    'Sana a freundliches Ziel por {damage} durante 15 Sek.. (Jäger-Talent)',
+  'entities.abilities.meteor.description':
+    'Ruft einen Meteor auf das Zielgebiet herab, der {damage} Feuerschaden verursacht. Anschließend erleiden Gegner dort 6 Sek. lang alle 2 Sek. 12 bis 18 Feuerschaden. (Magiertalent)',
+  'entities.abilities.mind_sear.description':
+    'Kanalisiert Schattenenergie auf das Zielgebiet und fügt Gegnern in der Nähe jede Sekunde {damage} Schaden zu. (Priestertalent)',
+  'entities.abilities.multi_shot.description':
+    'Feuert einen Geschosshagel auf das Zielgebiet ab und fügt Gegnern im Umkreis von 8 m {damage} körperlichen Schaden zu. (Jägertalent)',
+  'entities.abilities.prayer_of_healing.description':
+    'Heilt Verbündete in der Nähe um {damage}. (Priestertalent)',
+  'entities.abilities.preparation.description':
+    'Schließt die Abklingzeiten von Sprint, Entrinnen und Verschwinden ab. (Schurkentalent)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 Sek.. (Magier-Talent)',
+  'entities.abilities.psychic_scream.description':
+    'Versetzt Gegner in der Nähe bis zu 4 Sek. lang in Furcht. Schaden kann den Effekt aufheben. (Priestertalent)',
+  'entities.abilities.shadowstep.description':
+    'Tretet durch die Schatten auf Euer Ziel zu. (Schurkentalent)',
+  'entities.abilities.silence.description':
+    'Bringt das Ziel 4 Sek. lang zum Schweigen. (Priestertalent)',
+  'entities.abilities.tranquility.description':
+    'Kanalisiert 4 Sek. lang heilende Energie und heilt Verbündete im Umkreis von 30 m jede Sekunde um 42 bis 52. (Druidentalent)',
+  'game.talents.readout.rowsSummary':
+    'Talente: {head}, {picked}/{unlocked} Entscheidungsreihen gewählt.',
+  'hudChrome.fct.absorbed': '{amount} absorbiert',
 };

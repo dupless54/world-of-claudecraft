@@ -171,11 +171,13 @@ describe('spell haste plumbing', () => {
 });
 
 describe('crit-damage masteries', () => {
-  it('a Fire mage mastery doubles SPELL crit damage via Entity.critDmgSpellBonus', () => {
-    const sim = makeSim('mage', 'fire');
+  it('a destruction warlock mastery doubles SPELL crit damage via Entity.critDmgSpellBonus', () => {
+    const sim = makeSim('warlock', 'destruction');
     const p = sim.entities.get(sim.playerId) as Entity;
-    // Afterflame grants +50% spell crit damage: spell crits go from 1.5x to 2.0x. The
-    // physical/heal crit channels are untouched (the mastery is spell-only).
+    // Desolation grants +50% spell crit damage: spell crits go from 1.5x to 2.0x. The
+    // physical/heal crit channels are untouched (the mastery is spell-only). (The mage
+    // rework retuned Fire's mastery to Ignition, so destruction is the spell-crit-damage
+    // exemplar in the merged tree.)
     expect(p.critDmgSpellBonus).toBeCloseTo(0.5);
     expect(p.critDmgPhysBonus).toBe(0);
     expect(p.critDmgHealBonus).toBe(0);

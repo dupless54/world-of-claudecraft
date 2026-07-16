@@ -79,6 +79,12 @@ import {
   type FoliagePerfStats,
   type FoliageView,
 } from './foliage';
+import {
+  type FrostNovaRootVisual,
+  isFrostNovaRootAura,
+  syncFrostNovaRootVisual,
+} from './frost_nova_root_visual';
+import { FrozenOrbFx } from './frozen_orb_fx';
 import { buildGatherNodes } from './gather_nodes';
 import {
   GFX,
@@ -90,11 +96,21 @@ import {
   sharedUniforms,
   urlForcedTier,
 } from './gfx';
+import { GlacialFrontVisual } from './glacial_front_visual';
+import { GroundAimReticleVisual } from './ground_aim_reticle_visual';
+import { type IceBlockVisual, syncIceBlockVisual } from './ice_block_visual';
 import { buildImpactSite, type ImpactSiteView } from './impact_site';
 import { ensureDelveInteriorKit } from './interior_kit';
 import { buildJailScene } from './jail_scene';
 import { LightPulses } from './light_pulses';
 import { type LocoTrack, newLocoTrack, updateLocomotion } from './locomotion';
+import {
+  type MageBarrierState,
+  type MageBarrierVisual,
+  mageBarrierStateForAura,
+  syncMageBarrierVisual,
+} from './mage_barrier_visual';
+import { MageGroundFx } from './mage_ground_fx';
 import { buildMailboxPillar } from './mailbox';
 import { buildMotes, type MotesView } from './motes';
 import { COMBO_PIP_MAX } from './nameplate_combo';
@@ -116,6 +132,7 @@ import { buildPropMaterialPrewarmGroup, buildProps } from './props';
 import { buildGroundQuestObject } from './quest_objects';
 import { isOwnedPetHostile } from './reaction';
 import { RenderBudgetGovernor, type RenderBudgetState } from './render_budget';
+import { RingOfFrostVisuals } from './ring_of_frost_visual';
 import { downscaleDims } from './screenshot';
 import { drapeRingLocalY } from './selection_ring';
 import { type SelfMotionFrame, SelfMotionPredictor } from './self_motion';
@@ -245,7 +262,6 @@ for (const set of Object.values(ITEM_SETS)) {
   }
 }
 const CLICK_MARKER_POOL = 4; // concurrent click-feedback markers before reuse
-const GROUND_AIM_RETICLE_PULSE_HZ = 2;
 const SPARKLE_BOOST = 1.5;
 // Third-person camera collision (see updateCamera). Prop colliders marked
 // camGhost are hidden by props.ts/foliage.ts instead; this path is for
@@ -528,13 +544,6 @@ interface AoeRingSlot {
   elapsed: number; // seconds since spawn; >= AOE_RING_LIFETIME means free
 }
 
-interface GroundAimReticle {
-  ring: THREE.Mesh;
-  mat: THREE.MeshBasicMaterial;
-  elapsed: number;
-  dimmed: boolean;
-}
-
 function selfSnapshotAlpha(alpha: number, lead: number): number {
   return Math.min(1.25, alpha + Math.max(0, lead));
 }
@@ -550,6 +559,9 @@ export interface EntityView {
   catVisual: CharacterVisual | null; // druid cat form, built lazily
   travelVisual: CharacterVisual | null; // druid travel form (chicken-cow), built lazily
   fireballTravelVisual: FireballTravelVisual | null; // Mage travel form, built lazily
+  iceBlockVisual: IceBlockVisual | null; // Ice Block shell, built lazily on first stasis
+  frostNovaRootVisual: FrostNovaRootVisual | null; // Atadura de Hielo restraint at the feet
+  mageBarrierVisual: MageBarrierVisual | null; // personal mage absorb shell, built lazily
   skin: number; // last-rendered appearance skin — diffed each frame for live swaps
   mainhandItemId: string | null; // last-rendered equipped weapon — diffed for live held-weapon swaps
   offhandItemId: string | null; // last-rendered shield/second weapon, independent of mainhand skins
@@ -815,9 +827,14 @@ export class Renderer {
   private clickMarkerNext = 0;
   // ground-targeted AoE impact rings (see aoe_ring.ts), pooled like click markers
   private aoeRings: AoeRingSlot[] = [];
+  // Water Jet's visual channel starts from a spellfx event, which can precede
+  // the next online entity snapshot by one network frame. Hold this tiny local
+  // bridge so the elemental enters Channel immediately instead of flashing its
+  // short Waterbolt attack before `castingAbility` arrives.
+  private waterJetVisualChannels = new Map<number, number>();
   private aoeRingNext = 0;
   private recklessSkulls = new RecklessSkullPainter();
-  private groundAimReticle: GroundAimReticle | null = null;
+  private groundAimReticle: GroundAimReticleVisual;
   raycaster = new THREE.Raycaster();
   clickTargets: THREE.Object3D[] = [];
   // Gather-node meshes (#1866), raycast separately from `clickTargets`/`pick()`:
@@ -979,6 +996,11 @@ export class Renderer {
   // Flash a pooled talent-moment point light at an entity's feet (see
   // light_pulses.ts); bound once in the constructor over the views map.
   private pulseAt: (id: number, school: string, intensity: number, duration: number) => void;
+  private frozenOrbFx!: FrozenOrbFx;
+  private mageGroundFx!: MageGroundFx;
+  private ringOfFrostVisuals!: RingOfFrostVisuals;
+  private readonly mageBarrierStateScratch: MageBarrierState = { theme: 'frost', value: 0 };
+  private glacialFrontVisual!: GlacialFrontVisual;
   private weather: Weather;
   private weatherOn = true;
   private audioSink: SpatialAudioSink | null = null;
@@ -992,6 +1014,13 @@ export class Renderer {
   private fiestaPowerupMeshes = new Map<number, THREE.Mesh>();
   // Per-entity power-up glow: emits a coloured swirl around the carrier until it expires.
   private fiestaGlows = new Map<number, { color: number; until: number; nextSwirl: number }>();
+  // Per-target heal-glow throttle (ms since a target last bloomed a heal glow). A
+  // burst of many tiny simultaneous heals on one ally (e.g. Chronomancy's group echo
+  // converting one AoE cast that struck several enemies, five allies x N hits in a
+  // single frame) must not spawn a full particle bloom per heal, or the particle
+  // count spikes and the frame hitches. One bloom per target per HEAL_GLOW_ICD is
+  // plenty of feedback; the FCT numbers are unaffected.
+  private healGlowAt = new Map<number, number>();
 
   // Vale Cup: the Sowfield set piece, the staggered goal-firework volley queue,
   // and the boarball's dust pool (created lazily the first time the ball rolls).
@@ -1507,22 +1536,12 @@ export class Renderer {
     // the terrain where a ground-targeted spell lands (see aoe_ring.ts).
     const aoeRingGeo = new THREE.RingGeometry(0.88, 1.0, 64);
     aoeRingGeo.rotateX(-Math.PI / 2);
-    const groundAimMat = new THREE.MeshBasicMaterial({
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-    });
-    const groundAimRing = new THREE.Mesh(aoeRingGeo, groundAimMat);
-    groundAimRing.visible = false;
-    groundAimRing.renderOrder = 3;
-    setRenderCategory(groundAimRing, 'ui3d');
-    this.scene.add(groundAimRing);
-    this.groundAimReticle = {
-      ring: groundAimRing,
-      mat: groundAimMat,
-      elapsed: 0,
-      dimmed: false,
-    };
+    this.groundAimReticle = new GroundAimReticleVisual(
+      this.scene,
+      (x, z) => groundHeight(x, z, this.sim.cfg.seed),
+      this.lowGfx ? 1 : SELECTION_RING_BOOST,
+    );
+    setRenderCategory(this.groundAimReticle.group, 'ui3d');
     for (let i = 0; i < CLICK_MARKER_POOL; i++) {
       const mat = new THREE.MeshBasicMaterial({
         transparent: true,
@@ -1539,6 +1558,25 @@ export class Renderer {
 
     // particle system: projectiles, impacts, heal glows, ambience
     this.lightPulses = new LightPulses(this.scene);
+    // Frozen Orb: the roaming ice-sphere visual, animated locally from the one
+    // 'orb' release event (see src/render/frozen_orb_fx.ts).
+    this.frozenOrbFx = new FrozenOrbFx(this.scene, (x, z) => groundHeight(x, z, this.sim.cfg.seed));
+    this.glacialFrontVisual = new GlacialFrontVisual(this.scene, (x, z) =>
+      groundHeight(x, z, this.sim.cfg.seed),
+    );
+    // Meteor falls + Rune of Power circles (see src/render/mage_ground_fx.ts);
+    // a landing meteor detonates with the same burst an aimed blast uses.
+    this.mageGroundFx = new MageGroundFx(
+      this.scene,
+      (x, z) => groundHeight(x, z, this.sim.cfg.seed),
+      (x, z) => {
+        const gy = groundHeight(x, z, this.sim.cfg.seed);
+        this.vfx.burst(new THREE.Vector3(x, gy + 0.4, z), 'fire', 34, 1.4);
+      },
+    );
+    this.ringOfFrostVisuals = new RingOfFrostVisuals(this.scene, (x, z) =>
+      groundHeight(x, z, this.sim.cfg.seed),
+    );
     this.vfx = new Vfx(this.scene, (id, frac) => {
       const v = this.views.get(id);
       if (!v) return null;
@@ -2207,6 +2245,12 @@ export class Renderer {
     );
     this.fish.update(p.pos.x, p.pos.z, dt);
     this.vfx.update(dt);
+    this.frozenOrbFx.update(dt);
+    this.mageGroundFx.update(dt);
+    this.ringOfFrostVisuals.sync(this.sim.activeFrostRings);
+    this.ringOfFrostVisuals.update(dt);
+    this.glacialFrontVisual.updateCharge(p, dt, groundHeight(p.pos.x, p.pos.z, this.sim.cfg.seed));
+    this.glacialFrontVisual.update(dt);
     this.lightPulses.update(dt);
     const pv = this.views.get(p.id);
     if (pv) {
@@ -2957,6 +3001,50 @@ export class Renderer {
   handleEvent(ev: SimEvent): void {
     switch (ev.type) {
       case 'spellfx': {
+        if (ev.fx === 'blinkStep') {
+          // A teleport step (Flickerstep / Shadowstep): reset the cached self
+          // position so the body snaps to the authoritative destination. A
+          // short pulse sells the pop.
+          if (ev.sourceId === this.sim.player.id) {
+            this.selfRenderPositionReady = false;
+          }
+          this.pulseAt(ev.sourceId, ev.school, 1.2, 0.35);
+          break;
+        }
+        if (ev.fx === 'frostCone') {
+          const source = this.sim.entities.get(ev.sourceId);
+          if (source) {
+            this.glacialFrontVisual.spawn(
+              source.pos.x,
+              groundHeight(source.pos.x, source.pos.z, this.sim.cfg.seed),
+              source.pos.z,
+              source.facing,
+              ev.range ?? 7,
+              ev.level ?? 1,
+              ev.angle ?? 70,
+              ev.fx,
+            );
+            this.triggerAttack(ev.sourceId);
+          }
+          break;
+        }
+        if (ev.fx === 'fireCone') {
+          const source = this.sim.entities.get(ev.sourceId);
+          if (source) {
+            this.glacialFrontVisual.spawn(
+              source.pos.x,
+              groundHeight(source.pos.x, source.pos.z, this.sim.cfg.seed),
+              source.pos.z,
+              source.facing,
+              ev.range ?? 6,
+              ev.level ?? 1,
+              ev.angle ?? 55,
+              ev.fx,
+            );
+            this.triggerAttack(ev.sourceId);
+          }
+          break;
+        }
         if (ev.fx === 'windup') {
           // A petSpell windup telegraph: start the throw animation now; the
           // projectile for this throw follows petSpell.windup later, timed to
@@ -2982,8 +3070,21 @@ export class Renderer {
           break;
         }
         if (ev.fx === 'projectile') this.vfx.projectile(ev.sourceId, ev.targetId, ev.school);
+        else if (ev.fx === 'heavyBolt')
+          // Pyroblast's boulder: the same homing comet, doubled up.
+          this.vfx.projectile(ev.sourceId, ev.targetId, ev.school, 2);
         else if (ev.fx === 'beam') this.vfx.beam(ev.sourceId, ev.targetId, ev.school);
-        else if (ev.fx === 'chainHeal') this.vfx.chainHealArc(ev.sourceId, ev.targetId);
+        else if (ev.fx === 'bubbleBeam') {
+          const duration = ev.duration ?? 4;
+          this.vfx.bubbleBeam(ev.sourceId, ev.targetId, duration);
+          if (duration <= 0) {
+            this.waterJetVisualChannels.delete(ev.sourceId);
+          } else {
+            this.waterJetVisualChannels.set(ev.sourceId, duration);
+            const view = this.views.get(ev.sourceId);
+            if (view) this.activeVisual(view)?.beginCastChannel();
+          }
+        } else if (ev.fx === 'chainHeal') this.vfx.chainHealArc(ev.sourceId, ev.targetId);
         else if (ev.fx === 'procSurge') {
           this.vfx.procSurge(ev.targetId, ev.school);
           this.pulseAt(ev.targetId, ev.school, 5, 0.4);
@@ -2996,6 +3097,13 @@ export class Renderer {
         } else if (ev.fx === 'detonate') {
           this.vfx.detonate(ev.targetId, ev.school);
           this.pulseAt(ev.targetId, ev.school, 9, 0.5);
+        } else if (ev.fx === 'temporalGlyph') {
+          // Chronomancy Temporal Echo apply: a brief temporal glyph blooms
+          // directly OVER the marked ally (target-anchored, no projectile ever
+          // travels to them). A modest arcane bloom + glow, distinct from the
+          // per-hit heal-glow pulse the conversion heals emit.
+          this.vfx.wardBloom(ev.targetId, 'arcane');
+          this.pulseAt(ev.targetId, 'arcane', 5, 0.45);
         } else if (ev.fx === 'lightning') this.vfx.lightningProjectile(ev.sourceId, ev.targetId);
         else if (ev.fx === 'tick') this.vfx.tick(ev.targetId, ev.school);
         else this.vfx.nova(ev.targetId, ev.school);
@@ -3018,6 +3126,54 @@ export class Renderer {
         break;
       }
       case 'spellfxAt': {
+        // The Frozen Orb flight, animated locally from its three moments:
+        // 'release' starts the drift, 'halt'/'resume' freeze and restart it at
+        // the server's real coordinates when the orb latches onto an enemy.
+        // The pulse novas below stay the area telegraph, so no actionable
+        // information rides on this mesh.
+        if (ev.fx === 'meteorFall') {
+          this.mageGroundFx.spawnMeteor({
+            x: ev.x,
+            z: ev.z,
+            radius: ev.radius ?? 8,
+            duration: ev.duration ?? 2,
+          });
+          break;
+        }
+        if (ev.fx === 'snowZone') {
+          this.mageGroundFx.spawnSnow({
+            x: ev.x,
+            z: ev.z,
+            radius: ev.radius ?? 7,
+            duration: ev.duration ?? 6,
+          });
+          break;
+        }
+        if (ev.fx === 'runeCircle') {
+          this.mageGroundFx.spawnRune({
+            x: ev.x,
+            z: ev.z,
+            radius: ev.radius ?? 8,
+            duration: ev.duration ?? 15,
+          });
+          break;
+        }
+        if (ev.fx === 'orb') {
+          const orbSource = ev.sourceId ?? -1;
+          if (ev.phase === 'halt') this.frozenOrbFx.halt(orbSource, ev.x, ev.z);
+          else if (ev.phase === 'resume') this.frozenOrbFx.resume(orbSource, ev.x, ev.z);
+          else
+            this.frozenOrbFx.spawn({
+              sourceId: orbSource,
+              x: ev.x,
+              z: ev.z,
+              dirX: ev.dirX ?? 0,
+              dirZ: ev.dirZ ?? 1,
+              speed: ev.speed ?? 2.5,
+              duration: ev.duration ?? 8,
+            });
+          break;
+        }
         // Ground-targeted impact: burst draped onto the terrain where the spell
         // was aimed (not on the caster), so an aimed blast reads at its landing
         // spot. A 'nova' aim is the heavier detonation; 'burst' the lighter one.
@@ -3048,7 +3204,17 @@ export class Renderer {
         break;
       }
       case 'heal2':
-        if (ev.amount > 0 || ev.crit) this.vfx.healGlow(ev.targetId);
+        // Throttle the particle bloom to one per target per 110ms so a burst of tiny
+        // simultaneous heals (a Chronomancy group echo converting an AoE that hit
+        // several enemies onto five allies in one frame) cannot spike the particle
+        // count. The healing number itself (FCT) is emitted elsewhere and unaffected.
+        if (ev.amount > 0 || ev.crit) {
+          const nowMs = performance.now();
+          if (nowMs - (this.healGlowAt.get(ev.targetId) ?? 0) >= 110) {
+            this.healGlowAt.set(ev.targetId, nowMs);
+            this.vfx.healGlow(ev.targetId);
+          }
+        }
         break;
       case 'aura': {
         const tgt = this.sim.entities.get(ev.targetId);
@@ -3652,6 +3818,9 @@ export class Renderer {
       catVisual: null,
       travelVisual: null,
       fireballTravelVisual: null,
+      iceBlockVisual: null,
+      frostNovaRootVisual: null,
+      mageBarrierVisual: null,
       height,
       clickTarget,
       nameplate: np,
@@ -4205,6 +4374,9 @@ export class Renderer {
           (v.portal.material as THREE.Material).dispose();
       }
     }
+    v.iceBlockVisual?.dispose();
+    v.frostNovaRootVisual?.dispose();
+    v.mageBarrierVisual?.dispose();
     this.views.delete(id);
   }
 
@@ -4313,6 +4485,11 @@ export class Renderer {
     }
     this.time += dt;
     sharedUniforms.uTime.value = this.time;
+    for (const [id, remaining] of this.waterJetVisualChannels) {
+      const next = remaining - dt;
+      if (next <= 0) this.waterJetVisualChannels.delete(id);
+      else this.waterJetVisualChannels.set(id, next);
+    }
     const sim = this.sim;
     const p = sim.player;
     if (this.lastSelfId !== p.id) {
@@ -4391,6 +4568,9 @@ export class Renderer {
       let hasShadowform = false;
       let hasMoonkin = false;
       let hasMetamorph = false;
+      let hasStasis = false;
+      let hasFrostNovaRoot = false;
+      let mageBarrierState: MageBarrierState | null = null;
       for (const a of e.auras) {
         if (a.kind === 'polymorph') hasPoly = true;
         if (a.kind === 'form_bear') hasBear = true;
@@ -4402,6 +4582,9 @@ export class Renderer {
         if (a.kind === 'form_shadow') hasShadowform = true;
         if (a.kind === 'form_moonkin') hasMoonkin = true;
         if (a.kind === 'form_metamorph') hasMetamorph = true;
+        if (a.kind === 'stasis') hasStasis = true;
+        if (isFrostNovaRootAura(a)) hasFrostNovaRoot = true;
+        mageBarrierState ??= mageBarrierStateForAura(a, this.mageBarrierStateScratch);
       }
       const polyed = hasPoly;
       const bear = !polyed && hasBear;
@@ -4570,9 +4753,26 @@ export class Renderer {
         continue;
       }
       if (!v.visual) continue;
+      v.iceBlockVisual = syncIceBlockVisual(v.iceBlockVisual, v.group, v.height, hasStasis, dt);
+      v.frostNovaRootVisual = syncFrostNovaRootVisual(
+        v.frostNovaRootVisual,
+        v.group,
+        v.height,
+        hasFrostNovaRoot,
+        dt,
+      );
+      v.mageBarrierVisual = syncMageBarrierVisual(
+        v.mageBarrierVisual,
+        v.group,
+        v.height,
+        mageBarrierState,
+        dt,
+      );
+      const iceBlockActivated = v.iceBlockVisual?.activatedThisFrame === true;
 
       this.updateBaseVisual(e, v);
       if (!v.visual) continue;
+      if (iceBlockActivated) this.activeVisual(v)?.playEmote('wave', 1);
 
       // off-screen rigs still need their pose/audio updated, but not their draws.
       // Decide visibility now from the real world position; applied at the end so
@@ -4755,7 +4955,8 @@ export class Renderer {
       st.backwards = loco.backwards;
       st.reverseBackpedal = ghostWolf;
       st.dead = visuallyDead;
-      st.casting = e.castingAbility !== null && !visuallyDead;
+      const waterJetVisualChannel = this.waterJetVisualChannels.has(e.id);
+      st.casting = (e.castingAbility !== null || waterJetVisualChannel) && !visuallyDead;
       st.spinning =
         st.casting &&
         e.castingAbility !== null &&
@@ -4842,9 +5043,11 @@ export class Renderer {
       if (st.casting) {
         this.vfx.castSparkle(
           e.id,
-          e.castingAbility === 'demon_heal'
-            ? 'shadow'
-            : (ABILITIES[e.castingAbility!]?.school ?? 'arcane'),
+          waterJetVisualChannel
+            ? 'frost'
+            : e.castingAbility === 'demon_heal'
+              ? 'shadow'
+              : (ABILITIES[e.castingAbility!]?.school ?? 'arcane'),
           dt,
         );
       }
@@ -5052,6 +5255,12 @@ export class Renderer {
     this.waterView.update(this.time);
     worldStart = markWorldPhase('water', worldStart);
     this.vfx.update(dt);
+    this.frozenOrbFx.update(dt);
+    this.mageGroundFx.update(dt);
+    this.ringOfFrostVisuals.sync(this.sim.activeFrostRings);
+    this.ringOfFrostVisuals.update(dt);
+    this.glacialFrontVisual.updateCharge(p, dt, groundHeight(p.pos.x, p.pos.z, this.sim.cfg.seed));
+    this.glacialFrontVisual.update(dt);
     this.lightPulses.update(dt);
     this.updateFiestaRing(dt);
     this.updateFiestaPowerups(dt);
@@ -5925,19 +6134,17 @@ export class Renderer {
   setGroundAimReticle(
     aim: { x: number; z: number; radius: number; school: string; dimmed: boolean } | null,
   ): void {
-    const reticle = this.groundAimReticle;
-    if (!reticle) return;
-    if (!aim) {
-      reticle.ring.visible = false;
-      return;
-    }
-    const y = groundHeight(aim.x, aim.z, this.sim.cfg.seed) + 0.1;
-    reticle.ring.position.set(aim.x, y, aim.z);
-    reticle.ring.scale.setScalar(aim.radius);
-    reticle.mat.color.setHex(SCHOOL_COLORS[aim.school] ?? 0xffffff);
-    if (!this.lowGfx) reticle.mat.color.multiplyScalar(SELECTION_RING_BOOST);
-    reticle.dimmed = aim.dimmed;
-    reticle.ring.visible = true;
+    this.groundAimReticle.setAim(
+      aim
+        ? {
+            x: aim.x,
+            z: aim.z,
+            radius: aim.radius,
+            color: SCHOOL_COLORS[aim.school] ?? 0xffffff,
+            dimmed: aim.dimmed,
+          }
+        : null,
+    );
   }
 
   private updateAoeRings(dt: number): void {
@@ -5955,12 +6162,7 @@ export class Renderer {
   }
 
   private updateGroundAimReticle(dt: number): void {
-    const reticle = this.groundAimReticle;
-    if (!reticle?.ring.visible) return;
-    reticle.elapsed += dt;
-    const pulse =
-      0.65 + 0.15 * Math.sin(reticle.elapsed * Math.PI * 2 * GROUND_AIM_RETICLE_PULSE_HZ);
-    reticle.mat.opacity = reticle.dimmed ? pulse * 0.5 : pulse;
+    this.groundAimReticle.update(dt);
   }
 
   worldToScreen(x: number, y: number, z: number): { x: number; y: number; behind: boolean } {

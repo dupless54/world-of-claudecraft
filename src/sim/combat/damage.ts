@@ -56,6 +56,14 @@ import {
   xpForLevel,
 } from '../types';
 import { WORLD_BOSS_CORPSE_SECONDS, worldBossLootContributors } from '../world_boss';
+import { chronomancyConvertArcaneDamage, stripTemporalEchoes } from './chronomancy';
+import { recordDamageTaken } from './damage_history';
+import {
+  cauterizeFireDamageMult,
+  fireMageCauterize,
+  igniteOnCrit,
+  PERSONAL_BARRIER_IDS,
+} from './fire_mage';
 import { onDamageTaken, onShieldConsumed, onSpellCrit, resetProcState } from './talent_procs';
 
 // How long a slain mob's corpse persists (seconds) before it is cleared. Sole user
@@ -103,9 +111,19 @@ export function dealDamage(
   alreadyFinal = false,
   // Stable content id for talent-proc filters. `ability` remains the display label.
   abilityId: string | null = null,
+  // Whether this dealDamage call is one iteration of an AREA effect (an
+  // aoeDamage/groundAoE fan-out) rather than a single-target hit. Only read by
+  // the Chronomancy Temporal Echo conversion (combat/chronomancy.ts): area
+  // Arcane damage converts to healing at a reduced rate. Defaults false, so
+  // every single-target caller is unchanged and byte-identical.
+  aoe = false,
 ): void {
   if (target.dead) return;
   if (target.gm || target.devGod) return; // GMs and /dev god are invulnerable (every damage path funnels here)
+  // Ice Block (Cold Coffin): while encased in stasis the mage is FULLY immune to
+  // damage (owner 2026-07-13), so nothing gets through until it is cancelled or
+  // expires. Every damage path funnels here, so this covers melee, spells, and DoTs.
+  if (target.auras.some((a) => a.kind === 'stasis')) return;
   // A wild mob that broke leash is in 'evade': it has dropped its hate table
   // and walks home without fighting back, healing to full only on arrival.
   // Classic mechanics make it immune while it retreats, so it can't be chipped
@@ -114,6 +132,12 @@ export function dealDamage(
   if (target.kind === 'mob' && target.aiState === 'evade' && target.ownerId === null) return;
   amount = Math.max(0, amount);
   const attackAnimation = attackAnimationStarted ? { attackAnimationStarted: true as const } : {};
+
+  // Cauterize (fire spec): +12% Fire damage to enemies while the caster is burning
+  // (combat/fire_mage.ts). Returns 1x for everyone else and for the self-burn, so all
+  // other damage is byte-identical.
+  amount = Math.round(amount * cauterizeFireDamageMult(source, target, school));
+
   // [dev] A god-mode player (/dev god) hits for 100x so a solo tester can chew
   // through raid bosses to inspect drops without one-shotting them past their phase
   // transitions. Gated on devCommands so it can NEVER apply in production (where gm
@@ -254,6 +278,22 @@ export function dealDamage(
     if (form) amount = Math.round(amount * (1 + form.value / 100));
   }
 
+  // Warded (mage choice row): the wearer takes barrierDrPct less damage while
+  // their own personal barrier (an ice_barrier absorb aura) is up. Checked
+  // target-side BEFORE absorb shields soak, so the cut stretches the barrier it
+  // is anchored to. Draws no rng.
+  if (
+    source &&
+    source.id !== target.id &&
+    amount > 0 &&
+    target.kind === 'player' &&
+    target.auras.some((a) => a.kind === 'absorb' && PERSONAL_BARRIER_IDS.includes(a.id))
+  ) {
+    const wardedMeta = ctx.players.get(target.id);
+    const wardedCut = wardedMeta ? ctx.playerMods(wardedMeta).global.barrierDrPct : 0;
+    if (wardedCut > 0) amount = Math.round(amount * Math.max(0, 1 - wardedCut));
+  }
+
   // "Find Weakness": a critvuln debuff makes the target's exposed flesh take
   // extra damage from CRITICAL hits only (any attacker, any school). Applied
   // after the defensive-stance reduction, before absorb shields soak it.
@@ -322,7 +362,14 @@ export function dealDamage(
     }
   }
 
+  // Ignition (fire mage mastery, combat/fire_mage.ts): a Fire-school ABILITY
+  // crit banks a stacking burn of the RESOLVED amount. Guards inside; a burn
+  // tick carries crit=false so it can never re-ignite itself. Draws no rng.
+  igniteOnCrit(ctx, source, target, amount, crit, school, ability);
+
+
   // absorb shields soak damage first
+  let totalAbsorbed = 0;
   if (amount > 0) {
     for (let i = target.auras.length - 1; i >= 0 && amount > 0; i--) {
       const a = target.auras[i];
@@ -330,9 +377,11 @@ export function dealDamage(
       const soaked = Math.min(a.value, amount);
       a.value -= soaked;
       amount -= soaked;
+      totalAbsorbed += soaked;
       if (a.value <= 0) {
         target.auras.splice(i, 1);
         ctx.emit({ type: 'aura', targetId: target.id, name: a.name, gained: false });
+        // Talent procs listening for a fully consumed shield (deterministic).
         const shielder = ctx.entities.get(a.sourceId);
         if (shielder && !shielder.dead && shielder.kind === 'player') {
           onShieldConsumed(ctx, shielder, a.id, target);
@@ -364,6 +413,11 @@ export function dealDamage(
           // The share is already fully source-modified: don't re-apply the source's
           // Defensive Stance cut / Weakening Hex to the pet's portion.
           true,
+          abilityId,
+          // Carry the AoE flag so a redirected slice of an area Arcane hit still
+          // rates its Temporal Echo conversion at the area (15%) coefficient, not
+          // the single-target 35%.
+          aoe,
         );
       }
     }
@@ -418,6 +472,7 @@ export function dealDamage(
         school,
         ability,
         kind,
+        absorbed: totalAbsorbed || undefined,
         ...attackAnimation,
       });
       // Book of Deeds: the clamped terminal hit counts (zero rng; the early
@@ -465,6 +520,7 @@ export function dealDamage(
         school,
         ability,
         kind,
+        absorbed: totalAbsorbed || undefined,
         ...attackAnimation,
       });
       // Book of Deeds: the clamped terminal hit counts (zero rng).
@@ -529,6 +585,7 @@ export function dealDamage(
         school,
         ability,
         kind,
+        absorbed: totalAbsorbed || undefined,
         ...attackAnimation,
       });
       // Book of Deeds: the clamped terminal hit counts (zero rng).
@@ -542,6 +599,12 @@ export function dealDamage(
     }
   }
 
+  // Cauterize (fire spec passive, combat/fire_mage.ts): the FIRST lethal hit heals the
+  // mage to 25% max HP and sets them burning instead of killing them. Checked before
+  // the generic cheat-death: on a save it negates the blow (returns 0), so the generic
+  // save below sees a non-lethal amount and does not also fire.
+  const cauterized = fireMageCauterize(ctx, target, amount);
+  if (cauterized !== null) amount = cauterized;
   // Deterministic row talent: a lethal hit leaves the player at 1 HP, then
   // arms the authored internal cooldown. Ranked eliminations above remain
   // authoritative and intentionally bypass this world-combat save.
@@ -591,7 +654,13 @@ export function dealDamage(
     }
   }
 
+  const preHp = target.hp;
   target.hp = guardianWardRestore || Math.max(0, target.hp - amount);
+  // Chronomancy Rewind (combat/damage_history.ts): log the REAL HP loss this player
+  // just took, tagged by sim tick, so Rewind can restore a fraction of recent damage.
+  // (preHp - target.hp) is post-mitigation and post-absorb by construction, so fully
+  // absorbed / avoided / overkill damage never enters the history. Players only.
+  if (target.kind === 'player') recordDamageTaken(target, preHp - target.hp, ctx.tickCount);
   ctx.emit({
     type: 'damage',
     sourceId: source?.id ?? -1,
@@ -601,11 +670,21 @@ export function dealDamage(
     school,
     ability,
     kind,
+    absorbed: totalAbsorbed || undefined,
     ...attackAnimation,
   });
   if (guardianWardRestore > 0) {
     ctx.emit({ type: 'heal', targetId: target.id, amount: guardianWardRestore });
   }
+
+  // Chronomancy Temporal Echo (combat/chronomancy.ts): siphon a fraction of the
+  // caster's LANDED Arcane damage into the ally they marked. Uses (preHp -
+  // target.hp), the amount that actually reduced health, so absorbed, avoided,
+  // and overkill damage never fabricate healing. Draws no rng. Non-arcane damage
+  // and non-player sources are filtered inside. The PvP-context early returns
+  // above (duel/fiesta/arena) intentionally skip conversion (PRD 13.9 defers PvP
+  // tuning to a later phase).
+  chronomancyConvertArcaneDamage(ctx, source, preHp - target.hp, school, aoe);
 
   if (amount > 0) {
     if (target.kind === 'mob' && DAMAGE_IDLE_DESPAWN_MOB_IDS.has(target.templateId)) {
@@ -728,6 +807,7 @@ export function dealDamage(
   if (source && source.kind === 'player' && source.id !== target.id) {
     const meta = ctx.players.get(source.id);
     if (meta) meta.counters.damageDealt += amount;
+    // Talent procs listening for spell crits (deterministic, no rng draw).
     if (crit && school !== 'physical' && ability) {
       onSpellCrit(ctx, source, abilityId, target);
     }
@@ -754,6 +834,7 @@ export function dealDamage(
   if (target.kind === 'player') {
     const meta = ctx.players.get(target.id);
     if (meta) meta.counters.damageTaken += amount;
+    // Talent procs listening for big single hits (deterministic, ICD-gated).
     if (amount > 0 && !target.dead) onDamageTaken(ctx, target, amount);
     if (target.resourceType === 'rage' && source && source.id !== target.id) {
       const isWarrior = meta?.cls === 'warrior';
@@ -930,6 +1011,11 @@ export function handleDeath(ctx: SimContext, e: Entity, killer: Entity | null): 
   }
 
   if (e.kind === 'player') {
+    // Chronomancy: a dead mage feeds no more Arcane damage, so drop any Temporal
+    // Echo marks it placed on living allies (a mark on a dying ally is already
+    // shed by aurasSurvivingDeath above). Keyed by sourceId, so marks THIS player
+    // carries from another chronomancer are left alone.
+    stripTemporalEchoes(ctx, e.id);
     const meta = ctx.players.get(e.id);
     if (meta) meta.counters.deaths++;
     // The Book of Deeds death hook (lifetime deaths counter, the Keeper's Toll

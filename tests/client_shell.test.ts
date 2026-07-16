@@ -499,7 +499,7 @@ describe('client HTML shell', () => {
 
   it('ships the mobile party-chip CSS with a 40px touch floor, scoped to body.mobile-touch', () => {
     // The chip meets the mobile touch floor and reveals the frames only under the
-    // painter-driven .party-expanded class (collapsed by default hides the rows + Leave).
+    // painter-driven .party-expanded class (collapsed by default hides the rows).
     const chipRule = hudMobileCss.match(/body\.mobile-touch #party-chip \{([^}]*)\}/)?.[1] ?? '';
     expect(chipRule).toMatch(/min-width:\s*40px/);
     expect(chipRule).toMatch(/min-height:\s*40px/);
@@ -1290,6 +1290,7 @@ describe('client HTML shell', () => {
     // per-row button to the self portrait context menu, so the row no longer builds
     // a #party-leave button.)
     expect(partyFrameRowTs).toContain("row.className = 'party-frame panel';");
+    expect(hudTs).toContain("else if (act === 'leave-party') this.sim.partyLeave();");
 
     // Aura slots: one node per aura id, held in a keyed pool and built once in
     // createNode() as .buff > .dur + .stacks. The hud.ts-wiring assertion (mirroring the

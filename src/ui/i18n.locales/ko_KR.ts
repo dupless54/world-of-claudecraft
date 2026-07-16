@@ -23,8 +23,6 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.avatar.description':
     '20초 동안 거상으로 변신하여 자신에게 걸린 모든 군중 제어 효과를 해제하고 입히는 피해가 20% 증가합니다.',
   'entities.abilities.bladestorm.name': '칼날폭풍',
-  'entities.abilities.bladestorm.description':
-    '소용돌이치는 강철의 폭풍이 되어 4초 동안 매초 8미터 이내의 모든 적에게 {damage}의 피해를 입힙니다.',
   'entities.abilities.battle_stance.description':
     '공격적인 전투 태세입니다. 분노를 10% 더 생성합니다. 무기와 방어 전문화의 기본 태세입니다.',
   'entities.abilities.battle_stance.name': '전투 태세',
@@ -125,114 +123,45 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': '선택',
   'hudChrome.talentRows.readoutSummary': '특성: {head}, {spent}/{total}개 줄 선택.',
   'entities.abilities.aspect_of_the_wild.name': '야생송곳니 형상',
-  'entities.abilities.aspect_of_the_wild.description':
-    '30미터 안의 아군에게 야생의 힘을 불어넣어 5분 동안 공격력을 45, 공격 속도를 5%만큼 증가시킵니다. (사냥꾼 특성)',
-  'entities.abilities.aura_surge.name': '여명의 도탄',
-  'entities.abilities.aura_surge.description':
-    '여명으로 벼린 방패를 던져 {damage}의 신성 피해를 입히고 주 대상을 2초 동안 침묵시킨 뒤, 10미터 안의 추가 적 최대 2명에게 튕기며 도탄마다 75%의 피해를 입힙니다. (성기사 특성)',
   'entities.abilities.avenging_wrath.name': '응징의 날개',
-  'entities.abilities.avenging_wrath.description':
-    '응징의 힘을 불러내 20초 동안 공격력을 60, 주문력을 30만큼 증가시킵니다. (성기사 특성)',
   'entities.abilities.berserk.name': '붉은 안개',
-  'entities.abilities.berserk.description':
-    '15초 동안 공격력을 70만큼 증가시킵니다. (드루이드 특성)',
   'entities.abilities.blink.name': '섬광걸음',
-  'entities.abilities.blink.description':
-    '전방 15미터로 순간이동하고 이동 불가 효과를 해제합니다. (마법사 특성)',
   'entities.abilities.bloodlust.name': '전쟁 북',
-  'entities.abilities.bloodlust.description':
-    '30미터 안의 아군을 광분시켜 15초 동안 공격 속도를 30%만큼 증가시킵니다. (주술사 특성)',
   'entities.abilities.chain_lightning.name': '갈래 번개',
-  'entities.abilities.chain_lightning.description':
-    '대상 지역에 번개를 내리쳐 주위 적에게 {damage}의 피해를 입힙니다. (주술사 특성)',
   'entities.abilities.chaos_bolt.name': '파멸 화살',
-  'entities.abilities.chaos_bolt.description':
-    '혼돈의 불꽃 화살을 던져 {damage}의 화염 피해를 입힙니다. (흑마법사 특성)',
   'entities.abilities.cleansing_verdict.name': '정화의 심판',
   'entities.abilities.cleansing_verdict.description':
     '아군 대상의 해로운 마법 효과 하나를 정화하고 생명력을 {damage}만큼 회복합니다.',
   'entities.abilities.cloak_of_shadows.name': '그림자망토',
-  'entities.abilities.cloak_of_shadows.description':
-    '어둠으로 몸을 감싸 5초 동안 420의 피해를 흡수합니다. (도적 특성)',
   'entities.abilities.cone_of_cold.name': '서리휩쓸기',
-  'entities.abilities.cone_of_cold.description':
-    '주위 적을 냉기로 강타해 {damage}의 냉기 피해를 입힙니다. (냉기 대표 기술)',
   'entities.abilities.curse_of_exhaustion.name': '납빛 저주',
-  'entities.abilities.curse_of_exhaustion.description':
-    '대상을 저주해 12초 동안 이동 속도를 30%만큼 감소시킵니다. (흑마법사 특성)',
   'entities.abilities.death_coil.name': '무덤 고리',
-  'entities.abilities.death_coil.description':
-    '적에게 {damage}의 암흑 피해를 입힌 뒤 3초 동안 공포에 빠뜨립니다. (흑마법사 특성)',
   'entities.abilities.deep_freeze.name': '죽은서리',
   'entities.abilities.deep_freeze.description':
     '대상을 깊이 얼려 {damage}의 냉기 피해를 입히고 4초 동안 기절시킵니다. (마법사 특성)',
   'entities.abilities.desperate_prayer.name': '마지막 기도',
-  'entities.abilities.desperate_prayer.description':
-    '즉시 생명력을 {damage}만큼 회복합니다. (사제 특성)',
   'entities.abilities.deterrence.name': '가시수호',
-  'entities.abilities.deterrence.description':
-    '10초 동안 회피 확률을 50%포인트 증가시킵니다. (사냥꾼 특성)',
   'entities.abilities.divine_shield.name': '빛의 수호',
-  'entities.abilities.divine_shield.description':
-    '신성한 힘으로 자신을 보호해 8초 동안 900의 피해를 흡수합니다. (성기사 특성)',
   'entities.abilities.earthbind.name': '붙드는 대지',
-  'entities.abilities.earthbind.description':
-    '주위 적을 대지에 묶어 2초 동안 이동하지 못하게 합니다. (주술사 특성)',
   'entities.abilities.evocation.name': '에테르샘',
-  'entities.abilities.evocation.description': '즉시 마나를 220 회복합니다. (마법사 특성)',
   'entities.abilities.frenzied_regeneration.name': '야성 치유',
-  'entities.abilities.frenzied_regeneration.description':
-    '10초에 걸쳐 생명력을 180 회복합니다. 곰 변신 상태에서만 사용할 수 있습니다. (드루이드 특성)',
   'entities.abilities.frost_trap.name': '서리덫',
-  'entities.abilities.frost_trap.description':
-    '대상 지역의 적을 3초 동안 얼려 이동하거나 행동하지 못하게 합니다. (사냥꾼 특성)',
   'entities.abilities.ghostly_strike.name': '망령의 일격',
-  'entities.abilities.ghostly_strike.description':
-    '적에게 무기 피해에 {damage}를 더한 피해를 입히고, 잠시 회피를 증가시키며 연계 점수 1점을 얻습니다. (도적 특성)',
   'entities.abilities.hammer_of_wrath.name': '울림 망치',
-  'entities.abilities.hammer_of_wrath.description':
-    '부상당한 적에게 신성한 망치를 던져 {damage}의 신성 피해를 입힙니다. 생명력이 20% 미만일 때만 사용할 수 있습니다. (성기사 특성)',
   'entities.abilities.healing_stream.name': '샘물',
-  'entities.abilities.healing_stream.description':
-    '12초에 걸쳐 아군 대상의 생명력을 120 회복합니다. (주술사 특성)',
   'entities.abilities.holy_wrath.name': '성자의 분노',
-  'entities.abilities.holy_wrath.description':
-    '신성한 힘을 방출해 주위 적에게 {damage}의 피해를 입힙니다. (성기사 특성)',
   'entities.abilities.howl_of_terror.name': '공포의 울부짖음',
-  'entities.abilities.howl_of_terror.description':
-    '주위 적을 최대 3초 동안 공포에 빠뜨립니다. 피해를 받으면 효과가 해제될 수 있습니다. (흑마법사 특성)',
   'entities.abilities.ice_block.name': '차가운 관',
-  'entities.abilities.ice_block.description':
-    '얼음 속에 자신을 가두어 8초 동안 600의 피해를 흡수합니다. 갇힌 동안에는 행동할 수 없습니다. 다시 사용하면 취소합니다. (마법사 특성)',
   'entities.abilities.inner_focus.name': '고요한 마음',
-  'entities.abilities.inner_focus.description':
-    '다음 주문을 자원 소모 없이 사용합니다. 60초 동안 지속됩니다. (사제 특성)',
   'entities.abilities.innervate.name': '생명 수액',
-  'entities.abilities.innervate.description':
-    '생명의 수액이 10초 동안 차올라 현재 자원을 파도처럼 20 회복합니다. 마나, 분노, 기력에 적용되며 변신해도 끊기지 않습니다. 수면, 기절, 정지 상태에서는 수액이 멈춥니다. (드루이드 특성)',
   'entities.abilities.meteor.name': '하늘돌',
-  'entities.abilities.meteor.description':
-    '대상 지역에 운석을 떨어뜨려 {damage}의 화염 피해를 입힌 뒤, 그곳의 적에게 6초 동안 2초마다 12에서 18의 화염 피해를 입힙니다. (마법사 특성)',
   'entities.abilities.mind_sear.name': '생각불꽃',
-  'entities.abilities.mind_sear.description':
-    '대상 지역에 암흑 에너지를 집중해 주위 적에게 매초 {damage}의 피해를 입힙니다. (사제 특성)',
   'entities.abilities.multi_shot.name': '분산 사격',
-  'entities.abilities.multi_shot.description':
-    '대상 지역에 화살을 흩뿌려 8미터 안의 적에게 {damage}의 물리 피해를 입힙니다. (사냥꾼 특성)',
   'entities.abilities.prayer_of_healing.name': '성가 치유',
-  'entities.abilities.prayer_of_healing.description':
-    '주위 아군의 생명력을 {damage}만큼 회복합니다. (사제 특성)',
   'entities.abilities.preparation.name': '대비책',
-  'entities.abilities.preparation.description':
-    '질주, 회피, 소멸의 재사용 대기시간을 완료합니다. (도적 특성)',
   'entities.abilities.presence_of_mind.name': '질주하는 정신',
-  'entities.abilities.presence_of_mind.description':
-    '시전 시간이 있는 다음 주문을 즉시 시전되게 합니다. 60초 동안 지속됩니다. (마법사 특성)',
   'entities.abilities.psychic_scream.name': '정신의 절규',
-  'entities.abilities.psychic_scream.description':
-    '주위 적을 최대 4초 동안 공포에 빠뜨립니다. 피해를 받으면 효과가 해제될 수 있습니다. (사제 특성)',
   'entities.abilities.shadowstep.name': '그림자걸음',
-  'entities.abilities.shadowstep.description': '그림자를 가로질러 대상에게 다가갑니다. (도적 특성)',
   'entities.abilities.silence.name': '침묵',
   'entities.abilities.silence.description': '대상을 4초 동안 침묵시킵니다. (사제 특성)',
   'entities.abilities.smoke_screen.name': '연막',
@@ -245,8 +174,6 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.startle_shot.description':
     '거친 사격으로 대상을 {duration}초 동안 혼란시킵니다. 피해를 받으면 효과가 깨집니다.',
   'entities.abilities.tranquility.name': '숲노래',
-  'entities.abilities.tranquility.description':
-    '4초 동안 회복 에너지를 집중해 30미터 안의 아군을 매초 42에서 52만큼 치유합니다. (드루이드 특성)',
   'entities.abilities.typhoon.name': '태풍',
   'entities.abilities.typhoon.description':
     '돌풍이 8미터 안의 모든 적을 밀쳐내고 무력화시켜 4초 동안 이동 속도를 50%만큼 감소시킵니다.',
@@ -7653,4 +7580,210 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     '전방의 적을 휩쓸며, 회피하거나 무기 막기 후 자원 소모 없이 사용할 수 있습니다.',
   'guide.abilityHook.hamstring': '적의 움직임을 방해해 달아나지 못하게 합니다.',
+  'game.talents.choicesTab': '선택',
+  'game.talents.readout.rowsSummary': '특성: {head}, 선택한 줄 {picked}/{unlocked}.',
+  'game.talents.rowUnlockToast': '새로운 특성 선택이 열렸습니다!',
+  'game.talents.rowUnlocks': '{level} 레벨에 해제',
+  'hudChrome.fct.absorbed': '{amount} 흡수',
+  'entities.abilities.temporal_mend.name': '시간의 꿰매기',
+  'entities.abilities.temporal_mend.description':
+    '아군을 한순간 미래로 끌어당겨 더 건강한 미래의 몸에 자리 잡는 동안 생명력을 {damage} 회복시킵니다. (시간술 고유 기술)',
+  'entities.abilities.temporal_barrier.name': '시간의 방벽',
+  'entities.abilities.temporal_barrier.description':
+    '대상을 현재에서 한 박자 벗어나게 합니다. 시간의 껍질이 10초 동안 피해를 {damage} 흡수한 뒤 시간선이 제자리로 돌아옵니다.',
+  'entities.abilities.temporal_echo.name': '시간의 메아리',
+  'entities.abilities.temporal_echo.description':
+    '더 건강했던 순간의 메아리로 아군에게 표식을 남겨 즉시 생명력을 {damage} 회복시킵니다. {duration}초 동안 당신이 입힌 비전 피해의 일부가 메아리를 통해 그 아군을 치유합니다.',
+  'entities.abilities.aura_surge.name': '여명의 도탄',
+  'entities.abilities.aura_surge.description':
+    '여명으로 벼린 방패를 던져 {damage}의 신성 피해를 입히고 주 대상을 2초 동안 침묵시킨 뒤, 10미터 안의 추가 적 최대 2명에게 튕기며 도탄마다 75%의 피해를 입힙니다. (성기사 특성)',
+  'entities.abilities.aspect_of_the_wild.description':
+    '30미터 안의 아군에게 야생의 힘을 불어넣어 5분 동안 공격력을 45, 공격 속도를 5%만큼 증가시킵니다. (사냥꾼 특성)',
+  'entities.abilities.avenging_wrath.description':
+    '응징의 힘을 불러내 20초 동안 공격력을 60, 주문력을 30만큼 증가시킵니다. (성기사 특성)',
+  'entities.abilities.berserk.description':
+    '15초 동안 공격력을 70만큼 증가시킵니다. (드루이드 특성)',
+  'entities.abilities.blink.description':
+    '전방 15미터로 순간이동하고 이동 불가 효과를 해제합니다. (마법사 특성)',
+  'entities.abilities.bloodlust.description':
+    '30미터 안의 아군을 광분시켜 15초 동안 공격 속도를 30%만큼 증가시킵니다. (주술사 특성)',
+  'entities.abilities.chain_lightning.description':
+    '대상 지역에 번개를 내리쳐 주위 적에게 {damage}의 피해를 입힙니다. (주술사 특성)',
+  'entities.abilities.chaos_bolt.description':
+    '혼돈의 불꽃 화살을 던져 {damage}의 화염 피해를 입힙니다. (흑마법사 특성)',
+  'entities.abilities.cloak_of_shadows.description':
+    '어둠으로 몸을 감싸 5초 동안 420의 피해를 흡수합니다. (도적 특성)',
+  'entities.abilities.curse_of_exhaustion.description':
+    '대상을 저주해 12초 동안 이동 속도를 30%만큼 감소시킵니다. (흑마법사 특성)',
+  'entities.abilities.death_coil.description':
+    '적에게 {damage}의 암흑 피해를 입힌 뒤 3초 동안 공포에 빠뜨립니다. (흑마법사 특성)',
+  'entities.abilities.desperate_prayer.description':
+    '즉시 생명력을 {damage}만큼 회복합니다. (사제 특성)',
+  'entities.abilities.deterrence.description':
+    '10초 동안 회피 확률을 50%포인트 증가시킵니다. (사냥꾼 특성)',
+  'entities.abilities.divine_shield.description':
+    '신성한 힘으로 자신을 보호해 8초 동안 900의 피해를 흡수합니다. (성기사 특성)',
+  'entities.abilities.earthbind.description':
+    '주위 적을 대지에 묶어 2초 동안 이동하지 못하게 합니다. (주술사 특성)',
+  'entities.abilities.evocation.description': '마나를 빠르게 회복합니다. (마법사 특성)',
+  'entities.abilities.frenzied_regeneration.description':
+    '10초에 걸쳐 생명력을 180 회복합니다. 곰 변신 상태에서만 사용할 수 있습니다. (드루이드 특성)',
+  'entities.abilities.frost_trap.description':
+    '대상 지역의 적을 3초 동안 얼려 이동하거나 행동하지 못하게 합니다. (사냥꾼 특성)',
+  'entities.abilities.ghostly_strike.description':
+    '적에게 무기 피해에 {damage}를 더한 피해를 입히고, 잠시 회피를 증가시키며 연계 점수 1점을 얻습니다. (도적 특성)',
+  'entities.abilities.hammer_of_wrath.description':
+    '부상당한 적에게 신성한 망치를 던져 {damage}의 신성 피해를 입힙니다. 생명력이 20% 미만일 때만 사용할 수 있습니다. (성기사 특성)',
+  'entities.abilities.healing_stream.description':
+    '12초에 걸쳐 아군 대상의 생명력을 120 회복합니다. (주술사 특성)',
+  'entities.abilities.holy_wrath.description':
+    '신성한 힘을 방출해 주위 적에게 {damage}의 피해를 입힙니다. (성기사 특성)',
+  'entities.abilities.howl_of_terror.description':
+    '주위 적을 최대 3초 동안 공포에 빠뜨립니다. 피해를 받으면 효과가 해제될 수 있습니다. (흑마법사 특성)',
+  'entities.abilities.ice_block.description':
+    '자신을 얼음 속에 가두어 엄청난 피해를 흡수합니다. 8초 동안 지속됩니다. (마법사 특성)',
+  'entities.abilities.inner_focus.description':
+    '다음 주문을 자원 소모 없이 사용합니다. 60초 동안 지속됩니다. (사제 특성)',
+  'entities.abilities.innervate.description':
+    '생명의 수액이 10초 동안 차올라 현재 자원을 파도처럼 20 회복합니다. 마나, 분노, 기력에 적용되며 변신해도 끊기지 않습니다. 수면, 기절, 정지 상태에서는 수액이 멈춥니다. (드루이드 특성)',
+  'entities.abilities.mend_pet.name': '응급처치',
+  'entities.abilities.mend_pet.description':
+    '15초에 걸쳐 아군 대상을 {damage}만큼 치유합니다. (사냥꾼 특성)',
+  'entities.abilities.meteor.description':
+    '대상 지역에 운석을 떨어뜨려 {damage}의 화염 피해를 입힌 뒤, 그곳의 적에게 6초 동안 2초마다 12에서 18의 화염 피해를 입힙니다. (마법사 특성)',
+  'entities.abilities.mind_sear.description':
+    '대상 지역에 암흑 에너지를 집중해 주위 적에게 매초 {damage}의 피해를 입힙니다. (사제 특성)',
+  'entities.abilities.multi_shot.description':
+    '대상 지역에 화살을 흩뿌려 8미터 안의 적에게 {damage}의 물리 피해를 입힙니다. (사냥꾼 특성)',
+  'entities.abilities.prayer_of_healing.description':
+    '주위 아군의 생명력을 {damage}만큼 회복합니다. (사제 특성)',
+  'entities.abilities.preparation.description':
+    '질주, 회피, 소멸의 재사용 대기시간을 완료합니다. (도적 특성)',
+  'entities.abilities.presence_of_mind.description':
+    '시전 시간이 있는 다음 주문을 즉시 시전합니다. 60초 동안 지속됩니다. (마법사 특성)',
+  'entities.abilities.psychic_scream.description':
+    '주위 적을 최대 4초 동안 공포에 빠뜨립니다. 피해를 받으면 효과가 해제될 수 있습니다. (사제 특성)',
+  'entities.abilities.shadowstep.description': '그림자를 가로질러 대상에게 다가갑니다. (도적 특성)',
+  'entities.abilities.tranquility.description':
+    '4초 동안 회복 에너지를 집중해 30미터 안의 아군을 매초 42에서 52만큼 치유합니다. (드루이드 특성)',
+  'hudChrome.auraEffect.combustionCrit': '화염 주문이 항상 치명타로 적중합니다',
+  'hudChrome.auraEffect.overloadNext': '다음 주문이 {pct}% 강화되지만 마나 소모가 50% 증가합니다',
+  'hudChrome.auraEffect.powerEchoNext':
+    '다음 직접 주문이 같은 대상에게 {pct}%의 위력으로 반복됩니다',
+  'hudChrome.auraEffect.iceFloesCasts': '다음 {n}개의 시전 주문을 이동하면서 시전할 수 있습니다',
+  'hudChrome.auraEffect.freeCast': '다음 시전에 자원이 들지 않습니다',
+  'hudChrome.auraEffect.instantCast': '시전 시간이 있는 다음 주문이 즉시 시전됩니다',
+  'hudChrome.auraEffect.cheapCast': '다음 주문의 소모량이 {pct}% 감소합니다',
+  'hudChrome.auraEffect.increase.sp': '주문력을 {value} 증가시킵니다',
+  'hudChrome.specPanel.specUnlockBanner': '전문화 해제!',
+  'hudChrome.specPanel.specUnlockHint': 'N을 눌러 전문화를 선택하세요.',
+  'entities.abilities.cone_of_cold.description':
+    '주위 적에게 냉기를 내뿜어 {damage}의 냉기 피해를 입힙니다. (냉기 대표 기술)',
+  'entities.abilities.bladestorm.description':
+    '소용돌이치는 강철의 폭풍이 되어 4초 동안 매초 8미터 이내의 모든 적에게 {damage}의 피해를 입힙니다.',
+  'guide.abilityHook.ice_lance':
+    '냉기 발동 효과를 소모하는 즉시 시전 얼음 파편으로, 얼어붙은 대상에게 훨씬 큰 피해를 줍니다.',
+  'guide.abilityHook.flurry':
+    '얼음 화살 세 발을 빠르게 날려, 다음 냉기 공격이 대상을 얼어붙은 것으로 간주하게 합니다.',
+  'guide.abilityHook.fingers_of_frost':
+    '냉기 화살이 때때로 얼음창을 강화해 대상을 얼어붙은 것으로 간주하게 합니다.',
+  'guide.abilityHook.brain_freeze':
+    '냉기 화살이 때때로 다음 진눈깨비를 즉시 시전하게 하고 피해를 증가시킵니다.',
+  'guide.abilityHook.shatter': '얼어붙은 대상에 대한 주문의 치명타 확률이 크게 증가합니다.',
+  'guide.abilityHook.frozen_orb':
+    '느리게 움직이는 얼음 구슬을 적 무리에 굴려, 주변을 얼리고 냉기 발동 효과를 생성합니다.',
+  'guide.abilityHook.blizzard':
+    '지역을 얼음으로 뒤덮어 적 무리에게 피해를 주고 이동 속도를 감소시킵니다.',
+  'guide.abilityHook.blink': '짧은 거리를 앞으로 순간이동하며 이동 불가 효과를 해제합니다.',
+  'hud.pet.waterJet': '물 분사',
+  'hud.pet.waterJetTitle': '물 분사',
+  'hud.pet.waterJetDesc':
+    '물의 정령에게 3초 동안 적을 느리게 하는 물줄기를 집중하도록 명령합니다. 재사용 대기시간은 8초입니다. 우클릭하면 사용 가능할 때마다 자동 시전합니다.',
+  'entities.abilities.ice_lance.name': '얼음창',
+  'entities.abilities.ice_lance.description':
+    '얼음창을 던져 {damage}의 냉기 피해를 입힙니다. 얼어붙은 대상에게는 피해가 세 배로 증가합니다. 서리의 손가락 또는 혹한의 추위 한 충전을 소모하면 대상을 얼어붙은 것으로 간주합니다. (냉기)',
+  'entities.abilities.flurry.name': '진눈깨비',
+  'entities.abilities.flurry.description':
+    '얼음 화살 세 발을 날려 각각 {damage}의 냉기 피해를 입히고 대상에게 혹한의 추위를 부여합니다. 다음 2회의 호환 주문은 대상을 얼어붙은 것으로 간주합니다. 두뇌 빙결이 발동하면 즉시 시전되고 피해가 30% 증가하며 재사용 대기시간을 무시합니다. (냉기)',
+  'entities.abilities.frozen_orb.name': '얼어붙은 구슬',
+  'entities.abilities.frozen_orb.description':
+    '소용돌이치는 얼음 구슬을 방출해 8초 동안 전방으로 이동시킵니다. 주변 적에게 매초 {damage}의 냉기 피해를 입히고 이동 속도를 30% 감소시킵니다. 적중할 때마다 서리의 손가락을 생성합니다. (냉기)',
+  'entities.abilities.blizzard.name': '눈보라',
+  'entities.abilities.blizzard.description':
+    '대상 지역에 6초 동안 얼음 폭풍을 불러 매초 {damage}의 냉기 피해를 입히고 적의 이동 속도를 40% 감소시킵니다. 적 한 명에게 적중할 때마다 얼어붙은 구슬의 재사용 대기시간이 0.5초, 한 번 시전할 때 최대 3초 감소합니다. (냉기)',
+  'entities.abilities.glacial_spike.name': '혹한의 쐐기',
+  'entities.abilities.glacial_spike.description':
+    '거대한 얼음 쐐기를 만들어 고드름 5개를 소모하고 {damage}의 냉기 피해를 입히며 대상을 4초 동안 제자리에 얼립니다. (냉기)',
+  'entities.abilities.glacial_front.name': '빙하 전선',
+  'entities.abilities.glacial_front.description':
+    '길게 눌러 점점 넓어지는 냉기 전선을 모은 뒤 전방 부채꼴로 방출합니다. 오래 충전할수록 더 멀리 닿고 피해가 증가합니다. 적중한 모든 적의 이동 속도를 4초 동안 50% 감소시키며, 최대 충전 시 1초 동안 이동 불가 상태로 만듭니다. (냉기)',
+  'entities.abilities.dragons_breath.name': '용의 숨결',
+  'entities.abilities.dragons_breath.description':
+    '길게 눌러 점점 넓어지는 화염 숨결을 모은 뒤 전방 부채꼴로 방출합니다. 오래 충전할수록 더 멀리 닿고 피해가 증가합니다. 적중한 적은 혼란에 빠지며 피해를 받으면 효과가 해제됩니다. 최대 충전 시 항상 치명타로 적중하고 몰아치는 열기 조건에 한 번 반영됩니다. (화염)',
+  'entities.abilities.fingers_of_frost.name': '서리의 손가락',
+  'entities.abilities.fingers_of_frost.description':
+    '서리끝 창이 15% 확률로 서리의 손가락을 부여합니다. 최대 2회 충전됩니다. 다음 얼음창은 대상을 얼어붙은 것으로 간주합니다. (냉기)',
+  'entities.abilities.brain_freeze.name': '두뇌 빙결',
+  'entities.abilities.brain_freeze.description':
+    '서리끝 창이 20% 확률로 다음 진눈깨비를 즉시 시전하게 하고 피해를 30% 증가시키며 재사용 대기시간을 무시하게 합니다. (냉기)',
+  'entities.abilities.shatter.name': '산산조각',
+  'entities.abilities.shatter.description':
+    '얼어붙은 대상에 대한 주문의 치명타 확률이 50% 증가하고, 해당 치명타의 피해가 20% 증가합니다. 서리의 손가락과 혹한의 추위도 대상을 얼어붙은 것으로 간주합니다. (냉기)',
+  'entities.abilities.temporal_cascade.name': '시간의 연쇄',
+  'entities.abilities.temporal_cascade.description':
+    '시간의 메아리를 파티에 연쇄시켜 대상과 가장 가까운 아군 최대 네 명을 즉시 치유하고 각각에게 {duration}초 동안 징표를 남깁니다. 자신이 입힌 비전 피해의 일부가 메아리를 타고 돌아와 징표가 있는 아군을 치유합니다. (시간술)',
+  'entities.abilities.temporal_reversal.name': '시간 역전',
+  'entities.abilities.temporal_reversal.description':
+    '쓰러진 아군의 시간선을 되돌려, 전투 중에도 시체가 있는 자리에서 생명력과 마나의 일부를 지닌 채 되살립니다. (시간술)',
+  'entities.abilities.temporal_rewind.name': '되감기',
+  'entities.abilities.temporal_rewind.description':
+    '파티 또는 공격대에 비전 파동을 보내 시간을 되감습니다. 40미터 내 각 아군이 지난 5초 동안 받은 피해의 30%를 회복시킵니다(최대 생명력의 35%까지). 이 효과는 치명타로 발동하지 않습니다. (시간술)',
+  'entities.abilities.temporal_acceleration.name': '시간 가속',
+  'entities.abilities.temporal_acceleration.description':
+    '파티 또는 공격대의 시간 흐름을 가속해 15초 동안 공격, 시전 및 정신 집중 속도를 30% 증가시킵니다. 최근 시간 가속 또는 피의 욕망 효과를 받은 아군은 지쳐 있어 혜택을 받지 못합니다. (시간술)',
+  'entities.abilities.perfect_moment.name': '완벽한 순간',
+  'entities.abilities.perfect_moment.description':
+    '완벽한 순간을 붙잡아 즉시 비전 충전 4개를 얻습니다. 10초 동안 에테르 화살이 충전을 소모하지 않습니다. (시간술)',
+  'entities.abilities.arcane_surge.name': '에테르 쇄도',
+  'entities.abilities.arcane_surge.description':
+    '적에게 순수한 비전 마력을 흘려보내 {damage}의 피해를 입힙니다. 시전할 때마다 비전 충전이 남아 다음 에테르 쇄도의 피해와 시전 속도가 증가하지만(충전당 5% 빨라짐), 마나 소모량도 크게 증가합니다. 최대 4회 중첩됩니다. 에테르 화살은 충전을 소모합니다. 또한 시전할 때 에테르 질주가 준비되어 다음 에테르 쇄도의 마나 소모가 사라지고 시전 속도가 두 배가 될 수 있습니다.',
+  'entities.items.conjured_bread4.name': '창조된 연회빵',
+  'entities.items.conjured_water4.name': '창조된 샘물',
+  'entities.abilities.blazing_barrier.name': '이글거리는 방벽',
+  'entities.abilities.blazing_barrier.description':
+    '자신을 불길로 감싸 130의 피해를 흡수합니다. 60초 동안 지속됩니다. (화염)',
+  'entities.abilities.cold_snap.name': '매서운 한파',
+  'entities.abilities.cold_snap.description':
+    '깜빡임 걸음, 서리장막 및 상급 투명화의 재사용 대기시간을 즉시 초기화합니다. (마법사 특성)',
+  'entities.abilities.greater_invisibility.name': '상급 투명화',
+  'entities.abilities.greater_invisibility.description':
+    '20초 동안 모습을 감춥니다. 지속 피해 효과 2개를 제거하고 투명 상태인 동안과 해제 직후 받는 피해가 90% 감소합니다. (마법사 특성)',
+  'entities.abilities.hot_streak.name': '몰아치는 열기',
+  'entities.abilities.hot_streak.description':
+    '지속 효과: 화염 주문(화염구, 화염 작렬, 불태우기, 불덩이 작렬 또는 불기둥)으로 연속 두 번 치명타를 적중시키면 다음 불덩이 작렬 또는 불기둥이 즉시 시전되고 마나를 소모하지 않습니다. 소모 주문은 무료 시전을 포함해 다음 연속 발동 조건에 포함됩니다. 불기둥은 적중한 적의 수와 관계없이 한 번만 계산되며 최초 충격만 조건에 포함됩니다. (화염)',
+  'entities.abilities.ice_floes.name': '얼음발',
+  'entities.abilities.ice_floes.description':
+    '다음 시전 시간이 있는 주문 2개를 이동 중에 시전할 수 있습니다. 15초 동안 지속됩니다. (마법사 특성)',
+  'entities.abilities.ignition.name': '점화',
+  'entities.abilities.ignition.description':
+    '지속 효과: 주문이 치명타로 적중하면 대상을 불태워 6초에 걸쳐 입힌 피해의 40%만큼 피해를 줍니다. 효과는 중첩됩니다. (화염 특화)',
+  'entities.abilities.mass_barrier.name': '대규모 방벽',
+  'entities.abilities.mass_barrier.description':
+    '자신과 30미터 내에 있는 가까운 아군 최대 4명에게 각각 130의 피해를 흡수하는 보호막을 60초 동안 부여합니다. (마법사 특성)',
+  'entities.abilities.overload.name': '과부하',
+  'entities.abilities.overload.description':
+    '다음 주문의 효과가 40% 증폭되지만 마나 소모량이 50% 증가합니다. 10초 동안 지속됩니다. (마법사 특성)',
+  'entities.abilities.power_echo.name': '힘의 메아리',
+  'entities.abilities.power_echo.description':
+    '다음 직접 주문이 같은 대상에게 50%의 위력으로 반복됩니다. 10초 동안 지속됩니다. (마법사 특성)',
+  'entities.abilities.rings_of_frost.name': '서리 고리',
+  'entities.abilities.rings_of_frost.description':
+    '10초 동안 지속되는 고리를 소환합니다. 경계를 넘어가는 적은 4초 동안 얼어붙습니다. (마법사 특성)',
+  'entities.abilities.rune_of_power.name': '마력의 룬',
+  'entities.abilities.rune_of_power.description':
+    '발밑에 15초 동안 지속되는 마력의 룬을 새깁니다. 8미터 내에 서 있는 아군이 입히는 피해가 10% 증가합니다. (마법사 특성)',
+  'entities.abilities.summon_water_elemental.name': '물의 정령 소환',
+  'entities.abilities.summon_water_elemental.description':
+    '함께 싸우는 물의 정령을 소환합니다. 대상에게 물화살을 던지고 물 분사를 집중합니다. (냉기)',
+  'entities.mobs.water_elemental.name': '물의 정령',
 };

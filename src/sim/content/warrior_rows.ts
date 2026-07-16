@@ -180,7 +180,8 @@ export const WARRIOR_ROWS: RowTree = [
       {
         id: 'war_row_colossal_might',
         name: 'Colossal Might',
-        description: 'Rage you spend reduces the cooldown of your major offensive abilities.',
+        description:
+          'Each point of Rage you spend shaves 0.1 sec off the cooldown of your major offensive abilities.',
         // LIVE: spendAbilityCost shaves the big offensive cooldowns per rage spent.
         effect: { global: { cdrPerRage: 0.1 } },
       },

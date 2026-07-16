@@ -23,8 +23,12 @@ import { COMMAND_NAMES, type CommandName, DISPATCH_ONLY_COMMANDS } from '../src/
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
 
 // Verified counts on the current tree (re-derived below; never trust stale prose).
-const EXPECTED_SEND_COUNT = 148; // +Season 1 Armory skin, ignore_add/ignore_remove, stow_weapon, Dungeon Finder, inv_move, canonical Talent V2 row selection
-const EXPECTED_DISPATCH_COUNT = 157; // +Season 1 Armory skin, ignore_add/ignore_remove, stow_weapon, Dungeon Finder, inv_move, canonical Talent V2 row selection
+// Merged union: the Talent V2 row-selection surface (selectTalentRow supersedes the
+// mage line's pickRowTalent) plus the mage line's empowered-cast release and pet
+// Water Jet commands, on top of Season 1 Armory skin, ignore_add/ignore_remove,
+// stow_weapon, Dungeon Finder, and inv_move.
+const EXPECTED_SEND_COUNT = 151;
+const EXPECTED_DISPATCH_COUNT = 160;
 const EXPECTED_DISPATCH_ONLY_COUNT = 9;
 
 // The chat sub-channel routing switch (server/game.ts `switch

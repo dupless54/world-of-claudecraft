@@ -93,13 +93,13 @@ function broadcast(server: GameServer): void {
 }
 
 // A ClientWorld without the WebSocket plumbing, to drive applySnapshot directly.
-function bareClient(pid: number): ClientWorld {
+function bareClient(pid: number, playerClass: PlayerClass = 'warrior'): ClientWorld {
   const c: any = Object.create(ClientWorld.prototype);
-  c.cfg = { seed: 20061, playerClass: 'warrior' };
+  c.cfg = { seed: 20061, playerClass };
   c.entities = new Map();
   c.playerId = pid;
   c.ownPlayerId = pid;
-  c.ownPlayerClass = 'warrior';
+  c.ownPlayerClass = playerClass;
   c.spectating = null;
   c.cupInfo = null;
   c.sportRole = null;
@@ -199,6 +199,55 @@ describe('self stat wire round-trip', () => {
       pvpOffense: 0,
       pvpDefense: 0,
     });
+  });
+});
+
+describe('self talent wire decode (IWorldTalents facet)', () => {
+  // Ported coverage from the mage-line branch: the client decodes the heavy `tal`
+  // field, repairs the allocation, and re-derives spec/role/known/talentPoints
+  // locally from the mirrored rows (display-only; the server stays authoritative).
+  it('decodes the talent snapshot field and recomputes known from spec plus rows', () => {
+    const client = bareClient(1);
+    const internals = client as unknown as { applySnapshot(snapshot: unknown): void };
+    const snapshotAlloc = {
+      spec: 'prot',
+      rows: { 8: 'war_row_die_by_the_sword', 17: 'war_row_recklessness' },
+    };
+    internals.applySnapshot({
+      t: 'snap',
+      ents: [],
+      self: {
+        id: 1,
+        k: 'player',
+        tid: 'warrior',
+        nm: 'Tank',
+        lv: 20,
+        x: 0,
+        y: 0,
+        z: 0,
+        f: 0,
+        hp: 100,
+        mhp: 100,
+        res: 0,
+        mres: 100,
+        rtype: 'rage',
+        tal: {
+          alloc: snapshotAlloc,
+          loadouts: [{ name: 'MT', alloc: { spec: null, rows: {} }, bar: [] }],
+          activeLoadout: 0,
+        },
+      },
+    });
+    expect(client.talents).toEqual(snapshotAlloc);
+    expect(client.talentSpec).toBe('prot');
+    expect(client.talentRole).toBe('tank'); // derived from the prot mastery, not the wire
+    expect(client.loadouts.length).toBe(1);
+    expect(client.activeLoadout).toBe(0);
+    // known is re-derived locally: the prot signature plus the two row grants.
+    expect(client.known.some((k) => k.def.id === 'shield_slam')).toBe(true);
+    expect(client.known.some((k) => k.def.id === 'die_by_sword')).toBe(true);
+    expect(client.known.some((k) => k.def.id === 'recklessness')).toBe(true);
+    expect(client.talentPoints()).toEqual({ total: 6, spent: 2 });
   });
 });
 
@@ -787,6 +836,32 @@ describe('delta snapshots', () => {
     expect(snap.self.inv.some((s: any) => s.itemId === 'baked_bread')).toBe(true);
     expect(snap.self).not.toHaveProperty('qlog');
     expect(snap.self).not.toHaveProperty('stats');
+  });
+
+  it('flushes mage row picks in the next heavy self snapshot', () => {
+    const mageServer = new GameServer();
+    const mageFc = fakeWs();
+    const mage = joinServer(mageServer, mageFc, 9, 'Rowwire', 'mage');
+    mageServer.sim.setPlayerLevel(5, mage.pid);
+
+    broadcast(mageServer);
+    const client = bareClient(mage.pid, 'mage');
+    (client as any).applySnapshot(lastSnap(mageFc.sent));
+    mageFc.sent.length = 0;
+    broadcast(mageServer);
+    expect(lastSnap(mageFc.sent).self).not.toHaveProperty('tal');
+
+    mageFc.sent.length = 0;
+    mageServer.handleMessage(
+      mage,
+      JSON.stringify({ t: 'cmd', cmd: 'selectTalentRow', level: 5, optionId: 'mag_r5_ice_floes' }),
+    );
+    broadcast(mageServer);
+
+    const snap = lastSnap(mageFc.sent);
+    expect(snap.self.tal.alloc).toEqual({ spec: null, rows: { 5: 'mag_r5_ice_floes' } });
+    (client as any).applySnapshot(snap);
+    expect(client.talents).toEqual({ spec: null, rows: { 5: 'mag_r5_ice_floes' } });
   });
 
   it('resends equip + inv on the next snapshot after an online unequip', () => {
@@ -1614,6 +1689,29 @@ describe('client-side delta merge', () => {
       mirrored?.find((a) => a.id === 'battle_shout')?.sourceId,
       'an omitted src decodes to 0',
     ).toBe(0);
+  });
+
+  it('round-trips next-cast empowerment scope for online action-bar glows', () => {
+    const sim = new Sim({ seed: 7, playerClass: 'priest', autoEquip: true });
+    const e = sim.entities.get(sim.playerId)!;
+    e.auras.push({
+      id: 'pri_searing_light',
+      name: 'Searing Light',
+      kind: 'next_cast_free',
+      remaining: 8,
+      duration: 8,
+      value: 0,
+      sourceId: e.id,
+      school: 'holy',
+      empowerAbilities: ['smite'],
+    });
+    const w = wireEntity(e) as { auras: { id: string; emp?: string[] }[] };
+    expect(w.auras.find((a) => a.id === 'pri_searing_light')?.emp).toEqual(['smite']);
+
+    const client = bareClient(e.id + 1000);
+    (client as any).applySnapshot({ t: 'snap', ents: [w] });
+    const aura = client.entities.get(e.id)?.auras.find((a) => a.id === 'pri_searing_light');
+    expect(aura?.empowerAbilities).toEqual(['smite']);
   });
 
   it('snaps the interpolation anchor on a teleport but tweens normal moves', () => {
@@ -2498,16 +2596,18 @@ describe('lockpick view rebuilds from events on the online client', () => {
 // while the prior decoded value is preserved.
 // ---------------------------------------------------------------------------
 
-// The pinned set of the 44 `maybe(...)` delta keys, sorted. Cross-checked below
+// The pinned set of the 47 `maybe(...)` delta keys, sorted. Cross-checked below
 // against the live `maybe(...)` calls scraped from server/game.ts source, so a
-// 45th unregistered delta key reddens this gate.
+// 47th unregistered delta key reddens this gate.
 const ALL_DELTA_KEYS = [
+  'achg',
   'arena',
   'atitle',
   'bags',
   'bank',
   'buyback',
   'cds',
+  'chg',
   'corpse',
   'cosmetics',
   'dclears',
@@ -2557,6 +2657,7 @@ const ALL_DELTA_KEYS = [
 // delta key whose IWorld name differs from its terse key (stats/weapon/delveDaily
 // keep their name; tal fans out to several members and is asserted directly).
 const TERSE_TO_IWORLD: Record<string, string> = {
+  achg: 'abilityCharges',
   arena: 'arenaInfo',
   atitle: 'activeTitle',
   bags: 'bags',
@@ -2716,6 +2817,10 @@ function dirtyEveryDeltaField(): {
 
   // Player Entity fields.
   p.cooldowns.set('heroic_strike', 5);
+  p.charges = new Map([['charge', { spent: 1, cdMax: 15 }]]);
+  p.abilityCharges = {
+    ice_block: { charges: 1, maxCharges: 2, recharge: 10, rechargeLength: 240 },
+  };
   p.stats = { ...p.stats, str: 12345, pvpOffense: 0.17, pvpDefense: 0.13 };
   p.weapon = { ...p.weapon, min: 999 };
   p.resource = 42;
@@ -2769,11 +2874,13 @@ describe('full self-state snapshot delta fixture', () => {
 
     // --- fields that decode onto the player ENTITY (client.player), not the client ---
     expect(client.player.cooldowns.get('heroic_strike')).toBe(5); // cds -> e.cooldowns
+    expect(client.player.charges?.get('charge')?.spent).toBe(1); // chg -> e.charges
+    expect(client.player.abilityCharges?.ice_block?.charges).toBe(1); // achg -> e.abilityCharges
     expect(client.player.stats).toMatchObject({
       str: 12345,
       pvpOffense: 0.17,
       pvpDefense: 0.13,
-    }); // stats (legacy-safe object replacement)
+    }); // stats (inline s.X ?? e.X, legacy-safe object replacement)
     expect(client.player.weapon).toMatchObject({ min: 999 }); // weapon (inline s.X ?? e.X)
     expect(client.player.resource).toBe(42); // res -> resource
     expect(client.player.maxResource).toBe(150); // mres -> maxResource
@@ -2938,9 +3045,9 @@ describe('gather node cooldown wire round trip (ncd)', () => {
 });
 
 describe('delta-key contract pins (anti-drift)', () => {
-  it('ALL_DELTA_KEYS contains exactly 45 unique keys in sorted order', () => {
-    expect(ALL_DELTA_KEYS).toHaveLength(45);
-    expect(new Set(ALL_DELTA_KEYS).size).toBe(45);
+  it('ALL_DELTA_KEYS contains exactly 47 unique keys in sorted order', () => {
+    expect(ALL_DELTA_KEYS).toHaveLength(47);
+    expect(new Set(ALL_DELTA_KEYS).size).toBe(47);
     expect([...ALL_DELTA_KEYS]).toEqual([...ALL_DELTA_KEYS].sort());
   });
 
@@ -2952,7 +3059,7 @@ describe('delta-key contract pins (anti-drift)', () => {
     const scraped = new Set<string>();
     for (let m = re.exec(src); m !== null; m = re.exec(src)) scraped.add(m[1]);
     expect(scraped.has('lockouts')).toBe(true); // the multi-line call IS captured
-    expect(scraped.size).toBe(45);
+    expect(scraped.size).toBe(47);
     expect([...scraped].sort()).toEqual([...ALL_DELTA_KEYS].sort());
   });
 
@@ -3453,5 +3560,55 @@ describe('client mirror of the server tick rate', () => {
       (client as any).applySnapshot({ t: 'snap', tickHz: junk, ents: [] });
     }
     expect(client.serverTickHz).toBe(20);
+  });
+});
+
+describe('Ring of Frost snapshot parity', () => {
+  it('mirrors authoritative active rings and clears zones missing from the next snapshot', () => {
+    const client = bareClient(1);
+    (client as any).applySnapshot({
+      t: 'snap',
+      ents: [],
+      rings: [{ id: '1:20', x: 3, z: 5, r: 6, i: 4.5, dur: 10, rem: 7.25 }],
+    });
+    expect(client.activeFrostRings).toEqual([
+      { id: '1:20', x: 3, z: 5, radius: 6, innerRadius: 4.5, duration: 10, remaining: 7.25 },
+    ]);
+
+    (client as any).applySnapshot({ t: 'snap', ents: [] });
+    expect(client.activeFrostRings).toEqual([]);
+  });
+
+  it('interest-scopes active rings with their server-authored remaining lifetime', () => {
+    const server = new GameServer();
+    const fc = fakeWs();
+    const session = joinServer(server, fc, 1, 'Frostwire', 'mage');
+    const caster = server.sim.entities.get(session.pid)!;
+    (server.sim as any).groundAoEs.push({
+      sourceId: caster.id,
+      pos: { x: caster.pos.x + 4, y: caster.pos.y, z: caster.pos.z },
+      radius: 6,
+      min: 0,
+      max: 0,
+      remaining: 7.5,
+      interval: 10,
+      tickTimer: 10,
+      school: 'frost',
+      ability: 'Ring of Frost',
+      frostRing: {
+        id: `${caster.id}:10`,
+        abilityId: 'rings_of_frost',
+        duration: 10,
+        freezeDuration: 4,
+        innerRadius: 4.5,
+        triggeredIds: new Set<number>(),
+      },
+    });
+
+    broadcast(server);
+
+    expect(lastSnap(fc.sent).rings).toEqual([
+      expect.objectContaining({ id: `${caster.id}:10`, r: 6, i: 4.5, dur: 10, rem: 7.5 }),
+    ]);
   });
 });

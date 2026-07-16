@@ -158,12 +158,6 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Högvakts storsvärd',
   'entities.items.highwatch_wallshield.name': 'Högvakts mursköld',
   'entities.items.eastbrook_buckler.name': 'Östbäcks rundsköld',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Förvandla dig till en koloss i 20 sek., bryt alla kontrolleffekter på dig och öka din utdelade skada med 20%.',
-  'entities.abilities.bladestorm.name': 'Klingstorm',
-  'entities.abilities.bladestorm.description':
-    'Bli en virvlande storm av stål och träffa alla fiender inom 8 meter för {damage} skada varje sekund i 4 sek.',
   'entities.abilities.battle_stance.description':
     'En aggressiv stridsställning: du genererar 10 % mer raseri. Standardställningen för Vapen och Beskydd.',
   'entities.abilities.battle_stance.name': 'Stridsställning',
@@ -264,115 +258,42 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Val',
   'hudChrome.talentRows.readoutSummary': 'Talanger: {head}, {spent}/{total} rader valda.',
   'entities.abilities.aspect_of_the_wild.name': 'Vildtands skepnad',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Inspirerar allierade inom 30 m med vild kraft och ökar deras attackkraft med 45 och attackhastighet med 5 % i 5 min. (jägartalang)',
-  'entities.abilities.aura_surge.name': 'Gryningsrikoschett',
-  'entities.abilities.aura_surge.description':
-    'Slungar en gryningssmidd sköld för {damage} Helig skada, tystar huvudmålet i 2 sek. och studsar sedan till upp till 2 ytterligare fiender inom 10 meter för 75% skada per studs. (Paladintalang)',
   'entities.abilities.avenging_wrath.name': 'Hämndvinge',
-  'entities.abilities.avenging_wrath.description':
-    'Åkallar hämnande kraft och ökar din attackkraft med 60 och besvärjelsekraft med 30 i 20 sek. (paladintalang)',
   'entities.abilities.berserk.name': 'Röd dimma',
-  'entities.abilities.berserk.description': 'Ökar din attackkraft med 70 i 15 sek. (druidtalang)',
   'entities.abilities.blink.name': 'Flimmersteg',
-  'entities.abilities.blink.description':
-    'Teleporterar dig 15 m framåt och bryter rotningseffekter. (magikertalang)',
   'entities.abilities.bloodlust.name': 'Krigstrummor',
-  'entities.abilities.bloodlust.description':
-    'Driver allierade inom 30 m till raseri och ökar deras attackhastighet med 30 % i 15 sek. (schamantalang)',
   'entities.abilities.chain_lightning.name': 'Gaffelblixt',
-  'entities.abilities.chain_lightning.description':
-    'Slungar blixtar mot målområdet och ger {damage} skada till fiender i närheten. (schamantalang)',
   'entities.abilities.chaos_bolt.name': 'Fördärvsbult',
-  'entities.abilities.chaos_bolt.description':
-    'Slungar en kaotisk eldblixt som ger {damage} Eldskada. (häxmästartalang)',
   'entities.abilities.cloak_of_shadows.name': 'Skuggmantel',
-  'entities.abilities.cloak_of_shadows.description':
-    'Sveper in dig i skuggor och absorberar 420 skada i 5 sek. (skurktalang)',
   'entities.abilities.cone_of_cold.name': 'Frostsvep',
-  'entities.abilities.cone_of_cold.description':
-    'Träffar fiender i närheten med frost och ger {damage} Frostskada. (Frost-signaturförmåga)',
   'entities.abilities.curse_of_exhaustion.name': 'Blytung förbannelse',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Förbannar målet och minskar dess rörelsehastighet med 30 % i 12 sek. (häxmästartalang)',
   'entities.abilities.death_coil.name': 'Gravspiral',
-  'entities.abilities.death_coil.description':
-    'Träffar fienden för {damage} Skuggskada och skrämmer den sedan i 3 sek. (häxmästartalang)',
   'entities.abilities.deep_freeze.name': 'Dödfrost',
-  'entities.abilities.deep_freeze.description':
-    'Djupfryser målet, ger {damage} Frostskada och bedövar det i 4 sek. (magikertalang)',
   'entities.abilities.desperate_prayer.name': 'Sista bön',
-  'entities.abilities.desperate_prayer.description':
-    'Helar dig omedelbart för {damage}. (prästtalang)',
   'entities.abilities.deterrence.name': 'Borstvakt',
-  'entities.abilities.deterrence.description':
-    'Ökar din chans att undvika med 50 procentenheter i 10 sek. (jägartalang)',
   'entities.abilities.divine_shield.name': 'Ljusvärn',
-  'entities.abilities.divine_shield.description':
-    'Skyddar dig med helig kraft och absorberar 900 skada i 8 sek. (paladintalang)',
   'entities.abilities.earthbind.name': 'Gripande jord',
-  'entities.abilities.earthbind.description':
-    'Binder fiender i närheten till marken och rotar dem i 2 sek. (schamantalang)',
   'entities.abilities.evocation.name': 'Eterbrunn',
-  'entities.abilities.evocation.description': 'Återställer omedelbart 220 mana. (magikertalang)',
   'entities.abilities.frenzied_regeneration.name': 'Vild läkning',
-  'entities.abilities.frenzied_regeneration.description':
-    'Återställer 180 hälsa under 10 sek. Endast i Björngestalt. (druidtalang)',
   'entities.abilities.frost_trap.name': 'Rimfälla',
-  'entities.abilities.frost_trap.description':
-    'Fryser fiender i målområdet i 3 sek. så att de varken kan röra sig eller agera. (jägartalang)',
   'entities.abilities.ghostly_strike.name': 'Vålnadsslag',
-  'entities.abilities.ghostly_strike.description':
-    'Träffar fienden för vapenskada plus {damage}, ökar undvikandet kortvarigt och ger 1 kombinationspoäng. (skurktalang)',
   'entities.abilities.hammer_of_wrath.name': 'Klingande hammare',
-  'entities.abilities.hammer_of_wrath.description':
-    'Slungar en helig hammare mot en sårad fiende och ger {damage} Helig skada. Kan bara användas under 20 % hälsa. (paladintalang)',
   'entities.abilities.healing_stream.name': 'Källbrunn',
-  'entities.abilities.healing_stream.description':
-    'Återställer 120 hälsa hos ett allierat mål under 12 sek. (schamantalang)',
   'entities.abilities.holy_wrath.name': 'Helgonvrede',
-  'entities.abilities.holy_wrath.description':
-    'Släpper lös helig kraft och ger {damage} skada till fiender i närheten. (paladintalang)',
   'entities.abilities.howl_of_terror.name': 'Skräckyl',
-  'entities.abilities.howl_of_terror.description':
-    'Skrämmer fiender i närheten i upp till 3 sek. Skada kan bryta effekten. (häxmästartalang)',
   'entities.abilities.ice_block.name': 'Kall kista',
-  'entities.abilities.ice_block.description':
-    'Kapslar in dig i is och absorberar 600 skada i 8 sek. Du kan inte agera medan du är inkapslad. Använd igen för att avbryta. (magikertalang)',
   'entities.abilities.inner_focus.name': 'Stillat sinne',
-  'entities.abilities.inner_focus.description':
-    'Gör din nästa besvärjelse kostnadsfri. Varar i 60 sek. (prästtalang)',
   'entities.abilities.innervate.name': 'Livssav',
-  'entities.abilities.innervate.description':
-    'Levande sav väller upp i dig i 10 sek. och återställer 20 av din aktuella resurs i vågor: mana, raseri eller energi. Formbyte avbryter den inte. Sömn, bedövning eller stasis stoppar saven. (druidtalang)',
   'entities.abilities.meteor.name': 'Himmelsten',
-  'entities.abilities.meteor.description':
-    'Kallar ner en meteor på målområdet och ger {damage} Eldskada. Därefter bränns fiender där för 12 till 18 Eldskada varannan sekund i 6 sek. (magikertalang)',
   'entities.abilities.mind_sear.name': 'Tankebrand',
-  'entities.abilities.mind_sear.description':
-    'Kanaliserar skuggenergi mot målområdet och ger {damage} skada varje sekund till fiender i närheten. (prästtalang)',
   'entities.abilities.multi_shot.name': 'Splitterskott',
-  'entities.abilities.multi_shot.description':
-    'Avfyrar en salva mot målområdet och ger {damage} Fysisk skada till fiender inom 8 m. (jägartalang)',
   'entities.abilities.prayer_of_healing.name': 'Körläkning',
-  'entities.abilities.prayer_of_healing.description':
-    'Helar allierade i närheten för {damage}. (prästtalang)',
   'entities.abilities.preparation.name': 'Reservplan',
-  'entities.abilities.preparation.description':
-    'Avslutar nedkylningen för Spurt, Undvikande och Försvinnande. (skurktalang)',
   'entities.abilities.presence_of_mind.name': 'Rusande sinne',
-  'entities.abilities.presence_of_mind.description':
-    'Gör din nästa besvärjelse med kasttid omedelbar. Varar i 60 sek. (magikertalang)',
   'entities.abilities.psychic_scream.name': 'Psykiskt skrik',
-  'entities.abilities.psychic_scream.description':
-    'Skrämmer fiender i närheten i upp till 4 sek. Skada kan bryta effekten. (prästtalang)',
   'entities.abilities.shadowstep.name': 'Skuggkliv',
-  'entities.abilities.shadowstep.description': 'Kliver genom skuggorna mot ditt mål. (skurktalang)',
   'entities.abilities.silence.name': 'Tystnad',
-  'entities.abilities.silence.description': 'Tystar målet i 4 sek. (prästtalang)',
   'entities.abilities.tranquility.name': 'Gläntsång',
-  'entities.abilities.tranquility.description':
-    'Kanaliserar återställande energi i 4 sek. och helar allierade inom 30 m för 42 till 52 varje sekund. (druidtalang)',
   'entities.abilities.cleansing_verdict.name': 'Renande Domslut',
   'entities.abilities.cleansing_verdict.description':
     'Rensar bort en skadlig magisk effekt från ett vänligt mål och helar det med Helig magi för {damage}.',
@@ -7732,4 +7653,130 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Träffar fiender framför dig och kan bli kostnadsfri efter en undvikning eller parering.',
   'guide.abilityHook.hamstring': 'Hämmar en fiendes rörelse så att den inte kan fly.',
+  'entities.abilities.aura_surge.name': 'Gryningsrikoschett',
+  'entities.abilities.aura_surge.description':
+    'Slungar en gryningssmidd sköld för {damage} Helig skada, tystar huvudmålet i 2 sek. och studsar sedan till upp till 2 ytterligare fiender inom 10 meter för 75% skada per studs. (Paladintalang)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Inspirerar allierade inom 30 m med vild kraft och ökar deras attackkraft med 45 och attackhastighet med 5 % i 5 min. (jägartalang)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Förvandla dig till en koloss i 20 sek., bryt alla kontrolleffekter på dig och öka din utdelade skada med 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Åkallar hämnande kraft och ökar din attackkraft med 60 och besvärjelsekraft med 30 i 20 sek. (paladintalang)',
+  'entities.abilities.berserk.description': 'Ökar din attackkraft med 70 i 15 sek. (druidtalang)',
+  'entities.abilities.bladestorm.name': 'Klingstorm',
+  'entities.abilities.bladestorm.description':
+    'Bli en virvlande storm av stål och träffa alla fiender inom 8 meter för {damage} skada varje sekund i 4 sek.',
+  'entities.abilities.blink.description':
+    'Teleporterar dig 15 m framåt och bryter rotningseffekter. (magikertalang)',
+  'entities.abilities.bloodlust.description':
+    'Driver allierade inom 30 m till raseri och ökar deras attackhastighet med 30 % i 15 sek. (schamantalang)',
+  'entities.abilities.chain_lightning.description':
+    'Slungar blixtar mot målområdet och ger {damage} skada till fiender i närheten. (schamantalang)',
+  'entities.abilities.chaos_bolt.description':
+    'Slungar en kaotisk eldblixt som ger {damage} Eldskada. (häxmästartalang)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Sveper in dig i skuggor och absorberar 420 skada i 5 sek. (skurktalang)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a närliggande fiender con escarcha e inflige {damage} de daño de Frost. (magikertalang)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Förbannar målet och minskar dess rörelsehastighet med 30 % i 12 sek. (häxmästartalang)',
+  'entities.abilities.death_coil.description':
+    'Träffar fienden för {damage} Skuggskada och skrämmer den sedan i 3 sek. (häxmästartalang)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a målet, inflige {damage} de daño de Frost y lo aturde durante 4 sek. (magikertalang)',
+  'entities.abilities.desperate_prayer.description':
+    'Helar dig omedelbart för {damage}. (prästtalang)',
+  'entities.abilities.deterrence.description':
+    'Ökar din chans att undvika med 50 procentenheter i 10 sek. (jägartalang)',
+  'entities.abilities.divine_shield.description':
+    'Skyddar dig med helig kraft och absorberar 900 skada i 8 sek. (paladintalang)',
+  'entities.abilities.earthbind.description':
+    'Binder fiender i närheten till marken och rotar dem i 2 sek. (schamantalang)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (magikertalang)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Återställer 180 hälsa under 10 sek. Endast i Björngestalt. (druidtalang)',
+  'entities.abilities.frost_trap.description':
+    'Fryser fiender i målområdet i 3 sek. så att de varken kan röra sig eller agera. (jägartalang)',
+  'entities.abilities.ghostly_strike.description':
+    'Träffar fienden för vapenskada plus {damage}, ökar undvikandet kortvarigt och ger 1 kombinationspoäng. (skurktalang)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Slungar en helig hammare mot en sårad fiende och ger {damage} Helig skada. Kan bara användas under 20 % hälsa. (paladintalang)',
+  'entities.abilities.healing_stream.description':
+    'Återställer 120 hälsa hos ett allierat mål under 12 sek. (schamantalang)',
+  'entities.abilities.holy_wrath.description':
+    'Släpper lös helig kraft och ger {damage} skada till fiender i närheten. (paladintalang)',
+  'entities.abilities.howl_of_terror.description':
+    'Skrämmer fiender i närheten i upp till 3 sek. Skada kan bryta effekten. (häxmästartalang)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 sek. (magikertalang)',
+  'entities.abilities.inner_focus.description':
+    'Gör din nästa besvärjelse kostnadsfri. Varar i 60 sek. (prästtalang)',
+  'entities.abilities.innervate.description':
+    'Levande sav väller upp i dig i 10 sek. och återställer 20 av din aktuella resurs i vågor: mana, raseri eller energi. Formbyte avbryter den inte. Sömn, bedövning eller stasis stoppar saven. (druidtalang)',
+  'entities.abilities.mend_pet.name': 'Lappa ihop',
+  'entities.abilities.mend_pet.description':
+    'Sana a vänligt mål por {damage} durante 15 sek. (jägartalang)',
+  'entities.abilities.meteor.description':
+    'Kallar ner en meteor på målområdet och ger {damage} Eldskada. Därefter bränns fiender där för 12 till 18 Eldskada varannan sekund i 6 sek. (magikertalang)',
+  'entities.abilities.mind_sear.description':
+    'Kanaliserar skuggenergi mot målområdet och ger {damage} skada varje sekund till fiender i närheten. (prästtalang)',
+  'entities.abilities.multi_shot.description':
+    'Avfyrar en salva mot målområdet och ger {damage} Fysisk skada till fiender inom 8 m. (jägartalang)',
+  'entities.abilities.prayer_of_healing.description':
+    'Helar allierade i närheten för {damage}. (prästtalang)',
+  'entities.abilities.preparation.description':
+    'Avslutar nedkylningen för Spurt, Undvikande och Försvinnande. (skurktalang)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 sek. (magikertalang)',
+  'entities.abilities.psychic_scream.description':
+    'Skrämmer fiender i närheten i upp till 4 sek. Skada kan bryta effekten. (prästtalang)',
+  'entities.abilities.shadowstep.description': 'Kliver genom skuggorna mot ditt mål. (skurktalang)',
+  'entities.abilities.silence.description': 'Tystar målet i 4 sek. (prästtalang)',
+  'entities.abilities.tranquility.description':
+    'Kanaliserar återställande energi i 4 sek. och helar allierade inom 30 m för 42 till 52 varje sekund. (druidtalang)',
+  'game.talents.readout.rowsSummary': 'Talanger: {head}, {picked}/{unlocked} valrader valda.',
+  'hudChrome.fct.absorbed': '{amount} absorberat',
+  'game.talents.choicesTab': 'Val',
+  'game.talents.rowUnlockToast': 'Ett nytt talangval har låsts upp!',
+  'game.talents.rowUnlocks': 'Låses upp på nivå {level}',
+  'entities.abilities.blazing_barrier.name': 'Flammande barriär',
+  'entities.abilities.blazing_barrier.description':
+    'Svep in dig i lågor och absorbera 130 skada i 60 sek. (Eld)',
+  'entities.abilities.cold_snap.name': 'Köldknäpp',
+  'entities.abilities.cold_snap.description':
+    'Avslutar nedkylningen för Flimmersteg, Frostslöja och Förbättrad osynlighet. (magikertalang)',
+  'entities.abilities.greater_invisibility.name': 'Förbättrad osynlighet',
+  'entities.abilities.greater_invisibility.description':
+    'Försvinn i 20 sek.: tar bort 2 skadeeffekter över tid och du tar 90% mindre skada medan du är osynlig och en kort stund efteråt. (magikertalang)',
+  'entities.abilities.hot_streak.name': 'Het svit',
+  'entities.abilities.hot_streak.description':
+    'Passiv: två kritiska träffar i rad med dina Eldbesvärjelser (Glödbult, Glödfall, Skålla, Pyrolans eller Flamslag) gör nästa Pyrolans eller Flamslag omedelbar och kostnadsfri. Förbrukarna räknas till NÄSTA svit, även kostnadsfria kast; ett Flamslag räknas en gång oavsett hur många fiender det träffar, och endast den första träffen kan räknas. (Eld)',
+  'entities.abilities.ice_floes.name': 'Isflak',
+  'entities.abilities.ice_floes.description':
+    'Dina nästa två besvärjelser med kasttid kan kastas medan du rör dig. Varar i 15 sek. (magikertalang)',
+  'entities.abilities.ignition.name': 'Antändning',
+  'entities.abilities.ignition.description':
+    'Passiv: kritiska träffar med dina besvärjelser bränner målet för 40% av den utdelade skadan under 6 sek. och kan staplas. (Eldmästerskap)',
+  'entities.abilities.mass_barrier.name': 'Massbarriär',
+  'entities.abilities.mass_barrier.description':
+    'Skyddar dig och upp till 4 närliggande allierade inom 30 m; varje barriär absorberar 130 skada i 60 sek. (magikertalang)',
+  'entities.abilities.overload.name': 'Överbelastning',
+  'entities.abilities.overload.description':
+    'Din nästa besvärjelse förstärks med 40% men kostar 50% mer mana. Varar i 10 sek. (magikertalang)',
+  'entities.abilities.power_echo.name': 'Krafteko',
+  'entities.abilities.power_echo.description':
+    'Din nästa direkta besvärjelse upprepas med 50% kraft på samma mål. Varar i 10 sek. (magikertalang)',
+  'entities.abilities.rings_of_frost.name': 'Frostring',
+  'entities.abilities.rings_of_frost.description':
+    'Åkallar en ring i 10 sek. Fiender som korsar dess kant fryses i 4 sek. (magikertalang)',
+  'entities.abilities.rune_of_power.name': 'Kraftruna',
+  'entities.abilities.rune_of_power.description':
+    'Rista en kraftruna vid dina fötter i 15 sek.: allierade som står inom 8 m gör 10% mer skada. (magikertalang)',
+  'entities.abilities.summon_water_elemental.name': 'Åkalla vattenelementar',
+  'entities.abilities.summon_water_elemental.description':
+    'Åkalla en vattenelementar som strider vid din sida, slungar Vattenprojektiler mot ditt mål och kanaliserar Vattenstråle. (Frost)',
+  'entities.mobs.water_elemental.name': 'Vattenelementar',
+  'entities.items.conjured_bread4.name': 'Frambesvärjt festbröd',
+  'entities.items.conjured_water4.name': 'Frambesvärjt källvatten',
 };

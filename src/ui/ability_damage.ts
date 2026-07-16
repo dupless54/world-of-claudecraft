@@ -166,7 +166,7 @@ export function abilityBuffValue(res: ResolvedAbility): number | null {
       if (eff.kind === 'form_fireball') return (eff.value - 1) * 100;
       return eff.value;
     }
-    if (eff.type === 'aoeAttackPower') return eff.amount;
+    if (eff.type === 'aoeAttackPower') return eff.amount ?? null;
   }
   return null;
 }

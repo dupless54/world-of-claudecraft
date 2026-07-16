@@ -28,7 +28,7 @@
 // `src/sim`-pure: no DOM/Three/render/ui/game/net imports, no Math.random/Date.now
 // (enforced by tests/architecture.test.ts).
 
-import { recalcPlayerStats } from '../entity';
+import { pctValue, recalcPlayerStats } from '../entity';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
 import { type Aura, type AuraKind, CAST_COMPLETE_EPS, DT, type Entity } from '../types';
@@ -65,10 +65,6 @@ export function isRejectedFriendlyNpcAura(aura: Aura): boolean {
   return FRIENDLY_NPC_REJECTED_AURA_KINDS.has(aura.kind);
 }
 
-function pctValue(value: number): number {
-  return value > 1 ? value / 100 : value;
-}
-
 export function updateRegen(ctx: SimContext, p: Entity, meta: PlayerMeta): void {
   if (ctx.tickCount % 40 !== 0) return; // every 2 seconds (the classic tick)
   // Lifesap restores whichever resource bar is currently live, including across
@@ -85,7 +81,9 @@ export function updateRegen(ctx: SimContext, p: Entity, meta: PlayerMeta): void 
       // out-of-combat mana regen: faster than before and scales with spirit
       // (gear/level) plus a small flat per-level floor so low-spirit casters
       // still recover at a reasonable pace (#103)
-      const regen = p.stats.spi / 3 + 4 + Math.floor(p.level / 5);
+      const regen =
+        (p.stats.spi / 3 + 4 + Math.floor(p.level / 5)) *
+        (1 + ctx.playerMods(meta).global.manaRegenPct);
       p.resource = Math.min(p.maxResource, p.resource + Math.round(regen));
     }
   } else if (p.resourceType === 'energy') {
@@ -142,6 +140,24 @@ export function updateTimers(p: Entity): void {
       }
     } else p.cooldowns.set(k, nv);
   }
+  if (p.abilityCharges) {
+    for (const [abilityId, state] of Object.entries(p.abilityCharges)) {
+      if (state.charges >= state.maxCharges) continue;
+      state.recharge -= DT;
+      if (state.recharge > 0) {
+        if (state.charges <= 0) p.cooldowns.set(abilityId, state.recharge);
+        continue;
+      }
+      state.charges = Math.min(state.maxCharges, state.charges + 1);
+      if (state.charges < state.maxCharges) {
+        state.recharge += state.rechargeLength;
+        if (state.charges <= 0) p.cooldowns.set(abilityId, state.recharge);
+      } else {
+        state.recharge = 0;
+        p.cooldowns.delete(abilityId);
+      }
+    }
+  }
 }
 
 // Combo points are character-bound (retail-style): they survive target swaps and
@@ -170,6 +186,7 @@ export function updateAuras(ctx: SimContext, e: Entity): void {
     return;
   }
   let statsDirty = false;
+  // Talent-proc internal cooldowns age at the same cadence as auras.
   tickProcState(e, DT);
   for (let i = e.auras.length - 1; i >= 0; i--) {
     const a = e.auras[i];
@@ -255,6 +272,8 @@ export function updateAuras(ctx: SimContext, e: Entity): void {
       e.auras.splice(i, 1);
       ctx.applyNonPlayerStatAura(e, a, -1);
       ctx.emit({ type: 'aura', targetId: e.id, name: a.name, gained: false });
+      // A HoT that ran its FULL duration (this natural-expiry path, never a
+      // dispel/overwrite) reports to the caster's talent procs. No rng.
       if (a.kind === 'hot') {
         const source = ctx.entities.get(a.sourceId);
         if (source && !source.dead && source.kind === 'player') {

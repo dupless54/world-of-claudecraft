@@ -4,6 +4,7 @@ import { procAuraConsumeSelfNoteText, procAuraGainSelfNoteText } from '../src/ui
 describe('proc FCT self-note text', () => {
   it('shows the localized aura display name when a next-cast aura arms', () => {
     expect(procAuraGainSelfNoteText('Third Verse', 'next_cast_free')).toBe('Third Verse');
+    expect(procAuraGainSelfNoteText('Searing Light', 'next_cast_free')).toBe('Searing Light');
     expect(procAuraGainSelfNoteText('Non Proc Buff', 'buff_ap')).toBeNull();
   });
 

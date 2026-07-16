@@ -298,8 +298,17 @@ describe('options_view: interface dispatch matrix (cluster 5)', () => {
       'aurasOnPlayerFrame',
       'showItemLevel',
       'showSecondaryActionBar',
+      'showAttackButton',
       'showDailyRewardsChest',
     ]);
+    expect(find(controls, 'partyFrameStyle')).toMatchObject({
+      control: 'choice',
+      options: [
+        { value: 0, labelKey: 'hudChrome.partyFrames.styleAutomatic' },
+        { value: 1, labelKey: 'hudChrome.partyFrames.styleClassic' },
+        { value: 2, labelKey: 'hudChrome.partyFrames.styleRaid' },
+      ],
+    });
     expect(find(controls, 'reduceMotion')).toMatchObject({ control: 'boolToggle' });
   });
 

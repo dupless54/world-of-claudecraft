@@ -172,12 +172,6 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Montante de Highwatch',
   'entities.items.highwatch_wallshield.name': 'Escudo-Muralha de Highwatch',
   'entities.items.eastbrook_buckler.name': 'Broquel de Eastbrook',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Transforma você em um colosso por 20 s, removendo todos os efeitos de controle e aumentando em 20% o dano causado.',
-  'entities.abilities.bladestorm.name': 'Tempestade de Lâminas',
-  'entities.abilities.bladestorm.description':
-    'Transforma você em uma tempestade de aço giratória, atingindo todos os inimigos em um raio de 8 m e causando {damage} de dano a cada segundo por 4 s.',
   'entities.abilities.battle_stance.description':
     'Postura de combate agressiva: você gera 10% mais raiva. A postura padrão de Armas e Proteção.',
   'entities.abilities.battle_stance.name': 'Postura de Batalha',
@@ -278,118 +272,42 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Escolhas',
   'hudChrome.talentRows.readoutSummary': 'Talentos: {head}, {spent}/{total} fileiras selecionadas.',
   'entities.abilities.aspect_of_the_wild.name': 'Aspecto Presa Selvagem',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Inspira os aliados num raio de 30 m com força selvagem, aumentando o poder de ataque deles em 45 e a velocidade de ataque em 5% por 5 min. (talento de Caçador)',
-  'entities.abilities.aura_surge.name': 'Ricochete da Alvorada',
-  'entities.abilities.aura_surge.description':
-    'Arremessa um escudo forjado ao alvorecer que causa {damage} de dano Sagrado, silencia o alvo principal por 2 s e ricocheteia em até 2 inimigos adicionais num raio de 10 m, causando 75% de dano por ricochete. (talento de Paladino)',
   'entities.abilities.avenging_wrath.name': 'Asa Vingadora',
-  'entities.abilities.avenging_wrath.description':
-    'Invoca poder vingativo, aumentando seu poder de ataque em 60 e seu poder mágico em 30 por 20 s. (talento de Paladino)',
   'entities.abilities.berserk.name': 'Névoa Rubra',
-  'entities.abilities.berserk.description':
-    'Aumenta seu poder de ataque em 70 por 15 s. (talento de Druida)',
   'entities.abilities.blink.name': 'Passo Cintilante',
-  'entities.abilities.blink.description':
-    'Teletransporta você 15 m para a frente e rompe efeitos de enraizamento. (talento de Mago)',
   'entities.abilities.bloodlust.name': 'Tambores de Guerra',
-  'entities.abilities.bloodlust.description':
-    'Leva os aliados num raio de 30 m ao frenesi, aumentando a velocidade de ataque deles em 30% por 15 s. (talento de Xamã)',
   'entities.abilities.chain_lightning.name': 'Relâmpago Bifurcado',
-  'entities.abilities.chain_lightning.description':
-    'Arremessa um raio na área-alvo, causando {damage} de dano aos inimigos próximos. (talento de Xamã)',
   'entities.abilities.chaos_bolt.name': 'Seta da Ruína',
-  'entities.abilities.chaos_bolt.description':
-    'Arremessa um raio de fogo caótico que causa {damage} de dano de Fogo. (talento de Bruxo)',
   'entities.abilities.cloak_of_shadows.name': 'Manto Sombrio',
-  'entities.abilities.cloak_of_shadows.description':
-    'Envolve você em sombras, absorvendo 420 de dano por 5 s. (talento de Ladino)',
   'entities.abilities.cone_of_cold.name': 'Varredura Gélida',
-  'entities.abilities.cone_of_cold.description':
-    'Atinge os inimigos próximos com gelo, causando {damage} de dano de Gelo. (habilidade característica de Gelo)',
   'entities.abilities.curse_of_exhaustion.name': 'Maldição Chúmbea',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Amaldiçoa o alvo, reduzindo a velocidade de movimento em 30% por 12 s. (talento de Bruxo)',
   'entities.abilities.death_coil.name': 'Espiral da Tumba',
-  'entities.abilities.death_coil.description':
-    'Atinge o inimigo, causando {damage} de dano de Sombra, e depois o horroriza por 3 s. (talento de Bruxo)',
   'entities.abilities.deep_freeze.name': 'Geada Morta',
-  'entities.abilities.deep_freeze.description':
-    'Congela profundamente o alvo, causando {damage} de dano de Gelo e atordoando-o por 4 s. (talento de Mago)',
   'entities.abilities.desperate_prayer.name': 'Última Prece',
-  'entities.abilities.desperate_prayer.description':
-    'Cura você instantaneamente em {damage}. (talento de Sacerdote)',
   'entities.abilities.deterrence.name': 'Guarda Espinhosa',
-  'entities.abilities.deterrence.description':
-    'Aumenta sua chance de esquiva em 50 pontos percentuais por 10 s. (talento de Caçador)',
   'entities.abilities.divine_shield.name': 'Guarda de Luz',
-  'entities.abilities.divine_shield.description':
-    'Protege você com poder sagrado, absorvendo 900 de dano por 8 s. (talento de Paladino)',
   'entities.abilities.earthbind.name': 'Terra Agarradora',
-  'entities.abilities.earthbind.description':
-    'Prende os inimigos próximos à terra, enraizando-os por 2 s. (talento de Xamã)',
   'entities.abilities.evocation.name': 'Poço Etéreo',
-  'entities.abilities.evocation.description':
-    'Restaura instantaneamente 220 de mana. (talento de Mago)',
   'entities.abilities.frenzied_regeneration.name': 'Remendo Selvagem',
-  'entities.abilities.frenzied_regeneration.description':
-    'Restaura 180 de vida ao longo de 10 s. Somente em Forma de Urso. (talento de Druida)',
   'entities.abilities.frost_trap.name': 'Armadilha de Geada',
-  'entities.abilities.frost_trap.description':
-    'Congela os inimigos na área-alvo por 3 s, impedindo que se movam ou ajam. (talento de Caçador)',
   'entities.abilities.ghostly_strike.name': 'Golpe Espectral',
-  'entities.abilities.ghostly_strike.description':
-    'Atinge o inimigo, causando o dano da arma mais {damage}, aumenta brevemente a esquiva e concede 1 ponto de combo. (talento de Ladino)',
   'entities.abilities.hammer_of_wrath.name': 'Martelo Badalante',
-  'entities.abilities.hammer_of_wrath.description':
-    'Arremessa um martelo sagrado contra um inimigo ferido, causando {damage} de dano Sagrado. Só pode ser usado abaixo de 20% de vida. (talento de Paladino)',
   'entities.abilities.healing_stream.name': 'Fonte Viva',
-  'entities.abilities.healing_stream.description':
-    'Restaura 120 de vida de um alvo aliado ao longo de 12 s. (talento de Xamã)',
   'entities.abilities.holy_wrath.name': 'Ira do Santo',
-  'entities.abilities.holy_wrath.description':
-    'Libera poder sagrado, causando {damage} de dano aos inimigos próximos. (talento de Paladino)',
   'entities.abilities.howl_of_terror.name': 'Uivo de Terror',
-  'entities.abilities.howl_of_terror.description':
-    'Amedronta os inimigos próximos por até 3 s. O dano pode interromper o efeito. (talento de Bruxo)',
   'entities.abilities.ice_block.name': 'Caixão Frio',
-  'entities.abilities.ice_block.description':
-    'Envolve você em gelo, absorvendo 600 de dano por 8 s. Você não pode agir enquanto estiver envolto. Lance novamente para cancelar. (talento de Mago)',
   'entities.abilities.inner_focus.name': 'Mente Serena',
-  'entities.abilities.inner_focus.description':
-    'Faz seu próximo feitiço não custar nada. Dura 60 s. (talento de Sacerdote)',
   'entities.abilities.innervate.name': 'Seiva Vital',
-  'entities.abilities.innervate.description':
-    'A seiva viva brota em você por 10 s e restaura em ondas 20 do seu recurso atual: mana, raiva ou energia. Mudar de forma não interrompe o efeito. Sono, atordoamento ou estase imobilizam a seiva. (talento de Druida)',
   'entities.abilities.meteor.name': 'Pedra Celeste',
-  'entities.abilities.meteor.description':
-    'Invoca um meteoro na área-alvo, causando {damage} de dano de Fogo, e depois queima os inimigos no local, causando de 12 a 18 de dano de Fogo a cada 2 s por 6 s. (talento de Mago)',
   'entities.abilities.mind_sear.name': 'Queima-mente',
-  'entities.abilities.mind_sear.description':
-    'Canaliza energia de Sombra na área-alvo, causando {damage} de dano a cada segundo aos inimigos próximos. (talento de Sacerdote)',
   'entities.abilities.multi_shot.name': 'Disparo Dividido',
-  'entities.abilities.multi_shot.description':
-    'Dispara uma saraivada na área-alvo, causando {damage} de dano Físico aos inimigos num raio de 8 m. (talento de Caçador)',
   'entities.abilities.prayer_of_healing.name': 'Cura do Coro',
-  'entities.abilities.prayer_of_healing.description':
-    'Cura os aliados próximos em {damage}. (talento de Sacerdote)',
   'entities.abilities.preparation.name': 'Contingência',
-  'entities.abilities.preparation.description':
-    'Encerra a recarga de Disparada, Evasão e Sumir. (talento de Ladino)',
   'entities.abilities.presence_of_mind.name': 'Mente Acelerada',
-  'entities.abilities.presence_of_mind.description':
-    'Faz seu próximo feitiço com tempo de lançamento ser instantâneo. Dura 60 s. (talento de Mago)',
   'entities.abilities.psychic_scream.name': 'Grito Psíquico',
-  'entities.abilities.psychic_scream.description':
-    'Amedronta os inimigos próximos por até 4 s. O dano pode interromper o efeito. (talento de Sacerdote)',
   'entities.abilities.shadowstep.name': 'Passo Sombrio',
-  'entities.abilities.shadowstep.description':
-    'Avança pelas sombras em direção ao seu alvo. (talento de Ladino)',
   'entities.abilities.silence.name': 'Silêncio',
-  'entities.abilities.silence.description': 'Silencia o alvo por 4 s. (talento de Sacerdote)',
   'entities.abilities.tranquility.name': 'Canto do Bosque',
-  'entities.abilities.tranquility.description':
-    'Canaliza energia restauradora por 4 s, curando os aliados num raio de 30 m em 42 a 52 a cada segundo. (talento de Druida)',
   'entities.abilities.cleansing_verdict.name': 'Veredito Purificador',
   'entities.abilities.cleansing_verdict.description':
     'Expurga um efeito mágico nocivo de um alvo aliado e o cura em {damage} com magia Sagrada.',
@@ -3240,6 +3158,42 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.frostbolt.name': 'Lança de Geada',
   'entities.abilities.frostbolt.description':
     'Lança uma seta de gelo, causando {damage} de dano de Gelo e reduzindo a velocidade de movimento em 40%.',
+  'entities.abilities.blazing_barrier.name': 'Barreira Flamejante',
+  'entities.abilities.blazing_barrier.description':
+    'Envolve você em chamas, absorvendo 130 de dano por 60 s. (Fogo)',
+  'entities.abilities.cold_snap.name': 'Estalo Gélido',
+  'entities.abilities.cold_snap.description':
+    'Encerra o tempo de recarga de Passo Cintilante, Véu de Gelo e Invisibilidade Maior. (Talento de mago)',
+  'entities.abilities.greater_invisibility.name': 'Invisibilidade Maior',
+  'entities.abilities.greater_invisibility.description':
+    'Desaparece por 20 s: remove 2 efeitos de dano periódico e reduz o dano recebido em 90% enquanto você está invisível e por pouco tempo depois. (Talento de mago)',
+  'entities.abilities.hot_streak.name': 'Embalo Ardente',
+  'entities.abilities.hot_streak.description':
+    'Passivo: dois acertos críticos seguidos com suas magias de Fogo (Bola de Fogo, Impacto de Fogo, Calcinar, Piroexplosão ou Coluna de Chamas) tornam sua próxima Piroexplosão ou Coluna de Chamas instantânea e gratuita. As magias que consomem o efeito contam para o PRÓXIMO embalo, inclusive lançamentos gratuitos; Coluna de Chamas conta uma vez, não importa quantos inimigos atinja, e apenas o impacto inicial pode contar. (Fogo)',
+  'entities.abilities.ice_floes.name': 'Bancos de Gelo',
+  'entities.abilities.ice_floes.description':
+    'Suas próximas duas magias com tempo de lançamento podem ser lançadas em movimento. Dura 15 s. (Talento de mago)',
+  'entities.abilities.ignition.name': 'Ignição',
+  'entities.abilities.ignition.description':
+    'Passivo: os acertos críticos das suas magias queimam o alvo, causando 40% do dano provocado ao longo de 6 s; acumula. (Maestria de Fogo)',
+  'entities.abilities.mass_barrier.name': 'Barreira em Massa',
+  'entities.abilities.mass_barrier.description':
+    'Protege você e até 4 aliados próximos em um raio de 30 m; cada escudo absorve 130 de dano por 60 s. (Talento de mago)',
+  'entities.abilities.overload.name': 'Sobrecarga',
+  'entities.abilities.overload.description':
+    'Sua próxima magia é amplificada em 40%, mas custa 50% mais mana. Dura 10 s. (Talento de mago)',
+  'entities.abilities.power_echo.name': 'Eco de Poder',
+  'entities.abilities.power_echo.description':
+    'Sua próxima magia direta se repete com 50% de poder no mesmo alvo. Dura 10 s. (Talento de mago)',
+  'entities.abilities.rings_of_frost.name': 'Anel de Gelo',
+  'entities.abilities.rings_of_frost.description':
+    'Evoca um anel por 10 s. Inimigos que atravessam seu perímetro ficam congelados por 4 s. (Talento de mago)',
+  'entities.abilities.rune_of_power.name': 'Runa de Poder',
+  'entities.abilities.rune_of_power.description':
+    'Inscreve uma runa de poder sob seus pés por 15 s: aliados em um raio de 8 m causam 10% mais dano. (Talento de mago)',
+  'entities.abilities.summon_water_elemental.name': 'Evocar Elemental da Água',
+  'entities.abilities.summon_water_elemental.description':
+    "Evoca um Elemental da Água para lutar ao seu lado, lançar Setas d'Água no seu alvo e canalizar Jato d'Água. (Gelo)",
   'entities.abilities.conjure_water.name': 'Vínculo de Água',
   'entities.abilities.conjure_water.description':
     'Conjura 2 garrafas de água que restauram mana quando bebidas. Graus superiores conjuram água mais pura.',
@@ -3732,6 +3686,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_water.name': 'Água da Chuva Conjurada',
   'entities.items.conjured_water2.name': 'Água de Poço Conjurada',
   'entities.items.conjured_water3.name': 'Água Clara Conjurada',
+  'entities.items.conjured_water4.name': 'Água de Nascente Conjurada',
   'entities.items.eastbrook_arming_sword.name': 'Espada de armas de Eastbrook',
   'entities.items.bronzework_mace.name': 'Maça de bronzeiro',
   'entities.items.vale_carving_knife.name': 'Faca de entalhe do Vale',
@@ -4710,6 +4665,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'entities.items.conjured_bread.name': 'Bolo de Aveia Conjurado',
   'entities.items.conjured_bread2.name': 'Pão Preto Conjurado',
   'entities.items.conjured_bread3.name': 'Bolo de Mel Conjurado',
+  'entities.items.conjured_bread4.name': 'Pão de Banquete Conjurado',
   'entities.items.glimmerfin_koi.name': 'Koi de nadadeiras cintilantes',
   'entities.items.raw_bog_eel.name': 'Enguia de brejo crua',
   'entities.items.raw_frostgill_trout.name': 'Truta de guelras gélidas crua',
@@ -7092,6 +7048,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
     'Retalha a armadura do alvo, reduzindo-a em {damage}% por aplicação. Acumula até 5 vezes. Gera uma grande quantidade de ameaça.',
   'entities.mobs.training_dummy.name': 'Boneco de Treino',
   'entities.mobs.yumi_cat.name': 'Yumi',
+  'entities.mobs.water_elemental.name': 'Elemental da Água',
   'guide.arenaPage.yumiBody':
     'Proteja a Yumi é um modo de objetivo em equipe disputado em um labirinto: cada lado protege a própria gata familiar enquanto caça a do inimigo. De tempos em tempos, as duas gatas saltam para novos cantos do labirinto, então a luta alterna entre defender, caçar e correr para reencontrá-las. Entre na fila em três contra três ou cinco contra cinco; cair em combate só o afasta por um instante.',
   'guide.arenaPage.yumiHeading': 'Proteja a Yumi',
@@ -7833,4 +7790,94 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Atinge os inimigos à sua frente e pode ficar gratuita após uma esquiva ou aparada.',
   'guide.abilityHook.hamstring': 'Prejudica o movimento de um inimigo para impedir que ele escape.',
+  'game.talents.choicesTab': 'Escolhas',
+  'game.talents.rowUnlockToast': 'Nova escolha de talento disponível!',
+  'game.talents.rowUnlocks': 'Desbloqueia no nível {level}',
+  'entities.abilities.aura_surge.name': 'Ricochete da Alvorada',
+  'entities.abilities.aura_surge.description':
+    'Arremessa um escudo forjado ao alvorecer que causa {damage} de dano Sagrado, silencia o alvo principal por 2 s e ricocheteia em até 2 inimigos adicionais num raio de 10 m, causando 75% de dano por ricochete. (talento de Paladino)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Inspira os aliados num raio de 30 m com força selvagem, aumentando o poder de ataque deles em 45 e a velocidade de ataque em 5% por 5 min. (talento de Caçador)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Transforma você em um colosso por 20 s, removendo todos os efeitos de controle e aumentando em 20% o dano causado.',
+  'entities.abilities.avenging_wrath.description':
+    'Invoca poder vingativo, aumentando seu poder de ataque em 60 e seu poder mágico em 30 por 20 s. (talento de Paladino)',
+  'entities.abilities.berserk.description':
+    'Aumenta seu poder de ataque em 70 por 15 s. (talento de Druida)',
+  'entities.abilities.bladestorm.name': 'Tempestade de Lâminas',
+  'entities.abilities.bladestorm.description':
+    'Transforma você em uma tempestade de aço giratória, atingindo todos os inimigos em um raio de 8 m e causando {damage} de dano a cada segundo por 4 s.',
+  'entities.abilities.blink.description':
+    'Teletransporta você 15 m para a frente e rompe efeitos de enraizamento. (talento de Mago)',
+  'entities.abilities.bloodlust.description':
+    'Leva os aliados num raio de 30 m ao frenesi, aumentando a velocidade de ataque deles em 30% por 15 s. (talento de Xamã)',
+  'entities.abilities.chain_lightning.description':
+    'Arremessa um raio na área-alvo, causando {damage} de dano aos inimigos próximos. (talento de Xamã)',
+  'entities.abilities.chaos_bolt.description':
+    'Arremessa um raio de fogo caótico que causa {damage} de dano de Fogo. (talento de Bruxo)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Envolve você em sombras, absorvendo 420 de dano por 5 s. (talento de Ladino)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a próximos inimigos con escarcha e inflige {damage} de daño de Gelo. (talento de mago)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Amaldiçoa o alvo, reduzindo a velocidade de movimento em 30% por 12 s. (talento de Bruxo)',
+  'entities.abilities.death_coil.description':
+    'Atinge o inimigo, causando {damage} de dano de Sombra, e depois o horroriza por 3 s. (talento de Bruxo)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a alvo, inflige {damage} de daño de Gelo y lo aturde durante 4 s. (talento de mago)',
+  'entities.abilities.desperate_prayer.description':
+    'Cura você instantaneamente em {damage}. (talento de Sacerdote)',
+  'entities.abilities.deterrence.description':
+    'Aumenta sua chance de esquiva em 50 pontos percentuais por 10 s. (talento de Caçador)',
+  'entities.abilities.divine_shield.description':
+    'Protege você com poder sagrado, absorvendo 900 de dano por 8 s. (talento de Paladino)',
+  'entities.abilities.earthbind.description':
+    'Prende os inimigos próximos à terra, enraizando-os por 2 s. (talento de Xamã)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (talento de mago)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Restaura 180 de vida ao longo de 10 s. Somente em Forma de Urso. (talento de Druida)',
+  'entities.abilities.frost_trap.description':
+    'Congela os inimigos na área-alvo por 3 s, impedindo que se movam ou ajam. (talento de Caçador)',
+  'entities.abilities.ghostly_strike.description':
+    'Atinge o inimigo, causando o dano da arma mais {damage}, aumenta brevemente a esquiva e concede 1 ponto de combo. (talento de Ladino)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Arremessa um martelo sagrado contra um inimigo ferido, causando {damage} de dano Sagrado. Só pode ser usado abaixo de 20% de vida. (talento de Paladino)',
+  'entities.abilities.healing_stream.description':
+    'Restaura 120 de vida de um alvo aliado ao longo de 12 s. (talento de Xamã)',
+  'entities.abilities.holy_wrath.description':
+    'Libera poder sagrado, causando {damage} de dano aos inimigos próximos. (talento de Paladino)',
+  'entities.abilities.howl_of_terror.description':
+    'Amedronta os inimigos próximos por até 3 s. O dano pode interromper o efeito. (talento de Bruxo)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 s. (talento de mago)',
+  'entities.abilities.inner_focus.description':
+    'Faz seu próximo feitiço não custar nada. Dura 60 s. (talento de Sacerdote)',
+  'entities.abilities.innervate.description':
+    'A seiva viva brota em você por 10 s e restaura em ondas 20 do seu recurso atual: mana, raiva ou energia. Mudar de forma não interrompe o efeito. Sono, atordoamento ou estase imobilizam a seiva. (talento de Druida)',
+  'entities.abilities.mend_pet.name': 'Remendar',
+  'entities.abilities.mend_pet.description':
+    'Sana a alvo aliado por {damage} durante 15 s. (talento de caçador)',
+  'entities.abilities.meteor.description':
+    'Invoca um meteoro na área-alvo, causando {damage} de dano de Fogo, e depois queima os inimigos no local, causando de 12 a 18 de dano de Fogo a cada 2 s por 6 s. (talento de Mago)',
+  'entities.abilities.mind_sear.description':
+    'Canaliza energia de Sombra na área-alvo, causando {damage} de dano a cada segundo aos inimigos próximos. (talento de Sacerdote)',
+  'entities.abilities.multi_shot.description':
+    'Dispara uma saraivada na área-alvo, causando {damage} de dano Físico aos inimigos num raio de 8 m. (talento de Caçador)',
+  'entities.abilities.prayer_of_healing.description':
+    'Cura os aliados próximos em {damage}. (talento de Sacerdote)',
+  'entities.abilities.preparation.description':
+    'Encerra a recarga de Disparada, Evasão e Sumir. (talento de Ladino)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 s. (talento de mago)',
+  'entities.abilities.psychic_scream.description':
+    'Amedronta os inimigos próximos por até 4 s. O dano pode interromper o efeito. (talento de Sacerdote)',
+  'entities.abilities.shadowstep.description':
+    'Avança pelas sombras em direção ao seu alvo. (talento de Ladino)',
+  'entities.abilities.silence.description': 'Silencia o alvo por 4 s. (talento de Sacerdote)',
+  'entities.abilities.tranquility.description':
+    'Canaliza energia restauradora por 4 s, curando os aliados num raio de 30 m em 42 a 52 a cada segundo. (talento de Druida)',
+  'game.talents.readout.rowsSummary':
+    'Talentos: {head}, escolhidas {picked}/{unlocked} linhas de opções.',
+  'hudChrome.fct.absorbed': '{amount} absorvido',
 };

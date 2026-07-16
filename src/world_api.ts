@@ -107,6 +107,7 @@ export type {
 // --- facet aux-type + value re-exports (each travels with its facet file) ---
 export type { BankBonusSource, BankInfo } from './world_api/bank';
 export { isOverheadEmoteId, OVERHEAD_EMOTES } from './world_api/chat';
+export type { ActiveFrostRing } from './world_api/combat';
 export type { AccountCosmetics } from './world_api/cosmetics';
 export type {
   DailyRewardEligibilityView,
@@ -291,8 +292,10 @@ export const COMMAND_NAMES = [
   'pet_rename',
   'pet_revive',
   'pet_attack',
+  'pet_water_jet',
   'pet_taunt',
   'pet_auto_taunt',
+  'pet_auto_water_jet',
   'pet_feed',
   'pet_heal',
   'pet_mode',
@@ -377,6 +380,7 @@ export const COMMAND_NAMES = [
   'vcup_ready',
   'vcup_bet',
   'vcup_practice',
+  'releaseEmpowered',
   'df_roles',
   'df_queue',
   'df_queue_leave',
@@ -468,6 +472,7 @@ export const COMMAND_FACETS = {
   cast: 'IWorldCombat',
   castSlot: 'IWorldCombat',
   castAt: 'IWorldCombat',
+  releaseEmpowered: 'IWorldCombat',
   cancel_aura: 'IWorldCombat',
   attack: 'IWorldCombat',
   stopattack: 'IWorldCombat',
@@ -509,8 +514,10 @@ export const COMMAND_FACETS = {
   pet_rename: 'IWorldPet',
   pet_revive: 'IWorldPet',
   pet_attack: 'IWorldPet',
+  pet_water_jet: 'IWorldPet',
   pet_taunt: 'IWorldPet',
   pet_auto_taunt: 'IWorldPet',
+  pet_auto_water_jet: 'IWorldPet',
   pet_feed: 'IWorldPet',
   pet_heal: 'IWorldPet',
   pet_mode: 'IWorldPet',

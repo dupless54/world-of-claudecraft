@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CHOICE_ROWS } from '../src/sim/content/choice_rows';
 import { ABILITIES, abilitiesKnownAt } from '../src/sim/content/classes';
 import {
   computeTalentModifiers,
@@ -84,5 +85,16 @@ describe('warlock low-level sustained damage tuning', () => {
       trigger: { on: 'castNth', n: 3 },
       responses: [{ kind: 'absorb', amount: 90, duration: 10, name: 'Hellglass Ward' }],
     });
+  });
+
+  it('keeps the warlock choice rows off the mastery axis (no dotDmgPct amplifier)', () => {
+    // The point-tree amplifiers lived in the deleted node trees; their
+    // successors are the warlock choice rows, which must stay DoT-flavored and
+    // bounded (no option may amplify the mastery axis, dotDmgPct).
+    for (const row of CHOICE_ROWS.warlock.rows) {
+      for (const opt of row.options) {
+        expect(opt.effect.global?.dotDmgPct, `${opt.id} stacks the mastery axis`).toBeUndefined();
+      }
+    }
   });
 });

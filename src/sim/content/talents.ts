@@ -68,6 +68,9 @@ export interface AbilityModEffect {
   flatDmg?: number;
   costPct?: number;
   cooldownPct?: number;
+  // Flat cooldown ADD in seconds (Snap Polymorph: an instant cast gains a real
+  // cooldown). Applied after cooldownPct at the resolve site in classes.ts.
+  cooldownFlat?: number;
   castPct?: number;
   buffPct?: number;
   castWhileMoving?: boolean;
@@ -80,6 +83,10 @@ export interface GlobalModEffect {
   meleeDmgPct?: number;
   spellDmgPct?: number;
   healPct?: number;
+  // Max mana multiplier (e.g. Chronoweave mastery cushion) and out-of-combat
+  // mana regen multiplier.
+  manaPct?: number;
+  manaRegenPct?: number;
   dotDmgPct?: number;
   hotHealPct?: number;
   absorbPct?: number;
@@ -106,6 +113,29 @@ export interface GlobalModEffect {
   fearBreakPct?: number;
   masteryTwoHandDmgPct?: number;
   cheatDeathIcd?: number;
+  // Mage choice rows (owner tree 2026-07-11):
+  // Warded: fraction less damage taken while the caster's own personal barrier
+  // (an ice_barrier absorb aura) is up. Folded target-side in combat/damage.ts.
+  barrierDrPct?: number;
+  // Temporal Rift: 1 when picked. Every 20 sec the next stun/root/silence to
+  // land on the wearer is cleansed instantly (the applyAura funnel in sim.ts,
+  // ICD carried by a 'temporal_rift_cd' aura). Draws no rng.
+  temporalRift?: number;
+  // Overflowing Power: seconds shaved off the mage defensive cooldowns per 10%
+  // of maximum mana spent, capped at 10 sec per 30 sec (casting_lifecycle's
+  // spendAbilityCost, the Colossal Might pattern on mana).
+  manaDefCdrPer10?: number;
+  // Blink While Casting: 1 when picked; Flickerstep slips through the busy
+  // guard without touching the cast in progress (casting_lifecycle).
+  blinkCast?: number;
+  // Elemental Convergence: 1 when picked; alternating a Fire and a Frost cast
+  // opens the surge window (casting_lifecycle convergenceOnCast, marker +
+  // ICD carried by auras so no entity field enters the parity hash).
+  convergence?: number;
+  // Ignition (fire mage mastery): fraction of a spell crit's damage banked as
+  // a stacking burn (combat/fire_mage.ts igniteOnCrit copies the resolved
+  // amount). Scales with level like every spec mastery.
+  ignitionPct?: number;
 }
 
 export type ProcTrigger =
@@ -192,6 +222,7 @@ export interface ResolvedAbilityMod {
   flatDmg: number;
   costPct: number;
   cooldownPct: number;
+  cooldownFlat: number;
   castPct: number;
   buffPct: number;
   castWhileMoving: boolean;
@@ -421,6 +452,8 @@ function zeroGlobal(): Required<GlobalModEffect> {
     meleeDmgPct: 0,
     spellDmgPct: 0,
     healPct: 0,
+    manaPct: 0,
+    manaRegenPct: 0,
     dotDmgPct: 0,
     hotHealPct: 0,
     absorbPct: 0,
@@ -447,6 +480,12 @@ function zeroGlobal(): Required<GlobalModEffect> {
     fearBreakPct: 0,
     masteryTwoHandDmgPct: 0,
     cheatDeathIcd: 0,
+    barrierDrPct: 0,
+    temporalRift: 0,
+    manaDefCdrPer10: 0,
+    blinkCast: 0,
+    convergence: 0,
+    ignitionPct: 0,
   };
 }
 
@@ -457,6 +496,7 @@ function zeroAbilityMod(): ResolvedAbilityMod {
     flatDmg: 0,
     costPct: 0,
     cooldownPct: 0,
+    cooldownFlat: 0,
     castPct: 0,
     buffPct: 0,
     castWhileMoving: false,
@@ -512,6 +552,8 @@ export function accumulateTalentEffect(
     target.meleeDmgPct += (source.meleeDmgPct ?? 0) * multiplier;
     target.spellDmgPct += (source.spellDmgPct ?? 0) * multiplier;
     target.healPct += (source.healPct ?? 0) * multiplier;
+    target.manaPct += (source.manaPct ?? 0) * multiplier;
+    target.manaRegenPct += (source.manaRegenPct ?? 0) * multiplier;
     target.dotDmgPct += (source.dotDmgPct ?? 0) * multiplier;
     target.hotHealPct += (source.hotHealPct ?? 0) * multiplier;
     target.absorbPct += (source.absorbPct ?? 0) * multiplier;
@@ -538,6 +580,12 @@ export function accumulateTalentEffect(
     target.fearBreakPct += (source.fearBreakPct ?? 0) * multiplier;
     target.masteryTwoHandDmgPct += (source.masteryTwoHandDmgPct ?? 0) * multiplier;
     target.cheatDeathIcd = Math.max(target.cheatDeathIcd, source.cheatDeathIcd ?? 0);
+    target.barrierDrPct += (source.barrierDrPct ?? 0) * multiplier;
+    target.temporalRift += (source.temporalRift ?? 0) * multiplier;
+    target.manaDefCdrPer10 += (source.manaDefCdrPer10 ?? 0) * multiplier;
+    target.blinkCast += (source.blinkCast ?? 0) * multiplier;
+    target.convergence += (source.convergence ?? 0) * multiplier;
+    target.ignitionPct += (source.ignitionPct ?? 0) * multiplier;
   }
   for (const ability of effect.ability ?? []) {
     const target = modifiers.abilities[ability.ability] ?? zeroAbilityMod();
@@ -550,6 +598,7 @@ export function accumulateTalentEffect(
     target.flatDmg += (ability.flatDmg ?? 0) * multiplier;
     target.costPct += (ability.costPct ?? 0) * multiplier;
     target.cooldownPct += (ability.cooldownPct ?? 0) * multiplier;
+    target.cooldownFlat += (ability.cooldownFlat ?? 0) * multiplier;
     target.castPct += (ability.castPct ?? 0) * multiplier;
     target.buffPct += (ability.buffPct ?? 0) * multiplier;
     target.bonusCharges += (ability.bonusCharges ?? 0) * multiplier;

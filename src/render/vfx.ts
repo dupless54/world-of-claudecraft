@@ -174,6 +174,18 @@ interface Projectile {
   // When set, the flying head renders as a short jagged electric bolt streak
   // (a lightning "bolt-shaped" projectile) instead of a smooth glowing comet.
   lightning?: boolean;
+  // Visual heft multiplier (Pyroblast's heavyBolt = 2): scales the comet core,
+  // trail and impact flash; mechanics and speed are untouched.
+  scale?: number;
+}
+
+interface BubbleBeam {
+  sourceId: number;
+  targetId: number;
+  remaining: number;
+  group: THREE.Group;
+  core: THREE.Mesh;
+  water: THREE.Mesh;
 }
 
 // fire reads as flame tongues; everything else as sparkling magic
@@ -199,7 +211,10 @@ export class Vfx {
   private rotAttr: Float32Array;
   private head = 0;
   private projectiles: Projectile[] = [];
+  private bubbleBeams: BubbleBeam[] = [];
   private tmpColor = new THREE.Color();
+  private tmpDirection = new THREE.Vector3();
+  private readonly beamUp = new THREE.Vector3(0, 1, 0);
   // fireworkBurst palette scratch, reused across shells (spawn() copies
   // components, never retaining the reference): a goal volley allocates
   // no Color objects.
@@ -208,7 +223,7 @@ export class Vfx {
   private quality = 1;
 
   constructor(
-    scene: THREE.Scene,
+    private scene: THREE.Scene,
     private anchor: EntityAnchor,
   ) {
     this.pos = new Float32Array(CAPACITY * 3);
@@ -324,6 +339,7 @@ export class Vfx {
 
   clear(): void {
     this.projectiles.length = 0;
+    for (let i = this.bubbleBeams.length - 1; i >= 0; i--) this.removeBubbleBeam(i);
     this.life.fill(0);
     this.size.fill(0);
     this.alphaAttr.fill(0);
@@ -391,7 +407,7 @@ export class Vfx {
   // High-level effects
   // ---------------------------------------------------------------------
 
-  projectile(sourceId: number, targetId: number, school: string): void {
+  projectile(sourceId: number, targetId: number, school: string, scale = 1): void {
     const from = this.anchor(sourceId, 0.62);
     if (!from) return;
     const colors = projectileSchoolColors(school);
@@ -406,6 +422,7 @@ export class Vfx {
       ttl: 3,
       coreSprite: sprites.core,
       trailSprite: sprites.trail,
+      scale,
     });
   }
 
@@ -430,8 +447,61 @@ export class Vfx {
     this.spawn(to.x, to.y, to.z, 0, 0.2, 0, color, 0.9, 0.2, 0, SPR.magicRune);
   }
 
-  // A "bolt-shaped" traveling projectile: fires a homing bolt with the SAME
-  // travel + impact timing as a normal spell projectile (so the damage lands when
+  /** Water Jet's sustained hose: a bright liquid core surrounded by larger
+   * ring-shaped bubbles that rise as they travel between both moving anchors. */
+  bubbleBeam(sourceId: number, targetId: number, duration: number): void {
+    const existing = this.bubbleBeams.find((b) => b.sourceId === sourceId);
+    if (duration <= 0) {
+      if (existing) {
+        this.removeBubbleBeam(this.bubbleBeams.indexOf(existing));
+      }
+      return;
+    }
+    if (existing) {
+      existing.targetId = targetId;
+      existing.remaining = duration;
+      return;
+    }
+    const geometry = new THREE.CylinderGeometry(1, 1, 1, 10, 1, false);
+    const water = new THREE.Mesh(
+      geometry,
+      new THREE.MeshBasicMaterial({
+        color: 0x42bfe8,
+        transparent: true,
+        opacity: 0.48,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    const core = new THREE.Mesh(
+      geometry,
+      new THREE.MeshBasicMaterial({
+        color: 0xc5f7ff,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    );
+    water.renderOrder = 5;
+    core.renderOrder = 6;
+    const group = new THREE.Group();
+    group.userData.renderCategory = 'vfx';
+    group.add(water, core);
+    this.scene.add(group);
+    this.bubbleBeams.push({ sourceId, targetId, remaining: duration, group, core, water });
+  }
+
+  private removeBubbleBeam(index: number): void {
+    const stream = this.bubbleBeams[index];
+    if (!stream) return;
+    this.scene.remove(stream.group);
+    stream.water.geometry.dispose();
+    (stream.water.material as THREE.Material).dispose();
+    (stream.core.material as THREE.Material).dispose();
+    this.bubbleBeams.splice(index, 1);
+  }
+
   // Chain Heal's signature arc: a bright green cord that lifts in a gentle parabola
   // from the source ally to the target, denser and softer than a nuke beam so it
   // reads as flowing healing water rather than crackling lightning. Each hop of the
@@ -1094,6 +1164,63 @@ export class Vfx {
   // ---------------------------------------------------------------------
 
   update(dt: number): void {
+    for (let i = this.bubbleBeams.length - 1; i >= 0; i--) {
+      const stream = this.bubbleBeams[i];
+      stream.remaining -= dt;
+      const from = this.anchor(stream.sourceId, 0.58);
+      const to = this.anchor(stream.targetId, 0.52);
+      if (!from || !to || stream.remaining <= 0) {
+        this.removeBubbleBeam(i);
+        continue;
+      }
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dz = to.z - from.z;
+      const len = Math.hypot(dx, dy, dz);
+      if (len <= 0.001) continue;
+      stream.group.position.set(from.x + dx * 0.5, from.y + dy * 0.5, from.z + dz * 0.5);
+      this.tmpDirection.set(dx / len, dy / len, dz / len);
+      stream.group.quaternion.setFromUnitVectors(this.beamUp, this.tmpDirection);
+      const pulse = 1 + Math.sin(stream.remaining * 13) * 0.08;
+      stream.water.scale.set(0.22 * pulse, len, 0.22 * pulse);
+      stream.core.scale.set(0.075, len * 1.002, 0.075);
+      for (let n = 0; n < this.emitCount(36, dt); n++) {
+        const f = Math.random();
+        const bubble = Math.random() < 0.38;
+        const radius = bubble ? 0.14 : 0.08;
+        this.spawn(
+          from.x + dx * f + (Math.random() - 0.5) * radius,
+          from.y + dy * f + (Math.random() - 0.5) * radius,
+          from.z + dz * f + (Math.random() - 0.5) * radius,
+          (dx / len) * 1.1 + (Math.random() - 0.5) * 0.35,
+          0.35 + Math.random() * 0.6,
+          (dz / len) * 1.1 + (Math.random() - 0.5) * 0.35,
+          bubble ? 0xd5f8ff : 0x91eaff,
+          bubble ? 0.28 + Math.random() * 0.22 : 0.18 + Math.random() * 0.14,
+          bubble ? 0.65 : 0.28,
+          -0.15,
+          bubble ? SPR.ring : SPR.glowCore,
+        );
+      }
+      // A soft splash at the victim keeps the channel endpoint readable.
+      for (let n = 0; n < this.emitCount(8, dt); n++) {
+        const a = Math.random() * Math.PI * 2;
+        this.spawn(
+          to.x,
+          to.y,
+          to.z,
+          Math.sin(a) * (0.7 + Math.random()),
+          0.8 + Math.random(),
+          Math.cos(a) * (0.7 + Math.random()),
+          0xd5f8ff,
+          0.25 + Math.random() * 0.18,
+          0.45,
+          1.4,
+          SPR.ring,
+        );
+      }
+    }
+
     // projectiles home on their (moving) target
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const pr = this.projectiles[i];
@@ -1109,7 +1236,20 @@ export class Vfx {
       if (dist <= Math.max(0.7, step)) {
         // impact: school-tinted cross-flash + burst that survives a 30fps frame
         this.tmpColor.copy(pr.color).multiplyScalar(hdr(1.6));
-        this.spawn(target.x, target.y, target.z, 0, 0.5, 0, this.tmpColor, 1.1, 0.22, 0, SPR.flash);
+        const sc = pr.scale ?? 1;
+        this.spawn(
+          target.x,
+          target.y,
+          target.z,
+          0,
+          0.5,
+          0,
+          this.tmpColor,
+          1.1 * sc,
+          0.22,
+          0,
+          SPR.flash,
+        );
         for (let k = 0; k < this.scaledCount(22); k++) {
           const a = Math.random() * Math.PI * 2;
           const sp = 2.5 + Math.random() * 4;
@@ -1193,7 +1333,7 @@ export class Vfx {
           0,
           0,
           pr.coreColor,
-          1.0,
+          1.0 * (pr.scale ?? 1),
           0.12,
           0,
           pr.coreSprite,
@@ -1207,7 +1347,7 @@ export class Vfx {
             0.4,
             (Math.random() - 0.5) * 0.8,
             pr.trailColor,
-            0.32,
+            0.32 * (pr.scale ?? 1),
             0.6,
             1.5,
             pr.trailSprite,

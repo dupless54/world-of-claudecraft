@@ -23,8 +23,6 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.avatar.description':
     '20秒間コロッサスに変身し、あらゆる行動妨害を解除し、与えるダメージが20%増加します。',
   'entities.abilities.bladestorm.name': '剣の嵐',
-  'entities.abilities.bladestorm.description':
-    '鋼の嵐と化し、4秒間、8ヤード以内のすべての敵に毎秒{damage}のダメージを与えます。',
   'entities.abilities.battle_stance.description':
     '攻撃的な戦闘スタンスです。怒りの生成量が10%増加します。武器と防御の基本スタンスです。',
   'entities.abilities.battle_stance.name': 'バトルスタンス',
@@ -125,116 +123,44 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': '選択',
   'hudChrome.talentRows.readoutSummary': 'タレント：{head}、{spent}/{total}行を選択済み。',
   'entities.abilities.aspect_of_the_wild.name': '野牙の装い',
-  'entities.abilities.aspect_of_the_wild.description':
-    '30ヤード以内の味方を野生の力で鼓舞し、攻撃力を45、攻撃速度を5%上昇させる。効果時間5分。（ハンターのタレント）',
-  'entities.abilities.aura_surge.name': '曙光の跳弾',
-  'entities.abilities.aura_surge.description':
-    '曙光で鍛えた盾を投げて{damage}の聖属性ダメージを与え、最初の対象を2秒間沈黙させる。その後、10ヤード以内の追加の敵最大2体へ跳ね返り、1回ごとに75%のダメージを与える。（パラディンのタレント）',
   'entities.abilities.avenging_wrath.name': '復讐の翼',
-  'entities.abilities.avenging_wrath.description':
-    '復讐の力を呼び起こし、攻撃力を60、魔力を30上昇させる。効果時間20秒。（パラディンのタレント）',
   'entities.abilities.berserk.name': '赤き霞',
-  'entities.abilities.berserk.description':
-    '攻撃力を70上昇させる。効果時間15秒。（ドルイドのタレント）',
   'entities.abilities.blink.name': '瞬き歩み',
-  'entities.abilities.blink.description':
-    '前方15ヤードへ瞬間移動し、移動不能効果を解除する。（メイジのタレント）',
   'entities.abilities.bloodlust.name': '戦の太鼓',
-  'entities.abilities.bloodlust.description':
-    '30ヤード以内の味方を狂乱させ、攻撃速度を30%上昇させる。効果時間15秒。（シャーマンのタレント）',
   'entities.abilities.chain_lightning.name': '枝分かれの稲妻',
-  'entities.abilities.chain_lightning.description':
-    '対象地点へ雷を放ち、周囲の敵に{damage}のダメージを与える。（シャーマンのタレント）',
   'entities.abilities.chaos_bolt.name': '破滅の矢',
-  'entities.abilities.chaos_bolt.description':
-    '混沌の炎を放ち、{damage}の火属性ダメージを与える。（ウォーロックのタレント）',
   'entities.abilities.cleansing_verdict.name': '浄化の裁定',
   'entities.abilities.cleansing_verdict.description':
     '味方1体の有害な魔法効果を解除し、{damage}の体力を回復する。',
   'entities.abilities.cloak_of_shadows.name': '影まとい',
-  'entities.abilities.cloak_of_shadows.description':
-    '影で身を包み、5秒間に420のダメージを吸収する。（ローグのタレント）',
   'entities.abilities.cone_of_cold.name': '霜払い',
-  'entities.abilities.cone_of_cold.description':
-    '周囲の敵を冷気で攻撃し、{damage}の氷属性ダメージを与える。（フロストのシグネチャー）',
   'entities.abilities.curse_of_exhaustion.name': '鉛の呪い',
-  'entities.abilities.curse_of_exhaustion.description':
-    '対象を呪い、移動速度を30%低下させる。効果時間12秒。（ウォーロックのタレント）',
   'entities.abilities.death_coil.name': '墓所の螺旋',
-  'entities.abilities.death_coil.description':
-    '敵に{damage}の闇属性ダメージを与え、その後3秒間恐怖状態にする。（ウォーロックのタレント）',
   'entities.abilities.deep_freeze.name': '死霜',
-  'entities.abilities.deep_freeze.description':
-    '対象を深く凍結させ、{damage}の氷属性ダメージを与えて4秒間スタンさせる。（メイジのタレント）',
   'entities.abilities.desperate_prayer.name': '最後の祈り',
-  'entities.abilities.desperate_prayer.description':
-    '自分の体力を即座に{damage}回復する。（プリーストのタレント）',
   'entities.abilities.deterrence.name': '針毛の守り',
-  'entities.abilities.deterrence.description':
-    '回避率を50パーセントポイント上昇させる。効果時間10秒。（ハンターのタレント）',
   'entities.abilities.divine_shield.name': '光の護り',
-  'entities.abilities.divine_shield.description':
-    '聖なる力で身を守り、8秒間に900のダメージを吸収する。（パラディンのタレント）',
   'entities.abilities.earthbind.name': '大地の縛り',
-  'entities.abilities.earthbind.description':
-    '周囲の敵を大地に縛り、2秒間移動不能にする。（シャーマンのタレント）',
   'entities.abilities.evocation.name': 'エーテルの井戸',
-  'entities.abilities.evocation.description': 'マナを即座に220回復する。（メイジのタレント）',
   'entities.abilities.frenzied_regeneration.name': '野生の癒し',
-  'entities.abilities.frenzied_regeneration.description':
-    '10秒かけて体力を180回復する。熊形態でのみ使用可能。（ドルイドのタレント）',
   'entities.abilities.frost_trap.name': '霧氷の罠',
-  'entities.abilities.frost_trap.description':
-    '対象地点の敵を3秒間凍結させ、移動と行動を封じる。（ハンターのタレント）',
   'entities.abilities.ghostly_strike.name': '亡霊の一撃',
-  'entities.abilities.ghostly_strike.description':
-    '敵に武器ダメージと{damage}の追加ダメージを与え、短時間、回避率を上昇させる。コンボポイントを1獲得する。（ローグのタレント）',
   'entities.abilities.hammer_of_wrath.name': '鐘鳴りの槌',
-  'entities.abilities.hammer_of_wrath.description':
-    '傷ついた敵に聖なるハンマーを投げ、{damage}の聖属性ダメージを与える。体力が20%未満の対象にのみ使用可能。（パラディンのタレント）',
   'entities.abilities.healing_stream.name': '湧き水',
-  'entities.abilities.healing_stream.description':
-    '味方1体の体力を12秒かけて120回復する。（シャーマンのタレント）',
   'entities.abilities.holy_wrath.name': '聖者の怒り',
-  'entities.abilities.holy_wrath.description':
-    '聖なる力を解き放ち、周囲の敵に{damage}のダメージを与える。（パラディンのタレント）',
   'entities.abilities.howl_of_terror.name': '恐怖の遠吠え',
-  'entities.abilities.howl_of_terror.description':
-    '周囲の敵を最大3秒間恐怖状態にする。ダメージを受けると解除されることがある。（ウォーロックのタレント）',
   'entities.abilities.ice_block.name': '冷たき棺',
-  'entities.abilities.ice_block.description':
-    '氷に身を閉じ、8秒間に600のダメージを吸収する。閉じ込められている間は行動できない。再使用すると解除する。（メイジのタレント）',
   'entities.abilities.inner_focus.name': '静まる心',
-  'entities.abilities.inner_focus.description':
-    '次に使用するスペルの消費をなくす。効果時間60秒。（プリーストのタレント）',
   'entities.abilities.innervate.name': '生命の樹液',
-  'entities.abilities.innervate.description':
-    '生命の樹液が10秒間あふれ、現在のリソースを波状に20回復する。マナ、怒り、エナジーに対応し、変身しても中断されない。睡眠、スタン、ステイシス中は樹液が止まる。（ドルイドのタレント）',
   'entities.abilities.meteor.name': '天の石',
-  'entities.abilities.meteor.description':
-    '対象地点へ隕石を落とし、{damage}の火属性ダメージを与える。その後6秒間、その場の敵に2秒ごとに12から18の火属性ダメージを与える。（メイジのタレント）',
   'entities.abilities.mind_sear.name': '思念焼き',
-  'entities.abilities.mind_sear.description':
-    '対象地点へ闇のエネルギーをチャネリングし、周囲の敵に毎秒{damage}のダメージを与える。（プリーストのタレント）',
   'entities.abilities.multi_shot.name': '分裂射撃',
-  'entities.abilities.multi_shot.description':
-    '対象地点へ矢の一斉射撃を放ち、8ヤード以内の敵に{damage}の物理ダメージを与える。（ハンターのタレント）',
   'entities.abilities.prayer_of_healing.name': '聖歌の癒し',
-  'entities.abilities.prayer_of_healing.description':
-    '周囲の味方の体力を{damage}回復する。（プリーストのタレント）',
   'entities.abilities.preparation.name': '備え',
-  'entities.abilities.preparation.description':
-    'スプリント、回避、バニッシュのクールダウンを完了させる。（ローグのタレント）',
   'entities.abilities.presence_of_mind.name': '駆ける心',
-  'entities.abilities.presence_of_mind.description':
-    '次に使用する詠唱時間のあるスペルを即時発動にする。効果時間60秒。（メイジのタレント）',
   'entities.abilities.psychic_scream.name': '精神の絶叫',
-  'entities.abilities.psychic_scream.description':
-    '周囲の敵を最大4秒間恐怖状態にする。ダメージを受けると解除されることがある。（プリーストのタレント）',
   'entities.abilities.shadowstep.name': '影すべり',
-  'entities.abilities.shadowstep.description': '影を通り抜けて対象へ近づく。（ローグのタレント）',
   'entities.abilities.silence.name': '沈黙',
-  'entities.abilities.silence.description': '対象を4秒間沈黙させる。（プリーストのタレント）',
   'entities.abilities.smoke_screen.name': 'スモークスクリーン',
   'entities.abilities.smoke_screen.description': '煙幕に紛れ、8秒間、回避率を30%上昇させる。',
   'entities.abilities.spellsteal.name': '魔法奪取',
@@ -243,8 +169,6 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.startle_shot.description':
     '荒々しい一射で対象を{duration}秒間混乱させる。ダメージを受けると解除される。',
   'entities.abilities.tranquility.name': '木立の歌',
-  'entities.abilities.tranquility.description':
-    '4秒間、回復エネルギーをチャネリングし、30ヤード以内の味方の体力を毎秒42から52回復する。（ドルイドのタレント）',
   'entities.abilities.typhoon.name': 'タイフーン',
   'entities.abilities.typhoon.description':
     '突風で8ヤード以内のすべての敵を吹き飛ばしてよろめかせ、4秒間、移動速度を50%低下させる。',
@@ -7664,4 +7588,212 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     '前方の敵を薙ぎ払い、回避または受け流しの後に消費なしで使えることがある。',
   'guide.abilityHook.hamstring': '敵の移動を妨げ、逃走を阻止する。',
+  'game.talents.choicesTab': '選択',
+  'game.talents.readout.rowsSummary': 'タレント: {head}、選択済み行 {picked}/{unlocked}。',
+  'game.talents.rowUnlockToast': '新しいタレント選択が解放されました!',
+  'game.talents.rowUnlocks': 'レベル{level}で解放',
+  'hudChrome.fct.absorbed': '{amount} 吸収',
+  'entities.abilities.temporal_mend.name': '時の繕い',
+  'entities.abilities.temporal_mend.description':
+    '味方を一瞬だけ未来へ進め、より健やかな未来の体に馴染む間に体力を{damage}回復する。(クロノマンシーの特性)',
+  'entities.abilities.temporal_barrier.name': '時の障壁',
+  'entities.abilities.temporal_barrier.description':
+    '対象を現在から一拍だけずらし、時の殻が10秒間、{damage}のダメージを吸収してから時間軸が元に戻る。',
+  'entities.abilities.temporal_echo.name': '時の残響',
+  'entities.abilities.temporal_echo.description':
+    'より健やかだった瞬間の残響で味方に刻印し、即座に{damage}の体力を回復する。{duration}秒間、与えた秘術ダメージの一部が残響を通じてその味方を癒やす。',
+  'entities.abilities.aura_surge.name': '曙光の跳弾',
+  'entities.abilities.aura_surge.description':
+    '曙光で鍛えた盾を投げて{damage}の聖属性ダメージを与え、最初の対象を2秒間沈黙させる。その後、10ヤード以内の追加の敵最大2体へ跳ね返り、1回ごとに75%のダメージを与える。（パラディンのタレント）',
+  'entities.abilities.aspect_of_the_wild.description':
+    '30ヤード以内の味方を野生の力で鼓舞し、攻撃力を45、攻撃速度を5%上昇させる。効果時間5分。（ハンターのタレント）',
+  'entities.abilities.avenging_wrath.description':
+    '復讐の力を呼び起こし、攻撃力を60、魔力を30上昇させる。効果時間20秒。（パラディンのタレント）',
+  'entities.abilities.berserk.description':
+    '攻撃力を70上昇させる。効果時間15秒。（ドルイドのタレント）',
+  'entities.abilities.blink.description':
+    '前方15ヤードへ瞬間移動し、移動不能効果を解除する。（メイジのタレント）',
+  'entities.abilities.bloodlust.description':
+    '30ヤード以内の味方を狂乱させ、攻撃速度を30%上昇させる。効果時間15秒。（シャーマンのタレント）',
+  'entities.abilities.chain_lightning.description':
+    '対象地点へ雷を放ち、周囲の敵に{damage}のダメージを与える。（シャーマンのタレント）',
+  'entities.abilities.chaos_bolt.description':
+    '混沌の炎を放ち、{damage}の火属性ダメージを与える。（ウォーロックのタレント）',
+  'entities.abilities.cloak_of_shadows.description':
+    '影で身を包み、5秒間に420のダメージを吸収する。（ローグのタレント）',
+  'entities.abilities.curse_of_exhaustion.description':
+    '対象を呪い、移動速度を30%低下させる。効果時間12秒。（ウォーロックのタレント）',
+  'entities.abilities.death_coil.description':
+    '敵に{damage}の闇属性ダメージを与え、その後3秒間恐怖状態にする。（ウォーロックのタレント）',
+  'entities.abilities.deep_freeze.description':
+    '対象を深く凍らせ、{damage} の冷気ダメージを与えて 4 秒間気絶させる。（メイジタレント）',
+  'entities.abilities.desperate_prayer.description':
+    '自分の体力を即座に{damage}回復する。（プリーストのタレント）',
+  'entities.abilities.deterrence.description':
+    '回避率を50パーセントポイント上昇させる。効果時間10秒。（ハンターのタレント）',
+  'entities.abilities.divine_shield.description':
+    '聖なる力で身を守り、8秒間に900のダメージを吸収する。（パラディンのタレント）',
+  'entities.abilities.earthbind.description':
+    '周囲の敵を大地に縛り、2秒間移動不能にする。（シャーマンのタレント）',
+  'entities.abilities.evocation.description': 'マナを急速に回復する。（メイジタレント）',
+  'entities.abilities.frenzied_regeneration.description':
+    '10秒かけて体力を180回復する。熊形態でのみ使用可能。（ドルイドのタレント）',
+  'entities.abilities.frost_trap.description':
+    '対象地点の敵を3秒間凍結させ、移動と行動を封じる。（ハンターのタレント）',
+  'entities.abilities.ghostly_strike.description':
+    '敵に武器ダメージと{damage}の追加ダメージを与え、短時間、回避率を上昇させる。コンボポイントを1獲得する。（ローグのタレント）',
+  'entities.abilities.hammer_of_wrath.description':
+    '傷ついた敵に聖なるハンマーを投げ、{damage}の聖属性ダメージを与える。体力が20%未満の対象にのみ使用可能。（パラディンのタレント）',
+  'entities.abilities.healing_stream.description':
+    '味方1体の体力を12秒かけて120回復する。（シャーマンのタレント）',
+  'entities.abilities.holy_wrath.description':
+    '聖なる力を解き放ち、周囲の敵に{damage}のダメージを与える。（パラディンのタレント）',
+  'entities.abilities.howl_of_terror.description':
+    '周囲の敵を最大3秒間恐怖状態にする。ダメージを受けると解除されることがある。（ウォーロックのタレント）',
+  'entities.abilities.ice_block.description':
+    '自身を氷に封じ、大量のダメージを吸収する。効果時間 8 秒。（メイジタレント）',
+  'entities.abilities.inner_focus.description':
+    '次に使用するスペルの消費をなくす。効果時間60秒。（プリーストのタレント）',
+  'entities.abilities.innervate.description':
+    '生命の樹液が10秒間あふれ、現在のリソースを波状に20回復する。マナ、怒り、エナジーに対応し、変身しても中断されない。睡眠、スタン、ステイシス中は樹液が止まる。（ドルイドのタレント）',
+  'entities.abilities.mend_pet.name': '手当て',
+  'entities.abilities.mend_pet.description':
+    '15 秒かけて味方対象を {damage} 回復する。（ハンタータレント）',
+  'entities.abilities.meteor.description':
+    '対象地点へ隕石を落とし、{damage}の火属性ダメージを与える。その後6秒間、その場の敵に2秒ごとに12から18の火属性ダメージを与える。（メイジのタレント）',
+  'entities.abilities.mind_sear.description':
+    '対象地点へ闇のエネルギーをチャネリングし、周囲の敵に毎秒{damage}のダメージを与える。（プリーストのタレント）',
+  'entities.abilities.multi_shot.description':
+    '対象地点へ矢の一斉射撃を放ち、8ヤード以内の敵に{damage}の物理ダメージを与える。（ハンターのタレント）',
+  'entities.abilities.prayer_of_healing.description':
+    '周囲の味方の体力を{damage}回復する。（プリーストのタレント）',
+  'entities.abilities.preparation.description':
+    'スプリント、回避、バニッシュのクールダウンを完了させる。（ローグのタレント）',
+  'entities.abilities.presence_of_mind.description':
+    '次の詠唱時間のある呪文を即時詠唱にする。効果時間 60 秒。（メイジタレント）',
+  'entities.abilities.psychic_scream.description':
+    '周囲の敵を最大4秒間恐怖状態にする。ダメージを受けると解除されることがある。（プリーストのタレント）',
+  'entities.abilities.shadowstep.description': '影を通り抜けて対象へ近づく。（ローグのタレント）',
+  'entities.abilities.silence.description': '対象を4秒間沈黙させる。（プリーストのタレント）',
+  'entities.abilities.tranquility.description':
+    '4秒間、回復エネルギーをチャネリングし、30ヤード以内の味方の体力を毎秒42から52回復する。（ドルイドのタレント）',
+  'hudChrome.auraEffect.combustionCrit': '火炎呪文が必ずクリティカルになる',
+  'hudChrome.auraEffect.overloadNext': '次の呪文の効果が{pct}%増加するが、マナ消費が50%増える',
+  'hudChrome.auraEffect.powerEchoNext': '次の直接呪文が同じ対象に{pct}%の威力で再発動する',
+  'hudChrome.auraEffect.iceFloesCasts': '次の{n}回の詠唱呪文を移動しながら唱えられる',
+  'hudChrome.auraEffect.freeCast': '次の詠唱のコストがゼロになる',
+  'hudChrome.auraEffect.instantCast': '次の詠唱時間のある呪文が即時発動になる',
+  'hudChrome.auraEffect.cheapCast': '次の呪文のコストが{pct}%減少する',
+  'hudChrome.auraEffect.increase.sp': '呪文の威力を{value}上昇させる',
+  'hudChrome.specPanel.specUnlockBanner': 'スペシャライゼーション解放！',
+  'hudChrome.specPanel.specUnlockHint': 'Nキーを押してスペシャライゼーションを選択してください。',
+  'entities.abilities.cone_of_cold.description':
+    '周囲の敵を冷気で撃ち、{damage}の氷ダメージを与えます。（氷シグネチャー）',
+  'entities.abilities.bladestorm.description':
+    '鋼の嵐と化し、4秒間、8ヤード以内のすべての敵に毎秒{damage}のダメージを与えます。',
+  'guide.abilityHook.ice_lance':
+    '氷の効果を消費する即時発動の氷片。凍結した対象には大幅に高いダメージを与えます。',
+  'guide.abilityHook.flurry':
+    '3発の氷弾を素早く放ち、次の氷系攻撃が対象を凍結状態として扱うようにします。',
+  'guide.abilityHook.fingers_of_frost':
+    '氷の矢が、ときどき次のアイスランスに対象を凍結状態として扱う力を与えます。',
+  'guide.abilityHook.brain_freeze':
+    '氷の矢が、ときどき次のフルーリーを即時発動にして威力を高めます。',
+  'guide.abilityHook.shatter': '凍結した対象に対する呪文のクリティカル率が大幅に上昇します。',
+  'guide.abilityHook.frozen_orb':
+    'ゆっくり進む氷球を敵の群れへ放ち、周囲を冷やして氷の効果を発生させます。',
+  'guide.abilityHook.blizzard':
+    '一帯を氷で覆い、敵の群れにダメージを与えながら移動速度を低下させます。',
+  'guide.abilityHook.blink': '短い距離を前方へ瞬間移動し、移動不能効果を解除します。',
+  'hud.pet.waterJet': 'ウォータージェット',
+  'hud.pet.waterJetTitle': 'ウォータージェット',
+  'hud.pet.waterJetDesc':
+    'ウォーターエレメンタルに、3秒間敵を減速させる水流を放つよう命令します。クールダウン8秒。右クリックすると、使用可能になるたびに自動で発動します。',
+  'entities.abilities.ice_lance.name': 'アイスランス',
+  'entities.abilities.ice_lance.description':
+    '氷の槍を投げ、{damage}の氷ダメージを与えます。凍結した対象には3倍のダメージを与えます。フィンガーズ・オブ・フロストまたはウィンターズ・チルを1チャージ消費すると、対象を凍結状態として扱います。（氷）',
+  'entities.abilities.flurry.name': 'フルーリー',
+  'entities.abilities.flurry.description':
+    '3発の氷弾を放ち、それぞれ{damage}の氷ダメージを与え、対象にウィンターズ・チルを付与します。次に命中する対応呪文2回は対象を凍結状態として扱います。ブレインフリーズ発動時は即時発動となり、威力が30%上昇してクールダウンを無視します。（氷）',
+  'entities.abilities.frozen_orb.name': 'フローズンオーブ',
+  'entities.abilities.frozen_orb.description':
+    '渦巻く氷球を放ち、8秒間前方へ漂わせます。周囲の敵に毎秒{damage}の氷ダメージを与え、移動速度を30%低下させます。命中するとフィンガーズ・オブ・フロストを生成します。（氷）',
+  'entities.abilities.blizzard.name': 'ブリザード',
+  'entities.abilities.blizzard.description':
+    '対象地点に6秒間吹雪を呼び、毎秒{damage}の氷ダメージを与えて敵の移動速度を40%低下させます。敵1体に命中するたび、フローズンオーブのクールダウンを0.5秒、1回の発動につき最大3秒短縮します。（氷）',
+  'entities.abilities.glacial_spike.name': 'グレイシャルスパイク',
+  'entities.abilities.glacial_spike.description':
+    '巨大な氷の槍を作り、アイシクルを5個消費して{damage}の氷ダメージを与え、対象を4秒間その場で凍結させます。（氷）',
+  'entities.abilities.glacial_front.name': '氷河の前線',
+  'entities.abilities.glacial_front.description':
+    '長押しして広がる冷気を蓄え、円錐状に放出します。チャージが長いほど遠くまで届き、ダメージが増加します。命中したすべての敵の移動速度を4秒間50%低下させ、最大チャージ時はさらに1秒間移動不能にします。（氷）',
+  'entities.abilities.dragons_breath.name': 'ドラゴンズブレス',
+  'entities.abilities.dragons_breath.description':
+    '長押しして広がる炎の息を蓄え、円錐状に放出します。チャージが長いほど遠くまで届き、ダメージが増加します。命中した敵は混乱し、ダメージを受けると効果が解除されます。最大チャージ時は必ずクリティカルとなり、ホットストリークの条件に1回分加算されます。（火）',
+  'entities.abilities.fingers_of_frost.name': 'フィンガーズ・オブ・フロスト',
+  'entities.abilities.fingers_of_frost.description':
+    'ライムランスが15%の確率でフィンガーズ・オブ・フロストを1チャージ付与します（最大2チャージ）。次のアイスランスは対象を凍結状態として扱います。（氷）',
+  'entities.abilities.brain_freeze.name': 'ブレインフリーズ',
+  'entities.abilities.brain_freeze.description':
+    'ライムランスが20%の確率で、次のフルーリーを即時発動にし、威力を30%上昇させ、クールダウンを無視させます。（氷）',
+  'entities.abilities.shatter.name': '粉砕',
+  'entities.abilities.shatter.description':
+    '凍結した対象に対する呪文のクリティカル率が50%上昇し、そのクリティカルダメージが20%上昇します。フィンガーズ・オブ・フロストとウィンターズ・チルも対象を凍結状態として扱います。（氷）',
+  'entities.abilities.temporal_cascade.name': '時の連鎖',
+  'entities.abilities.temporal_cascade.description':
+    '時の残響をパーティ内に連鎖させ、対象と最も近い味方最大4人を即座に回復し、それぞれに{duration}秒間印を付けます。あなたが与えた秘術ダメージの一部が残響を通じて戻り、印のついた味方を回復します。（クロノマンシー）',
+  'entities.abilities.temporal_reversal.name': '時の逆転',
+  'entities.abilities.temporal_reversal.description':
+    '倒れた味方の時間軸を巻き戻し、戦闘中でも、その遺体の場所で体力とマナの一部を持った状態で蘇生します。（クロノマンシー）',
+  'entities.abilities.temporal_rewind.name': '巻き戻し',
+  'entities.abilities.temporal_rewind.description':
+    'パーティまたはレイドに秘術の波を送り、時間を巻き戻します。40ヤード以内の各味方が過去5秒間に受けたダメージの30%を回復します（最大体力の35%まで）。この効果はクリティカルになりません。（クロノマンシー）',
+  'entities.abilities.temporal_acceleration.name': '時間加速',
+  'entities.abilities.temporal_acceleration.description':
+    'パーティまたはレイドの時間の流れを加速し、15秒間、攻撃、詠唱、チャネリング速度を30%上昇させます。直近に時間加速またはブラッドラストの影響を受けた味方は疲労しており、効果を得られません。（クロノマンシー）',
+  'entities.abilities.perfect_moment.name': '完璧な瞬間',
+  'entities.abilities.perfect_moment.description':
+    '完璧な瞬間をつかみ、秘術チャージを即座に4つ獲得します。10秒間、エーテルダーツはチャージを消費しません。（クロノマンシー）',
+  'entities.abilities.arcane_surge.name': 'エーテルサージ',
+  'entities.abilities.arcane_surge.description':
+    '生の秘術エネルギーを敵に流し込み、{damage}のダメージを与えます。発動するたびに秘術チャージが残り、次のエーテルサージのダメージと詠唱速度が上昇します（1つにつき5%高速化）が、マナ消費も大幅に増えます。最大4チャージ。エーテルダーツはチャージを消費します。また発動時にエーテルラッシュが準備されることがあり、次のエーテルサージのマナ消費がなくなり、詠唱速度が2倍になります。',
+  'entities.items.conjured_bread4.name': '魔法の祝宴パン',
+  'entities.items.conjured_water4.name': '魔法の湧き水',
+  'entities.abilities.blazing_barrier.name': 'ブレイジングバリア',
+  'entities.abilities.blazing_barrier.description':
+    '自身を炎で包み、130ダメージを吸収します。60秒間持続します。（火）',
+  'entities.abilities.cold_snap.name': 'コールドスナップ',
+  'entities.abilities.cold_snap.description':
+    'フリッカーステップ、フロストヴェール、グレーターインビジビリティのクールダウンを完了させます。（メイジタレント）',
+  'entities.abilities.greater_invisibility.name': 'グレーターインビジビリティ',
+  'entities.abilities.greater_invisibility.description':
+    '20秒間姿を消します。継続ダメージ効果を2個解除し、透明状態の間と解除直後は受けるダメージが90%減少します。（メイジタレント）',
+  'entities.abilities.hot_streak.name': 'ホットストリーク',
+  'entities.abilities.hot_streak.description':
+    'パッシブ：火系呪文（ファイアボール、ファイアブラスト、スコーチ、パイロブラスト、フレイムストライク）で2回連続してクリティカルを出すと、次のパイロブラストまたはフレイムストライクが即時発動となり、コストがなくなります。消費呪文は無料発動も含めて次の連続判定に加算されます。フレイムストライクは命中した敵の数にかかわらず1回のみ加算され、最初の着弾だけが判定されます。（火）',
+  'entities.abilities.ice_floes.name': 'アイスフロー',
+  'entities.abilities.ice_floes.description':
+    '次の詠唱時間のある呪文2回を移動しながら発動できます。15秒間持続します。（メイジタレント）',
+  'entities.abilities.ignition.name': 'イグニッション',
+  'entities.abilities.ignition.description':
+    'パッシブ：呪文のクリティカルが対象を燃焼させ、与えたダメージの40%を6秒かけて与えます。効果は累積します。（火のマスタリー）',
+  'entities.abilities.mass_barrier.name': 'マスバリア',
+  'entities.abilities.mass_barrier.description':
+    '自身と30メートル以内にいる近くの味方最大4人に、それぞれ130ダメージを吸収するシールドを60秒間付与します。（メイジタレント）',
+  'entities.abilities.overload.name': 'オーバーロード',
+  'entities.abilities.overload.description':
+    '次の呪文の効果が40%増幅されますが、マナ消費が50%増加します。10秒間持続します。（メイジタレント）',
+  'entities.abilities.power_echo.name': 'パワーエコー',
+  'entities.abilities.power_echo.description':
+    '次の直接呪文が同じ対象に50%の威力でもう一度発動します。10秒間持続します。（メイジタレント）',
+  'entities.abilities.rings_of_frost.name': 'リング・オブ・フロスト',
+  'entities.abilities.rings_of_frost.description':
+    '10秒間持続する氷の輪を召喚します。輪の境界を越えた敵は4秒間凍結します。（メイジタレント）',
+  'entities.abilities.rune_of_power.name': 'ルーン・オブ・パワー',
+  'entities.abilities.rune_of_power.description':
+    '足元に15秒間持続する力のルーンを刻みます。8メートル以内に立つ味方が与えるダメージが10%増加します。（メイジタレント）',
+  'entities.abilities.summon_water_elemental.name': 'ウォーターエレメンタル召喚',
+  'entities.abilities.summon_water_elemental.description':
+    '共に戦うウォーターエレメンタルを召喚します。対象へウォーターボルトを投げ、ウォータージェットを放ちます。（氷）',
+  'entities.mobs.water_elemental.name': 'ウォーターエレメンタル',
 };

@@ -160,12 +160,6 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'entities.items.highwatch_greatsword.name': 'Pedang Agung Highwatch',
   'entities.items.highwatch_wallshield.name': 'Perisai Tembok Highwatch',
   'entities.items.eastbrook_buckler.name': 'Perisai Kecil Eastbrook',
-  'entities.abilities.avatar.name': 'Avatar',
-  'entities.abilities.avatar.description':
-    'Berubah menjadi kolosus selama 20 detik, melepaskan semua efek kontrol pada dirimu dan meningkatkan kerusakan yang kamu hasilkan sebesar 20%.',
-  'entities.abilities.bladestorm.name': 'Badai Pedang',
-  'entities.abilities.bladestorm.description':
-    'Menjadi badai baja yang berputar, menghantam semua musuh dalam jarak 8 meter sebesar {damage} setiap detik selama 4 detik.',
   'entities.abilities.battle_stance.description':
     'Kuda-kuda tempur agresif: kamu menghasilkan 10% lebih banyak amarah. Kuda-kuda bawaan untuk Arms dan Protection.',
   'entities.abilities.battle_stance.name': 'Kuda-kuda Tempur',
@@ -266,117 +260,42 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'hudChrome.talentRows.tab': 'Pilihan',
   'hudChrome.talentRows.readoutSummary': 'Talenta: {head}, {spent}/{total} baris dipilih.',
   'entities.abilities.aspect_of_the_wild.name': 'Rupa Taring Liar',
-  'entities.abilities.aspect_of_the_wild.description':
-    'Mengilhami sekutu dalam jarak 30 m dengan kekuatan liar, meningkatkan daya serang mereka sebesar 45 dan kecepatan serangan sebesar 5% selama 5 menit. (talenta Hunter)',
-  'entities.abilities.aura_surge.name': 'Pantulan Fajar',
-  'entities.abilities.aura_surge.description':
-    'Melempar perisai tempa fajar yang menghasilkan {damage} kerusakan Suci, membungkam target utama selama 2 detik, lalu memantul ke hingga 2 musuh lain dalam jarak 10 yard dengan 75% kerusakan tiap pantulan. (talenta Paladin)',
   'entities.abilities.avenging_wrath.name': 'Sayap Pembalas',
-  'entities.abilities.avenging_wrath.description':
-    'Memanggil kekuatan pembalasan, meningkatkan daya serangmu sebesar 60 dan kekuatan sihir sebesar 30 selama 20 detik. (talenta Paladin)',
   'entities.abilities.berserk.name': 'Kabut Merah',
-  'entities.abilities.berserk.description':
-    'Meningkatkan daya serangmu sebesar 70 selama 15 detik. (talenta Druid)',
   'entities.abilities.blink.name': 'Langkah Kilat',
-  'entities.abilities.blink.description':
-    'Menteleportasimu 15 m ke depan dan membebaskan efek pengakaran. (talenta Mage)',
   'entities.abilities.bloodlust.name': 'Genderang Perang',
-  'entities.abilities.bloodlust.description':
-    'Membuat sekutu dalam jarak 30 m mengamuk, meningkatkan kecepatan serangan mereka sebesar 30% selama 15 detik. (talenta Shaman)',
   'entities.abilities.chain_lightning.name': 'Petir Bercabang',
-  'entities.abilities.chain_lightning.description':
-    'Melontarkan petir ke area target, menghasilkan {damage} kerusakan kepada musuh di dekatnya. (talenta Shaman)',
   'entities.abilities.chaos_bolt.name': 'Baut Reruntuhan',
-  'entities.abilities.chaos_bolt.description':
-    'Melontarkan panah api kacau yang menghasilkan {damage} kerusakan Api. (talenta Warlock)',
   'entities.abilities.cloak_of_shadows.name': 'Jubah Bayang',
-  'entities.abilities.cloak_of_shadows.description':
-    'Menyelimutimu dengan bayangan dan menyerap 420 kerusakan selama 5 detik. (talenta Rogue)',
   'entities.abilities.cone_of_cold.name': 'Sapuan Beku',
-  'entities.abilities.cone_of_cold.description':
-    'Menghantam musuh di dekatnya dengan embun beku dan menghasilkan {damage} kerusakan Beku. (kemampuan khas Frost)',
   'entities.abilities.curse_of_exhaustion.name': 'Kutuk Timah',
-  'entities.abilities.curse_of_exhaustion.description':
-    'Mengutuk target, mengurangi kecepatan geraknya sebesar 30% selama 12 detik. (talenta Warlock)',
   'entities.abilities.death_coil.name': 'Kumparan Kubur',
-  'entities.abilities.death_coil.description':
-    'Menghantam musuh dengan {damage} kerusakan Bayangan, lalu membuatnya ketakutan selama 3 detik. (talenta Warlock)',
   'entities.abilities.deep_freeze.name': 'Embun Mati',
-  'entities.abilities.deep_freeze.description':
-    'Membekukan target sepenuhnya, menghasilkan {damage} kerusakan Beku dan membuatnya pingsan selama 4 detik. (talenta Mage)',
   'entities.abilities.desperate_prayer.name': 'Doa Terakhir',
-  'entities.abilities.desperate_prayer.description':
-    'Langsung memulihkan {damage} nyawamu. (talenta Priest)',
   'entities.abilities.deterrence.name': 'Penjaga Duri',
-  'entities.abilities.deterrence.description':
-    'Meningkatkan peluang menghindarmu sebesar 50 poin persentase selama 10 detik. (talenta Hunter)',
   'entities.abilities.divine_shield.name': 'Pelindung Cahaya',
-  'entities.abilities.divine_shield.description':
-    'Melindungimu dengan kekuatan suci dan menyerap 900 kerusakan selama 8 detik. (talenta Paladin)',
   'entities.abilities.earthbind.name': 'Bumi Mencengkeram',
-  'entities.abilities.earthbind.description':
-    'Mengikat musuh di dekatnya ke tanah dan mengakarkan mereka selama 2 detik. (talenta Shaman)',
   'entities.abilities.evocation.name': 'Sumur Eter',
-  'entities.abilities.evocation.description': 'Langsung memulihkan 220 mana. (talenta Mage)',
   'entities.abilities.frenzied_regeneration.name': 'Pemulihan Liar',
-  'entities.abilities.frenzied_regeneration.description':
-    'Memulihkan 180 nyawa selama 10 detik. Hanya dalam Bentuk Beruang. (talenta Druid)',
   'entities.abilities.frost_trap.name': 'Jerat Rima',
-  'entities.abilities.frost_trap.description':
-    'Membekukan musuh di area target selama 3 detik sehingga mereka tidak dapat bergerak atau bertindak. (talenta Hunter)',
   'entities.abilities.ghostly_strike.name': 'Serangan Arwah',
-  'entities.abilities.ghostly_strike.description':
-    'Menghantam musuh dengan kerusakan senjata ditambah {damage}, meningkatkan penghindaran sejenak, dan memberikan 1 poin kombo. (talenta Rogue)',
   'entities.abilities.hammer_of_wrath.name': 'Palu Berdentang',
-  'entities.abilities.hammer_of_wrath.description':
-    'Melempar palu suci kepada musuh yang terluka dan menghasilkan {damage} kerusakan Suci. Hanya dapat digunakan di bawah 20% nyawa. (talenta Paladin)',
   'entities.abilities.healing_stream.name': 'Mata Air',
-  'entities.abilities.healing_stream.description':
-    'Memulihkan 120 nyawa target sekutu selama 12 detik. (talenta Shaman)',
   'entities.abilities.holy_wrath.name': 'Murka Santo',
-  'entities.abilities.holy_wrath.description':
-    'Melepaskan kekuatan suci dan menghasilkan {damage} kerusakan kepada musuh di dekatnya. (talenta Paladin)',
   'entities.abilities.howl_of_terror.name': 'Lolongan Ngeri',
-  'entities.abilities.howl_of_terror.description':
-    'Membuat musuh di dekatnya ketakutan hingga 3 detik. Kerusakan dapat membatalkan efek ini. (talenta Warlock)',
   'entities.abilities.ice_block.name': 'Peti Es',
-  'entities.abilities.ice_block.description':
-    'Membungkusmu dalam es dan menyerap 600 kerusakan selama 8 detik. Kamu tidak dapat bertindak selama terbungkus. Gunakan lagi untuk membatalkan. (talenta Mage)',
   'entities.abilities.inner_focus.name': 'Pikiran Hening',
-  'entities.abilities.inner_focus.description':
-    'Membuat mantra berikutnya tidak memerlukan biaya. Berlangsung 60 detik. (talenta Priest)',
   'entities.abilities.innervate.name': 'Getah Hidup',
-  'entities.abilities.innervate.description':
-    'Getah hidup mengalir dalam dirimu selama 10 detik dan memulihkan 20 sumber dayamu saat ini dalam gelombang: mana, amarah, atau energi. Berganti wujud tidak memutusnya. Tidur, pingsan, atau stasis menghentikan aliran getah. (talenta Druid)',
   'entities.abilities.meteor.name': 'Batu Langit',
-  'entities.abilities.meteor.description':
-    'Memanggil meteor ke area target dan menghasilkan {damage} kerusakan Api, lalu membakar musuh di sana dengan 12 sampai 18 kerusakan Api setiap 2 detik selama 6 detik. (talenta Mage)',
   'entities.abilities.mind_sear.name': 'Bakar Pikir',
-  'entities.abilities.mind_sear.description':
-    'Menyalurkan energi Bayangan ke area target dan menghasilkan {damage} kerusakan setiap detik kepada musuh di dekatnya. (talenta Priest)',
   'entities.abilities.multi_shot.name': 'Tembakan Pecah',
-  'entities.abilities.multi_shot.description':
-    'Menembakkan rentetan ke area target dan menghasilkan {damage} kerusakan Fisik kepada musuh dalam radius 8 m. (talenta Hunter)',
   'entities.abilities.prayer_of_healing.name': 'Penyembuhan Koor',
-  'entities.abilities.prayer_of_healing.description':
-    'Memulihkan {damage} nyawa sekutu di dekatnya. (talenta Priest)',
   'entities.abilities.preparation.name': 'Rencana Cadangan',
-  'entities.abilities.preparation.description':
-    'Mengakhiri waktu isi ulang Lari Cepat, Mengelak, dan Lenyap. (talenta Rogue)',
   'entities.abilities.presence_of_mind.name': 'Pikiran Melaju',
-  'entities.abilities.presence_of_mind.description':
-    'Membuat mantra berikutnya yang memiliki waktu perapalan menjadi seketika. Berlangsung 60 detik. (talenta Mage)',
   'entities.abilities.psychic_scream.name': 'Jerit Psikis',
-  'entities.abilities.psychic_scream.description':
-    'Membuat musuh di dekatnya ketakutan hingga 4 detik. Kerusakan dapat membatalkan efek ini. (talenta Priest)',
   'entities.abilities.shadowstep.name': 'Selip Bayang',
-  'entities.abilities.shadowstep.description':
-    'Melangkah menembus bayangan menuju targetmu. (talenta Rogue)',
   'entities.abilities.silence.name': 'Senyap',
-  'entities.abilities.silence.description': 'Membungkam target selama 4 detik. (talenta Priest)',
   'entities.abilities.tranquility.name': 'Lagu Rimba',
-  'entities.abilities.tranquility.description':
-    'Menyalurkan energi pemulihan selama 4 detik, memulihkan 42 sampai 52 nyawa sekutu dalam jarak 30 m setiap detik. (talenta Druid)',
   'entities.abilities.cleansing_verdict.name': 'Vonis Pemurnian',
   'entities.abilities.cleansing_verdict.description':
     'Menghapus efek sihir berbahaya dari target sekutu dan menyembuhkannya sebesar {damage} dengan sihir Suci.',
@@ -7822,4 +7741,132 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.abilityHook.revenge':
     'Menyapu musuh di depanmu dan dapat menjadi gratis setelah menghindar atau menangkis.',
   'guide.abilityHook.hamstring': 'Melumpuhkan gerakan musuh agar tidak dapat melarikan diri.',
+  'entities.abilities.aura_surge.name': 'Pantulan Fajar',
+  'entities.abilities.aura_surge.description':
+    'Melempar perisai tempa fajar yang menghasilkan {damage} kerusakan Suci, membungkam target utama selama 2 detik, lalu memantul ke hingga 2 musuh lain dalam jarak 10 yard dengan 75% kerusakan tiap pantulan. (talenta Paladin)',
+  'entities.abilities.aspect_of_the_wild.description':
+    'Mengilhami sekutu dalam jarak 30 m dengan kekuatan liar, meningkatkan daya serang mereka sebesar 45 dan kecepatan serangan sebesar 5% selama 5 menit. (talenta Hunter)',
+  'entities.abilities.avatar.name': 'Avatar',
+  'entities.abilities.avatar.description':
+    'Berubah menjadi kolosus selama 20 detik, melepaskan semua efek kontrol pada dirimu dan meningkatkan kerusakan yang kamu hasilkan sebesar 20%.',
+  'entities.abilities.avenging_wrath.description':
+    'Memanggil kekuatan pembalasan, meningkatkan daya serangmu sebesar 60 dan kekuatan sihir sebesar 30 selama 20 detik. (talenta Paladin)',
+  'entities.abilities.berserk.description':
+    'Meningkatkan daya serangmu sebesar 70 selama 15 detik. (talenta Druid)',
+  'entities.abilities.bladestorm.name': 'Badai Pedang',
+  'entities.abilities.bladestorm.description':
+    'Menjadi badai baja yang berputar, menghantam semua musuh dalam jarak 8 meter sebesar {damage} setiap detik selama 4 detik.',
+  'entities.abilities.blink.description':
+    'Menteleportasimu 15 m ke depan dan membebaskan efek pengakaran. (talenta Mage)',
+  'entities.abilities.bloodlust.description':
+    'Membuat sekutu dalam jarak 30 m mengamuk, meningkatkan kecepatan serangan mereka sebesar 30% selama 15 detik. (talenta Shaman)',
+  'entities.abilities.chain_lightning.description':
+    'Melontarkan petir ke area target, menghasilkan {damage} kerusakan kepada musuh di dekatnya. (talenta Shaman)',
+  'entities.abilities.chaos_bolt.description':
+    'Melontarkan panah api kacau yang menghasilkan {damage} kerusakan Api. (talenta Warlock)',
+  'entities.abilities.cloak_of_shadows.description':
+    'Menyelimutimu dengan bayangan dan menyerap 420 kerusakan selama 5 detik. (talenta Rogue)',
+  'entities.abilities.cone_of_cold.description':
+    'Golpea a di dekat musuh con escarcha e inflige {damage} de daño de Es. (talenta mage)',
+  'entities.abilities.curse_of_exhaustion.description':
+    'Mengutuk target, mengurangi kecepatan geraknya sebesar 30% selama 12 detik. (talenta Warlock)',
+  'entities.abilities.death_coil.description':
+    'Menghantam musuh dengan {damage} kerusakan Bayangan, lalu membuatnya ketakutan selama 3 detik. (talenta Warlock)',
+  'entities.abilities.deep_freeze.description':
+    'Congela profundamente a target, inflige {damage} de daño de Es y lo aturde durante 4 detik. (talenta mage)',
+  'entities.abilities.desperate_prayer.description':
+    'Langsung memulihkan {damage} nyawamu. (talenta Priest)',
+  'entities.abilities.deterrence.description':
+    'Meningkatkan peluang menghindarmu sebesar 50 poin persentase selama 10 detik. (talenta Hunter)',
+  'entities.abilities.divine_shield.description':
+    'Melindungimu dengan kekuatan suci dan menyerap 900 kerusakan selama 8 detik. (talenta Paladin)',
+  'entities.abilities.earthbind.description':
+    'Mengikat musuh di dekatnya ke tanah dan mengakarkan mereka selama 2 detik. (talenta Shaman)',
+  'entities.abilities.evocation.description': 'Restaura mana rápidamente. (talenta mage)',
+  'entities.abilities.frenzied_regeneration.description':
+    'Memulihkan 180 nyawa selama 10 detik. Hanya dalam Bentuk Beruang. (talenta Druid)',
+  'entities.abilities.frost_trap.description':
+    'Membekukan musuh di area target selama 3 detik sehingga mereka tidak dapat bergerak atau bertindak. (talenta Hunter)',
+  'entities.abilities.ghostly_strike.description':
+    'Menghantam musuh dengan kerusakan senjata ditambah {damage}, meningkatkan penghindaran sejenak, dan memberikan 1 poin kombo. (talenta Rogue)',
+  'entities.abilities.hammer_of_wrath.description':
+    'Melempar palu suci kepada musuh yang terluka dan menghasilkan {damage} kerusakan Suci. Hanya dapat digunakan di bawah 20% nyawa. (talenta Paladin)',
+  'entities.abilities.healing_stream.description':
+    'Memulihkan 120 nyawa target sekutu selama 12 detik. (talenta Shaman)',
+  'entities.abilities.holy_wrath.description':
+    'Melepaskan kekuatan suci dan menghasilkan {damage} kerusakan kepada musuh di dekatnya. (talenta Paladin)',
+  'entities.abilities.howl_of_terror.description':
+    'Membuat musuh di dekatnya ketakutan hingga 3 detik. Kerusakan dapat membatalkan efek ini. (talenta Warlock)',
+  'entities.abilities.ice_block.description':
+    'Te encierra en hielo y absorbe una enorme cantidad de daño durante 8 detik. (talenta mage)',
+  'entities.abilities.inner_focus.description':
+    'Membuat mantra berikutnya tidak memerlukan biaya. Berlangsung 60 detik. (talenta Priest)',
+  'entities.abilities.innervate.description':
+    'Getah hidup mengalir dalam dirimu selama 10 detik dan memulihkan 20 sumber dayamu saat ini dalam gelombang: mana, amarah, atau energi. Berganti wujud tidak memutusnya. Tidur, pingsan, atau stasis menghentikan aliran getah. (talenta Druid)',
+  'entities.abilities.mend_pet.name': 'Tambal Luka',
+  'entities.abilities.mend_pet.description':
+    'Sana a target sekutu por {damage} durante 15 detik. (talenta hunter)',
+  'entities.abilities.meteor.description':
+    'Memanggil meteor ke area target dan menghasilkan {damage} kerusakan Api, lalu membakar musuh di sana dengan 12 sampai 18 kerusakan Api setiap 2 detik selama 6 detik. (talenta Mage)',
+  'entities.abilities.mind_sear.description':
+    'Menyalurkan energi Bayangan ke area target dan menghasilkan {damage} kerusakan setiap detik kepada musuh di dekatnya. (talenta Priest)',
+  'entities.abilities.multi_shot.description':
+    'Menembakkan rentetan ke area target dan menghasilkan {damage} kerusakan Fisik kepada musuh dalam radius 8 m. (talenta Hunter)',
+  'entities.abilities.prayer_of_healing.description':
+    'Memulihkan {damage} nyawa sekutu di dekatnya. (talenta Priest)',
+  'entities.abilities.preparation.description':
+    'Mengakhiri waktu isi ulang Lari Cepat, Mengelak, dan Lenyap. (talenta Rogue)',
+  'entities.abilities.presence_of_mind.description':
+    'Hace instantáneo tu siguiente hechizo con tiempo de lanzamiento. Dura 60 detik. (talenta mage)',
+  'entities.abilities.psychic_scream.description':
+    'Membuat musuh di dekatnya ketakutan hingga 4 detik. Kerusakan dapat membatalkan efek ini. (talenta Priest)',
+  'entities.abilities.shadowstep.description':
+    'Melangkah menembus bayangan menuju targetmu. (talenta Rogue)',
+  'entities.abilities.silence.description': 'Membungkam target selama 4 detik. (talenta Priest)',
+  'entities.abilities.tranquility.description':
+    'Menyalurkan energi pemulihan selama 4 detik, memulihkan 42 sampai 52 nyawa sekutu dalam jarak 30 m setiap detik. (talenta Druid)',
+  'game.talents.readout.rowsSummary': 'Talenta: {head}, {picked}/{unlocked} baris pilihan dipilih.',
+  'hudChrome.fct.absorbed': '{amount} diserap',
+  'game.talents.choicesTab': 'Pilihan',
+  'game.talents.rowUnlockToast': 'Pilihan talenta baru terbuka!',
+  'game.talents.rowUnlocks': 'Terbuka pada level {level}',
+  'entities.abilities.blazing_barrier.name': 'Penghalang Membara',
+  'entities.abilities.blazing_barrier.description':
+    'Selimuti dirimu dengan api untuk menyerap 130 kerusakan selama 60 dtk. (Api)',
+  'entities.abilities.cold_snap.name': 'Hentakan Dingin',
+  'entities.abilities.cold_snap.description':
+    'Mengakhiri waktu pemulihan Langkah Kedip, Selubung Beku, dan Ketaklihatan Agung. (talenta mage)',
+  'entities.abilities.greater_invisibility.name': 'Ketaklihatan Agung',
+  'entities.abilities.greater_invisibility.description':
+    'Menghilang selama 20 dtk.: menghapus 2 efek kerusakan berkala dan kamu menerima 90% lebih sedikit kerusakan saat tak terlihat dan sesaat setelahnya. (talenta mage)',
+  'entities.abilities.hot_streak.name': 'Rentetan Membara',
+  'entities.abilities.hot_streak.description':
+    'Pasif: dua serangan kritis berturut-turut dengan mantra Api milikmu (Cinderbolt, Cinderfall, Lepuh, Pyrelance, atau Hantaman Api) membuat Pyrelance atau Hantaman Api berikutnya seketika dan gratis. Mantra penghabis dihitung untuk rentetan BERIKUTNYA, termasuk penggunaan gratis; Hantaman Api dihitung sekali berapa pun musuh yang terkena, dan hanya benturan awal yang dapat dihitung. (Api)',
+  'entities.abilities.ice_floes.name': 'Bongkahan Es',
+  'entities.abilities.ice_floes.description':
+    'Dua mantra berikutnya yang memiliki waktu perapalan dapat dirapal sambil bergerak. Berlangsung 15 dtk. (talenta mage)',
+  'entities.abilities.ignition.name': 'Penyalaan',
+  'entities.abilities.ignition.description':
+    'Pasif: serangan kritis mantramu membakar target sebesar 40% kerusakan yang ditimbulkan selama 6 dtk. dan dapat bertumpuk. (penguasaan Api)',
+  'entities.abilities.mass_barrier.name': 'Penghalang Massal',
+  'entities.abilities.mass_barrier.description':
+    'Melindungi dirimu dan hingga 4 sekutu di dekatmu dalam jarak 30 m; masing-masing menyerap 130 kerusakan selama 60 dtk. (talenta mage)',
+  'entities.abilities.overload.name': 'Beban Berlebih',
+  'entities.abilities.overload.description':
+    'Mantra berikutnya diperkuat sebesar 40%, tetapi membutuhkan 50% lebih banyak mana. Berlangsung 10 dtk. (talenta mage)',
+  'entities.abilities.power_echo.name': 'Gema Kekuatan',
+  'entities.abilities.power_echo.description':
+    'Mantra langsung berikutnya terulang dengan 50% kekuatan pada target yang sama. Berlangsung 10 dtk. (talenta mage)',
+  'entities.abilities.rings_of_frost.name': 'Cincin Embun Beku',
+  'entities.abilities.rings_of_frost.description':
+    'Memanggil cincin selama 10 dtk. Musuh yang melintasi tepinya membeku selama 4 dtk. (talenta mage)',
+  'entities.abilities.rune_of_power.name': 'Rune Kekuatan',
+  'entities.abilities.rune_of_power.description':
+    'Goreskan rune kekuatan di bawah kakimu selama 15 dtk.: sekutu yang berdiri dalam jarak 8 m menimbulkan 10% lebih banyak kerusakan. (talenta mage)',
+  'entities.abilities.summon_water_elemental.name': 'Panggil Elemental Air',
+  'entities.abilities.summon_water_elemental.description':
+    'Panggil Elemental Air untuk bertarung di sisimu, melontarkan Peluru Air ke targetmu dan menyalurkan Semburan Air. (Es)',
+  'entities.mobs.water_elemental.name': 'Elemental Air',
+  'entities.items.conjured_bread4.name': 'Roti Perjamuan Sihir',
+  'entities.items.conjured_water4.name': 'Air Mata Air Sihir',
 };

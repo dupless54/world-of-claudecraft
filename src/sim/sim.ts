@@ -1,5 +1,6 @@
 import type {
   AccountCosmetics,
+  ActiveFrostRing,
   BankBonusSource,
   DailyRewardHistory,
   DailyRewardLeaderboardPage,
@@ -37,16 +38,22 @@ import {
   castAbilityBySlot as castAbilityBySlotImpl,
   castAbility as castAbilityImpl,
   pushbackCast as pushbackCastImpl,
+  releaseEmpoweredAbility as releaseEmpoweredAbilityImpl,
   spendResource as spendResourceImpl,
   updateCasting as updateCastingImpl,
 } from './combat/casting_lifecycle';
 import { isLockedOut, isRooted, isSilenced, isStunned } from './combat/cc';
+import { aetherSurgeCostMult, echoVisibleTo, partyAuraPriority } from './combat/chronomancy';
 import {
   dealDamage as dealDamageImpl,
   grantXp as grantXpImpl,
   handleDeath as handleDeathImpl,
 } from './combat/damage';
+import { damageTakenWithin } from './combat/damage_history';
 import { runEffects as runEffectsImpl } from './combat/effect_dispatch';
+import { applyIgnite } from './combat/fire_mage';
+import { frostMageChannelPulse } from './combat/frost_mage';
+import { type FrozenOrbState, tickFrozenOrbs } from './combat/frozen_orb';
 import {
   applyHeal as applyHealImpl,
   consumeHealAbsorb as consumeHealAbsorbImpl,
@@ -56,6 +63,7 @@ import {
   hexOutputMult as hexOutputMultImpl,
 } from './combat/heal';
 import { advanceHeroicLeap } from './combat/heroic_leap';
+import { rewindHealAmount } from './combat/rewind';
 import { applySetProcs as applySetProcsImpl } from './combat/set_procs';
 import { spellCritBonusFromAuras, spellDamageMultFromAuras } from './combat/spell_combat';
 import { isSpellResisted } from './combat/spell_resist';
@@ -68,6 +76,7 @@ import { ensureWarriorStance } from './combat/warrior_stances';
 import { type AugmentSpecial, type AugmentTier, POWERUPS_BY_ID } from './content/augments';
 import { MAILBOXES } from './content/mailboxes';
 import type { GatheringProfessionId } from './content/professions';
+import { PTR_DEV_VENDOR_DEF } from './content/ptr_dev_vendor';
 import { FURY_ENTITY_ID, FURY_NPC_ID } from './content/pvp_honor';
 import {
   classHasSkin,
@@ -140,6 +149,7 @@ import {
 import * as companionMod from './delves/companion';
 import * as lockpickMod from './delves/lockpick_controller';
 import * as runsMod from './delves/runs';
+import { CASCADE_SCENARIO } from './dev/cascade_playtest';
 import { despawnMobsForDev } from './dev_commands';
 import { projectOutsideDungeonDoors } from './dungeon_door_clearance';
 import * as nythraxis from './encounters/nythraxis';
@@ -153,6 +163,7 @@ import {
   createNpc,
   createPlayer,
   type PlayerEquipment,
+  pctValue,
   recalcPlayerStats,
 } from './entity';
 import {
@@ -835,6 +846,8 @@ export interface ResolvedAbility {
   damagePushbackImmune?: boolean; // talent-granted immunity to damage-driven cast pushback
   charges?: number; // authored stored uses; undefined means one use
   bonusCharges?: number; // talent-added uses, kept distinct from native maxCharges
+  /** 1-based authoritative charge stage for hold-to-charge spells. */
+  empowerLevel?: number;
 }
 
 export interface RewardCounters {
@@ -1283,6 +1296,7 @@ export interface PetState {
   dead: boolean;
   mode?: PetMode;
   autoTaunt?: boolean;
+  autoWaterJet?: boolean;
 }
 
 // PendingMobRespawn is exported so SimContext can type the live `pendingMobRespawns`
@@ -1441,8 +1455,31 @@ export class Sim {
   bankerIds: number[] = [];
   /** When true, /dev level|tp|give chat commands are accepted (local dev only). */
   readonly devCommands: boolean;
+  // Entities spawned by the last /dev sandbox (dummy + practice bots), so re-running
+  // the command clears the previous scenario instead of piling more on. Dev only.
+  private devSandboxIds: number[] = [];
   private pendingMobRespawns: PendingMobRespawn[] = [];
   private groundAoEs: GroundAoE[] = [];
+  get activeFrostRings(): ActiveFrostRing[] {
+    const rings: ActiveFrostRing[] = [];
+    for (const effect of this.groundAoEs) {
+      const ring = effect.frostRing;
+      if (!ring || effect.remaining <= 0) continue;
+      rings.push({
+        id: ring.id,
+        x: effect.pos.x,
+        z: effect.pos.z,
+        radius: effect.radius,
+        innerRadius: ring.innerRadius,
+        duration: ring.duration,
+        remaining: effect.remaining,
+      });
+    }
+    return rings;
+  }
+  // Live frost-mage Frozen Orbs (combat/frozen_orb.ts): sim state, never
+  // serialized; drifted and pulsed by tickFrozenOrbs in the tick prologue.
+  private frozenOrbs: FrozenOrbState[] = [];
   // Book of Deeds: players whose deed-relevant state changed this tick (the
   // evaluator drains it at the tick tail), the keyed marks naming WHICH
   // trigger inputs changed (a dirty pid with no entry takes a full pass), and
@@ -2260,6 +2297,190 @@ export class Sim {
       this.rebucket(e);
     }
     return pid;
+  }
+
+  // /dev vendor: spawn the free-epic Test Quartermaster next to the caller
+  // (dev-command realms only). Returns the vendor entity id, or -1 on failure.
+  spawnDevVendor(pid?: number): number {
+    const me = this.entities.get(pid ?? this.primaryId);
+    if (!me) return -1;
+    const pos = this.groundPos(me.pos.x + 2, me.pos.z + 2);
+    const npc = createNpc(this.nextId++, PTR_DEV_VENDOR_DEF, pos);
+    this.addEntity(npc);
+    return npc.id;
+  }
+
+  // A friendly stationary ally bot for the Cascada playtest scenario, dropped at an
+  // exact spot (no name-uniqueness gate, so /dev cascade can be re-run). Dev only.
+  private spawnScenarioAlly(name: string, x: number, z: number, cls: PlayerClass = 'mage'): number {
+    const id = this.addPlayer(cls, name);
+    const meta = this.players.get(id);
+    if (meta) meta.isDevBot = true;
+    // Level 20 like the mage: a level-1 ally has so little health that a single Echo
+    // tick (and the fast low-level regen) refills it instantly, leaving nothing to
+    // watch. A full level-20 pool makes the Echo healing readable as it climbs.
+    this.setPlayerLevel(20, id);
+    const e = this.entities.get(id);
+    if (e) {
+      e.pos = this.groundPos(x, z);
+      e.prevPos = { ...e.pos };
+      this.rebucket(e);
+    }
+    return id;
+  }
+
+  // /dev cascade: a controlled Cascada temporal playtest scenario (dev-command realms
+  // only). Spawns a NON-offensive training dummy in front (aggroRadius 0 / moveSpeed 0
+  // => it never chases the healer) plus a center ally and additional friendly allies at
+  // KNOWN distances from that center (one deliberately beyond the 15 yd radius), all in a
+  // raid with the mage and at reduced health. Starts the per-cast metrics session on the
+  // caster. Target the center, cast Temporal Cascade, then attack the dummy with Arcane
+  // spells to watch the Echo conversion heal the marked allies without any aggro.
+  startCascadePlaytest(pid?: number): void {
+    const mageId = pid ?? this.primaryId;
+    const mage = this.entities.get(mageId);
+    if (!mage) return;
+    const dummyPos = this.groundPos(mage.pos.x, mage.pos.z + CASCADE_SCENARIO.dummyFromMage);
+    const dummy = createMob(this.nextId++, MOBS.training_dummy, 20, dummyPos);
+    dummy.hostile = true;
+    this.addEntity(dummy);
+    const cx = mage.pos.x + CASCADE_SCENARIO.centerFromMage;
+    const cz = mage.pos.z;
+    const centerId = this.spawnScenarioAlly('EchoCenter', cx, cz);
+    const allyIds: number[] = [centerId];
+    CASCADE_SCENARIO.allyDistances.forEach((d, i) => {
+      const angle = (i * Math.PI) / 2; // spread the allies on the four cardinal axes
+      allyIds.push(
+        this.spawnScenarioAlly(`EchoAlly${d}`, cx + Math.cos(angle) * d, cz + Math.sin(angle) * d),
+      );
+    });
+    // Raid so Cascada (party/raid-only) can select every ally. A 5-cap party would drop
+    // bodies, so fill a party of five, convert, then add the rest.
+    for (const id of allyIds.slice(0, 4)) {
+      this.partyInvite(id, mageId);
+      this.partyAccept(id);
+    }
+    this.party.convertPartyToRaid(mageId);
+    for (const id of allyIds.slice(4)) {
+      this.partyInvite(id, mageId);
+      this.partyAccept(id);
+    }
+    for (const id of allyIds) {
+      const e = this.entities.get(id);
+      if (!e) continue;
+      e.hp = Math.max(1, Math.round(e.maxHp * CASCADE_SCENARIO.allyHpFraction));
+      // Freeze out-of-combat regen so ONLY the Chronomancer's Echo/initial healing
+      // moves these bars (the owner wants to isolate the conversion, not watch the
+      // allies self-heal). A zero-value "food" trips the `!p.eating` regen guard in
+      // updateRegen and heals nothing; an idle, unsitting bot never trips standUp,
+      // and the non-damaging dummy never clears it. Dev scenario only.
+      e.eating = {
+        itemId: 'dev_cascade_freeze',
+        kind: 'food',
+        hpPer2s: 0,
+        manaPer2s: 0,
+        remaining: 1_000_000,
+      };
+    }
+    mage.cascadeDevStats = {
+      startTime: this.time,
+      centerId,
+      arcaneDamage: 0,
+      convertedHeal: 0,
+      convertedOverheal: 0,
+      initialHeal: 0,
+    };
+    // The dev-channel "scenario ready" confirmation is emitted by the /dev cascade chat
+    // handler (like /dev bot), keeping this dev diagnostic out of the S3 sim.ts scanner.
+  }
+
+  // /dev sandbox: a GENERIC practice scenario for testing any ability (dev-command
+  // realms only). Spawns a non-offensive training dummy in front (aggroRadius 0 /
+  // moveSpeed 0, so nothing chases you) plus a raid of friendly level-20 allies with a
+  // roomy 10k health pool, started LOW, and out-of-combat regen FROZEN, so a healer can
+  // top them off for a good while (and the bar visibly climbs) with nothing but your own
+  // abilities moving it. Re-running RESETS it (clears the previous dummy + bots).
+  // Returns the number of allies spawned. (The Cascada-specific readout stays in
+  // startCascadePlaytest; this one is class-agnostic.)
+  startDevSandbox(pid?: number): number {
+    const casterId = pid ?? this.primaryId;
+    const me = this.entities.get(casterId);
+    if (!me) return 0;
+    for (const id of this.devSandboxIds) {
+      if (this.players.has(id)) this.removePlayer(id);
+      else this.dropEntity(id);
+    }
+    this.devSandboxIds = [];
+    const cfg = {
+      dummyX: -3,
+      dummyZ: 4,
+      bots: 5,
+      botZ: 2,
+      botX0: 2,
+      botGap: 1.5,
+      maxHp: 10_000,
+      hp: 0.15,
+    };
+    const dummy = createMob(
+      this.nextId++,
+      MOBS.training_dummy,
+      20,
+      this.groundPos(me.pos.x + cfg.dummyX, me.pos.z + cfg.dummyZ),
+    );
+    dummy.hostile = true;
+    this.addEntity(dummy);
+    // A mixed party rather than all-mages (owner 2026-07-13): a rotating spread of
+    // classes so the practice allies read like a real group (tank/healer/melee/etc.),
+    // each with its own class HP pool and armor.
+    const sandboxClasses: PlayerClass[] = [
+      'warrior',
+      'priest',
+      'rogue',
+      'hunter',
+      'shaman',
+      'warlock',
+      'druid',
+      'paladin',
+      'mage',
+    ];
+    const botIds: number[] = [];
+    for (let i = 0; i < cfg.bots; i++) {
+      const cls = sandboxClasses[i % sandboxClasses.length];
+      botIds.push(
+        this.spawnScenarioAlly(
+          `${cls[0].toUpperCase()}${cls.slice(1)}${i + 1}`,
+          me.pos.x + cfg.botX0 + i * cfg.botGap,
+          me.pos.z + cfg.botZ,
+          cls,
+        ),
+      );
+    }
+    for (const id of botIds.slice(0, 4)) {
+      this.partyInvite(id, casterId);
+      this.partyAccept(id);
+    }
+    if (botIds.length >= 5) this.party.convertPartyToRaid(casterId);
+    for (const id of botIds.slice(4)) {
+      this.partyInvite(id, casterId);
+      this.partyAccept(id);
+    }
+    for (const id of botIds) {
+      const e = this.entities.get(id);
+      if (!e) continue;
+      // A roomy 10k pool (not the dummy's near-infinite one), started low: heal for a
+      // good while AND watch the bar climb.
+      e.maxHp = cfg.maxHp;
+      e.hp = Math.max(1, Math.round(cfg.maxHp * cfg.hp));
+      e.eating = {
+        itemId: 'dev_sandbox_freeze',
+        kind: 'food',
+        hpPer2s: 0,
+        manaPer2s: 0,
+        remaining: 1_000_000,
+      };
+    }
+    this.devSandboxIds = [dummy.id, ...botIds];
+    return botIds.length;
   }
 
   removePlayer(pid: number): void {
@@ -3112,6 +3333,9 @@ export class Sim {
       get groundAoEs() {
         return sim.groundAoEs;
       },
+      get frozenOrbs() {
+        return sim.frozenOrbs;
+      },
       get dungeonDoorIds() {
         return sim.dungeonDoorIds;
       },
@@ -3352,6 +3576,7 @@ export class Sim {
       applyKnockback: sim.applyKnockback.bind(sim),
       diminishedCrowdControlDuration: sim.diminishedCrowdControlDuration.bind(sim),
       hostilesInRadius: sim.hostilesInRadius.bind(sim),
+      friendliesInRadius: sim.friendliesInRadius.bind(sim),
       breakStealth: sim.breakStealth.bind(sim),
       applyTaunt: sim.applyTaunt.bind(sim),
       summonPet: sim.summonPet.bind(sim),
@@ -3453,6 +3678,7 @@ export class Sim {
       swingIntervalMult: sim.swingIntervalMult.bind(sim),
       mobCanSwim: sim.mobCanSwim.bind(sim),
       resolveMovePoint: sim.resolveMovePoint.bind(sim),
+      resolveMove: sim.resolveMove.bind(sim),
       // P1a pet AI lives in src/sim/pet/pet_ai.ts; locomotion.updateMob reaches it
       // through this seam binding (late-bound arrow so sim.ctx resolves at call time).
       updatePet: (pet) => petAi.updatePet(sim.ctx, pet),
@@ -3579,6 +3805,9 @@ export class Sim {
       notice: sim.notice.bind(sim),
       // Dev-only test-dummy spawner backing "/dev bot <name>" in social/chat.ts.
       spawnDevBot: sim.spawnDevBot.bind(sim),
+      spawnDevVendor: sim.spawnDevVendor.bind(sim),
+      startCascadePlaytest: sim.startCascadePlaytest.bind(sim),
+      startDevSandbox: sim.startDevSandbox.bind(sim),
       seedDungeonFinderDev: sim.seedDungeonFinderDev.bind(sim),
       // L2 inventory/vendor (W2): the four still-on-Sim helpers the moved items.useItem
       // dispatches to. Late-bound arrows (looked up at call time, not `.bind`d at ctor)
@@ -3635,6 +3864,8 @@ export class Sim {
     const e = this.entities.get(meta.entityId);
     if (!e) return;
     const before = new Map(meta.known.map((k) => [k.def.id, k.rank]));
+    // (Frost's second Ice Block charge is resolved inside abilitiesKnownAt, the
+    // shared known-list builder, so ClientWorld's recomputed list matches.)
     meta.known = abilitiesKnownAt(meta.cls, e.level, meta.talentMods);
     if (announce) {
       for (const k of meta.known) {
@@ -3818,6 +4049,13 @@ export class Sim {
     }
     const tax = this.costTaxMult(r.e);
     if (tax > 1 && cost > 0) cost = Math.ceil(cost * tax);
+    // Aether Surge (Chronomancy Phase 3, combat/chronomancy.ts): each held Arcane
+    // Charge steeply multiplies the next cast's cost. Deterministic read of the
+    // caster's own charge aura; no rng. Folded here so the affordability gate and
+    // the spend both see the scaled cost. (docs/prd/mage-chronomancy.md 13.4 / 14)
+    if (abilityId === 'arcane_surge' && cost > 0) {
+      cost = Math.round(cost * aetherSurgeCostMult(r.e));
+    }
     return cost === found.cost ? found : { ...found, cost };
   }
 
@@ -3857,6 +4095,8 @@ export class Sim {
     lap?.('worldBosses');
     tickGroundAoEs(this.ctx);
     lap?.('groundAoEs');
+    tickFrozenOrbs(this.ctx);
+    lap?.('frozenOrbs');
 
     runDespawnDecay(this.ctx);
     lap?.('despawnDecay');
@@ -4120,7 +4360,7 @@ export class Sim {
     if (e.ownerId === null) return 1;
     let mult = 1;
     for (const a of e.auras) {
-      if (a.kind === 'pet_damage_pct') mult += a.value > 1 ? a.value / 100 : a.value;
+      if (a.kind === 'pet_damage_pct') mult += pctValue(a.value);
     }
     const ownerMeta = this.players.get(e.ownerId);
     if (ownerMeta) mult *= 1 + this.playerMods(ownerMeta).global.petDmgPct;
@@ -4369,11 +4609,52 @@ export class Sim {
       school: effect.school,
       fx: 'tick',
     });
+    // Rune of Power (mage choice row): a FRIENDLY zone pulse. Buffs every ally
+    // standing inside (refresh keeps it while they stay near, and it falls off
+    // one pulse after they leave) and returns before the hostile loop, so the
+    // damage roll below is never drawn for a friendly zone. Draws no rng.
+    if (effect.allyBuffPct) {
+      for (const ally of this.friendliesInRadius(source, effect.pos, effect.radius)) {
+        this.applyAura(ally, {
+          id: 'rune_of_power',
+          name: effect.ability,
+          kind: 'buff_dmg_done',
+          value: effect.allyBuffPct,
+          remaining: effect.interval + 1,
+          duration: effect.interval + 1,
+          sourceId: source.id,
+          // GroundAoE carries school as a plain string; a rune is only ever
+          // authored with a real school literal, so the narrow cast is safe.
+          school: effect.school as Aura['school'],
+        });
+      }
+      return;
+    }
+    let zoneStruck = 0;
     for (const target of this.hostilesInRadius(source, effect.pos, effect.radius)) {
       if (!this.hasLineOfSight(source, target)) continue;
+      zoneStruck++;
       const isSpell = effect.school !== 'physical';
       const rawDmg = this.rng.range(effect.min, effect.max) + (effect.spBonus ?? 0);
       const dmg = Math.round(isSpell ? rawDmg * spellDamageMultFromAuras(source) : rawDmg);
+      // Blizzard: the zone snares everyone it strikes, pulse by pulse.
+      if (effect.slowMult && effect.slowDuration && !target.dead) {
+        this.applyAura(target, {
+          id: 'blizzard_slow',
+          name: effect.ability,
+          kind: 'slow',
+          value: effect.slowMult,
+          remaining: effect.slowDuration,
+          duration: effect.slowDuration,
+          sourceId: source.id,
+          school: effect.school as Aura['school'],
+        });
+      }
+      // Meteor (fire mage): each struck enemy is also Ignited for a fraction
+      // of THIS resolved pulse damage (applyIgnite copies it, no re-roll).
+      if (effect.igniteFrac && dmg > 0 && !target.dead) {
+        applyIgnite(this.ctx, source, target, Math.round(dmg * effect.igniteFrac));
+      }
       this.dealDamage(
         source,
         target,
@@ -4386,6 +4667,12 @@ export class Sim {
         threatOpts,
         direct,
       );
+    }
+    // Blizzard: every enemy this pulse struck shaves the running Frozen Orb
+    // cooldown, bounded by the per-cast budget reset at zone placement
+    // (frost_mage owns the math; deterministic, no rng).
+    if (effect.orbCdr && zoneStruck > 0 && source.kind === 'player') {
+      frostMageChannelPulse(this.ctx, source, 'blizzard', zoneStruck);
     }
   }
 
@@ -4452,6 +4739,19 @@ export class Sim {
     castAbilityImpl(this.ctx, abilityId, undefined, aim);
   }
 
+  // Mouseover cast (Clique-style): cast a friendly ability on an explicit
+  // target without touching the player's persistent selection. The IWorld
+  // surface behind the party-frame hover cast; the server routes the online
+  // {cmd:'cast', target} form here with its session pid.
+  castAbilityOn(abilityId: string, targetId: number, pid?: number): void {
+    // no ground aim: the override is an entity target, the two are exclusive
+    castAbilityImpl(this.ctx, abilityId, pid, undefined, targetId);
+  }
+
+  releaseEmpoweredAbility(abilityId: string, pid?: number): void {
+    releaseEmpoweredAbilityImpl(this.ctx, abilityId, pid);
+  }
+
   // Voluntarily cancel one of a player's own helpful auras (the HUD right-click-a-buff
   // action). Authoritative: the pure predicate refuses debuffs, so a player can never
   // strip a silence/hex/root off themselves. Mirrors clearAurasFromSource's fade-event
@@ -4504,9 +4804,10 @@ export class Sim {
     target: Entity,
     amount: number,
     ability: string,
-    abilityId?: string | null,
+    abilityId: string | null = null,
+    canCrit = true,
   ): void {
-    applyHealImpl(this.ctx, source, target, amount, ability, abilityId);
+    applyHealImpl(this.ctx, source, target, amount, ability, abilityId, canCrit);
   }
 
   private healingThreat(source: Entity, target: Entity, healed: number): void {
@@ -4555,6 +4856,35 @@ export class Sim {
       aura.sourceId !== target.id
     )
       return;
+    // Temporal Rift (mage choice row): every 20 sec the next stun, root or
+    // silence to land on the wearer is cleansed instantly, i.e. never applied.
+    // The ICD rides an 'internal_cd' aura (no new entity field enters the
+    // parity state hash) that the player can watch tick down. Draws no rng.
+    if (
+      target.kind === 'player' &&
+      (aura.kind === 'stun' || aura.kind === 'root' || aura.kind === 'silence') &&
+      aura.sourceId !== target.id
+    ) {
+      const riftMeta = this.players.get(target.id);
+      if (
+        riftMeta &&
+        this.playerMods(riftMeta).global.temporalRift > 0 &&
+        !target.auras.some((a) => a.id === 'temporal_rift_cd')
+      ) {
+        this.applyAura(target, {
+          id: 'temporal_rift_cd',
+          name: 'Temporal Rift',
+          kind: 'internal_cd',
+          value: 0,
+          remaining: 20,
+          duration: 20,
+          sourceId: target.id,
+          school: 'arcane',
+        });
+        this.emit({ type: 'aura', targetId: target.id, name: aura.name, gained: false });
+        return;
+      }
+    }
     for (const existing of auraReplacementConflicts(target.auras, aura)) {
       this.applyNonPlayerStatAura(target, target.auras[existing], -1);
       target.auras.splice(existing, 1);
@@ -4706,6 +5036,14 @@ export class Sim {
     return out;
   }
 
+  private friendliesInRadius(source: Entity, pos: Vec3, radius: number): Entity[] {
+    const out: Entity[] = [];
+    this.grid.forEachInRadius(pos.x, pos.z, radius, (e) => {
+      if (!e.dead && (e.id === source.id || this.isFriendlyTo(source, e))) out.push(e);
+    });
+    return out;
+  }
+
   private breakStealth(e: Entity): void {
     const idx = e.auras.findIndex((a) => a.kind === 'stealth');
     if (idx < 0) return;
@@ -4828,6 +5166,10 @@ export class Sim {
     petCommands.petTaunt(this.ctx, pid);
   }
 
+  petWaterJet(pid?: number): void {
+    petCommands.petWaterJet(this.ctx, pid);
+  }
+
   feedPet(itemId: string, pid?: number): void {
     petCommands.feedPet(this.ctx, itemId, pid);
   }
@@ -4846,6 +5188,10 @@ export class Sim {
 
   setPetAutoTaunt(enabled: boolean, pid?: number): void {
     petCommands.setPetAutoTaunt(this.ctx, enabled, pid);
+  }
+
+  setPetAutoWaterJet(enabled: boolean, pid?: number): void {
+    petCommands.setPetAutoWaterJet(this.ctx, enabled, pid);
   }
 
   // despawnPet (summoned-demon hard despawn: player-target + threat scrub) moved to
@@ -4920,6 +5266,7 @@ export class Sim {
     attackAnimationStarted = false,
     alreadyFinal = false,
     abilityId: string | null = null,
+    aoe = false,
   ): void {
     dealDamageImpl(
       this.ctx,
@@ -4936,6 +5283,7 @@ export class Sim {
       attackAnimationStarted,
       alreadyFinal,
       abilityId,
+      aoe,
     );
   }
 
@@ -5572,7 +5920,7 @@ export class Sim {
     // friendly mob in range (including the caster) in an absorb shield. Unlike
     // Mend it targets healthy allies too — a barrier pre-empts the next blows.
     // Refreshes each interval, replacing any partially-soaked ward (same aura id).
-    if (tmpl.wardAllies) {
+    if (tmpl.wardAllies && !this.ctx.isStunned(mob)) {
       mob.wardTimer -= DT;
       if (mob.wardTimer <= 0) {
         mob.wardTimer = tmpl.wardAllies.every;
@@ -7726,6 +8074,28 @@ export class Sim {
   }
 
   // UI-facing info objects (the same shapes the server sends over the wire)
+  partyIncomingHeals(memberIds: readonly number[]): Map<number, number> {
+    const members = new Set(memberIds);
+    const incoming = new Map<number, number>();
+    for (const casterId of memberIds) {
+      const caster = this.entities.get(casterId);
+      if (!caster?.castingAbility || caster.castTargetId === null) continue;
+      if (!members.has(caster.castTargetId)) continue;
+      const ability = this.players
+        .get(casterId)
+        ?.known.find((known) => known.def.id === caster.castingAbility);
+      if (!ability) continue;
+      let amount = 0;
+      for (const effect of ability.effects) {
+        if (effect.type === 'heal') amount += Math.round((effect.min + effect.max) / 2);
+        else if (effect.type === 'hot') amount += effect.total;
+      }
+      if (amount > 0)
+        incoming.set(caster.castTargetId, (incoming.get(caster.castTargetId) ?? 0) + amount);
+    }
+    return incoming;
+  }
+
   get partyInfo(): import('../world_api').PartyInfo | null {
     const party = this.partyOf(this.primaryId);
     if (!party) return null;
@@ -7759,10 +8129,17 @@ export class Sim {
                 group: party.raidGroups.get(mPid) ?? 1,
                 absorb: partyFrameAbsorb(e.auras),
                 role: partyFrameRole(meta.talentMods.role),
+                // Effective health Rewind could currently restore to this member
+                // (combat/rewind.ts); 0 for members with no recent recorded loss.
+                rewind: rewindHealAmount(damageTakenWithin(e, this.tickCount), e.hp, e.maxHp),
                 connected: 1,
                 hasAggro: aggroTargets.has(mPid) ? 1 : 0,
                 incomingHeal: incomingHeals.get(mPid) ?? 0,
-                auras: partyFrameAuras(e.auras),
+                // Temporal Echo marks are filtered to the LOCAL player's own (owner
+                // 2026-07-12): other chronomancers' echoes still heal in the sim but
+                // never show in this viewer's group/raid strip. echoVisibleTo reads
+                // the real aura sourceId, so no wire field is added.
+                auras: partyFrameAuras(e.auras.filter((a) => echoVisibleTo(a, this.primaryId))),
               },
             ]
           : [];

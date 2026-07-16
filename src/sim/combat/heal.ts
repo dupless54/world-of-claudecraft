@@ -92,9 +92,13 @@ export function applyHeal(
   amount: number,
   ability: string,
   abilityId: string | null = null,
+  // Some heals can never crit (e.g. Chronomancy Rewind, PRD "no puede hacer
+  // critico"). Passing false SKIPS the crit roll entirely, so it draws NO rng and
+  // keeps the shared stream in the same order as if the heal had not fired at all.
+  canCrit = true,
 ): void {
   if (target.dead) return;
-  const crit = ctx.rng.chance(ctx.spellCrit(source));
+  const crit = canCrit ? ctx.rng.chance(ctx.spellCrit(source)) : false;
   let healed = Math.round(
     amount *
       (crit ? 1.5 + source.critDmgHealBonus : 1) *
@@ -113,6 +117,7 @@ export function applyHeal(
     ability,
   });
   healingThreat(ctx, source, target, healed);
+  // Talent procs listening for critical heals (deterministic, no rng draw).
   if (crit && source.kind === 'player') onSpellCrit(ctx, source, abilityId, target);
   // Legendary on-heal weapon procs (e.g. Deathless Heartwood's Lifebloom). No-op
   // (no rng draw) unless the healer wields a proc weapon with a heal proc.
