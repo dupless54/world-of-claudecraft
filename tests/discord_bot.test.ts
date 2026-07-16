@@ -28,10 +28,13 @@ import {
   relayAvatarUrl,
   relayRespondUrl,
   requestGuildMembersPayload,
+  rosterComplete,
+  staleFlairedIds,
   tierRoleName,
   topSpecialRoleKeyFor,
   voiceMembersForChannel,
 } from '../bot/logic';
+import { DEFAULT_JSON_BODY_MAX_BYTES } from '../server/http_util';
 
 describe('gateway protocol helpers', () => {
   it('requests the privileged member + presence intents', () => {
@@ -114,21 +117,42 @@ describe('special-role resolution (staff flair)', () => {
 });
 
 describe('members-meta batching + clearing', () => {
-  it('batches the full roster in server-cap-sized requests without dropping the tail', () => {
-    // The server caps EACH members-meta request at this many members.
-    expect(MEMBERS_META_BATCH).toBe(1000);
+  it('batches the full roster in cap-sized requests without dropping the tail', () => {
+    // The batch size is derived from the server's 64 KiB body cap (see the
+    // byte-budget test below), and must also stay at or under the server's
+    // 1000-entry slice (pinned server-side in tests/server/internal.test.ts).
+    expect(MEMBERS_META_BATCH).toBe(200);
 
     // A large-guild backfill: 2500 members. The old single-slice push kept only
     // the first 1000, so members 1000..2499 never got meta pushed. Batching must
-    // split at exactly 1000 and cover the whole roster including the tail.
+    // split at exactly the cap and cover the whole roster including the tail.
     const ids = Array.from({ length: 2500 }, (_, i) => `u${i}`);
     const batches = chunk(ids, MEMBERS_META_BATCH);
 
-    expect(batches.map((b) => b.length)).toEqual([1000, 1000, 500]); // split at 1000, tail kept
+    expect(batches.length).toBe(13); // 12 full batches of 200 + a 100 tail
     for (const b of batches) expect(b.length).toBeLessThanOrEqual(MEMBERS_META_BATCH);
     // Every member appears exactly once, in order (nothing dropped past the cap).
     expect(batches.flat()).toEqual(ids);
     expect(batches.flat()).toContain('u2499'); // the tail member is covered
+  });
+
+  it('a worst-case full batch serializes under the server JSON body cap', () => {
+    // readBody rejects request bodies over DEFAULT_JSON_BODY_MAX_BYTES, and the
+    // members-meta handler coerces that rejection to an EMPTY member list (200,
+    // updated: 0): the whole batch silently drops. So the batch size must be
+    // derived from BYTES, not the server's 1000-entry slice: a full batch of
+    // worst-case records (20-char snowflake ids, 32-char names where every char
+    // JSON-escapes to 6 bytes, full join dates, the longest role key) must fit
+    // under the cap. This is the pin that fails if MEMBERS_META_BATCH grows, a
+    // pushed field widens, or the server cap shrinks.
+    const worst = Array.from({ length: MEMBERS_META_BATCH }, () => ({
+      discord_user_id: '9'.repeat(20),
+      name: '\u0001'.repeat(32), // control chars: JSON.stringify emits \u0001 (6 bytes) each
+      joinedAtMs: 1_700_000_000_000,
+      role: 'contentcreator', // the longest key in DISCORD_SPECIAL_ROLES
+    }));
+    const bytes = Buffer.byteLength(JSON.stringify({ members: worst }), 'utf8');
+    expect(bytes).toBeLessThan(DEFAULT_JSON_BODY_MAX_BYTES);
   });
 
   it('chunk clamps a non-positive size and never emits empty batches', () => {
@@ -149,6 +173,31 @@ describe('members-meta batching + clearing', () => {
       joinedAtMs: null,
       role: null,
     });
+  });
+});
+
+describe('departed-member reconcile (flair cleared after an offline leave)', () => {
+  it('rosterComplete requires a positive member_count fully covered by the cache', () => {
+    // The gate that keeps the reconcile from running against a PARTIAL roster
+    // (a large-guild GUILD_CREATE before the op 8 backfill lands): a partial
+    // diff would misread unseeded members as departed and clear real flair.
+    expect(rosterComplete(10, 10)).toBe(true);
+    expect(rosterComplete(11, 10)).toBe(true); // a join mid-seed can overshoot
+    expect(rosterComplete(9, 10)).toBe(false); // partial seed: never reconcile
+    expect(rosterComplete(0, 0)).toBe(false); // no member_count: never reconcile
+    expect(rosterComplete(5, 0)).toBe(false);
+  });
+
+  it('staleFlairedIds returns exactly the flagged ids missing from the roster', () => {
+    // u2 left while the bot was offline (flagged server-side, not in the live
+    // roster); u1 is still a member and must NOT be cleared.
+    const roster = new Set(['u1', 'u3']);
+    expect(staleFlairedIds(['u1', 'u2'], roster)).toEqual(['u2']);
+    expect(staleFlairedIds(['u1'], roster)).toEqual([]); // nothing stale
+    expect(staleFlairedIds([], roster)).toEqual([]); // nothing flagged
+    // An empty roster set claims everyone flagged is stale, which is why the
+    // caller gates on rosterComplete before ever diffing.
+    expect(staleFlairedIds(['u1'], new Set())).toEqual(['u1']);
   });
 });
 

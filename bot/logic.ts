@@ -217,12 +217,17 @@ export function topSpecialRoleKeyFor(
 }
 
 // ── Members-meta push batching + clearing ────────────────────────────────────
-// The server's /internal/discord/members-meta endpoint caps EACH request at this
-// many members (it slices the incoming array), so a larger roster must be split
-// into successive requests of at most this size. Capping the TOTAL instead (a
-// single slice) silently drops every member past the cutoff, so their join-date
-// and special-role flair are never pushed.
-export const MEMBERS_META_BATCH = 1000;
+// A members-meta request is bounded TWICE server-side: the handler slices the
+// member array at 1000 entries, and readBody rejects any JSON body over 64 KiB,
+// which the handler coerces to an EMPTY list (200, updated: 0), silently
+// dropping the whole batch. The byte cap binds first: a worst-case member
+// record (a 20-char snowflake id, a 32-char name JSON-escaping to 6 bytes per
+// char, a full join date, the longest role key) serializes to about 300 bytes,
+// so the batch size is derived from BYTES (200 x ~300 = ~60 KiB, under the cap
+// with headroom), never from the 1000-entry slice. Capping the TOTAL instead
+// (a single slice) silently drops every member past the cutoff, so their
+// join-date and special-role flair are never pushed; tests pin both bounds.
+export const MEMBERS_META_BATCH = 200;
 
 /**
  * Split an array into fixed-size batches (the last may be shorter). `size` is
@@ -250,6 +255,33 @@ export function clearedMemberMeta(discordUserId: string): {
   role: string | null;
 } {
   return { discord_user_id: discordUserId, name: null, joinedAtMs: null, role: null };
+}
+
+/**
+ * Whether the member cache holds the guild's COMPLETE roster: at least
+ * member_count entries (GUILD_CREATE always carries member_count; the cache can
+ * briefly exceed it when someone joins mid-seed). The departed-member reconcile
+ * MUST only run against a complete roster: diffing a partial one (a large-guild
+ * GUILD_CREATE before the op 8 backfill, or a failed backfill) would misread
+ * merely-unseeded members as departed and wrongly clear their flair. A zero or
+ * missing member_count never counts as complete.
+ */
+export function rosterComplete(cachedCount: number, memberTotal: number): boolean {
+  return memberTotal > 0 && cachedCount >= memberTotal;
+}
+
+/**
+ * The server-flagged ids that are NOT in the live roster: members whose stored
+ * link still carries guild membership or a special-role key but who are no
+ * longer in the guild, i.e. they left while the bot was offline so
+ * GUILD_MEMBER_REMOVE never fired for them. The caller clears exactly these
+ * (and nothing else) through the existing member + members-meta endpoints.
+ */
+export function staleFlairedIds(
+  flaggedIds: readonly string[],
+  rosterIds: ReadonlySet<string>,
+): string[] {
+  return flaggedIds.filter((id) => !rosterIds.has(id));
 }
 
 // ── Level-on-name (Discord nickname) ─────────────────────────────────────────
