@@ -5002,6 +5002,7 @@ export type TranslationKeyFlat =
   | 'hudChrome.options.interfaceModeDesktop'
   | 'hudChrome.options.interfaceModeNote'
   | 'hudChrome.options.interfaceModeTouch'
+  | 'hudChrome.options.interfaceSounds'
   | 'hudChrome.options.itemLevelLine'
   | 'hudChrome.options.itemScoreLine'
   | 'hudChrome.options.keybindHelpLockCursorOnRotate'
