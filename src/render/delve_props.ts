@@ -72,7 +72,10 @@ function buildStandaloneGlb(key: StandalonePropKey, targetHeight: number): THREE
 // where the generated model's natural aspect ratio is not tall-and-thin, so
 // matching height alone would leave the footprint too small to read against
 // the collider it marks.
-function buildStandaloneGlbFitWidth(key: StandalonePropKey, targetWidth: number): THREE.Group | null {
+function buildStandaloneGlbFitWidth(
+  key: StandalonePropKey,
+  targetWidth: number,
+): THREE.Group | null {
   const src = loadedStandaloneProp.get(key);
   if (!src) return null;
   const inst = src.clone(true);
@@ -841,7 +844,10 @@ function buildRiteShrine(
   entityId: number,
 ): { group: THREE.Group; height: number } {
   const kind = (templateId.replace('delve_rite_shrine_', '') as RiteShrineKind) ?? 'bell';
-  const glb = buildStandaloneGlb(RITE_SHRINE_STANDALONE_KEY[kind] ?? 'riteShrineBell', RITE_SHRINE_TARGET_H);
+  const glb = buildStandaloneGlb(
+    RITE_SHRINE_STANDALONE_KEY[kind] ?? 'riteShrineBell',
+    RITE_SHRINE_TARGET_H,
+  );
   if (glb) {
     glb.rotation.y = ((entityId * 13) % 6) * 0.12 - 0.36;
     return { group: glb, height: RITE_SHRINE_TARGET_H };
