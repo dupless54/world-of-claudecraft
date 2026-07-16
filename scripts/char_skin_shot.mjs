@@ -38,18 +38,12 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.log('PAGEERROR:', e.message));
+await page.goto(URL, { waitUntil: 'networkidle0', timeout: 60000 });
+
 if (DEVICE === 'mobile') {
   const client = await page.target().createCDPSession();
-  await client.send('Emulation.setDeviceMetricsOverride', {
-    width: viewport.width,
-    height: viewport.height,
-    deviceScaleFactor: 2,
-    mobile: true,
-  });
   await client.send('Emulation.setTouchEmulationEnabled', { enabled: true });
 }
-
-await page.goto(URL, { waitUntil: 'networkidle0', timeout: 60000 });
 
 const jsClick = (sel) =>
   page.evaluate((s) => {
@@ -77,7 +71,7 @@ await page
   .waitForSelector('#mobile-preflight-continue', { visible: true, timeout: 5000 })
   .catch(() => {});
 await page.evaluate(() => document.querySelector('#mobile-preflight-continue')?.click());
-await page.waitForFunction(() => window.__game?.sim?.player, { timeout: 40000 }).catch(() => {});
+await page.waitForFunction(() => window.__game?.sim?.player, { timeout: 90000 });
 await new Promise((r) => setTimeout(r, 2000));
 
 if (DEVICE === 'mobile') {
@@ -95,13 +89,24 @@ await new Promise((r) => setTimeout(r, 300));
 
 // Grant a couple of mech chroma cosmetics so the skin picker has several
 // selectable swatches beyond the base class chromas (matches what a player who
-// has rolled skin events would see).
-await page.evaluate(() => {
-  const sim = window.__game.sim;
-  sim.accountCosmetics.mechChromaIds = Array.from(
-    new Set([...sim.accountCosmetics.mechChromaIds, 0, 1, 2]),
-  );
-});
+// has rolled skin events would see). Retried once: under heavy machine load the
+// execution context can be torn down transiently right after world entry.
+async function grantMechChromas() {
+  await page.evaluate(() => {
+    const sim = window.__game.sim;
+    sim.accountCosmetics.mechChromaIds = Array.from(
+      new Set([...sim.accountCosmetics.mechChromaIds, 0, 1, 2]),
+    );
+  });
+}
+try {
+  await grantMechChromas();
+} catch (e) {
+  console.log('retrying grantMechChromas after:', e.message);
+  await new Promise((r) => setTimeout(r, 1000));
+  await page.waitForFunction(() => window.__game?.sim?.player, { timeout: 20000 });
+  await grantMechChromas();
+}
 
 async function shot(name, clipSel) {
   await new Promise((r) => setTimeout(r, 250));
