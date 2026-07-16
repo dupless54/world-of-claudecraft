@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { abilitiesKnownAt } from '../src/sim/content/classes';
-import { emptyModifiers, type TalentModifiers } from '../src/sim/content/talents';
-import { computeTalentModifiers, emptyAllocation } from '../src/sim/content/talents';
+import {
+  computeTalentModifiers,
+  emptyAllocation,
+  emptyModifiers,
+  type TalentModifiers,
+} from '../src/sim/content/talents';
 import {
   abilityScalingPower,
   channelTickBonus,

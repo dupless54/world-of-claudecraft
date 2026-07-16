@@ -11,6 +11,7 @@ import type { ProcDef, ProcResponse } from '../content/talents';
 // Re-exported for consumers/tests that import the proc types from this module
 // (the engine's former home for them).
 export type { ProcDef, ProcResponse, ProcTrigger } from '../content/talents';
+
 import type { SimContext } from '../sim_context';
 import type { Entity } from '../types';
 import { convergenceOnCast } from './convergence';
