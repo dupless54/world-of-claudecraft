@@ -1,8 +1,8 @@
 {
   "format": "woc-sfx-runtime-pack",
   "version": 1,
-  "bundleId": "0f08c240f956222d47c41f9b345724ee41ce59559accb7c8ffa7aea8e671dfcd",
-  "catalogHash": "5465d5cc1ffb7d30921f47c5bc5b873659d81c63660e547e28bbc70888b32708",
+  "bundleId": "4385f4e20bb48d8f162ff5ac3f4e1f595324c52fd7d5b6f3d6f14e0e1d522e3d",
+  "catalogHash": "b86ec1147febfdbc068b97a4eb70b733baaae3b1b673bdc687bf883dd1e0c5bb",
   "clips": {
     "amb_birds": {
       "variants": [
@@ -1901,6 +1901,78 @@
           "url": "/audio/sfx/ui_whisper.mp3?v=e2387affefec",
           "bytes": 13835,
           "sha256": "e2387affefec944ba197e0a069d5b146d2aef5681869ab1e099f40ff269f7cf8"
+        }
+      ],
+      "gain": 1,
+      "playbackRate": 1
+    },
+    "wand_arcane": {
+      "variants": [
+        {
+          "id": "1",
+          "url": "/audio/sfx/wand_arcane_1.mp3?v=c5a35cc4fe1d",
+          "bytes": 18224,
+          "sha256": "c5a35cc4fe1d6ae8bfb4ee15304f69392bb0132d3d0deb6eef7b620abdea3715"
+        },
+        {
+          "id": "2",
+          "url": "/audio/sfx/wand_arcane_2.mp3?v=454df573220c",
+          "bytes": 18224,
+          "sha256": "454df573220cb4512e283dd2e214fa0884c66d11af5147996525493b55d0fb76"
+        },
+        {
+          "id": "3",
+          "url": "/audio/sfx/wand_arcane_3.mp3?v=ae96e32f7ffe",
+          "bytes": 19478,
+          "sha256": "ae96e32f7ffe4507cd0423ea4c0b2dfc71d6e43bc685ed376a286be513fb34aa"
+        }
+      ],
+      "gain": 1,
+      "playbackRate": 1
+    },
+    "wand_holy": {
+      "variants": [
+        {
+          "id": "1",
+          "url": "/audio/sfx/wand_holy_1.mp3?v=aae790137b4c",
+          "bytes": 15716,
+          "sha256": "aae790137b4c264101d8546ac196add88930a3aa41a45d3543299fac6a831dfa"
+        },
+        {
+          "id": "2",
+          "url": "/audio/sfx/wand_holy_2.mp3?v=b8e78047a120",
+          "bytes": 15089,
+          "sha256": "b8e78047a120ac45a7cda700c94dc58f0469bfbb8b90ba766f7f715b69871311"
+        },
+        {
+          "id": "3",
+          "url": "/audio/sfx/wand_holy_3.mp3?v=d0d172053c81",
+          "bytes": 16343,
+          "sha256": "d0d172053c8191930efef609ddf60831fa3e64ed92c59f17b54837618796fd1e"
+        }
+      ],
+      "gain": 1,
+      "playbackRate": 1
+    },
+    "wand_shadow": {
+      "variants": [
+        {
+          "id": "1",
+          "url": "/audio/sfx/wand_shadow_1.mp3?v=ed008c4f6b1d",
+          "bytes": 18224,
+          "sha256": "ed008c4f6b1d40a01920211fac210bd85c591a19d4fbe5a8a783f8c9f15ab274"
+        },
+        {
+          "id": "2",
+          "url": "/audio/sfx/wand_shadow_2.mp3?v=157dbd16b1b9",
+          "bytes": 15716,
+          "sha256": "157dbd16b1b9bfc389d4943a62bae4a3a537060ce46867418213438ff23c9c19"
+        },
+        {
+          "id": "3",
+          "url": "/audio/sfx/wand_shadow_3.mp3?v=72fb61abd53b",
+          "bytes": 16970,
+          "sha256": "72fb61abd53b4ab93640e15ceda8f28fcf4b4760e02d434e2ff5d29d0ab93310"
         }
       ],
       "gain": 1,
