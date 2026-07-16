@@ -6528,7 +6528,7 @@ export const cs_CZ: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Vlčí krev",
-        "description": "Zvýší sílu útoku o 40 na 6 s. Pouze ve vlčí podobě."
+        "description": "Zvýší sílu útoku o {buff} na {duration} s. Pouze ve vlčí podobě."
       },
       "rip": {
         "name": "Roztržení",

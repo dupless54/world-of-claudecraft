@@ -6528,7 +6528,7 @@ export const en_XA: EnTranslations = {
       },
       "tigers_fury": {
         "name": "[Ŵóļƒšƀļóóð]",
-        "description": "[Íñçŕéášéš áţţáçķ þóŵéŕ ƀý 40 ƒóŕ 6 šéç. Ŵóļƒ Ƒóŕɱ óñļý.]"
+        "description": "[Íñçŕéášéš áţţáçķ þóŵéŕ ƀý {buff} ƒóŕ {duration} šéç. Ŵóļƒ Ƒóŕɱ óñļý.]"
       },
       "rip": {
         "name": "[Ŕíþ]",

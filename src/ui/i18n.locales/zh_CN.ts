@@ -2453,7 +2453,8 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.insect_swarm.description':
     '敌人被虫群侵袭，在 12 秒内受到 {damage} 点自然伤害。',
   'entities.abilities.tigers_fury.name': '狼血',
-  'entities.abilities.tigers_fury.description': '使攻击强度提高 40，持续 6 秒。仅限狼形态。',
+  'entities.abilities.tigers_fury.description':
+    '使攻击强度提高 {buff}，持续 {duration} 秒。仅限狼形态。',
   'entities.abilities.rip.name': '割裂',
   'entities.abilities.rip.description':
     '终结技，在 12 秒内造成 {damage} 点流血伤害。消耗连击点。仅限狼形态。',

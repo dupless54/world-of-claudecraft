@@ -2572,7 +2572,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.insect_swarm.description':
     '敵が虫の群れに襲われ、12秒かけて{damage}の自然ダメージを受けます。',
   'entities.abilities.tigers_fury.name': '狼の血',
-  'entities.abilities.tigers_fury.description': '攻撃力を6秒間40上昇させます。ウルフフォーム専用。',
+  'entities.abilities.tigers_fury.description':
+    '攻撃力を{duration}秒間{buff}上昇させます。ウルフフォーム専用。',
   'entities.abilities.rip.name': 'リップ',
   'entities.abilities.rip.description':
     '12秒かけて{damage}の出血ダメージを与えるフィニッシュムーブです。コンボポイントを消費します。ウルフフォーム専用。',

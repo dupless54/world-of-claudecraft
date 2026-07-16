@@ -6528,7 +6528,7 @@ export const vi_VN: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Huyết Sói",
-        "description": "Tăng 40 sức mạnh tấn công trong 6 giây. Chỉ dùng được ở Hình Sói."
+        "description": "Tăng {buff} sức mạnh tấn công trong {duration} giây. Chỉ dùng được ở Hình Sói."
       },
       "rip": {
         "name": "Xé Rách",

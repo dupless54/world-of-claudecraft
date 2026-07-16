@@ -2109,7 +2109,7 @@ export const pl_PL: Partial<Record<TranslationKey, string>> = {
     'Razi pobliskich wrogów za {damage} obrażeń i spowalnia ich ataki o 10% na 10 sek.',
   'entities.abilities.thunder_clap.name': 'Trzęsący cios',
   'entities.abilities.tigers_fury.description':
-    'Zwiększa moc ataku o 40 na 6 sek. Tylko w Postaci wilka.',
+    'Zwiększa moc ataku o {buff} na {duration} sek. Tylko w Postaci wilka.',
   'entities.abilities.tigers_fury.name': 'Wilcza krew',
   'entities.abilities.travel_form.description':
     'Natychmiast przemienia cię w szybką, rączą postać, zwiększając szybkość poruszania się o 40%. Po przemianie nie możesz używać innych zdolności, ale możesz się przemieniać w walce i poza nią, co czyni ją idealną do ucieczki.',

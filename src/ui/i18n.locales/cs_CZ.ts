@@ -4263,7 +4263,7 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
     'Zasáhne blízké nepřátele za {damage} poškození a zpomalí jejich útoky o 10 % na 10 s.',
   'entities.abilities.thunder_clap.name': 'Chvějící úder',
   'entities.abilities.tigers_fury.description':
-    'Zvýší sílu útoku o 40 na 6 s. Pouze ve vlčí podobě.',
+    'Zvýší sílu útoku o {buff} na {duration} s. Pouze ve vlčí podobě.',
   'entities.abilities.tigers_fury.name': 'Vlčí krev',
   'entities.abilities.travel_form.description':
     'Okamžitě se proměníš ve svižnou běhavou podobu a zvýšíš rychlost pohybu o 40 %. V proměně nemůžeš používat jiné schopnosti, ale můžeš se proměnit v boji i mimo něj, ideální pro únik.',

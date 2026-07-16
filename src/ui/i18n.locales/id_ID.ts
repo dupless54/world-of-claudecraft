@@ -2201,7 +2201,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
     'Menghantam musuh di sekitar sebesar {damage} kerusakan dan memperlambat serangan mereka sebesar 10% selama 10 detik.',
   'entities.abilities.thunder_clap.name': 'Pukulan Gempa',
   'entities.abilities.tigers_fury.description':
-    'Meningkatkan daya serang sebesar 40 selama 6 detik. Hanya Wujud Serigala.',
+    'Meningkatkan daya serang sebesar {buff} selama {duration} detik. Hanya Wujud Serigala.',
   'entities.abilities.tigers_fury.name': 'Wolfsblood',
   'entities.abilities.travel_form.description':
     'Seketika berubah menjadi wujud Fleet yang gesit, meningkatkan kecepatan gerak sebesar 40%. Kau tidak bisa menggunakan kemampuan lain saat berubah wujud, tetapi bisa berubah masuk atau keluar dari pertempuran, ideal untuk melarikan diri.',

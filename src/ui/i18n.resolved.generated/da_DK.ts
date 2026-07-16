@@ -6528,7 +6528,7 @@ export const da_DK: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Ulveblod",
-        "description": "Øger angrebskraft med 40 i 6 sek. Kun i Ulveform."
+        "description": "Øger angrebskraft med {buff} i {duration} sek. Kun i Ulveform."
       },
       "rip": {
         "name": "Sønderriv",

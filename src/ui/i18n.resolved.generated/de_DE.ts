@@ -6528,7 +6528,7 @@ export const de_DE: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Wolfsblood",
-        "description": "Erhöht die Angriffskraft 6 Sek. lang um 40. Nur in Wolfsgestalt."
+        "description": "Erhöht die Angriffskraft {duration} Sek. lang um {buff}. Nur in Wolfsgestalt."
       },
       "rip": {
         "name": "Zerfetzen",

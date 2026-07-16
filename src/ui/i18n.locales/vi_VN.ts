@@ -2171,7 +2171,7 @@ export const vi_VN: Partial<Record<TranslationKey, string>> = {
     'Giáng đòn lên các kẻ địch lân cận gây {damage} sát thương và làm chậm 10% đòn tấn công của chúng trong 10 giây.',
   'entities.abilities.thunder_clap.name': 'Đòn Chấn Rung',
   'entities.abilities.tigers_fury.description':
-    'Tăng 40 sức mạnh tấn công trong 6 giây. Chỉ dùng được ở Hình Sói.',
+    'Tăng {buff} sức mạnh tấn công trong {duration} giây. Chỉ dùng được ở Hình Sói.',
   'entities.abilities.tigers_fury.name': 'Huyết Sói',
   'entities.abilities.travel_form.description':
     'Tức thì biến thành Fleet Form nhanh nhẹn, tăng 40% tốc độ di chuyển. Bạn không thể dùng các kỹ năng khác khi đã biến hình, nhưng có thể biến hình trong hoặc ngoài chiến đấu, lý tưởng để chạy trốn.',

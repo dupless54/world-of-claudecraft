@@ -6528,7 +6528,7 @@ export const nl_NL: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Wolvenbloed",
-        "description": "Verhoogt de aanvalskracht met 40 gedurende 6 sec. Alleen in Wolfsgedaante."
+        "description": "Verhoogt de aanvalskracht met {buff} gedurende {duration} sec. Alleen in Wolfsgedaante."
       },
       "rip": {
         "name": "Verscheuren",

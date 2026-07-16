@@ -2552,7 +2552,7 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
     '적이 곤충 떼에 휩싸여 12초에 걸쳐 {damage}의 자연 피해를 입습니다.',
   'entities.abilities.tigers_fury.name': '늑대의 피',
   'entities.abilities.tigers_fury.description':
-    '전투력을 6초 동안 40만큼 증가시킵니다. 늑대 변신 전용.',
+    '전투력을 {duration}초 동안 {buff}만큼 증가시킵니다. 늑대 변신 전용.',
   'entities.abilities.rip.name': '찢기',
   'entities.abilities.rip.description':
     '12초에 걸쳐 {damage}의 출혈 피해를 입히는 결정타입니다. 연계 점수를 소모합니다. 늑대 변신 전용.',

@@ -6528,7 +6528,7 @@ export const it_IT: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Sangue di Lupo",
-        "description": "Aumenta la potenza d'attacco di 40 per 6 sec. Solo Forma del Lupo."
+        "description": "Aumenta la potenza d'attacco di {buff} per {duration} sec. Solo Forma del Lupo."
       },
       "rip": {
         "name": "Squartare",

@@ -6528,7 +6528,7 @@ export const pl_PL: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Wilcza krew",
-        "description": "Zwiększa moc ataku o 40 na 6 sek. Tylko w Postaci wilka."
+        "description": "Zwiększa moc ataku o {buff} na {duration} sek. Tylko w Postaci wilka."
       },
       "rip": {
         "name": "Rozszarpanie",

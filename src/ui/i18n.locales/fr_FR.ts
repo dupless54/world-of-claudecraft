@@ -3733,7 +3733,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
     "L'ennemi est assailli par une nuée d'insectes, subissant {damage} points de dégâts de Nature sur 12 s.",
   'entities.abilities.tigers_fury.name': 'Wolfsblood',
   'entities.abilities.tigers_fury.description':
-    "Augmente la puissance d'attaque de 40 pendant 6 s. Forme de loup uniquement.",
+    "Augmente la puissance d'attaque de {buff} pendant {duration} s. Forme de loup uniquement.",
   'entities.abilities.rip.name': 'Lacération',
   'entities.abilities.rip.description':
     'Coup de grâce qui inflige {damage} points de dégâts de saignement sur 12 s. Consomme les points de combo. Forme de loup uniquement.',

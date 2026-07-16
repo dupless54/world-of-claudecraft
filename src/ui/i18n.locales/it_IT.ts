@@ -3341,7 +3341,7 @@ export const it_IT: Partial<Record<TranslationKey, string>> = {
     'Il nemico è assalito da uno sciame di insetti, subendo {damage} danni da Natura in 12 sec.',
   'entities.abilities.tigers_fury.name': 'Sangue di Lupo',
   'entities.abilities.tigers_fury.description':
-    "Aumenta la potenza d'attacco di 40 per 6 sec. Solo Forma del Lupo.",
+    "Aumenta la potenza d'attacco di {buff} per {duration} sec. Solo Forma del Lupo.",
   'entities.abilities.rip.name': 'Squartare',
   'entities.abilities.rip.description':
     'Mossa finale che infligge {damage} danni da sanguinamento in 12 sec. Consuma i punti combo. Solo Forma del Lupo.',

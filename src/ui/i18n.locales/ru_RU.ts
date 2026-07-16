@@ -2600,7 +2600,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
     'Враг атакован роем насекомых и получает {damage} ед. урона от сил Природы в течение 12 сек.',
   'entities.abilities.tigers_fury.name': 'Волчья кровь',
   'entities.abilities.tigers_fury.description':
-    'Повышает силу атаки на 40 на 6 сек. Только в облике волка.',
+    'Повышает силу атаки на {buff} на {duration} сек. Только в облике волка.',
   'entities.abilities.rip.name': 'Разрывание',
   'entities.abilities.rip.description':
     'Завершающий прием, наносящий {damage} ед. урона от кровотечения в течение 12 сек. Расходует приемы серии. Только в облике волка.',

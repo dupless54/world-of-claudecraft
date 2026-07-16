@@ -2087,7 +2087,8 @@ export const da_DK: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.thunder_clap.description':
     'Sprænger nærliggende fjender for {damage} skade og sløver deres angreb med 10 % i 10 sek.',
   'entities.abilities.thunder_clap.name': 'Rystende Slag',
-  'entities.abilities.tigers_fury.description': 'Øger angrebskraft med 40 i 6 sek. Kun i Ulveform.',
+  'entities.abilities.tigers_fury.description':
+    'Øger angrebskraft med {buff} i {duration} sek. Kun i Ulveform.',
   'entities.abilities.tigers_fury.name': 'Ulveblod',
   'entities.abilities.travel_form.description':
     'Skift øjeblikkeligt til en hurtig Fleet-form, der øger bevægelseshastighed med 40 %. Du kan ikke bruge andre evner mens du er forvandlet, men kan skifte ind eller ud af kamp, ideelt til at flygte.',

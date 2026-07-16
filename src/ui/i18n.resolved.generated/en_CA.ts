@@ -6528,7 +6528,7 @@ export const en_CA: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Wolfsblood",
-        "description": "Increases attack power by 40 for 6 sec. Wolf Form only."
+        "description": "Increases attack power by {buff} for {duration} sec. Wolf Form only."
       },
       "rip": {
         "name": "Rip",

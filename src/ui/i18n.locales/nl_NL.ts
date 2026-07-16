@@ -2138,7 +2138,7 @@ export const nl_NL: Partial<Record<TranslationKey, string>> = {
     'Treft nabije vijanden voor {damage} schade en vertraagt hun aanvallen met 10% gedurende 10 sec.',
   'entities.abilities.thunder_clap.name': 'Schuddende Klap',
   'entities.abilities.tigers_fury.description':
-    'Verhoogt de aanvalskracht met 40 gedurende 6 sec. Alleen in Wolfsgedaante.',
+    'Verhoogt de aanvalskracht met {buff} gedurende {duration} sec. Alleen in Wolfsgedaante.',
   'entities.abilities.tigers_fury.name': 'Wolvenbloed',
   'entities.abilities.travel_form.description':
     'Verander ogenblikkelijk in een snelle Fleetgedaante en verhoog je bewegingssnelheid met 40%. Je kunt geen andere vaardigheden gebruiken terwijl je veranderd bent, maar je kunt in of buiten gevecht van gedaante wisselen, ideaal om te ontsnappen.',

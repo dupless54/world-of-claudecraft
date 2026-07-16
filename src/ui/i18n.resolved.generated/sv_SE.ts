@@ -6528,7 +6528,7 @@ export const sv_SE: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Vargblod",
-        "description": "Ökar attackstyrkan med 40 i 6 sek. Endast vargform."
+        "description": "Ökar attackstyrkan med {buff} i {duration} sek. Endast vargform."
       },
       "rip": {
         "name": "Riv upp",

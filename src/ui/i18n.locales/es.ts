@@ -3349,7 +3349,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
     'Un enjambre de insectos acosa al enemigo, causando {damage} de daño de Naturaleza durante 12 s.',
   'entities.abilities.tigers_fury.name': 'Sangre de Lobo',
   'entities.abilities.tigers_fury.description':
-    'Aumenta el poder de ataque en 40 durante 6 s. Solo en Forma de lobo.',
+    'Aumenta el poder de ataque en {buff} durante {duration} s. Solo en Forma de lobo.',
   'entities.abilities.rip.name': 'Desgarrar',
   'entities.abilities.rip.description':
     'Remate que causa {damage} de daño de sangrado durante 12 s. Consume puntos de combo. Solo en Forma de lobo.',

@@ -3326,7 +3326,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
     'O inimigo é atacado por um enxame de insetos, sofrendo {damage} de dano de Natureza ao longo de 12 s.',
   'entities.abilities.tigers_fury.name': 'Sangue de Lobo',
   'entities.abilities.tigers_fury.description':
-    'Aumenta o poder de ataque em 40 por 6 s. Apenas Forma de Lobo.',
+    'Aumenta o poder de ataque em {buff} por {duration} s. Apenas Forma de Lobo.',
   'entities.abilities.rip.name': 'Rasgar',
   'entities.abilities.rip.description':
     'Golpe final que causa {damage} de dano de Sangramento ao longo de 12 s. Consome pontos de combo. Apenas Forma de Lobo.',

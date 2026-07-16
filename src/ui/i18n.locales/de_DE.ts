@@ -3352,7 +3352,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Der Gegner wird von Insekten umschwärmt und erleidet {damage} Naturschaden über 12 Sek.',
   'entities.abilities.tigers_fury.name': 'Wolfsblood',
   'entities.abilities.tigers_fury.description':
-    'Erhöht die Angriffskraft 6 Sek. lang um 40. Nur in Wolfsgestalt.',
+    'Erhöht die Angriffskraft {duration} Sek. lang um {buff}. Nur in Wolfsgestalt.',
   'entities.abilities.rip.name': 'Zerfetzen',
   'entities.abilities.rip.description':
     'Finishing-Move, der über 12 Sek. {damage} Blutungsschaden verursacht. Verbraucht Combopunkte. Nur in Wolfsgestalt.',

@@ -2095,7 +2095,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
     'Spränger närliggande fiender för {damage} skada och saktar ner deras attacker med 10 % i 10 sek.',
   'entities.abilities.thunder_clap.name': 'Skälvande slag',
   'entities.abilities.tigers_fury.description':
-    'Ökar attackstyrkan med 40 i 6 sek. Endast vargform.',
+    'Ökar attackstyrkan med {buff} i {duration} sek. Endast vargform.',
   'entities.abilities.tigers_fury.name': 'Vargblod',
   'entities.abilities.travel_form.description':
     'Skiftar omedelbart till en snabb Fleetform och ökar förflyttningshastigheten med 40 %. Du kan inte använda andra förmågor i skepnaden, men kan skifta in eller ut i strid, idealiskt för flykt.',

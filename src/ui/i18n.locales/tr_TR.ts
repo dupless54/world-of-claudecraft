@@ -2165,7 +2165,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
     'Yakındaki düşmanları {damage} hasar için patlatır ve saldırılarını 10 saniye boyunca %10 yavaşlatır.',
   'entities.abilities.thunder_clap.name': 'Sarsan Darbe',
   'entities.abilities.tigers_fury.description':
-    'Saldırı gücünü 6 saniye boyunca 40 artırır. Yalnızca Kurt Formu.',
+    'Saldırı gücünü {duration} saniye boyunca {buff} artırır. Yalnızca Kurt Formu.',
   'entities.abilities.tigers_fury.name': 'Kurt Kanı',
   'entities.abilities.travel_form.description':
     "Anında hızlı bir Fleet Formu'na bürünerek hareket hızını %40 artırır. Bürünmüşken diğer yetenekleri kullanamazsın, ancak dövüşte ya da dövüş dışında bürünebilirsin; kaçmak için idealdir.",

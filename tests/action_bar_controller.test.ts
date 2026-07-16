@@ -302,4 +302,30 @@ describe('ActionBarController attack slot', () => {
     harness.controller.saveAttackAction();
     expect(storage.getItem('woc_hotbar_warrior_ActionbarTester:s0')).toBeNull();
   });
+
+  it('reloads a druid form-scoped attack slot on shapeshift instead of leaking the caster slot', () => {
+    const harness = makeHarness('druid', ['bear_form', 'cat_form', 'claw', 'mangle'], bar());
+    harness.state.showAttackButton = false;
+    harness.controller.init();
+
+    harness.controller.replaceAttackAction({ type: 'ability', id: 'mangle' });
+    harness.controller.saveAttackAction();
+    expect(harness.controller.actionForSlot(0)).toEqual({ type: 'ability', id: 'mangle' });
+
+    harness.state.auras = ['form_bear'];
+    harness.controller.syncActiveForm();
+    expect(harness.controller.actionForSlot(0)).not.toEqual({ type: 'ability', id: 'mangle' });
+
+    harness.controller.replaceAttackAction({ type: 'ability', id: 'claw' });
+    harness.controller.saveAttackAction();
+    expect(harness.controller.actionForSlot(0)).toEqual({ type: 'ability', id: 'claw' });
+
+    harness.state.auras = [];
+    harness.controller.syncActiveForm();
+    expect(harness.controller.actionForSlot(0)).toEqual({ type: 'ability', id: 'mangle' });
+
+    harness.state.auras = ['form_bear'];
+    harness.controller.syncActiveForm();
+    expect(harness.controller.actionForSlot(0)).toEqual({ type: 'ability', id: 'claw' });
+  });
 });

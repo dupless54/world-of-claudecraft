@@ -6528,7 +6528,7 @@ export const es_ES: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Sangre de Lobo",
-        "description": "Aumenta el poder de ataque en 40 durante 6 s. Solo en Forma de lobo."
+        "description": "Aumenta el poder de ataque en {buff} durante {duration} s. Solo en Forma de lobo."
       },
       "rip": {
         "name": "Desgarrar",

@@ -6528,7 +6528,7 @@ export const ko_KR: EnTranslations = {
       },
       "tigers_fury": {
         "name": "늑대의 피",
-        "description": "전투력을 6초 동안 40만큼 증가시킵니다. 늑대 변신 전용."
+        "description": "전투력을 {duration}초 동안 {buff}만큼 증가시킵니다. 늑대 변신 전용."
       },
       "rip": {
         "name": "찢기",

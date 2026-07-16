@@ -49,7 +49,21 @@ import {
 import { recalcPlayerStats } from '../entity';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
-import type { Entity } from '../types';
+import type { AuraKind, Entity } from '../types';
+
+// Shapeshift/stance auras are toggled on by casting their granting ability and never
+// expire on their own (see the isFormKind toggle in combat/effect_dispatch.ts), so a
+// respec or spec switch that drops the granting ability (e.g. Balance's Moonkin Form
+// signature) must also strip the aura itself; otherwise its buff (spell power, armor,
+// threat mult, ...) keeps folding into recalcPlayerStats after the ability that grants
+// it is no longer known, well into a different spec.
+const FORM_AURA_KINDS = new Set<AuraKind>([
+  'form_bear',
+  'form_cat',
+  'form_travel',
+  'form_moonkin',
+  'form_shadow',
+]);
 
 // The ONLY place a talent tree is walked. Re-resolves the flat modifier struct and
 // refreshes the stat pass + known-ability resolver that consume it.
@@ -65,6 +79,27 @@ function recomputeTalents(ctx: SimContext, meta: PlayerMeta): void {
   // addPlayer/restore block), so this never spams on login. refreshKnownAbilities only
   // fires for abilities genuinely new since the last known-set.
   ctx.refreshKnownAbilities(meta, true);
+  stripOrphanedFormAuras(ctx, meta, e);
+}
+
+// Cancel any active form/stance aura whose granting ability fell out of `meta.known`
+// (a respec, spec switch, or loadout swap), so the shapeshift's buff cannot outlive the
+// ability that grants it.
+function stripOrphanedFormAuras(ctx: SimContext, meta: PlayerMeta, e: Entity | undefined): void {
+  if (!e) return;
+  const knownIds = new Set(meta.known.map((k) => k.def.id));
+  let changed = false;
+  for (let i = e.auras.length - 1; i >= 0; i--) {
+    const a = e.auras[i];
+    if (FORM_AURA_KINDS.has(a.kind) && !knownIds.has(a.id)) {
+      e.auras.splice(i, 1);
+      ctx.emit({ type: 'aura', targetId: e.id, name: a.name, gained: false });
+      changed = true;
+    }
+  }
+  if (changed) {
+    recalcPlayerStats(e, meta.cls, meta.equipment, ctx.playerMods(meta), meta.equipmentInstance);
+  }
 }
 
 function talentLockReason(ctx: SimContext, p: Entity): string | null {

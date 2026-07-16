@@ -6528,7 +6528,7 @@ export const zh_CN: EnTranslations = {
       },
       "tigers_fury": {
         "name": "狼血",
-        "description": "使攻击强度提高 40，持续 6 秒。仅限狼形态。"
+        "description": "使攻击强度提高 {buff}，持续 {duration} 秒。仅限狼形态。"
       },
       "rip": {
         "name": "割裂",

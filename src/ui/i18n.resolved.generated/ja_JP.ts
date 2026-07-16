@@ -6528,7 +6528,7 @@ export const ja_JP: EnTranslations = {
       },
       "tigers_fury": {
         "name": "狼の血",
-        "description": "攻撃力を6秒間40上昇させます。ウルフフォーム専用。"
+        "description": "攻撃力を{duration}秒間{buff}上昇させます。ウルフフォーム専用。"
       },
       "rip": {
         "name": "リップ",

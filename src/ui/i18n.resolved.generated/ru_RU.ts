@@ -6528,7 +6528,7 @@ export const ru_RU: EnTranslations = {
       },
       "tigers_fury": {
         "name": "Волчья кровь",
-        "description": "Повышает силу атаки на 40 на 6 сек. Только в облике волка."
+        "description": "Повышает силу атаки на {buff} на {duration} сек. Только в облике волка."
       },
       "rip": {
         "name": "Разрывание",
