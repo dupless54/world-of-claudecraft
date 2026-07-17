@@ -251,8 +251,30 @@ describe('leaderboard_window: Renown (deeds) board tab', () => {
   });
 
   it('renders the localized self standing line only when the server resolved one', () => {
-    expect(code).toContain("t('hudChrome.deeds.lbSelf'");
-    expect(code).toMatch(/deedsSelfHtml\([\s\S]{0,220}if \(!self\) return '';/);
+    // Two arms: a current server sends self.renown (the account line the
+    // player can verify against their Book); an older server omits it and
+    // gets the rank-only line. Neither renders when self is null.
+    expect(code).toContain("t('hudChrome.deeds.lbSelfAccount'");
+    expect(code).toContain("t('hudChrome.deeds.lbSelfRank'");
+    expect(code).toMatch(/deedsSelfHtml\([\s\S]{0,400}if \(!self\) return '';/);
+    expect(code).toMatch(/self\.renown !== undefined/);
+    // The renown value goes through formatNumber, never raw interpolation.
+    expect(code).toMatch(/renown: formatNumber\(self\.renown/);
+  });
+
+  it('renders the visible account-scope note on every deeds-board state it owns', () => {
+    // The caption is VISIBLE text (a title-attr tooltip does not exist on
+    // touch): prepended in the error, empty, and ranked arms alike.
+    expect(code).toContain("t('hudChrome.deeds.lbScopeNote')");
+    expect(code.match(/this\.deedsScopeNoteHtml\(\)/g)?.length).toBe(3);
+    expect(code).not.toMatch(/title="[^"]*lbScopeNote/);
+  });
+
+  it('renders no deed-count column: Renown is the one ranked number on the board', () => {
+    // The column was removed deliberately (issue #2044): the completion count
+    // lives in the Book of Deeds header, never on a ranked surface.
+    expect(code).not.toContain('lb-deeds-count');
+    expect(code).not.toContain('deedCount');
   });
 
   it('renders the localized Renown-tab empty state', () => {

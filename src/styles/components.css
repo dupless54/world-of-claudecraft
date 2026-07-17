@@ -2107,7 +2107,10 @@
   .lb-row.lb-daily {
     grid-template-columns: 44px 1fr 96px;
   }
+  /* .lb-scope-note is the Renown tab's account-scope teaching line, visible
+     on every deeds-board state (never a title-attr tooltip: touch has none). */
   .lb-total,
+  .lb-scope-note,
   .dr-leaderboard-total {
     margin: 2px 0 8px;
     color: #b9ac82;
@@ -2118,9 +2121,10 @@
     color: var(--color-text-muted);
   }
   /* Renown (deeds) board: rank, chronicler (class tooltip + realm tag),
-     Renown, deed count, displayed title. */
+     Renown, displayed title. Renown is the one ranked number on the board
+     (the completion count lives in the Book of Deeds header). */
   .lb-row-deeds {
-    grid-template-columns: 44px 1fr 56px 48px 110px;
+    grid-template-columns: 44px 1fr 56px 110px;
   }
   .lb-realm {
     color: var(--color-text-muted);
@@ -2129,10 +2133,6 @@
   .lb-renown {
     text-align: right;
     color: #ffe27a;
-  }
-  .lb-deeds-count {
-    text-align: center;
-    color: var(--color-text-muted);
   }
   .lb-deed-title {
     color: var(--color-text-muted);

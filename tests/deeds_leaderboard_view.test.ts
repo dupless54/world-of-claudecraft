@@ -1,9 +1,13 @@
 // Tests for the Renown-tab pure core (deeds_leaderboard_view.ts):
 //  - the async state machine: loading / error / empty / ranked discriminators,
 //  - row derivation (rank, name, realm, class + knownClass, level, renown,
-//    deedCount, and the TITLE passed through as a DEED ID, never text),
+//    and the TITLE passed through as a DEED ID, never text; the deprecated
+//    wire deedCount stays on the entry FIXTURE, pinning the wire shape a
+//    stale client still reads, and is deliberately NOT mapped onto rows,
+//    issue #2044),
 //  - the viewer's own row flagged `me` by the server-resolved account rank,
-//  - the server-resolved `self` standing passed through (null when absent),
+//  - the server-resolved `self` standing passed through (null when absent;
+//    renown rides it from a current server and is absent from an older one),
 //  - the pager state and the server page-clamp passthrough,
 //  - parity: a Sim-shaped empty page (the offline sandbox has no account
 //    population) and same-input determinism.
@@ -68,6 +72,8 @@ describe('buildDeedsLeaderboardView', () => {
     const view = buildDeedsLeaderboardView(input);
     expect(view.kind).toBe('ranked');
     if (view.kind !== 'ranked') return;
+    // toEqual is exact: the deprecated wire deedCount on the input entries
+    // must NOT surface on the rows (Renown is the one ranked number).
     expect(view.rows).toEqual([
       {
         rank: 1,
@@ -77,7 +83,6 @@ describe('buildDeedsLeaderboardView', () => {
         knownClass: true,
         level: 20,
         renown: 425,
-        deedCount: 37,
         // Never localized here: the painter resolves through deed_i18n.ts.
         title: 'prog_veteran',
         me: false,
@@ -90,7 +95,6 @@ describe('buildDeedsLeaderboardView', () => {
         knownClass: true,
         level: 20,
         renown: 300,
-        deedCount: 37,
         title: null,
         me: false,
       },
@@ -167,12 +171,26 @@ describe('buildDeedsLeaderboardView', () => {
   });
 
   it('passes the server-resolved self standing through, null when absent', () => {
+    // A current server sends the account's renown on the self line; the core
+    // passes it through untouched so the painter can render the
+    // Renown-carrying arm.
+    const withRenown = buildDeedsLeaderboardView({
+      kind: 'page',
+      page: page({ self: { rank: 12, topPercent: 4, renown: 1620 } }),
+    });
+    if (withRenown.kind !== 'ranked') throw new Error('expected ranked');
+    expect(withRenown.self).toEqual({ rank: 12, topPercent: 4, renown: 1620 });
+
+    // An OLDER server (rolling deploy, self-hosted) omits renown: the line
+    // still flows, renown-less, so the painter falls back to the rank-only
+    // arm rather than dropping the standing.
     const withSelf = buildDeedsLeaderboardView({
       kind: 'page',
       page: page({ self: { rank: 12, topPercent: 4 } }),
     });
     if (withSelf.kind !== 'ranked') throw new Error('expected ranked');
     expect(withSelf.self).toEqual({ rank: 12, topPercent: 4 });
+    expect(withSelf.self?.renown).toBeUndefined();
 
     const withoutSelf = buildDeedsLeaderboardView({ kind: 'page', page: page() });
     if (withoutSelf.kind !== 'ranked') throw new Error('expected ranked');

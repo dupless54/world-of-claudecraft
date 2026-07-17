@@ -12,33 +12,68 @@ export const pending: Record<string, readonly string[]> = {
   "es": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "es_ES": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "fr_FR": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.renownHeading",
+    "guide.deedsPage.standingsNote",
+    "guide.nav.deeds",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "fr_CA": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.renownHeading",
+    "guide.deedsPage.standingsNote",
+    "guide.nav.deeds",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "en_CA": [],
   "it_IT": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.renownHeading",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "de_DE": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "zh_CN": [],
   "zh_TW": [],
@@ -47,47 +82,93 @@ export const pending: Record<string, readonly string[]> = {
   "pt_BR": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "ru_RU": [],
   "cs_CZ": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "nl_NL": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "pl_PL": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "id_ID": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "tr_TR": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "guide.nav.deeds",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "sv_SE": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "vi_VN": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ],
   "da_DK": [
     "gpuNotice.bodyDesktop",
     "gpuNotice.bodyWeb",
-    "gpuNotice.dismiss"
+    "gpuNotice.dismiss",
+    "guide.deedsPage.renownBody",
+    "guide.deedsPage.standingsNote",
+    "hudChrome.deeds.lbScopeNote",
+    "hudChrome.deeds.lbSelfAccount",
+    "hudChrome.deeds.lbSelfRank"
   ]
 };

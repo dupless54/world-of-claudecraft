@@ -24,7 +24,9 @@ import type { PlayerClass } from '../sim/types';
 import type { DeedsLeaderboardPage } from '../world_api';
 import type { LeaderboardPager } from './leaderboard_view';
 
-/** One ranked account row, faced by its display character. */
+/** One ranked account row, faced by its display character. Renown is the one
+ *  ranked number on the row: the deprecated wire deedCount is deliberately NOT
+ *  mapped here (issue #2044; the completion count lives in the Book header). */
 export interface DeedsLeaderboardRow {
   rank: number;
   name: string;
@@ -34,7 +36,6 @@ export interface DeedsLeaderboardRow {
   knownClass: boolean;
   level: number;
   renown: number;
-  deedCount: number;
   /** The display character's selected title as a DEED ID (null untitled);
    *  the painter localizes through deed_i18n.ts. */
   title: string | null;
@@ -48,6 +49,9 @@ export interface DeedsLeaderboardRow {
 export interface DeedsLeaderboardSelfLine {
   rank: number;
   topPercent: number;
+  /** The account's board-scored Renown, absent from an OLDER server (rolling
+   *  deploy, self-hosted): the painter renders the rank-only line then. */
+  renown?: number;
 }
 
 /** The Renown-tab view-model: the async-state discriminators or a page. */
@@ -96,7 +100,6 @@ export function buildDeedsLeaderboardView(input: DeedsLeaderboardInput): DeedsLe
     knownClass: Boolean(CLASSES[e.cls]),
     level: e.level,
     renown: e.renown,
-    deedCount: e.deedCount,
     title: e.title,
     me: selfRank !== null && e.rank === selfRank,
   }));
