@@ -786,6 +786,9 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.statInfo.names.spellPower': '주문력',
   'hudChrome.statInfo.names.critRating': '치명타 등급',
   'hudChrome.statInfo.names.hasteRating': '가속 등급',
+  'hudChrome.statInfo.names.parry': '무기 막기',
+  'hudChrome.statInfo.desc.parry':
+    '전방 근접 공격을 완전히 무기로 막아 피해를 입지 않을 확률입니다. 뒤에서 오는 공격은 막을 수 없습니다.',
   'hudChrome.statInfo.names.hitRating': '명중 등급',
   'hudChrome.statInfo.desc.hitRating':
     '장비와 세트 보너스에서 얻는 명중 등급으로 공격이 빗나가거나 주문이 저항되는 빈도를 줄이며, 특히 더 높은 레벨의 적에게 효과적입니다. 약 10등급당 1% 명중.',
@@ -7923,4 +7926,23 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'welcome.armory.cta': '무기고 둘러보기',
   'welcome.news.new': '신규',
   'welcome.news.viewAll': 'GitHub에서 모든 업데이트 보기',
+  'hudChrome.auraEffect.battleStance': '전투 태세: 분노 생성 10% 증가',
+  'hudChrome.auraEffect.berserkerStance': '광전사 태세: 치명타 확률 3% 증가, 피해 3% 증가',
+  'hudChrome.auraEffect.crit': '치명타 확률이 {pct}% 증가합니다',
+  'hudChrome.auraEffect.rageGen': '분노 생성이 {pct}% 증가합니다',
+  'hudChrome.auraEffect.reckless': '치명타 확률이 {pct}%, 분노 생성이 {ragePct}% 증가합니다',
+  'hudChrome.auraEffect.avatar': '거상: 입히는 피해가 {pct}% 증가합니다',
+  'hudChrome.auraEffect.bloodbath': '치명타 확률과 입히는 피해가 {pct}% 증가합니다',
+  'hudChrome.auraEffect.dieBySword': '받는 피해가 {pct}% 감소합니다',
+  'hudChrome.auraEffect.sanguine': '공격 속도가 {hastePct}%, 입히는 피해가 {dmgPct}% 증가합니다',
+  'hudChrome.auraEffect.battleTrance':
+    '다음 약탈자의 일격 또는 불구의 일격이 분노를 소모하지 않습니다',
+  'hudChrome.auraEffect.revengeFree': '다음 복수가 분노를 소모하지 않습니다',
+  'hudChrome.auraEffect.victoryRush': '연전연승을 사용할 수 있습니다',
+  'hudChrome.auraEffect.maxHpPct': '최대 생명력이 {pct}% 증가합니다',
+  'hud.combat.floatingParry': '무기 막기',
+  'hud.combat.parried': '{target}이 당신의 {ability}을 무기로 막았습니다.',
+  'hudChrome.options.mouseoverCast': '파티 창에서 마우스오버 시전',
+  'hudChrome.options.showTargetOfTarget': '대상의 대상 표시',
+  'hudChrome.unitFrame.targetOfTargetLabel': '대상의 대상',
 };

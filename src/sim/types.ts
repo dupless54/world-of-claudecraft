@@ -3927,12 +3927,16 @@ export function rageFromTaking(damage: number, attackerLevel: number): number {
 // which resource mint/damage path consumes the multiplier. Keeping them pure
 // avoids changing the shared Druid Bear rage coefficients above.
 export const STANCE_RAGE_GEN = 0.1;
+// Recklessness' rage-generation half (its aura value carries the crit half).
+export const RECKLESSNESS_RAGE_GEN = 0.5;
 export const BERSERKER_CRIT_CHANCE = 0.03;
 export const BERSERKER_CRIT_DAMAGE = 0.03;
 export const SHIELD_BLOCK_BASE = 0.05;
 export const ENRAGE_DMG_DONE = 0.07;
 export const ENRAGE_HASTE_PCT = 0.25;
 export const ENRAGE_MOVE_MULT = 1.1;
+// Avatar's colossus body-size multiplier while the buff_avatar aura is worn.
+export const AVATAR_SCALE = 1.15;
 export const REVENGE_FREE_CHANCE = 0.3;
 export const REVENGE_FREE_DURATION = 10;
 export const BATTLE_TRANCE_CHANCE = 0.2;
@@ -3949,7 +3953,7 @@ export function rageGenAuraMult(e: Entity): number {
   let mult = 1;
   for (const aura of e.auras) {
     if (aura.kind === 'buff_rage_gen') mult += aura.value;
-    else if (aura.kind === 'buff_reckless') mult += 0.5;
+    else if (aura.kind === 'buff_reckless') mult += RECKLESSNESS_RAGE_GEN;
     else if (aura.kind === 'battle_stance') mult += STANCE_RAGE_GEN;
   }
   return mult;

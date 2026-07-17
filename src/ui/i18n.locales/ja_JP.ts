@@ -788,6 +788,9 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.statInfo.names.spellPower': '呪文威力',
   'hudChrome.statInfo.names.critRating': 'クリティカルレーティング',
   'hudChrome.statInfo.names.hasteRating': 'ヘイストレーティング',
+  'hudChrome.statInfo.names.parry': '受け流し',
+  'hudChrome.statInfo.desc.parry':
+    '前方からの近接攻撃を完全に受け流し、ダメージを受けない確率です。背後からの一撃は受け流せません。',
   'hudChrome.statInfo.names.hitRating': '命中レーティング',
   'hudChrome.statInfo.desc.hitRating':
     '装備とセットボーナスによる命中レーティング。攻撃がミスする頻度と呪文が抵抗される頻度を減らし、特に高レベルの敵に有効です。約10レーティングで1%命中。',
@@ -7935,4 +7938,24 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'welcome.armory.cta': '武器庫を見に行く',
   'welcome.news.new': '新着',
   'welcome.news.viewAll': 'GitHubですべての更新を見る',
+  'hudChrome.auraEffect.battleStance': 'バトルスタンス: 怒りの生成量が10%増加',
+  'hudChrome.auraEffect.berserkerStance':
+    'バーサーカースタンス: クリティカル率が3%上昇し、与えるダメージが3%増加',
+  'hudChrome.auraEffect.crit': 'クリティカル率を{pct}%上昇させる',
+  'hudChrome.auraEffect.rageGen': '怒りの生成量を{pct}%上昇させる',
+  'hudChrome.auraEffect.reckless': 'クリティカル率を{pct}%、怒りの生成量を{ragePct}%上昇させる',
+  'hudChrome.auraEffect.avatar': 'コロッサス: 与えるダメージが{pct}%増加',
+  'hudChrome.auraEffect.bloodbath': 'クリティカル率と与えるダメージを{pct}%上昇させる',
+  'hudChrome.auraEffect.dieBySword': '受けるダメージを{pct}%軽減する',
+  'hudChrome.auraEffect.sanguine': '攻撃速度を{hastePct}%、与えるダメージを{dmgPct}%上昇させる',
+  'hudChrome.auraEffect.battleTrance':
+    '次のレイヴァーストライクまたは重傷の一撃の怒りコストが0になる',
+  'hudChrome.auraEffect.revengeFree': '次の意趣返しの怒りコストが0になる',
+  'hudChrome.auraEffect.victoryRush': '勝利の追撃が使用可能',
+  'hudChrome.auraEffect.maxHpPct': '最大体力を{pct}%上昇させる',
+  'hud.combat.floatingParry': '受け流し',
+  'hud.combat.parried': '{target}は{ability}を受け流しました。',
+  'hudChrome.options.mouseoverCast': 'パーティフレームでマウスオーバーキャスト',
+  'hudChrome.options.showTargetOfTarget': 'ターゲットのターゲットを表示',
+  'hudChrome.unitFrame.targetOfTargetLabel': 'ターゲットのターゲット',
 };

@@ -28,6 +28,7 @@ import {
   normalizeStreamerLink,
   type StreamerLinks,
 } from '../sim/account_flair';
+import { warriorParryChance } from '../sim/combat/warrior_hit_table';
 import { DEED_ORDER, DEEDS } from '../sim/content/deeds';
 import { HEROIC_MARK_ITEM_ID } from '../sim/content/dungeon_difficulty';
 import { HEROIC_VENDOR_STOCK } from '../sim/content/heroic_vendor';
@@ -398,6 +399,7 @@ import { swingTimerState } from './swing_timer';
 import { SwingTimerPainter } from './swing_timer_painter';
 import { roleLabel, tTalent } from './talent_i18n';
 import { TalentsWindow } from './talents_window';
+import { targetOfTargetId } from './target_of_target';
 import { targetPortraitUrl } from './target_portrait_view';
 import { targetRankView, targetUsesEliteFrame } from './target_rank_view';
 import type { PresetId, ThemeKnob, ThemeState } from './theme';
@@ -1068,6 +1070,21 @@ export class Hud {
   private targetResEl = $('#tf-res');
   private targetResTextEl = $('#tf-res-text');
   private targetDebuffsEl = $('#tf-debuffs');
+  // Target of Target (showTargetOfTarget option): element refs for the #totarget-frame
+  // mini-frame, resolved ONCE like the target refs above (never per-frame queried). The
+  // frame is a THIRD instance of the unit_frame family (totFramePainter below).
+  private totFrameEl = $('#totarget-frame');
+  private totNameEl = $('#totf-name');
+  private totLevelEl = $('#totf-level');
+  private totHpEl = $('#totf-hp');
+  private totHpTextEl = $('#totf-hp-text');
+  private totPortraitEl = $('#totf-portrait') as unknown as HTMLCanvasElement;
+  // The subject the tot painter's portrait gate redraws this frame (mirrors
+  // targetPortraitSubject); set just before the paint() call that fires the gate.
+  private totPortraitSubject: Entity | null = null;
+  // Cached showTargetOfTarget preference (set from main.ts applySetting via
+  // setShowTargetOfTarget); when off, the frame is painted hidden every frame.
+  private showTargetOfTarget = false;
   // The target whose portrait the family painter's repaint gate redraws this frame.
   // The gate fires synchronously inside the targetFramePainter.paint() call below,
   // so this holds the subject for that one call (the old inline block read `target`
@@ -1270,6 +1287,10 @@ export class Hud {
   private lastTargetDebuffsPaintAt = 0;
   private lastTargetFramePaintAt = 0;
   private lastTargetFrameId: number | null = null;
+  // Target-of-target frame throttle + identity tracking, the non-self cadence twins
+  // of the target frame's fields above (see the showTargetOfTarget paint block).
+  private lastTotFramePaintAt = 0;
+  private lastTotFrameId: number | null = null;
   // Title resolve elision for the target frame (the lastIcon pattern): the
   // pattern-key composition re-runs only when the (language, title id)
   // signature changes; every steady frame reuses the cached decoration and
@@ -1565,6 +1586,7 @@ export class Hud {
     onPortraitsReady(() => {
       this.drawPlayerFramePortrait();
       this.targetFramePainter.invalidatePortrait();
+      this.totFramePainter.invalidatePortrait();
     });
     const mm = $('#minimap') as unknown as HTMLCanvasElement;
     this.minimapCtx = require2dContext(mm);
@@ -3117,6 +3139,25 @@ export class Hud {
       repaintPortrait: () => this.drawTargetPortrait(),
     },
   );
+  // The target-of-target frame is the THIRD instance of the unit_frame family (after
+  // the player and target). It carries name + level + hp (no absorb, no resource
+  // group: the mini-frame has no shield overlay or power rail), toggles flex/none via
+  // shownDisplay, and owns its own portrait repaint gate. It is painted only when the
+  // showTargetOfTarget option is on and the target-of-target entity is known.
+  private readonly totFramePainter = new UnitFramePainter(
+    this.writerFacet,
+    {
+      frame: this.totFrameEl,
+      name: this.totNameEl,
+      level: this.totLevelEl,
+      hpFill: this.totHpEl,
+      hpText: this.totHpTextEl,
+    },
+    {
+      shownDisplay: 'flex',
+      repaintPortrait: () => this.drawTargetOfTargetPortrait(),
+    },
+  );
   // Deferred "Auto-Attack on Ability Use" for TIMED casts: set by castSlot when
   // the QoL would engage but the ability has a cast time, consumed by the
   // castStop event (engage on success, drop on interrupt), so starting a Smite
@@ -3151,6 +3192,10 @@ export class Hud {
   // a pure USER toggle (party HP is actionable info), never influenced by
   // data-fx-level, reduce-motion, or the FPS governor.
   private partyCollapsed = loadPartyCollapsed();
+  // The party member the cursor is over (Clique-style mouseover casts): set by
+  // the party rows' mouseenter/mouseleave, read by castSlot to redirect friendly
+  // abilities to the hovered member. null whenever no frame is hovered.
+  private hoveredPartyPid: number | null = null;
   // The party frames are N further instances of the unit_frame family, one per
   // member, behind a keyed node pool that replaces the old per-rebuild innerHTML wipe
   // + click/contextmenu re-attach. The pool owns #party-frames; updatePartyFrames
@@ -3163,11 +3208,11 @@ export class Hud {
       classCss,
       onTarget: (pid) => this.sim.targetEntity(pid),
       onContextMenu: (pid, name, x, y) => this.openContextMenu(pid, name, x, y),
-      // Row hover hook. Clique-style mouseover casting (acting on the hovered member)
-      // is deferred until the authoritative cast-on-target sim path exists, so this is
-      // a no-op for now. Leaving the party moved from a per-frame button to the self
-      // portrait context menu.
-      onHover: () => {},
+      // Clique-style mouseover casts: castSlot redirects friendly abilities to
+      // the hovered member while the cursor is over a party frame.
+      onHover: (pid) => {
+        this.hoveredPartyPid = pid;
+      },
       chipLabel: () => t('hudChrome.unitFrame.partyChip'),
       onToggleCollapse: () => this.togglePartyCollapsed(),
       partyAuras: this.partyAurasDeps,
@@ -3830,6 +3875,28 @@ export class Hud {
         );
       }
     }
+  }
+
+  // Redraw the target-of-target portrait canvas, the twin of drawTargetPortrait for
+  // the #totarget-frame. Called by the tot painter's repaint gate only on identity
+  // change (or after invalidatePortrait), reading the subject set just before paint().
+  private drawTargetOfTargetPortrait(): void {
+    const tot = this.totPortraitSubject;
+    if (!tot) return;
+    if (tot.kind === 'player') {
+      this.portraits.drawClass(this.totPortraitEl, tot.templateId as PlayerClass, tot.skin ?? 0);
+    } else {
+      this.portraits.drawCrest(
+        this.totPortraitEl,
+        crestIdForEntity(tot.kind, MOBS[tot.templateId]?.family),
+      );
+    }
+  }
+
+  // Toggle the target-of-target mini-frame (showTargetOfTarget option), driven from
+  // main.ts applySetting. When off, the per-frame update paints the frame hidden.
+  setShowTargetOfTarget(on: boolean): void {
+    this.showTargetOfTarget = on;
   }
 
   private itemIcon(item: ItemDef): string {
@@ -4517,6 +4584,7 @@ export class Hud {
       critRating: p.critRating,
       hasteRating: p.hasteRating,
       hitRating: p.hitRating,
+      parryChance: sim.cfg.playerClass === 'warrior' ? warriorParryChance(p.stats.str) : 0,
       dps: weaponDps(wpn?.weapon, p.attackPower),
       gear,
       buffs,
@@ -4671,6 +4739,13 @@ export class Hud {
         // Pass the ability id so the effect line can resolve its damage school
         // (the {school} placeholder in the thorns/dot/absorb summaries).
         html += this.auraEffectTooltipHtml({ kind: eff.kind, value: eff.value, id: a.id });
+      } else if (eff.type === 'partyMeleeBuff') {
+        // Sanguine Aura: surface the same composite line the buff icon shows.
+        html += this.auraEffectTooltipHtml({
+          kind: 'sanguine',
+          value: eff.attackSpeedMult,
+          value2: eff.dmgPct,
+        });
       }
     }
     const requirements = abilityRequirementLines(a);
@@ -5054,7 +5129,22 @@ export class Hud {
             this.sim.castAbilityAt(action.id, this.groundTargetAim());
           }
         } else {
-          this.sim.castAbility(action.id);
+          // Clique-style mouseover cast: a friendly (heal/buff) ability pressed
+          // while hovering a party frame lands on the hovered member instead of
+          // the current target; the sim validates and falls back if it went stale.
+          // Gated on the Interface option (mouseoverCast, on by default).
+          const def = resolved.def;
+          if (
+            this.hoveredPartyPid !== null &&
+            (this.optionsHooks?.settings.get('mouseoverCast') ?? true) &&
+            def.requiresTarget &&
+            def.targetType === 'friendly' &&
+            this.sim.entities.has(this.hoveredPartyPid)
+          ) {
+            this.sim.castAbilityOn(action.id, this.hoveredPartyPid);
+          } else {
+            this.sim.castAbility(action.id);
+          }
           // Optional QoL: also engage auto-attack when the ability is an offensive
           // attack, so white swings start without a separate Attack press. Gated on
           // the player setting; abilityStartsAutoAttack skips heals/buffs and any
@@ -6586,6 +6676,7 @@ export class Hud {
         present: true,
         hpFrac: p.hp / Math.max(1, p.maxHp),
         hpText: `${p.hp} / ${p.maxHp}`,
+        showAbsorbText: true,
         resourceKind: p.resourceType,
         resFrac: p.resource / Math.max(1, p.maxResource),
         resText: `${Math.round(p.resource)} / ${p.maxResource}`,
@@ -6691,6 +6782,7 @@ export class Hud {
             present: true,
             hpFrac: target.hp / Math.max(1, target.maxHp),
             hpText: target.dead ? t('hud.core.dead') : `${target.hp} / ${target.maxHp}`,
+            showAbsorbText: !target.dead,
             // The target's power bar (classic target frame): players and caster
             // mobs show their mana/rage/energy; a resource-less target (a plain
             // beast, rtype null) maps to 'none' EXPLICITLY (unitResourceClass
@@ -6765,6 +6857,50 @@ export class Hud {
         cast: castBarState(target),
         castRemaining: target.castRemaining,
       });
+      // Target of Target (showTargetOfTarget): resolve who the target is targeting (a
+      // mob/pet's aggro target, a player's selected target) and paint the mini-frame.
+      // The id already rides the wire (aggro for mobs, tgt for players), but the ENTITY
+      // is only known when it is inside the player's ~120yd interest bubble, so an
+      // unknown (out of range) or world-object target-of-target hides the frame
+      // gracefully. Gated on the setting: off keeps the frame hidden every frame. A
+      // non-self frame, throttled like the target frame; a tot SWAP bypasses the throttle.
+      const totId = targetOfTargetId(target);
+      const tot = this.showTargetOfTarget && totId !== null ? sim.entities.get(totId) : undefined;
+      if (tot && tot.kind !== 'object') {
+        this.totPortraitSubject = tot;
+        const totChanged = tot.id !== this.lastTotFrameId;
+        if (
+          nonSelfRepaintDue(
+            totChanged,
+            this.lastTotFramePaintAt,
+            now,
+            targetFrameNonSelfIntervalMs(fxTier),
+          )
+        ) {
+          this.lastTotFramePaintAt = now;
+          this.lastTotFrameId = tot.id;
+          this.totFramePainter.paint(
+            unitFrameView({
+              present: true,
+              hpFrac: tot.hp / Math.max(1, tot.maxHp),
+              hpText: tot.dead ? t('hud.core.dead') : `${tot.hp} / ${tot.maxHp}`,
+              showAbsorbText: false,
+              resourceKind: 'none',
+              resFrac: 0,
+              resText: '',
+              levelText: null,
+              name: entityDisplayName(tot),
+              portraitKey: String(tot.id),
+              absorb: null,
+              dead: false,
+              outOfRange: false,
+            }),
+          );
+        }
+      } else {
+        this.lastTotFrameId = null;
+        this.totFramePainter.paint(unitFrameView(ABSENT_TARGET_DESCRIPTOR));
+      }
     } else {
       // No target (or a world object): hide the frame. The painter also resets its
       // portrait gate here, so re-acquiring a target repaints (the old -999 reset). Reset
@@ -6783,6 +6919,11 @@ export class Hud {
         this.lastAnnouncedTargetId = null;
       }
       this.targetFramePainter.paint(unitFrameView(ABSENT_TARGET_DESCRIPTOR));
+      // Hide the target-of-target frame too. Its parent (#target-frame) is already
+      // display:none, but paint hidden anyway to reset the painter's portrait gate +
+      // cadence id so re-acquiring a target repaints the mini-frame immediately.
+      this.lastTotFrameId = null;
+      this.totFramePainter.paint(unitFrameView(ABSENT_TARGET_DESCRIPTOR));
     }
 
     // cast bar: the player instance localizes the cast id (castDisplayName), layers
@@ -8097,7 +8238,12 @@ export class Hud {
                 now,
               );
           }
-          if (ev.kind === 'miss' || ev.kind === 'dodge' || ev.kind === 'resist') {
+          if (
+            ev.kind === 'miss' ||
+            ev.kind === 'dodge' ||
+            ev.kind === 'parry' ||
+            ev.kind === 'resist'
+          ) {
             // self vs other (carried on the shape's isSelf) drives the avoidance colour
             // token (#bbb vs #fff); the localized word stays at the call site. A resisted
             // spell is an avoidance word like miss/dodge (classic fidelity: spells resist,
@@ -8119,7 +8265,9 @@ export class Hud {
                       ? t('hud.combat.floatingMiss')
                       : ev.kind === 'dodge'
                         ? t('hud.combat.floatingDodge')
-                        : t('hud.combat.floatingResist'),
+                        : ev.kind === 'parry'
+                          ? t('hud.combat.floatingParry')
+                          : t('hud.combat.floatingResist'),
                   target: tgt,
                 },
                 now,
@@ -8135,7 +8283,9 @@ export class Hud {
                   ? 'hud.combat.miss'
                   : ev.kind === 'dodge'
                     ? 'hud.combat.dodged'
-                    : 'hud.combat.resisted';
+                    : ev.kind === 'parry'
+                      ? 'hud.combat.parried'
+                      : 'hud.combat.resisted';
               this.combatLog(
                 t(logKey, {
                   ability: combatAbilityName(ev.ability),
