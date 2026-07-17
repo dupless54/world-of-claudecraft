@@ -111,16 +111,28 @@ describe('desktop wallet handoff store', () => {
 
   it('binds transaction claims and completions to the expected wallet', () => {
     const store = createDesktopWalletHandoffStore();
-    const created = store.create(9, '192.0.2.9', {
-      kind: 'transaction',
+    store.authorizeTransaction(9, {
+      reference: 'CLM_authorized',
       transactionBase64: 'AQID',
+      expectedAddress: 'expected-wallet',
+      rail: 'sol',
+      amountBase: '1234',
+      destination: 'treasury-wallet',
+      expiresAtMs: Date.now() + 60_000,
+    });
+    const created = store.createTransaction(9, '192.0.2.9', {
+      reference: 'CLM_authorized',
       expectedAddress: 'expected-wallet',
     });
 
     expect(store.claim(created.code, '192.0.2.9')).toEqual({
       kind: 'transaction',
+      reference: 'CLM_authorized',
       transactionBase64: 'AQID',
       expectedAddress: 'expected-wallet',
+      rail: 'sol',
+      amountBase: '1234',
+      destination: 'treasury-wallet',
     });
     expect(() =>
       store.complete(created.code, '192.0.2.9', {
@@ -142,6 +154,71 @@ describe('desktop wallet handoff store', () => {
         signature: 'chain-signature',
       },
     });
+  });
+
+  it('rejects transaction handoffs without an unexpired server-authorized quote', () => {
+    let now = 1_000;
+    const store = createDesktopWalletHandoffStore({ now: () => now });
+
+    expect(() =>
+      store.createTransaction(9, '192.0.2.9', {
+        reference: 'CLM_missing',
+        expectedAddress: 'expected-wallet',
+      }),
+    ).toThrow('authorized Claudium quote');
+
+    store.authorizeTransaction(9, {
+      reference: 'CLM_expiring',
+      transactionBase64: 'AQID',
+      expectedAddress: 'expected-wallet',
+      rail: 'usdc',
+      amountBase: '4990000',
+      destination: 'token-account',
+      expiresAtMs: now + 100,
+    });
+    now += 101;
+
+    expect(() =>
+      store.createTransaction(9, '192.0.2.9', {
+        reference: 'CLM_expiring',
+        expectedAddress: 'expected-wallet',
+      }),
+    ).toThrow('authorized Claudium quote');
+  });
+
+  it('never lets a transaction handoff outlive its authorized quote', () => {
+    let now = 1_000;
+    const store = createDesktopWalletHandoffStore({ now: () => now });
+    store.authorizeTransaction(9, {
+      reference: 'CLM_short_quote',
+      transactionBase64: 'AQID',
+      expectedAddress: 'expected-wallet',
+      rail: 'woc',
+      amountBase: '500',
+      destination: 'treasury-wallet',
+      expiresAtMs: now + 100,
+    });
+
+    const created = store.createTransaction(9, '192.0.2.9', {
+      reference: 'CLM_short_quote',
+      expectedAddress: 'expected-wallet',
+    });
+    expect(created.expiresInMs).toBe(100);
+    expect(store.claim(created.code, '192.0.2.9')).toMatchObject({
+      kind: 'transaction',
+      reference: 'CLM_short_quote',
+    });
+
+    now += 100;
+    expect(() => store.claim(created.code, '192.0.2.9')).toThrow('invalid or expired');
+    expect(() =>
+      store.complete(created.code, '192.0.2.9', {
+        kind: 'transaction',
+        address: 'expected-wallet',
+        signature: 'late-chain-signature',
+      }),
+    ).toThrow('invalid or expired');
+    expect(store.result(9, created.code)).toEqual({ status: 'missing' });
   });
 
   it('expires operations and rejects browser requests from a different IP', () => {

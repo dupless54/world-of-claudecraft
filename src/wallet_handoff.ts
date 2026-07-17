@@ -6,14 +6,12 @@ import {
   onBrowserWalletRegistered,
 } from './net/wallet_handoff_browser';
 import { ensureLocaleLoaded, getLanguage, languageTag, t } from './ui/i18n';
-
-type Claim =
-  | { kind: 'link'; address?: string; nonce?: string; message?: string }
-  | { kind: 'transaction'; transactionBase64: string; expectedAddress: string };
+import { authorizeWalletHandoff, type WalletHandoffClaim } from './wallet_handoff_authorization';
+import { replaceWalletHandoffContent } from './wallet_handoff_focus';
 
 const root = document.querySelector<HTMLElement>('#wallet-handoff-root');
 const code = walletHandoffCodeFromHash(location.hash);
-let claim: Claim | null = null;
+let claim: WalletHandoffClaim | null = null;
 let busy = false;
 
 function escapeHtml(value: string): string {
@@ -38,19 +36,22 @@ async function post<T>(path: string, body: Record<string, unknown>): Promise<T> 
 
 function renderError(message = t('wallet.browser.failed')): void {
   if (!root) return;
-  root.innerHTML =
+  replaceWalletHandoffContent(
+    root,
     `<div class="wallet-handoff-card">` +
-    `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
-    `<h1>${escapeHtml(t('wallet.browser.title'))}</h1>` +
-    `<p role="alert">${escapeHtml(message)}</p>` +
-    `<button type="button" data-retry>${escapeHtml(t('wallet.browser.retry'))}</button>` +
-    `</div>`;
+      `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
+      `<h1>${escapeHtml(t('wallet.browser.title'))}</h1>` +
+      `<p role="alert">${escapeHtml(message)}</p>` +
+      `<button type="button" data-retry>${escapeHtml(t('wallet.browser.retry'))}</button>` +
+      `</div>`,
+    { focusSelector: '[data-retry]' },
+  );
   root.querySelector('[data-retry]')?.addEventListener('click', () => location.reload());
 }
 
 function renderWallets(): void {
   if (!root || !claim) return;
-  const wallets = browserWalletOptions();
+  const wallets = browserWalletOptions(claim.kind);
   const buttons = wallets
     .map(
       (wallet) =>
@@ -60,20 +61,23 @@ function renderWallets(): void {
         `</button>`,
     )
     .join('');
-  root.innerHTML =
+  replaceWalletHandoffContent(
+    root,
     `<div class="wallet-handoff-card">` +
-    `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
-    `<p class="wallet-handoff-eyebrow">${escapeHtml(t('wallet.browser.eyebrow'))}</p>` +
-    `<h1>${escapeHtml(t('wallet.browser.title'))}</h1>` +
-    `<p>${escapeHtml(
-      claim.kind === 'link' ? t('wallet.browser.linkBody') : t('wallet.browser.paymentBody'),
-    )}</p>` +
-    `<div class="wallet-handoff-options">${buttons}</div>` +
-    (wallets.length === 0
-      ? `<p class="wallet-handoff-help">${escapeHtml(t('wallet.browser.extensionHelp'))}</p>`
-      : '') +
-    `<p class="wallet-handoff-safety">${escapeHtml(t('wallet.browser.safety'))}</p>` +
-    `</div>`;
+      `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
+      `<p class="wallet-handoff-eyebrow">${escapeHtml(t('wallet.browser.eyebrow'))}</p>` +
+      `<h1>${escapeHtml(t('wallet.browser.title'))}</h1>` +
+      `<p>${escapeHtml(
+        claim.kind === 'link' ? t('wallet.browser.linkBody') : t('wallet.browser.paymentBody'),
+      )}</p>` +
+      `<div class="wallet-handoff-options">${buttons}</div>` +
+      (wallets.length === 0
+        ? `<p class="wallet-handoff-help">${escapeHtml(t('wallet.browser.extensionHelp'))}</p>`
+        : '') +
+      `<p class="wallet-handoff-safety">${escapeHtml(t('wallet.browser.safety'))}</p>` +
+      `</div>`,
+    { preserveWalletFocus: true },
+  );
   for (const button of root.querySelectorAll<HTMLButtonElement>('[data-wallet]')) {
     button.addEventListener('click', () => void authorize(button.dataset.wallet ?? ''));
   }
@@ -81,64 +85,41 @@ function renderWallets(): void {
 
 function renderBusy(wallet: string): void {
   if (!root) return;
-  root.innerHTML =
+  replaceWalletHandoffContent(
+    root,
     `<div class="wallet-handoff-card">` +
-    `<span class="wallet-handoff-spinner" aria-hidden="true"></span>` +
-    `<h1>${escapeHtml(t('wallet.browser.reviewTitle'))}</h1>` +
-    `<p>${escapeHtml(t('wallet.browser.reviewBody', { wallet }))}</p>` +
-    `</div>`;
+      `<span class="wallet-handoff-spinner" aria-hidden="true"></span>` +
+      `<h1 tabindex="-1" data-wallet-handoff-status>${escapeHtml(t('wallet.browser.reviewTitle'))}</h1>` +
+      `<p>${escapeHtml(t('wallet.browser.reviewBody', { wallet }))}</p>` +
+      `</div>`,
+    { focusSelector: '[data-wallet-handoff-status]' },
+  );
 }
 
 function renderComplete(): void {
   if (!root || !code) return;
   const returnUrl = `worldofclaudecraft://wallet-handoff?code=${encodeURIComponent(code)}`;
-  root.innerHTML =
+  replaceWalletHandoffContent(
+    root,
     `<div class="wallet-handoff-card">` +
-    `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
-    `<h1>${escapeHtml(t('wallet.browser.completeTitle'))}</h1>` +
-    `<p>${escapeHtml(t('wallet.browser.completeBody'))}</p>` +
-    `<a class="wallet-handoff-return" href="${returnUrl}">${escapeHtml(t('wallet.browser.returnButton'))}</a>` +
-    `</div>`;
+      `<img class="wallet-handoff-logo" src="/woc_logo_square.webp" alt="">` +
+      `<h1 tabindex="-1" data-wallet-handoff-complete>${escapeHtml(t('wallet.browser.completeTitle'))}</h1>` +
+      `<p>${escapeHtml(t('wallet.browser.completeBody'))}</p>` +
+      `<a class="wallet-handoff-return" href="${returnUrl}">${escapeHtml(t('wallet.browser.returnButton'))}</a>` +
+      `</div>`,
+    { focusSelector: '[data-wallet-handoff-complete]' },
+  );
   location.href = returnUrl;
 }
 
 async function authorize(walletId: string): Promise<void> {
   if (!code || !claim || busy) return;
   busy = true;
-  const option = browserWalletOptions().find((wallet) => wallet.id === walletId);
+  const option = browserWalletOptions(claim.kind).find((wallet) => wallet.id === walletId);
   renderBusy(option?.name ?? walletId);
   try {
-    const wallet = await connectBrowserWallet(walletId);
-    if (claim.kind === 'link') {
-      const challenge = await post<Claim>('/api/desktop-wallet/claim', {
-        code,
-        address: wallet.address,
-      });
-      if (
-        challenge.kind !== 'link' ||
-        typeof challenge.message !== 'string' ||
-        typeof challenge.nonce !== 'string'
-      ) {
-        throw new Error('invalid wallet challenge');
-      }
-      const signature = await wallet.signMessage(challenge.message);
-      await post('/api/desktop-wallet/complete', {
-        code,
-        kind: 'link',
-        address: wallet.address,
-        nonce: challenge.nonce,
-        signature,
-      });
-    } else {
-      if (wallet.address !== claim.expectedAddress) throw new Error('wallet does not match');
-      const signature = await wallet.signAndSendTransaction(claim.transactionBase64);
-      await post('/api/desktop-wallet/complete', {
-        code,
-        kind: 'transaction',
-        address: wallet.address,
-        signature,
-      });
-    }
+    const wallet = await connectBrowserWallet(walletId, claim.kind);
+    await authorizeWalletHandoff({ code, claim, wallet, post });
     renderComplete();
   } catch (error) {
     console.error('[wallet-handoff] authorization failed', error);
@@ -157,7 +138,7 @@ async function boot(): Promise<void> {
   document.title = t('wallet.browser.eyebrow');
   if (!root || !code) return renderError();
   try {
-    claim = await post<Claim>('/api/desktop-wallet/claim', { code });
+    claim = await post<WalletHandoffClaim>('/api/desktop-wallet/claim', { code });
     renderWallets();
     onBrowserWalletRegistered(() => {
       if (!busy) renderWallets();

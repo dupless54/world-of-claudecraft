@@ -24,7 +24,7 @@ const {
   withCspHeader,
   ALLOWED_PERMISSIONS,
 } = require('./shell_guards.cjs');
-const { resolveDesktopConfig } = require('./desktop_config.cjs');
+const { resolveDesktopConfig, walletConnectionSupported } = require('./desktop_config.cjs');
 const { createSteamShell } = require('./steam.cjs');
 const { PRODUCTION_API_ORIGIN } = require('./update_guard.cjs');
 const {
@@ -439,7 +439,7 @@ ipcMain.handle('desktop-steam-capability', (event) => {
 // intentionally absent from Steam until that distribution enables it.
 ipcMain.handle('desktop-wallet-capability', (event) => {
   if (!trustedSender(event)) return false;
-  return desktopConfig.distribution === 'website';
+  return walletConnectionSupported(desktopConfig);
 });
 
 ipcMain.handle('desktop-login-open-browser', (event) => {

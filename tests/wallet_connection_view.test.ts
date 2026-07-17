@@ -35,6 +35,40 @@ describe('wallet host capability', () => {
       resolveWalletCapability({ disabled: false, nativeApp: false, desktopApp: true, bridge: {} }),
     ).resolves.toBe(false);
   });
+
+  it('keeps the Steam desktop bridge wallet flow disabled', async () => {
+    await expect(
+      resolveWalletCapability({
+        disabled: false,
+        nativeApp: false,
+        desktopApp: true,
+        bridge: { walletConnectionSupported: async () => false },
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it('honors the wallet kill switch and fails closed when the bridge throws', async () => {
+    await expect(
+      resolveWalletCapability({
+        disabled: true,
+        nativeApp: false,
+        desktopApp: false,
+        bridge: null,
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      resolveWalletCapability({
+        disabled: false,
+        nativeApp: false,
+        desktopApp: true,
+        bridge: {
+          walletConnectionSupported: async () => {
+            throw new Error('bridge unavailable');
+          },
+        },
+      }),
+    ).resolves.toBe(false);
+  });
 });
 
 describe('wallet connection view', () => {

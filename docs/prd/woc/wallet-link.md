@@ -35,9 +35,11 @@ Foundational rather than a flywheel itself: every other $WOC mechanic needs a ve
   WalletConnect QR inside Electron. Create, claim, complete, and result requests
   therefore stay off a separately selected realm origin.
   Chrome, Safari, or the chosen default browser can see its installed Solana
-  wallet extensions. The browser signs the link challenge or service-built
-  Claudium transaction and returns only the result to the desktop app through
-  the registered `worldofclaudecraft://wallet-handoff` URL.
+  wallet extensions. For a purchase, the renderer sends only the Claudium quote
+  reference. The game server resolves the exact economy-service transaction it
+  authorized for that account and linked wallet before the browser signs it. The
+  browser returns only the result to the desktop app through the registered
+  `worldofclaudecraft://wallet-handoff` URL.
 - Desktop browser handoff secrets contain 256 bits of entropy, expire after five
   minutes, authorize one completion, are bound to the authenticated account, operation,
   expected wallet, and source IP, and travel in the URL fragment so web-server

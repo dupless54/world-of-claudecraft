@@ -4,9 +4,19 @@ export const DESKTOP_WALLET_HANDOFF_TTL_MS = 5 * 60 * 1000;
 const HANDOFF_CODE_BYTES = 32;
 const MAX_ACTIVE_HANDOFFS = 2_000;
 
+export interface DesktopWalletTransactionAuthorization {
+  reference: string;
+  transactionBase64: string;
+  expectedAddress: string;
+  rail: 'sol' | 'usdc' | 'woc';
+  amountBase: string | null;
+  destination: string | null;
+  expiresAtMs: number;
+}
+
 export type DesktopWalletHandoffAction =
   | { kind: 'link' }
-  | { kind: 'transaction'; transactionBase64: string; expectedAddress: string };
+  | ({ kind: 'transaction' } & Omit<DesktopWalletTransactionAuthorization, 'expiresAtMs'>);
 
 export type DesktopWalletHandoffResult =
   | { kind: 'link'; address: string; nonce: string; signature: string }
@@ -27,6 +37,7 @@ interface HandoffEntry {
   accountId: number;
   ip: string;
   createdAt: number;
+  expiresAtMs: number;
   action: DesktopWalletHandoffAction;
   linkClaimAddress: string | null;
   linkClaimPending: Promise<LinkClaim> | null;
@@ -40,11 +51,16 @@ interface StoreOptions {
 }
 
 export interface DesktopWalletHandoffStore {
-  create(
+  create(accountId: number, ip: string, action: { kind: 'link' }): HandoffCreated;
+  authorizeTransaction(
+    accountId: number,
+    authorization: DesktopWalletTransactionAuthorization,
+  ): void;
+  createTransaction(
     accountId: number,
     ip: string,
-    action: DesktopWalletHandoffAction,
-  ): { code: string; expiresInMs: number };
+    request: { reference: string; expectedAddress: string },
+  ): HandoffCreated;
   claim(code: unknown, ip: string): DesktopWalletHandoffAction;
   claimLink(
     code: unknown,
@@ -58,6 +74,15 @@ export interface DesktopWalletHandoffStore {
   complete(code: unknown, ip: string, result: DesktopWalletHandoffResult): void;
   result(accountId: number, code: unknown): DesktopWalletHandoffStatus;
   clear(): void;
+}
+
+interface HandoffCreated {
+  code: string;
+  expiresInMs: number;
+}
+
+interface AuthorizedTransaction extends DesktopWalletTransactionAuthorization {
+  accountId: number;
 }
 
 function encodeBase64Url(bytes: Uint8Array): string {
@@ -80,18 +105,56 @@ export function createDesktopWalletHandoffStore(
   const now = options.now ?? Date.now;
   const randomBytes = options.randomBytes ?? nodeRandomBytes;
   const entries = new Map<string, HandoffEntry>();
+  const authorizedTransactions = new Map<string, AuthorizedTransaction>();
+
+  const transactionKey = (accountId: number, reference: string): string =>
+    `${accountId}:${reference}`;
 
   const prune = (): void => {
-    const cutoff = now() - DESKTOP_WALLET_HANDOFF_TTL_MS;
+    const currentTime = now();
     for (const [code, entry] of entries) {
-      if (entry.createdAt < cutoff) entries.delete(code);
+      if (entry.expiresAtMs <= currentTime) entries.delete(code);
     }
+    for (const [key, authorization] of authorizedTransactions) {
+      if (authorization.expiresAtMs <= currentTime) authorizedTransactions.delete(key);
+    }
+  };
+
+  const createEntry = (
+    accountId: number,
+    ip: string,
+    action: DesktopWalletHandoffAction,
+    absoluteExpiryMs?: number,
+  ): HandoffCreated => {
+    prune();
+    if (entries.size >= MAX_ACTIVE_HANDOFFS) {
+      throw handoffError('too many active wallet handoffs');
+    }
+    const createdAt = now();
+    const expiresAtMs = Math.min(
+      createdAt + DESKTOP_WALLET_HANDOFF_TTL_MS,
+      absoluteExpiryMs ?? Number.POSITIVE_INFINITY,
+    );
+    if (expiresAtMs <= createdAt) throw handoffError('invalid or expired wallet handoff');
+    const code = encodeBase64Url(randomBytes(HANDOFF_CODE_BYTES));
+    entries.set(code, {
+      accountId,
+      ip,
+      createdAt,
+      expiresAtMs,
+      action,
+      linkClaimAddress: null,
+      linkClaimPending: null,
+      linkClaim: null,
+      result: null,
+    });
+    return { code, expiresInMs: expiresAtMs - createdAt };
   };
 
   const browserEntry = (code: unknown, ip: string): HandoffEntry => {
     if (!validCode(code)) throw handoffError('invalid or expired wallet handoff');
     const entry = entries.get(code);
-    if (!entry || entry.ip !== ip || now() - entry.createdAt > DESKTOP_WALLET_HANDOFF_TTL_MS) {
+    if (!entry || entry.ip !== ip || entry.expiresAtMs <= now()) {
       if (entry) entries.delete(code);
       throw handoffError('invalid or expired wallet handoff');
     }
@@ -100,22 +163,56 @@ export function createDesktopWalletHandoffStore(
 
   return {
     create(accountId, ip, action) {
+      return createEntry(accountId, ip, action);
+    },
+
+    authorizeTransaction(accountId, authorization) {
       prune();
-      if (entries.size >= MAX_ACTIVE_HANDOFFS) {
+      if (authorizedTransactions.size >= MAX_ACTIVE_HANDOFFS) {
         throw handoffError('too many active wallet handoffs');
       }
-      const code = encodeBase64Url(randomBytes(HANDOFF_CODE_BYTES));
-      entries.set(code, {
+      if (
+        !authorization.reference ||
+        authorization.reference.length > 256 ||
+        !authorization.transactionBase64 ||
+        authorization.transactionBase64.length > 16_384 ||
+        !Number.isFinite(authorization.expiresAtMs) ||
+        authorization.expiresAtMs <= now()
+      ) {
+        throw handoffError('invalid Claudium transaction authorization');
+      }
+      authorizedTransactions.set(transactionKey(accountId, authorization.reference), {
+        accountId,
+        ...authorization,
+      });
+    },
+
+    createTransaction(accountId, ip, request) {
+      prune();
+      const authorization = authorizedTransactions.get(
+        transactionKey(accountId, request.reference),
+      );
+      if (
+        !authorization ||
+        authorization.expectedAddress !== request.expectedAddress ||
+        authorization.expiresAtMs <= now()
+      ) {
+        throw handoffError('transaction is not backed by an authorized Claudium quote');
+      }
+      return createEntry(
         accountId,
         ip,
-        createdAt: now(),
-        action,
-        linkClaimAddress: null,
-        linkClaimPending: null,
-        linkClaim: null,
-        result: null,
-      });
-      return { code, expiresInMs: DESKTOP_WALLET_HANDOFF_TTL_MS };
+        {
+          kind: 'transaction',
+          reference: authorization.reference,
+          transactionBase64: authorization.transactionBase64,
+          expectedAddress: authorization.expectedAddress,
+          rail: authorization.rail,
+          amountBase: authorization.amountBase,
+          destination: authorization.destination,
+        },
+        authorization.expiresAtMs,
+      );
     },
 
     claim(code, ip) {
@@ -188,6 +285,7 @@ export function createDesktopWalletHandoffStore(
 
     clear() {
       entries.clear();
+      authorizedTransactions.clear();
     },
   };
 }

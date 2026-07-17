@@ -244,7 +244,7 @@ describe('startClaudiumPurchase', () => {
       sku: 'claudium_500',
       payer: 'wallet-owner',
     });
-    expect(signer).toHaveBeenCalledWith('AQID', 'usdc');
+    expect(signer).toHaveBeenCalledWith('AQID', 'usdc', 'CLM_usdc');
     expect(confirm).toHaveBeenCalledWith({
       reference: 'CLM_usdc',
       signature: 'usdc-signature',

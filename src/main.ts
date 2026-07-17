@@ -263,6 +263,7 @@ import {
   setWocBalance,
   shouldDisconnectUnverifiedWallet,
 } from './ui/wallet_balance';
+import { buildWalletConnectionView } from './ui/wallet_connection_view';
 import {
   mountWelcomeScreen,
   takeArmoryOpenIntent,
@@ -2098,12 +2099,12 @@ async function startGame(
                   },
                 },
               ),
-            nativeSignAndSend: async (transactionBase64) => {
+            nativeSignAndSend: async (transactionBase64, _rail, reference) => {
               if (desktopWalletBrowserHandoffAvailable()) {
                 if (!linkedWalletPubkey) throw new Error('connect a wallet first');
                 const result = await authorizeDesktopWalletInBrowser({
                   kind: 'transaction',
-                  transactionBase64,
+                  reference,
                   expectedAddress: linkedWalletPubkey,
                 });
                 if (result.kind !== 'transaction') {
@@ -5623,9 +5624,7 @@ function desktopWalletBrowserHandoffAvailable(): boolean {
 }
 
 async function authorizeDesktopWalletInBrowser(
-  action:
-    | { kind: 'link' }
-    | { kind: 'transaction'; transactionBase64: string; expectedAddress: string },
+  action: { kind: 'link' } | { kind: 'transaction'; reference: string; expectedAddress: string },
 ) {
   const bridge = desktopBridge();
   const openWalletBrowser = bridge?.openWalletBrowser;
@@ -6010,12 +6009,21 @@ function updateWalletButton(): void {
   const { address, isConnected } = walletMod
     ? walletMod.currentWallet()
     : { address: null, isConnected: false };
-  const connected = isConnected && !!address;
-  const linked = connected && linkedWalletPubkey === address;
-  const verifiedBalance = linkedWalletPubkey
-    ? (linkedWocBalance ?? (linked ? connectedWocBalance : null))
-    : null;
-  const previewBalance = connected && !linkedWalletPubkey ? connectedWocBalance : null;
+  const browserConnectedAddress = isConnected && address ? address : null;
+  const connectionView = buildWalletConnectionView({
+    enabled: true,
+    linkedAddress: linkedWalletPubkey,
+    connectedAddress: browserConnectedAddress,
+    linkedBalance: linkedWocBalance,
+    connectedBalance: connectedWocBalance,
+    externalSignerAvailable: desktopWalletBrowserSessionActive,
+  });
+  const connectedAddress = connectionView.connectedAddress;
+  const connected = connectedAddress !== null;
+  const linked = connectionView.kind === 'linked_connected';
+  const verifiedBalance = connectionView.balanceVerified ? connectionView.balance : null;
+  const previewBalance =
+    connectionView.kind === 'connected_unlinked' ? connectionView.balance : null;
   // Mirror the balance into the HUD store so the bag footer stays in sync. Only
   // a balance for the linked wallet may drive verified holder claims.
   setWocBalance(verifiedBalance ?? previewBalance, verifiedBalance !== null);
@@ -6023,7 +6031,7 @@ function updateWalletButton(): void {
   const externalSignerAvailable = desktopWalletBrowserSessionActive;
   setWalletConnectionAddresses(
     linkedWalletPubkey,
-    connected ? address : null,
+    browserConnectedAddress,
     externalSignerAvailable,
   );
   const btn = document.getElementById('btn-wallet');
@@ -6068,31 +6076,32 @@ function updateWalletButton(): void {
     setWalletHelp(t('wallet.helpDisconnected'), 'default');
     return;
   }
+  if (!connectedAddress) return;
   // $WOC balance sits to the left of the address once it has loaded.
   if (linked) {
     btn.classList.add('is-linked');
     label.textContent = t('wallet.appConnected');
     btn.title = t('wallet.linkedTitle');
     btn.setAttribute('aria-label', t('wallet.linkedTitle'));
-    setWalletStatus(walletAddressLabel(address, true, verifiedBalance));
-    setWalletHelp(walletHelpText(address, true, verifiedBalance), 'verified');
+    setWalletStatus(walletAddressLabel(connectedAddress, true, verifiedBalance));
+    setWalletHelp(walletHelpText(connectedAddress, true, verifiedBalance), 'verified');
   } else if (api.token) {
     btn.classList.add('needs-link');
     label.textContent = linkedWalletPubkey ? t('wallet.verifyNew') : t('wallet.verify');
     btn.title = t('wallet.verifyTitle');
     btn.setAttribute(
       'aria-label',
-      t('wallet.verifyAddressAria', { address: shortenAddress(address) }),
+      t('wallet.verifyAddressAria', { address: shortenAddress(connectedAddress) }),
     );
     setWalletStatus(null);
-    setWalletHelp(walletHelpText(address, false, connectedWocBalance), 'attention');
+    setWalletHelp(walletHelpText(connectedAddress, false, connectedWocBalance), 'attention');
   } else {
     btn.classList.add('is-connected');
-    label.textContent = walletAddressLabel(address, false, connectedWocBalance);
+    label.textContent = walletAddressLabel(connectedAddress, false, connectedWocBalance);
     btn.title = t('wallet.connectedTitle');
     btn.setAttribute('aria-label', t('wallet.connectedTitle'));
     setWalletStatus(null);
-    setWalletHelp(walletHelpText(address, false, connectedWocBalance), 'default');
+    setWalletHelp(walletHelpText(connectedAddress, false, connectedWocBalance), 'default');
   }
 }
 
@@ -7103,7 +7112,12 @@ async function openDesktopWalletManager(): Promise<void> {
 // server-side, so reconnecting the same wallet re-shows the verified state.
 async function signOutWallet(): Promise<void> {
   const wallet = await loadWallet();
-  await wallet.disconnectWallet();
+  try {
+    await wallet.disconnectWallet();
+  } finally {
+    desktopWalletBrowserSessionActive = false;
+    updateWalletButton();
+  }
 }
 
 async function unlinkVerifiedWallet(): Promise<void> {

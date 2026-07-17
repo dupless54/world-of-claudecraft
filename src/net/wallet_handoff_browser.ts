@@ -22,29 +22,45 @@ export interface BrowserWalletSession {
   signAndSendTransaction(transactionBase64: string): Promise<string>;
 }
 
+export type BrowserWalletRequirement = 'link' | 'transaction';
+
 type CompatibleWallet = Wallet & StandardConnectFeature & SolanaSignMessageFeature;
 
-function compatible(wallet: Wallet): wallet is CompatibleWallet {
-  return (
+function compatible(
+  wallet: Wallet,
+  requirement: BrowserWalletRequirement,
+): wallet is CompatibleWallet {
+  const messageCompatible =
     StandardConnect in wallet.features &&
     SolanaSignMessage in wallet.features &&
     (wallet.chains.some(isSolanaChain) ||
-      wallet.accounts.some((account) => account.chains.some(isSolanaChain)))
+      wallet.accounts.some((account) => account.chains.some(isSolanaChain)));
+  if (!messageCompatible) return false;
+  if (requirement === 'link') return true;
+  if (!(SolanaSignAndSendTransaction in wallet.features)) return false;
+  return (
+    wallet.accounts.length === 0 || accountFor(wallet as CompatibleWallet, requirement) !== null
   );
 }
 
-function accountFor(wallet: CompatibleWallet, accounts = wallet.accounts): WalletAccount | null {
+function accountFor(
+  wallet: CompatibleWallet,
+  requirement: BrowserWalletRequirement,
+  accounts = wallet.accounts,
+): WalletAccount | null {
   return (
     accounts.find(
       (account) =>
-        account.chains.some(isSolanaChain) && account.features.includes(SolanaSignMessage),
+        account.chains.some(isSolanaChain) &&
+        account.features.includes(SolanaSignMessage) &&
+        (requirement === 'link' || account.features.includes(SolanaSignAndSendTransaction)),
     ) ?? null
   );
 }
 
-function walletById(id: string): CompatibleWallet | null {
+function walletById(id: string, requirement: BrowserWalletRequirement): CompatibleWallet | null {
   for (const wallet of getWallets().get()) {
-    if (wallet.name === id && compatible(wallet)) return wallet;
+    if (wallet.name === id && compatible(wallet, requirement)) return wallet;
   }
   return null;
 }
@@ -56,10 +72,12 @@ function base64ToBytes(encoded: string): Uint8Array {
   return bytes;
 }
 
-export function browserWalletOptions(): BrowserWalletOption[] {
+export function browserWalletOptions(
+  requirement: BrowserWalletRequirement = 'link',
+): BrowserWalletOption[] {
   return getWallets()
     .get()
-    .filter(compatible)
+    .filter((wallet) => compatible(wallet, requirement))
     .map((wallet) => ({ id: wallet.name, name: wallet.name, icon: wallet.icon }));
 }
 
@@ -67,14 +85,17 @@ export function onBrowserWalletRegistered(listener: () => void): () => void {
   return getWallets().on('register', listener);
 }
 
-export async function connectBrowserWallet(id: string): Promise<BrowserWalletSession> {
-  const wallet = walletById(id);
+export async function connectBrowserWallet(
+  id: string,
+  requirement: BrowserWalletRequirement = 'link',
+): Promise<BrowserWalletSession> {
+  const wallet = walletById(id, requirement);
   if (!wallet) throw new Error('wallet extension is not available');
   const connect = wallet.features[
     StandardConnect
   ] as StandardConnectFeature[typeof StandardConnect];
   const result = await connect.connect();
-  const account = accountFor(wallet, result.accounts);
+  const account = accountFor(wallet, requirement, result.accounts);
   if (!account) throw new Error('wallet did not authorize a Solana account');
 
   return {

@@ -443,9 +443,7 @@ export class Api {
   }
 
   async createDesktopWalletHandoff(
-    action:
-      | { kind: 'link' }
-      | { kind: 'transaction'; transactionBase64: string; expectedAddress: string },
+    action: { kind: 'link' } | { kind: 'transaction'; reference: string; expectedAddress: string },
   ): Promise<{ code: string; expiresInMs: number }> {
     const data = await this.post(
       '/api/desktop-wallet/create',

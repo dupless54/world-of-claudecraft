@@ -23,7 +23,7 @@ interface WaitOptions {
 
 export type DesktopWalletBrowserAction =
   | { kind: 'link' }
-  | { kind: 'transaction'; transactionBase64: string; expectedAddress: string };
+  | { kind: 'transaction'; reference: string; expectedAddress: string };
 
 interface DesktopWalletHandoffBridge {
   openWalletBrowser(code: string): Promise<boolean>;

@@ -96,20 +96,9 @@ async function issueWalletChallenge(
   return { nonce, message };
 }
 
-const MAX_HANDOFF_TRANSACTION_BASE64 = 16_384;
-
 function handoffFailure(res: http.ServerResponse, error: unknown): void {
   const message = error instanceof Error ? error.message : 'wallet authorization failed';
   json(res, 400, { error: message, code: 'wallet.handoff_invalid' });
-}
-
-function validTransactionBase64(value: unknown): value is string {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= MAX_HANDOFF_TRANSACTION_BASE64 &&
-    /^[A-Za-z0-9+/]+={0,2}$/.test(value)
-  );
 }
 
 /** Create one browser-authorized wallet operation for the authenticated desktop account. */
@@ -129,10 +118,12 @@ export async function handleDesktopWalletHandoffCreate(
     }
     const expectedAddress =
       typeof body.expectedAddress === 'string' ? body.expectedAddress.trim() : '';
+    const reference = typeof body.reference === 'string' ? body.reference.trim() : '';
     if (
       body.kind !== 'transaction' ||
       !isSolanaAddress(expectedAddress) ||
-      !validTransactionBase64(body.transactionBase64)
+      !reference ||
+      reference.length > 256
     ) {
       return json(res, 400, {
         error: 'invalid desktop wallet operation',
@@ -149,10 +140,9 @@ export async function handleDesktopWalletHandoffCreate(
     return json(
       res,
       200,
-      desktopWalletHandoffs.create(accountId, requestIp(req), {
-        kind: 'transaction',
+      desktopWalletHandoffs.createTransaction(accountId, requestIp(req), {
+        reference,
         expectedAddress,
-        transactionBase64: body.transactionBase64,
       }),
     );
   } catch (error) {
