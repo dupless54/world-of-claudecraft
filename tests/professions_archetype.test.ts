@@ -13,8 +13,23 @@
 // (acceptArchetypeQuest / advanceAmendsProgress / switchArchetype).
 
 import { describe, expect, it } from 'vitest';
-import { CRAFT_RING } from '../src/sim/content/professions';
-import { emptyArchetypeState, normalizeArchetypeState } from '../src/sim/professions/archetype';
+import { CRAFT_RING, oppositeCraft } from '../src/sim/content/professions';
+import {
+  ARCHETYPE_PAIR_TARGETS,
+  type ArchetypeState,
+  archetypePairId,
+  attuneArchetypePair,
+  canAttuneArchetypePair,
+  canSwitchHobby,
+  craftsForPairTarget,
+  defaultHobbyForPair,
+  emptyArchetypeState,
+  hobbyCandidatesForPair,
+  isAdjacentPairTarget,
+  normalizeArchetypeState,
+  requiredAmendsProgress,
+  switchHobby,
+} from '../src/sim/professions/archetype';
 import { Sim } from '../src/sim/sim';
 
 function makeSim(seed = 42) {
@@ -226,5 +241,228 @@ describe('archetype persistence: pairedMajor round trip and pre-pair save backfi
   it('the deployed v0.26.0 save shapes (null archetype, bare blob) load as the exact empty state', () => {
     expect(normalizeArchetypeState({ activeArchetype: null })).toEqual(emptyArchetypeState());
     expect(normalizeArchetypeState({})).toEqual(emptyArchetypeState());
+  });
+
+  it('a saved hobby outside the pair opposites is replaced by the deterministic default', () => {
+    // cooking is neither opposite of the armor/weapon majors (tailoring,
+    // leatherworking), so the normalize repair must not keep it.
+    const state = normalizeArchetypeState({
+      activeArchetype: 'armorcrafting',
+      pairedMajor: 'weaponcrafting',
+      hobbyCraft: 'cooking',
+    });
+    expect(state.hobbyCraft).toBe('leatherworking');
+  });
+
+  it('the backfilled hobby prefers the higher retained-skill candidate from the skills argument', () => {
+    const state = normalizeArchetypeState(
+      { activeArchetype: 'armorcrafting', pairedMajor: 'weaponcrafting' },
+      { tailoring: 10 },
+    );
+    expect(state.hobbyCraft).toBe('tailoring');
+  });
+});
+
+// Direct pins for the ring-derived pair helpers the Professions 2.0 Phase 1
+// reorder introduced. The canonical pair id is a persisted save/wire format
+// (ArchetypeState.attunedPairs), so every arm below is pinned with literals.
+describe('archetypePairId canonicalization (Phase 1 pair identity)', () => {
+  it('joins an adjacent pair in CRAFT_RING forward order regardless of argument order', () => {
+    expect(archetypePairId('engineering', 'alchemy')).toBe('engineering+alchemy');
+    expect(archetypePairId('alchemy', 'engineering')).toBe('engineering+alchemy');
+  });
+
+  it('canonicalizes the ring-wrap pair as armorcrafting+engineering from either side', () => {
+    expect(archetypePairId('armorcrafting', 'engineering')).toBe('armorcrafting+engineering');
+    expect(archetypePairId('engineering', 'armorcrafting')).toBe('armorcrafting+engineering');
+  });
+
+  it('returns null for a non-adjacent pair, an unknown craft, and a missing second craft', () => {
+    // engineering+cooking was ring-adjacent BEFORE the reorder: the old
+    // geometry must not leak through as a derivable id.
+    expect(archetypePairId('engineering', 'cooking')).toBeNull();
+    expect(archetypePairId('not_a_craft', 'alchemy')).toBeNull();
+    expect(archetypePairId('engineering', null)).toBeNull();
+  });
+});
+
+describe('isAdjacentPairTarget / craftsForPairTarget (Phase 1 pair identity)', () => {
+  it('accepts exactly the canonical orientation, never the reversed or pre-reorder form', () => {
+    expect(isAdjacentPairTarget('weaponcrafting+armorcrafting')).toBe(true);
+    // The pre-reorder canonical id of the same pair: recognized nowhere.
+    expect(isAdjacentPairTarget('armorcrafting+weaponcrafting')).toBe(false);
+    expect(isAdjacentPairTarget('engineering+cooking')).toBe(false);
+    expect(isAdjacentPairTarget('not+a+pair')).toBe(false);
+  });
+
+  it('splits a canonical target into its two crafts and rejects everything else', () => {
+    expect(craftsForPairTarget('weaponcrafting+armorcrafting')).toEqual([
+      'weaponcrafting',
+      'armorcrafting',
+    ]);
+    expect(craftsForPairTarget('armorcrafting+weaponcrafting')).toBeNull();
+    expect(craftsForPairTarget('garbage')).toBeNull();
+  });
+});
+
+describe('hobbyCandidatesForPair (Phase 1 ring derivation)', () => {
+  it('returns the two ring opposites in argument order for every selectable pair', () => {
+    for (const target of ARCHETYPE_PAIR_TARGETS) {
+      const pair = craftsForPairTarget(target);
+      if (!pair) throw new Error(`craftsForPairTarget rejected its own target ${target}`);
+      const [a, b] = pair;
+      expect(hobbyCandidatesForPair(a, b)).toEqual([oppositeCraft(a).id, oppositeCraft(b).id]);
+      expect(hobbyCandidatesForPair(b, a)).toEqual([oppositeCraft(b).id, oppositeCraft(a).id]);
+    }
+  });
+
+  it('pins the armor/weapon exemplar literally: tailoring and leatherworking', () => {
+    expect(hobbyCandidatesForPair('weaponcrafting', 'armorcrafting')).toEqual([
+      'leatherworking',
+      'tailoring',
+    ]);
+  });
+
+  it('returns an empty list for a non-adjacent pair and for an unknown craft', () => {
+    expect(hobbyCandidatesForPair('engineering', 'tailoring')).toEqual([]);
+    expect(hobbyCandidatesForPair('not_a_craft', 'alchemy')).toEqual([]);
+  });
+});
+
+describe('defaultHobbyForPair skill preference (Phase 1 hobby default)', () => {
+  it('tie-breaks by ring order when the retained skills are equal', () => {
+    // leatherworking (ring index 3) beats tailoring (4) at zero skill.
+    expect(defaultHobbyForPair('weaponcrafting', 'armorcrafting', {})).toBe('leatherworking');
+    expect(
+      defaultHobbyForPair('weaponcrafting', 'armorcrafting', { tailoring: 10, leatherworking: 10 }),
+    ).toBe('leatherworking');
+  });
+
+  it('prefers the higher retained-skill candidate over the ring-order tie break', () => {
+    expect(defaultHobbyForPair('weaponcrafting', 'armorcrafting', { tailoring: 10 })).toBe(
+      'tailoring',
+    );
+  });
+
+  it('returns null for a non-adjacent pair', () => {
+    expect(defaultHobbyForPair('engineering', 'tailoring', {})).toBeNull();
+  });
+});
+
+function ctxOf(sim: Sim) {
+  return (sim as unknown as { ctx: Parameters<typeof attuneArchetypePair>[0] }).ctx;
+}
+
+function metaOf(sim: Sim) {
+  return (
+    sim as unknown as {
+      players: Map<number, { archetype: ArchetypeState; craftSkills: Record<string, number> }>;
+    }
+  ).players.get(sim.playerId)!;
+}
+
+const WEAPON_ARMOR = 'weaponcrafting+armorcrafting';
+const JEWEL_WEAPON = 'jewelcrafting+weaponcrafting';
+
+describe('attuneArchetypePair / canAttuneArchetypePair mode gating (Phase 1 transitions)', () => {
+  it('a first NEW attunement sets the full pair state without raising the return counter', () => {
+    const sim = makeSim();
+    expect(canAttuneArchetypePair(metaOf(sim).archetype, WEAPON_ARMOR, 'new')).toBe(true);
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new')).toBe(true);
+    expect(metaOf(sim).archetype).toEqual({
+      activeArchetype: 'weaponcrafting',
+      pairedMajor: 'armorcrafting',
+      hobbyCraft: 'leatherworking', // zero skills: ring-order tie break
+      attunedPairs: [WEAPON_ARMOR],
+      switchCount: 0,
+      amendsProgress: 0,
+    });
+  });
+
+  it('the attunement hobby derives from the retained craft skills at transition time', () => {
+    const sim = makeSim();
+    metaOf(sim).craftSkills.tailoring = 10;
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new')).toBe(true);
+    expect(metaOf(sim).archetype.hobbyCraft).toBe('tailoring');
+  });
+
+  it('re-attuning the CURRENT pair is refused in both modes', () => {
+    const sim = makeSim();
+    attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new');
+    expect(canAttuneArchetypePair(metaOf(sim).archetype, WEAPON_ARMOR, 'new')).toBe(false);
+    expect(canAttuneArchetypePair(metaOf(sim).archetype, WEAPON_ARMOR, 'return')).toBe(false);
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new')).toBe(false);
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'return')).toBe(false);
+    expect(metaOf(sim).archetype.switchCount).toBe(0);
+  });
+
+  it('NEW refuses a previously held pair; RETURN attunes it, bumps switchCount, resets amends', () => {
+    const sim = makeSim();
+    attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new');
+    attuneArchetypePair(ctxOf(sim), sim.playerId, JEWEL_WEAPON, 'new');
+    metaOf(sim).archetype.amendsProgress = 3;
+
+    expect(canAttuneArchetypePair(metaOf(sim).archetype, WEAPON_ARMOR, 'new')).toBe(false);
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new')).toBe(false);
+    expect(metaOf(sim).archetype.activeArchetype).toBe('jewelcrafting');
+
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'return')).toBe(true);
+    expect(metaOf(sim).archetype).toMatchObject({
+      activeArchetype: 'weaponcrafting',
+      pairedMajor: 'armorcrafting',
+      attunedPairs: [WEAPON_ARMOR, JEWEL_WEAPON], // history keeps both, no duplicate
+      switchCount: 1,
+      amendsProgress: 0,
+    });
+  });
+
+  it('RETURN refuses a never-held pair and a malformed target is refused outright', () => {
+    const sim = makeSim();
+    attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new');
+    expect(canAttuneArchetypePair(metaOf(sim).archetype, JEWEL_WEAPON, 'return')).toBe(false);
+    expect(attuneArchetypePair(ctxOf(sim), sim.playerId, JEWEL_WEAPON, 'return')).toBe(false);
+    expect(
+      canAttuneArchetypePair(metaOf(sim).archetype, 'armorcrafting+weaponcrafting', 'new'),
+    ).toBe(false);
+    expect(
+      attuneArchetypePair(ctxOf(sim), sim.playerId, 'armorcrafting+weaponcrafting', 'new'),
+    ).toBe(false);
+    expect(metaOf(sim).archetype.activeArchetype).toBe('weaponcrafting');
+  });
+});
+
+describe('canSwitchHobby / switchHobby (Phase 1 hobby transitions)', () => {
+  it('switches only to the OTHER opposite candidate of the active pair', () => {
+    const sim = makeSim();
+    attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new');
+    expect(metaOf(sim).archetype.hobbyCraft).toBe('leatherworking');
+
+    expect(canSwitchHobby(metaOf(sim).archetype, 'tailoring')).toBe(true);
+    expect(switchHobby(ctxOf(sim), sim.playerId, 'tailoring')).toBe(true);
+    expect(metaOf(sim).archetype.hobbyCraft).toBe('tailoring');
+  });
+
+  it('refuses the current hobby, a non-candidate craft, and a pre-attunement state', () => {
+    const sim = makeSim();
+    expect(canSwitchHobby(metaOf(sim).archetype, 'tailoring')).toBe(false);
+
+    attuneArchetypePair(ctxOf(sim), sim.playerId, WEAPON_ARMOR, 'new');
+    expect(canSwitchHobby(metaOf(sim).archetype, 'leatherworking')).toBe(false); // current hobby
+    expect(canSwitchHobby(metaOf(sim).archetype, 'cooking')).toBe(false); // not an opposite
+    expect(switchHobby(ctxOf(sim), sim.playerId, 'cooking')).toBe(false);
+    expect(metaOf(sim).archetype.hobbyCraft).toBe('leatherworking');
+  });
+});
+
+describe('requiredAmendsProgress escalation formula', () => {
+  it('pins the 5 + 3 per prior switch ramp', () => {
+    expect(requiredAmendsProgress(0)).toBe(5);
+    expect(requiredAmendsProgress(1)).toBe(8);
+    expect(requiredAmendsProgress(2)).toBe(11);
+  });
+
+  it('clamps a negative count to the base and floors a fractional count', () => {
+    expect(requiredAmendsProgress(-3)).toBe(5);
+    expect(requiredAmendsProgress(2.9)).toBe(11);
   });
 });

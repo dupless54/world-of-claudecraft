@@ -54,6 +54,48 @@ describe('comboEligibility', () => {
     ).toMatchObject({ ok: false, reason: 'tier_unmet', unmetCrafts: ['weaponcrafting'] });
   });
 
+  it('denies the exact pair when only craftA misses its tier, naming just that craft', () => {
+    expect(
+      comboEligibility(
+        requirement,
+        { armorcrafting: 24, weaponcrafting: 25 },
+        {
+          activeArchetype: 'armorcrafting',
+          pairedMajor: 'weaponcrafting',
+          hobbyCraft: 'leatherworking',
+        },
+      ),
+    ).toMatchObject({ ok: false, reason: 'tier_unmet', unmetCrafts: ['armorcrafting'] });
+  });
+
+  it('names BOTH crafts in unmetCrafts when neither reaches the required tier', () => {
+    expect(
+      comboEligibility(
+        requirement,
+        { armorcrafting: 0, weaponcrafting: 24 },
+        {
+          activeArchetype: 'armorcrafting',
+          pairedMajor: 'weaponcrafting',
+          hobbyCraft: 'leatherworking',
+        },
+      ),
+    ).toMatchObject({
+      ok: false,
+      reason: 'tier_unmet',
+      unmetCrafts: ['armorcrafting', 'weaponcrafting'],
+    });
+  });
+
+  it('treats a half-formed identity (major set, no paired major) as not attuned', () => {
+    expect(
+      comboEligibility(requirement, skilled, {
+        activeArchetype: 'armorcrafting',
+        pairedMajor: null,
+        hobbyCraft: null,
+      }),
+    ).toMatchObject({ ok: false, reason: 'not_attuned' });
+  });
+
   it('allows a recipe without a combo requirement in every identity state', () => {
     expect(
       comboEligibility(

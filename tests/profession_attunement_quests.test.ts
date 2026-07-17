@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { GATHER_NODES } from '../src/sim/data';
 import { ARCHETYPE_PAIR_TARGETS, normalizeArchetypeState } from '../src/sim/professions/archetype';
 import { Sim } from '../src/sim/sim';
+import { terrainHeight } from '../src/sim/world';
 import { COMMAND_NAMES } from '../src/world_api';
 
 const LORE_QUEST = 'q_archetype_acceptance';
@@ -202,5 +204,56 @@ describe('live profession attunement quests', () => {
     expect(COMMAND_NAMES).not.toContain('attune_profession');
     expect(COMMAND_NAMES).not.toContain('switch_hobby');
     expect(COMMAND_NAMES).not.toContain('advance_amends');
+  });
+
+  // Phase 1 changed sim LOGIC, not just content data: the quest-effect
+  // transitions (profession_quest_effects.ts), the gather/craft quest-credit
+  // arms (quest_credit.ts), the removed bespoke node quest grant
+  // (gathering.ts), and the attunement-gated combo craft path (crafting.ts,
+  // combo_eligibility.ts). So the whole flow gets a same-seed determinism pin:
+  // two sims with the same seed running the identical command script must end
+  // byte-identical, including every rng-drawing step (harvest rarity rolls and
+  // the craft quality roll share the one world rng stream).
+  it('same-seed runs of the gather, craft, attune, and hobby-switch flow are identical', () => {
+    const run = () => {
+      const sim = makeSim(4242);
+      const pid = sim.playerId;
+      unlockProfessionQuests(sim);
+
+      const oreNodes = GATHER_NODES.filter((node) => node.type === 'ore').slice(0, 2);
+      expect(oreNodes).toHaveLength(2);
+      for (const node of oreNodes) {
+        const player = sim.entities.get(pid)!;
+        player.pos.x = node.pos.x;
+        player.pos.z = node.pos.z;
+        player.pos.y = terrainHeight(node.pos.x, node.pos.z, sim.cfg.seed);
+        player.prevPos = { ...player.pos };
+        sim.harvestNode(node.id, pid); // rarity roll: draws rng
+        sim.tick();
+      }
+
+      attuneNewPair(sim, WEAPON_ARMOR);
+      sim.addItem('linen_scrap', 1, pid);
+      sim.addItem('spider_leg', 1, pid);
+      sim.craftItem('recipe_minor_healing_potion', pid); // quality roll: draws rng
+      acceptProfessionQuest(sim, HOBBY_QUEST, 'tailoring');
+      completeAndTurnIn(sim, HOBBY_QUEST);
+      for (let i = 0; i < 20; i++) sim.tick();
+
+      return {
+        save: sim.serializeCharacter(pid),
+        identity: sim.craftingIdentity,
+        lastCraft: sim.meta(pid)?.lastCraftResult,
+      };
+    };
+
+    const first = run();
+    // Decisive anchors so a doubly-failed script can never pass vacuously.
+    expect(first.identity).toMatchObject({
+      hobbyCraft: 'tailoring',
+      attunedPairs: [WEAPON_ARMOR],
+    });
+    expect(first.lastCraft?.ok).toBe(true);
+    expect(run()).toEqual(first);
   });
 });
