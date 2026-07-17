@@ -1073,6 +1073,21 @@ export const PRIEST_CHOICE_ROWS: ClassChoiceRows = {
       decision: 'Scouring Hymn cadence vs prayer-cadence ward vs Dirge-gated Mindfracture damage',
       options: [
         {
+          id: 'pri_r5_improved_renew',
+          name: 'Warding Refrain',
+          description:
+            'Every 3rd Whispered Prayer hardens its target into a ward absorbing 40 damage for 10 sec.',
+          icon: 'lesser_heal',
+          effect: {
+            proc: {
+              id: 'pri_lingering_ward',
+              name: 'Warding Refrain',
+              trigger: { on: 'castNth', n: 3, abilities: ['lesser_heal'] },
+              responses: [{ kind: 'absorb', amount: 40, duration: 10, name: 'Warding Refrain' }],
+            },
+          },
+        },
+        {
           id: 'pri_r5_searing_light',
           name: 'Third Verse',
           description:
@@ -1091,21 +1106,6 @@ export const PRIEST_CHOICE_ROWS: ClassChoiceRows = {
                   duration: 8,
                 },
               ],
-            },
-          },
-        },
-        {
-          id: 'pri_r5_improved_renew',
-          name: 'Warding Refrain',
-          description:
-            'Every 3rd Whispered Prayer hardens its target into a ward absorbing 40 damage for 10 sec.',
-          icon: 'lesser_heal',
-          effect: {
-            proc: {
-              id: 'pri_lingering_ward',
-              name: 'Warding Refrain',
-              trigger: { on: 'castNth', n: 3, abilities: ['lesser_heal'] },
-              responses: [{ kind: 'absorb', amount: 40, duration: 10, name: 'Warding Refrain' }],
             },
           },
         },
@@ -1133,20 +1133,6 @@ export const PRIEST_CHOICE_ROWS: ClassChoiceRows = {
       decision: 'single-target silence vs area fear vs consumed-shield heal',
       options: [
         {
-          id: 'pri_r8_silence',
-          name: 'Hushword',
-          description: 'Grants Hushword.',
-          icon: 'silence',
-          effect: { grant: { ability: 'silence' } },
-        },
-        {
-          id: 'pri_r8_psychic_scream',
-          name: 'Terror Canticle',
-          description: 'Grants Terror Canticle.',
-          icon: 'psychic_scream',
-          effect: { grant: { ability: 'psychic_scream' } },
-        },
-        {
           id: 'pri_r8_improved_shield',
           name: 'Shattered Psalm',
           description:
@@ -1160,6 +1146,20 @@ export const PRIEST_CHOICE_ROWS: ClassChoiceRows = {
               responses: [{ kind: 'heal', amount: 45 }],
             },
           },
+        },
+        {
+          id: 'pri_r8_silence',
+          name: 'Hushword',
+          description: 'Grants Hushword.',
+          icon: 'silence',
+          effect: { grant: { ability: 'silence' } },
+        },
+        {
+          id: 'pri_r8_psychic_scream',
+          name: 'Terror Canticle',
+          description: 'Grants Terror Canticle.',
+          icon: 'psychic_scream',
+          effect: { grant: { ability: 'psychic_scream' } },
         },
       ],
     },

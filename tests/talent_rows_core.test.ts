@@ -109,9 +109,14 @@ describe('canonical Talents V2 row registry', () => {
     expect(TALENTS.paladin.specs.find((spec) => spec.id === 'holy')?.mastery.effect).toEqual({
       global: { critDmgHealPct: 0.5 },
     });
+    // Balance pass: False Face is +25% crit damage plus the Duskveil
+    // stealth-speed identity.
     expect(TALENTS.rogue.specs.find((spec) => spec.id === 'subtlety')?.mastery.effect).toEqual({
-      global: { critDmgPhysPct: 0.4 },
-      stats: { agiPct: 0.1 },
+      global: { critDmgPhysPct: 0.25 },
+      ability: [
+        { ability: 'stealth', buffPct: 0.5 },
+        { ability: 'vanish', buffPct: 0.5 },
+      ],
     });
 
     const warrior = Object.fromEntries(
