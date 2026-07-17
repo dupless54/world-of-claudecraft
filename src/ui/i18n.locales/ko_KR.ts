@@ -6061,6 +6061,10 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.identity.ceilingUnlimited': '강화 상한 없음',
   'hudChrome.crafting.identity.ceilingCommon': '일반 상한',
   'hudChrome.crafting.identity.skillAria': '{craft}, 기술 {skill}, 티어 {tier}, {role}, {ceiling}',
+  'hudChrome.crafting.identity.colCraft': '제작 분야',
+  'hudChrome.crafting.identity.colSkill': '기술',
+  'hudChrome.crafting.identity.colRole': '역할',
+  'hudChrome.crafting.identity.colCap': '상한',
   'hudChrome.crafting.identity.tutorial':
     '첫 티어: 한 기술을 숙련도 {skill}까지 올리세요. 제작에 성공하면 다른 지식을 지우지 않고 해당 기술이 성장합니다.',
   'hudChrome.crafting.identity.nearTier': '{craft}는 다음 티어까지 숙련도 {points}이 필요합니다.',

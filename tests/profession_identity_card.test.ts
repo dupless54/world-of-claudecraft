@@ -41,6 +41,15 @@ describe('profession identity card painter contract', () => {
     // armorcrafting is the Smith pair); the skill rows render craft names.
     expect(card?.textContent).toContain('Smith');
     expect(card?.textContent).toContain('Armorcrafting');
+    // One visual column-header row over the skill list, hidden from the
+    // accessibility tree (each row reads as the full skillAria sentence).
+    const header = card?.querySelectorAll<HTMLElement>('.profession-skill-header');
+    expect(header).toHaveLength(1);
+    expect(header?.[0].getAttribute('aria-hidden')).toBe('true');
+    const headerLabels = [...(header?.[0].querySelectorAll('span') ?? [])].map(
+      (s) => s.textContent,
+    );
+    expect(headerLabels).toEqual(['Craft', 'Skill', 'Role', 'Cap']);
 
     parent.replaceChildren();
     renderProfessionIdentityCard(
@@ -48,6 +57,8 @@ describe('profession identity card painter contract', () => {
       buildProfessionIdentityView({ ...identity, synced: false }),
     );
     expect(parent.textContent).toContain('Waiting for your crafting identity');
+    // The syncing card has no skill rows, so no floating header row either.
+    expect(parent.querySelectorAll('.profession-skill-header')).toHaveLength(0);
   });
 
   it('renders combo guidance outside the faded disabled craft button', () => {

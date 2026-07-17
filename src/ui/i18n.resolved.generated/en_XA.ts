@@ -2080,6 +2080,10 @@ export const en_XA: EnTranslations = {
         "ceilingRare": "[Ŕáŕé çáþ]",
         "ceilingCommon": "[Çóɱɱóñ çáþ]",
         "skillAria": "[{craft}, šķíļļ {skill}, ţíéŕ {tier}, {role}, {ceiling}]",
+        "colCraft": "[Çŕáƒţ]",
+        "colSkill": "[Šķíļļ]",
+        "colRole": "[Ŕóļé]",
+        "colCap": "[Çáþ]",
         "tutorial": "[Ƒíŕšţ ţíéŕ: ŕéáçĥ šķíļļ {skill} íñ á çŕáƒţ. Šúççéššƒúļ ŕéçíþéš ŕáíšé ţĥáţ çŕáƒţ ŵíţĥóúţ éŕášíñĝ ķñóŵļéðĝé éļšéŵĥéŕé.]",
         "nearTier": "[{craft} íš {points} šķíļļ ƒŕóɱ íţš ñéẋţ ţíéŕ.]",
         "dormantKnowledge": "[{craft} ķñóŵļéðĝé íš ŕéţáíñéð ƀúţ ðóŕɱáñţ úñţíļ íţš þáíŕ óŕ ĥóƀƀý íš áçţíʋé.]"

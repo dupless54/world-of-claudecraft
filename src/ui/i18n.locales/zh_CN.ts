@@ -5794,6 +5794,10 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.identity.ceilingUnlimited': '无强化上限',
   'hudChrome.crafting.identity.ceilingCommon': '普通品质上限',
   'hudChrome.crafting.identity.skillAria': '{craft}，技能 {skill}，阶级 {tier}，{role}，{ceiling}',
+  'hudChrome.crafting.identity.colCraft': '专业',
+  'hudChrome.crafting.identity.colSkill': '技能',
+  'hudChrome.crafting.identity.colRole': '定位',
+  'hudChrome.crafting.identity.colCap': '上限',
   'hudChrome.crafting.identity.tutorial':
     '第一个阶级：将一门技艺提升到技能 {skill}。成功完成配方会提升对应技艺，且不会抹去其他知识。',
   'hudChrome.crafting.identity.nearTier': '{craft}距离下一阶级还差 {points} 点技能。',

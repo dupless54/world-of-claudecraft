@@ -2080,6 +2080,10 @@ export const ru_RU: EnTranslations = {
         "ceilingRare": "Rare cap",
         "ceilingCommon": "Потолок обычного качества",
         "skillAria": "{craft}, навык {skill}, ранг {tier}, {role}, {ceiling}",
+        "colCraft": "Ремесло",
+        "colSkill": "Навык",
+        "colRole": "Роль",
+        "colCap": "Потолок",
         "tutorial": "Первый ранг: достигните навыка {skill} в одном ремесле. Успешные рецепты развивают это ремесло, не стирая остальные знания.",
         "nearTier": "Ремеслу {craft} не хватает {points} навыка до следующего ранга.",
         "dormantKnowledge": "Знания ремесла {craft} сохранены, но неактивны, пока не выбрана его пара или увлечение."

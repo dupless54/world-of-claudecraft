@@ -2167,6 +2167,12 @@ export const hudChromeStrings = {
       ceilingRare: 'Rare cap',
       ceilingCommon: 'Common cap',
       skillAria: '{craft}, skill {skill}, tier {tier}, {role}, {ceiling}',
+      // Visual column headers over the skill rows (aria-hidden: each row
+      // already reads as the full skillAria sentence).
+      colCraft: 'Craft',
+      colSkill: 'Skill',
+      colRole: 'Role',
+      colCap: 'Cap',
       tutorial:
         'First tier: reach skill {skill} in a craft. Successful recipes raise that craft without erasing knowledge elsewhere.',
       nearTier: '{craft} is {points} skill from its next tier.',

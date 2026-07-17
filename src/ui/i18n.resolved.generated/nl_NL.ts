@@ -2080,6 +2080,10 @@ export const nl_NL: EnTranslations = {
         "ceilingRare": "Rare cap",
         "ceilingCommon": "Common cap",
         "skillAria": "{craft}, skill {skill}, tier {tier}, {role}, {ceiling}",
+        "colCraft": "Craft",
+        "colSkill": "Skill",
+        "colRole": "Role",
+        "colCap": "Cap",
         "tutorial": "First tier: reach skill {skill} in a craft. Successful recipes raise that craft without erasing knowledge elsewhere.",
         "nearTier": "{craft} is {points} skill from its next tier.",
         "dormantKnowledge": "{craft} knowledge is retained but dormant until its pair or hobby is active."

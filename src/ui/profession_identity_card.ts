@@ -61,6 +61,13 @@ export function renderProfessionIdentityCard(
     })
     .join('');
 
+  // Visual column headers only: aria-hidden because every skill row already
+  // carries the complete skillAria sentence, so exposing the headers too would
+  // double-read the table for screen readers.
+  const skillHeader = skillRows
+    ? `<li class="profession-skill-header" aria-hidden="true"><span>${esc(t('hudChrome.crafting.identity.colCraft'))}</span><span>${esc(t('hudChrome.crafting.identity.colSkill'))}</span><span>${esc(t('hudChrome.crafting.identity.colRole'))}</span><span>${esc(t('hudChrome.crafting.identity.colCap'))}</span></li>`
+    : '';
+
   const tutorial = identity.tutorial
     ? `<p class="profession-identity-tutorial">${esc(t('hudChrome.crafting.identity.tutorial', { skill: formatNumber(identity.tutorial.targetSkill, { maximumFractionDigits: 0 }) }))}</p>`
     : '';
@@ -72,6 +79,6 @@ export function renderProfessionIdentityCard(
     )
     .join('');
 
-  card.innerHTML = `<h3>${esc(title)}</h3>${summaryHtml}${tutorial}<ul class="profession-skill-list" role="list">${skillRows}</ul>${nudges ? `<ul class="profession-identity-nudges" role="list">${nudges}</ul>` : ''}`;
+  card.innerHTML = `<h3>${esc(title)}</h3>${summaryHtml}${tutorial}<ul class="profession-skill-list" role="list">${skillHeader}${skillRows}</ul>${nudges ? `<ul class="profession-identity-nudges" role="list">${nudges}</ul>` : ''}`;
   parent.appendChild(card);
 }

@@ -2080,6 +2080,10 @@ export const ja_JP: EnTranslations = {
         "ceilingRare": "Rare cap",
         "ceilingCommon": "コモン上限",
         "skillAria": "{craft}、技能 {skill}、ティア {tier}、{role}、{ceiling}",
+        "colCraft": "職種",
+        "colSkill": "技能",
+        "colRole": "役割",
+        "colCap": "上限",
         "tutorial": "最初のティア：いずれかの技を技能 {skill} まで上げます。レシピの成功は他の知識を消さず、その技を成長させます。",
         "nearTier": "{craft}は次のティアまであと技能 {points} です。",
         "dormantKnowledge": "{craft}の知識は保持されていますが、その組み合わせか趣味が有効になるまで休眠します。"

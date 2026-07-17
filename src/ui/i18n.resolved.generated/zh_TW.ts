@@ -2080,6 +2080,10 @@ export const zh_TW: EnTranslations = {
         "ceilingRare": "Rare cap",
         "ceilingCommon": "普通品質上限",
         "skillAria": "{craft}，技能 {skill}，階級 {tier}，{role}，{ceiling}",
+        "colCraft": "專業",
+        "colSkill": "技能",
+        "colRole": "定位",
+        "colCap": "上限",
         "tutorial": "第一個階級：將一門技藝提升到技能 {skill}。成功完成配方會提升對應技藝，且不會抹去其他知識。",
         "nearTier": "{craft}距離下一階級還差 {points} 點技能。",
         "dormantKnowledge": "{craft}知識已保留，但在其組合或嗜好未啟用時處於休眠狀態。"

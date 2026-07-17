@@ -6177,6 +6177,10 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.identity.ceilingUnlimited': 'Без потолка усиления',
   'hudChrome.crafting.identity.ceilingCommon': 'Потолок обычного качества',
   'hudChrome.crafting.identity.skillAria': '{craft}, навык {skill}, ранг {tier}, {role}, {ceiling}',
+  'hudChrome.crafting.identity.colCraft': 'Ремесло',
+  'hudChrome.crafting.identity.colSkill': 'Навык',
+  'hudChrome.crafting.identity.colRole': 'Роль',
+  'hudChrome.crafting.identity.colCap': 'Потолок',
   'hudChrome.crafting.identity.tutorial':
     'Первый ранг: достигните навыка {skill} в одном ремесле. Успешные рецепты развивают это ремесло, не стирая остальные знания.',
   'hudChrome.crafting.identity.nearTier':
