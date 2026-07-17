@@ -117,7 +117,9 @@ emit, unconditional ClientWorld reset in src/net/online.ts), pinned by
 the round-trip suite in tests/snapshots.test.ts and the online-picker
 parity suite in tests/corpse_harvest_sim.test.ts; hcb is deliberately
 NOT in ALL_DELTA_KEYS / TERSE_TO_IWORLD (those pin selfWireJson maybe()
-self keys; the per-entity round-trip + bandwidth pins are the teeth).
+self keys; the per-entity round-trip pins are the teeth, with the
+snapshots sparse-absence assertion as the no-bloat pin; bandwidth stays
+green but has no hcb-specific scenario).
 Combo-gating liveness pinned in
 tests/crafting_view_combo_liveness.test.ts (Sim and ClientWorld arms
 fed by a real cprof broadcast; decisiveness mutation-tested). Review
