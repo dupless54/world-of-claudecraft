@@ -7467,7 +7467,9 @@
      pending update on a no-GPU machine). */
   #gpu-notice {
     position: fixed;
-    top: calc(var(--spacing-md) + 56px);
+    /* The safe-area term keeps the toast clear of a notch on mobile shells
+       (pre-game portrait is allowed there); zero everywhere else. */
+    top: calc(var(--spacing-md) + 56px + env(safe-area-inset-top, 0px));
     right: var(--spacing-md);
     z-index: 260;
     display: flex;
@@ -7489,6 +7491,10 @@
   #gpu-notice button {
     flex-shrink: 0;
     padding: 4px 10px;
+    /* WCAG 2.5.8 absolute floor on any pointer; the coarse-pointer block below
+       raises it to the repo's 40x40 mobile touch floor (unlike the desktop
+       update toast, this one can surface in a mobile browser). */
+    min-height: 24px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-sm);
@@ -7498,5 +7504,15 @@
   }
   #gpu-notice button:hover {
     border-color: var(--color-primary);
+  }
+  #gpu-notice button:focus-visible {
+    outline: 3px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+  @media (pointer: coarse) {
+    #gpu-notice button {
+      min-height: 40px;
+      min-width: 40px;
+    }
   }
 }
