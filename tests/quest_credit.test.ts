@@ -67,6 +67,11 @@ describe('quest_credit: onMobKilledForQuests (kill credit)', () => {
     expect(event(ctx.events, 'questProgress').at(-1)?.text).toBe(
       `${quest.objectives[0].label}: ${need}/${need}`,
     );
+    expect(event(ctx.events, 'questProgress').at(-1)).toMatchObject({
+      objectiveIndex: 0,
+      current: need,
+      required: need,
+    });
     // checkQuestReady (via the trio) promoted exactly at the target
     expect(qp.state).toBe('ready');
     expect(event(ctx.events, 'questReady').some((e) => e.questId === 'q_wolves')).toBe(true);

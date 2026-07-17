@@ -3855,7 +3855,11 @@ export class GameServer {
         break;
       case 'accept':
         if (typeof msg.quest === 'string') {
-          sim.acceptQuest(msg.quest, pid);
+          sim.acceptQuest(
+            msg.quest,
+            typeof msg.selection === 'string' ? msg.selection : undefined,
+            pid,
+          );
           this.resyncQuests(session);
         }
         break;
@@ -5194,6 +5198,9 @@ export class GameServer {
     // mirrors the raw per-craft proficiency map for the `gatheringProficiency`
     // IWorld data member (#1119), independent of the `professionsState` view.
     maybe('prof', this.sim.professionsStateFor(anchorSession.pid));
+    // Craft skills and identity must arrive as one value so the client never
+    // evaluates a recipe against a pair from one tick and skills from another.
+    maybe('cprof', this.sim.craftingIdentityFor(anchorSession.pid));
     maybe('tfocus', this.sim.townFocusFor(anchorSession.pid));
     // Raw gathering-profession proficiency map (IWorld `gatheringProficiency`,
     // #1119), a second small read alongside `prof` for the ORIGINAL flat-map

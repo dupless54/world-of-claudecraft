@@ -86,6 +86,7 @@ import {
   MAX_LEVEL,
   MELEE_RANGE,
   MILESTONES,
+  questObjectiveRequired,
   type SimEvent,
   SUNDER_ARMOR_PCT_PER_STACK,
   virtualLevel,
@@ -354,6 +355,8 @@ import {
 } from './player_context_menu';
 import { hydratePortraits, portraitChipHtml } from './portrait_chip';
 import { maskProfanity } from './profanity';
+import { buildProfessionIdentityView } from './profession_identity_view';
+import { questProgressEventText } from './quest_progress_text';
 import { lockoutParts, lockoutShape } from './raid_lockout';
 import { type RaidLockoutI18n, raidLockoutPanelHtml } from './raid_lockout_view';
 import { restView } from './rest_indicator';
@@ -7605,8 +7608,9 @@ export class Hud {
       for (const i of objectiveIndexes) {
         const obj = quest.objectives[i];
         if (!obj) continue;
-        const current = Math.min(qp.counts[i] ?? 0, obj.count);
-        lines += `<div>${esc(this.questProgressText(questObjectiveLabel(questId, i), current, obj.count))}</div>`;
+        const required = questObjectiveRequired(quest, qp, i);
+        const current = Math.min(qp.counts[i] ?? 0, required);
+        lines += `<div>${esc(this.questProgressText(questObjectiveLabel(questId, i), current, required))}</div>`;
       }
       if (lines) html += `<div class="tt-title">${esc(questTitle(questId))}</div>${lines}`;
     }
@@ -8226,7 +8230,7 @@ export class Hud {
           this.questDialog.refresh();
           break;
         case 'questProgress': {
-          const progressText = this.localizeQuestProgressText(ev.questId, ev.text);
+          const progressText = questProgressEventText(ev);
           this.log(progressText, '#dcd29f');
           // The classic yellow top-center flash ("Forest Wolf slain: 3/8"); the
           // log line above stays the durable, announced copy.
@@ -9533,19 +9537,6 @@ export class Hud {
     return text;
   }
 
-  private localizeQuestProgressText(questId: string, text: string): string {
-    const quest = QUESTS[questId];
-    const match = /^(.+): (\d+)\/(\d+)$/.exec(text);
-    if (!quest || !match) return text;
-    const objectiveIndex = quest.objectives.findIndex((objective) => objective.label === match[1]);
-    const label = objectiveIndex >= 0 ? questObjectiveLabel(questId, objectiveIndex) : match[1];
-    return t('questUi.logs.progress', {
-      label,
-      current: this.questNumber(Number(match[2])),
-      total: this.questNumber(Number(match[3])),
-    });
-  }
-
   private localizeLootText(text: string): string {
     let match = /^You receive: (.+)\.$/.exec(text);
     if (match) return t('hud.logs.lootReceiveItem', { item: itemDisplayNameFromSource(match[1]) });
@@ -10023,7 +10014,13 @@ export class Hud {
   private renderCrafting(): void {
     renderCraftingWindow(
       $('#crafting-window'),
-      buildCraftingView(this.sim.recipeList, this.sim.inventory, ITEMS, this.sim.craftSkills),
+      buildCraftingView(
+        this.sim.recipeList,
+        this.sim.inventory,
+        ITEMS,
+        this.sim.craftSkills,
+        this.sim.craftingIdentity,
+      ),
       {
         ...this.presentationBag,
         hideTooltip: () => this.hideTooltip(),
@@ -10034,6 +10031,7 @@ export class Hud {
         },
         onClose: () => this.closeCrafting(),
       },
+      buildProfessionIdentityView(this.sim.craftingIdentity),
     );
   }
 

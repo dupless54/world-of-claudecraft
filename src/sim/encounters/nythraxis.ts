@@ -1327,6 +1327,9 @@ export function interactObjectForQuests(ctx: SimContext, obj: Entity, meta: Play
         ctx.emit({
           type: 'questProgress',
           questId: memberQp.questId,
+          objectiveIndex,
+          current: memberQp.counts[objectiveIndex],
+          required: objective.count,
           text: `${objective.label}: ${memberQp.counts[objectiveIndex]}/${objective.count}`,
           pid: member.entityId,
         });

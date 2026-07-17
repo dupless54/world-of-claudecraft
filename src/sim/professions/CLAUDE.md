@@ -65,9 +65,10 @@ or pure leaves, never a `Sim` import, randomness only via `ctx.rng` (guarded by
   `tests/archetype_ceiling.test.ts` and `tests/professions_skill.test.ts`).
 
 ## Wire + persistence names (settled)
-- Snapshot deltas: `prof` (the `professionsState` view) and `gprof`
-  (`gatheringProficiency`), diff-sent; the terse-key maps and `ALL_DELTA_KEYS`
-  are pinned in `tests/snapshots.test.ts`.
+- Snapshot deltas: `prof` (`professionsState`), `gprof`
+  (`gatheringProficiency`), and atomic `cprof` (`craftingIdentity`, including
+  craft skills and attunement), all diff-sent. The terse-key maps and
+  `ALL_DELTA_KEYS` are pinned in `tests/snapshots.test.ts`.
 - Persistence (JSONB on the character save row, `server/db.ts`):
   `gatheringProficiency` is the current key (preferred on read, always
   written); `professions` is the legacy pre-rename key, still dual-written on

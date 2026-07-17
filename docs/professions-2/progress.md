@@ -7,7 +7,7 @@ Update this file at the end of every implementation and QA session. Statuses:
 
 | Phase | Title | Status | Started | Completed |
 |---|---|---|---|---|
-| 1 | Ring and identity foundations | not started | | |
+| 1 | Ring and identity foundations | complete | 2026-07-16 | 2026-07-17 |
 | 1 QA | Verify ring and identity foundations | not started | | |
 | 2 | Masterwork model | not started | | |
 | 2 QA | Verify masterwork model | not started | | |
@@ -44,11 +44,11 @@ Each phase file (`phase-NN-*.md`) carries the authoritative acceptance
 criteria; mirror the checkboxes here as phases complete.
 
 ### Phase 1: Ring and identity foundations
-- [ ] `CRAFT_RING` adopts the blueprint ring order (design-doc order); geometry tests re-pinned
-- [ ] `ArchetypeState` carries per-archetype attunement history (JSONB additive, back-compat load)
-- [ ] Combo eligibility requires the matching attunement in the shared rule, both hosts
-- [ ] Pair-named archetype title keys land (Smith, Outfitter, Apothecary, Bombardier + the six future pairs)
-- [ ] PR 2039 should-fix items resolved; ring adoption landed inside its merge window
+- [x] `CRAFT_RING` adopts the blueprint ring order (design-doc order); geometry tests re-pinned
+- [x] `ArchetypeState` carries per-archetype attunement history (JSONB additive, back-compat load)
+- [x] Combo eligibility requires the matching attunement in the shared rule, both hosts
+- [x] Pair-named archetype title keys land (Smith, Outfitter, Apothecary, Bombardier + the six future pairs)
+- [x] PR 2039 should-fix items resolved; ring adoption landed on the PR 2039 head pre-merge
 
 ### Phase 2: Masterwork model
 - [ ] Craft outputs deterministic; five-way quality roll retired; `trivialAt` retired

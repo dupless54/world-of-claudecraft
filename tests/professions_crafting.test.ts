@@ -557,6 +557,7 @@ describe('combo recipes requiring an adjacent craft pair (#1132)', () => {
   it('a player with both required crafts at or above minTier CAN craft the combo recipe', () => {
     const sim = makeSim();
     const pid = sim.playerId;
+    sim.acceptArchetypeQuest('armorcrafting');
     setSkill(sim, pid, 'armorcrafting', 25);
     setSkill(sim, pid, 'weaponcrafting', 25);
     grantItem(sim, 'bone_fragments', 4, pid);

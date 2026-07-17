@@ -1,6 +1,7 @@
 import type {
   AccountCosmetics,
   BankBonusSource,
+  CraftingIdentityView,
   DailyRewardHistory,
   DailyRewardLeaderboardPage,
   DailyRewardSpinResult,
@@ -347,6 +348,8 @@ import {
   checkQuestReady,
   onInventoryChangedForQuests,
   onMobKilledForQuests,
+  onNodeGatheredForQuests,
+  onRecipeCraftedForQuests,
 } from './quests/quest_credit';
 
 // computeQuestState (the pure quest-state fn) moved to quests/quest_commands.ts (W4);
@@ -455,6 +458,7 @@ import {
   type PlayerClass,
   type QuestProgress,
   type QuestState,
+  questObjectiveRequired,
   type ReadyCheck,
   type RiteIntensity,
   RUN_SPEED,
@@ -1160,7 +1164,7 @@ export interface CharacterState {
   // load path (never destroys items; tolerates an over-capacity inventory).
   bank?: BankState;
   vendorBuyback?: InvSlot[];
-  questLog: { questId: string; counts: number[]; state: 'active' | 'ready' | 'done' }[];
+  questLog: QuestProgress[];
   questsDone: string[];
   // Legacy arenaRating/Wins/Losses are treated as 1v1 data. The explicit
   // 1v1 fields are written by new saves, while old saves fall back cleanly.
@@ -2060,6 +2064,8 @@ export class Sim {
             questId: q.questId,
             counts: [...q.counts],
             state: q.state,
+            ...(q.selection === undefined ? {} : { selection: q.selection }),
+            ...(q.resolvedCounts === undefined ? {} : { resolvedCounts: [...q.resolvedCounts] }),
           });
       }
       for (const q of s.questsDone) meta.questsDone.add(q);
@@ -2093,7 +2099,7 @@ export class Sim {
       }
       meta.craftSkills = normalizeCraftSkills(s.craftSkills);
       if (s.knownRecipes) meta.knownRecipes = new Set(s.knownRecipes);
-      meta.archetype = normalizeArchetypeState(s.archetype);
+      meta.archetype = normalizeArchetypeState(s.archetype, meta.craftSkills);
       meta.mailWelcomed = s.mailWelcomed === true;
       meta.delveMarks = s.delveMarks ?? 0;
       meta.delveClears = { ...(s.delveClears ?? {}) };
@@ -2475,6 +2481,8 @@ export class Sim {
         questId: q.questId,
         counts: [...q.counts],
         state: q.state,
+        ...(q.selection === undefined ? {} : { selection: q.selection }),
+        ...(q.resolvedCounts === undefined ? {} : { resolvedCounts: [...q.resolvedCounts] }),
       })),
       questsDone: [...meta.questsDone],
       arenaRating: meta.arenaRating,
@@ -2523,7 +2531,7 @@ export class Sim {
       pendingSkinItemId: meta.pendingSkinItemId,
       craftSkills: { ...meta.craftSkills },
       knownRecipes: [...meta.knownRecipes],
-      archetype: { ...meta.archetype },
+      archetype: { ...meta.archetype, attunedPairs: [...meta.archetype.attunedPairs] },
       delveMarks: meta.delveMarks,
       delveClears: { ...meta.delveClears },
       companionUpgrades: { ...meta.companionUpgrades },
@@ -3388,6 +3396,10 @@ export class Sim {
       // through `sim.ctx` (lazily read at call time, after the ctor sets it). countItem
       // stays on Sim (L2 inventory hub) and is consumed by the collect updater.
       onMobKilledForQuests: (mob, meta) => onMobKilledForQuests(sim.ctx, mob, meta),
+      onRecipeCraftedForQuests: (recipeId, meta) =>
+        onRecipeCraftedForQuests(sim.ctx, recipeId, meta),
+      onNodeGatheredForQuests: (node, itemId, meta) =>
+        onNodeGatheredForQuests(sim.ctx, node, itemId, meta),
       onInventoryChangedForQuests: (meta) => onInventoryChangedForQuests(sim.ctx, meta),
       checkQuestReady: (qp, meta) => checkQuestReady(sim.ctx, qp, meta),
       countItem: sim.countItem.bind(sim),
@@ -6411,6 +6423,7 @@ export class Sim {
     for (const qid of npc.questIds) {
       if (
         QUESTS[qid].giverNpcId === npc.templateId &&
+        !QUESTS[qid].completionEffect &&
         this.questState(qid, meta.entityId) === 'available'
       ) {
         this.acceptQuest(qid, meta.entityId);
@@ -6426,14 +6439,18 @@ export class Sim {
       const quest = QUESTS[qp.questId];
       quest.objectives.forEach((objective, objectiveIndex) => {
         if (objective.type !== 'interact' || objective.targetNpcId !== npc.templateId) return;
-        if (qp.counts[objectiveIndex] >= objective.count) return;
+        const required = questObjectiveRequired(quest, qp, objectiveIndex);
+        if (qp.counts[objectiveIndex] >= required) return;
         qp.counts[objectiveIndex]++;
         progressed = true;
         meta.counters.questProgress++;
         this.emit({
           type: 'questProgress',
           questId: qp.questId,
-          text: `${objective.label}: ${qp.counts[objectiveIndex]}/${objective.count}`,
+          objectiveIndex,
+          current: qp.counts[objectiveIndex],
+          required,
+          text: `${objective.label}: ${qp.counts[objectiveIndex]}/${required}`,
           pid: meta.entityId,
         });
         this.ctx.checkQuestReady(qp, meta);
@@ -6458,8 +6475,8 @@ export class Sim {
     return questCommands.questState(this.ctx, questId, pid);
   }
 
-  acceptQuest(questId: string, pid?: number): void {
-    questCommands.acceptQuest(this.ctx, questId, pid);
+  acceptQuest(questId: string, selectionOrPid?: string | number, pid?: number): void {
+    questCommands.acceptQuest(this.ctx, questId, selectionOrPid, pid);
   }
 
   acceptLinkedQuest(questId: string, sharerPid: number, pid?: number): void {
@@ -8276,6 +8293,26 @@ export class Sim {
     return this.craftSkillsFor(this.primaryId);
   }
 
+  craftingIdentityFor(pid: number): CraftingIdentityView {
+    const state = archetypeStateFor(this.ctx, pid);
+    return {
+      version: 1,
+      synced: true,
+      craftSkills: this.craftSkillsFor(pid),
+      activeArchetype: state.activeArchetype,
+      pairedMajor: state.pairedMajor,
+      hobbyCraft: state.hobbyCraft,
+      attunedPairs: [...state.attunedPairs],
+      switchCount: state.switchCount,
+      amendsProgress: state.amendsProgress,
+      amendsRequired: requiredAmendsProgress(state.switchCount),
+    };
+  }
+
+  get craftingIdentity(): CraftingIdentityView {
+    return this.craftingIdentityFor(this.primaryId);
+  }
+
   /** The active-archetype craft id, or null before the zone-1 acceptance quest has
    *  ever been completed (see professions/archetype.ts). */
   activeArchetypeFor(pid: number): string | null {
@@ -8313,8 +8350,9 @@ export class Sim {
     return this.archetypeAmendsRequiredFor(this.primaryId);
   }
 
-  /** The title granted by the CURRENTLY-ACTIVE archetype (#1130): the craft id
-   *  whose named title is earned, or null before an archetype is ever chosen. See
+  /** The title granted by the CURRENTLY-ACTIVE pair attunement (#1130,
+   *  pair-named under Professions 2.0): the canonical pair id whose named title
+   *  is earned, or null before an archetype is ever chosen. See
    *  professions/archetype.ts getArchetypeTitle for the "no title" rule. */
   archetypeTitleFor(pid: number): string | null {
     return archetypeTitleFor(this.ctx, pid);

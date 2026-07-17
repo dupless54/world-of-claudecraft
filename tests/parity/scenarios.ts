@@ -1864,8 +1864,10 @@ function questCollectTurnIn(): Scenario {
       const sim = rec.sim as AnySim;
       const p = sim.player as AnyEntity;
       const quest = QUESTS.q_boars;
-      const item = quest.objectives[0].itemId as string; // boar_hide
-      const need = quest.objectives[0].count; // 5
+      const objective = quest.objectives[0];
+      if (objective.type !== 'collect') throw new Error('q_boars must collect boar_hide');
+      const item = objective.itemId;
+      const need = objective.count; // 5
       const npc = [...sim.entities.values()].find(
         (e: AnyEntity) => e.kind === 'npc' && e.templateId === quest.giverNpcId,
       ) as AnyEntity | undefined;

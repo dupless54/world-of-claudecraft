@@ -1829,15 +1829,24 @@ export function emptyZoneProps(): ZonePropsDef {
   };
 }
 
-export interface QuestObjective {
-  type: 'kill' | 'collect' | 'interact';
-  targetMobId?: string; // for kill
-  itemId?: string; // for collect
-  targetObjectItemId?: string; // for interactable ground objects
-  targetNpcId?: string; // for interactable NPC objectives
+interface QuestObjectiveBase {
   count: number;
   label: string;
 }
+
+export type QuestObjective =
+  | (QuestObjectiveBase & { type: 'kill'; targetMobId: string })
+  | (QuestObjectiveBase & { type: 'collect'; itemId: string })
+  | (QuestObjectiveBase & {
+      type: 'interact';
+      targetObjectItemId?: string;
+      targetNpcId?: string;
+    })
+  | (QuestObjectiveBase & { type: 'craft'; recipeId: string })
+  | (QuestObjectiveBase & { type: 'gather' } & (
+        | { nodeType: GatherNodeType; itemId?: string }
+        | { nodeType?: undefined; itemId: string }
+      ));
 
 export interface QuestDef {
   id: string;
@@ -1858,6 +1867,15 @@ export interface QuestDef {
   retired?: boolean; // remains finishable if already accepted, but cannot be newly accepted
   shareable?: boolean; // quest-link sharing allowed (default true; set false to opt out)
   suggestedPlayers?: number; // group quests ("Suggested players: 5")
+  // Repeatable quests remain in questsDone as history but become available
+  // again when they are not active.
+  repeatable?: boolean;
+  // Typed, server-authoritative profession transition applied only by the
+  // validated turn-in path. The selected target is persisted on QuestProgress.
+  completionEffect?: { type: 'attunePair'; mode: 'new' | 'return' } | { type: 'switchHobby' };
+  // Resolve the first objective's count from the character's return history at
+  // acceptance time. The snapshotted value stays stable while the quest is active.
+  resolvedObjectiveCounts?: 'archetypeAmends';
 }
 
 export function questTurnInNpcIds(quest: QuestDef): readonly string[] {
@@ -1876,6 +1894,16 @@ export interface QuestProgress {
   questId: string;
   counts: number[]; // per objective
   state: 'active' | 'ready' | 'done';
+  selection?: string;
+  resolvedCounts?: number[];
+}
+
+export function questObjectiveRequired(
+  quest: QuestDef,
+  progress: QuestProgress | undefined,
+  objectiveIndex: number,
+): number {
+  return progress?.resolvedCounts?.[objectiveIndex] ?? quest.objectives[objectiveIndex]?.count ?? 0;
 }
 
 // Consumables restore their total over CONSUME_DURATION seconds while sitting,
@@ -2343,7 +2371,16 @@ export type SimEvent = { pid?: number } & (
     }
   | { type: 'error'; text: string; reason?: ErrorReason }
   | { type: 'questAccepted'; questId: string }
-  | { type: 'questProgress'; questId: string; text: string }
+  | {
+      type: 'questProgress';
+      questId: string;
+      objectiveIndex: number;
+      current: number;
+      required: number;
+      // English compatibility fallback for older clients. Current clients use
+      // the structured identity and values above to localize without parsing it.
+      text: string;
+    }
   | { type: 'questReady'; questId: string }
   | { type: 'questDone'; questId: string }
   | { type: 'aura'; targetId: number; name: string; gained: boolean }

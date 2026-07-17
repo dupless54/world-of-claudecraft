@@ -48,6 +48,7 @@ import type {
   DungeonDifficulty,
   Entity,
   ErrorReason,
+  GatherNodeDef,
   ItemInstancePayload,
   PlayerClass,
   QuestProgress,
@@ -423,6 +424,8 @@ export interface SimContextCallbacks {
   // Consumed by social/dungeon_finder.ts.
   formDungeonFinderGroup(units: FinderFormationUnit[], opts: { raid: boolean }): Party | null;
   onMobKilledForQuests(mob: Entity, meta: PlayerMeta): void;
+  onRecipeCraftedForQuests(recipeId: string, meta: PlayerMeta): void;
+  onNodeGatheredForQuests(node: GatherNodeDef, itemId: string, meta: PlayerMeta): void;
   onInventoryChangedForQuests(meta: PlayerMeta): void;
   checkQuestReady(qp: QuestProgress, meta: PlayerMeta): void;
   countItem(itemId: string, pid?: number): number;
@@ -1050,6 +1053,8 @@ export function createSimContext(host: SimContextHost): SimContext {
     dropPartyMarkers: host.dropPartyMarkers,
     formDungeonFinderGroup: host.formDungeonFinderGroup,
     onMobKilledForQuests: host.onMobKilledForQuests,
+    onRecipeCraftedForQuests: host.onRecipeCraftedForQuests,
+    onNodeGatheredForQuests: host.onNodeGatheredForQuests,
     onInventoryChangedForQuests: host.onInventoryChangedForQuests,
     checkQuestReady: host.checkQuestReady,
     countItem: host.countItem,

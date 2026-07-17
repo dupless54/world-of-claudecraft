@@ -1,5 +1,10 @@
 # Phase 03: Host-parity bug fixes
 
+PREMISE UPDATE (2026-07-17, Phase 1 session): the trade half of this phase is already done.
+Release PR 2045 landed the instance-preserving trade fix on release/v0.27.0 (regression test in
+`tests/trade.test.ts`) before this phase started, so the only remaining Phase 3 deliverable is the
+`harvestClaimedBy` mirror below. Re-verify against code at session start per the docs anchor rule.
+
 This phase fixes the two known host-parity data bugs so item instances and corpse claims are
 truthful in every host: trades currently strip `ItemInstancePayload` (the `removePreferFungible`
 return is discarded), and `harvestClaimedBy` is hardcoded `null` in `ClientWorld`, so the online

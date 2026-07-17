@@ -48,11 +48,8 @@
 //
 // Combo-recipe requirement (issue #1132): a recipe may carry a
 // `comboRequirement` naming one specific adjacent craft pair and a minimum
-// tier both must meet. `meetsComboRequirement` checks the player's tier
-// capability in BOTH named crafts (via wheel.ts tierCapability), independent
-// of the recipe's `professionId`. Only the two named crafts ever count: a
-// player's skill in any other craft, however high, never substitutes for
-// either half of the pair.
+// tier both must meet. The character must be attuned to that exact unordered
+// pair, and both named crafts must reach the required archetype-gated tier.
 //
 // This module is `src/sim`-pure (see src/sim/CLAUDE.md): no DOM/render/ui/
 // game/net imports, no Math.random/Date.now, host-agnostic so it runs
@@ -66,7 +63,8 @@ import {
 import { recipeById } from '../content/recipes';
 import type { PlayerMeta } from '../sim';
 import type { SimContext } from '../sim_context';
-import { archetypeCeilingFor, craftCeiling } from './archetype';
+import { archetypeCeilingFor } from './archetype';
+import { comboEligibility } from './combo_eligibility';
 import { canUseCraftingHubStation } from './crafting_hub';
 import {
   clampMaterialRarity,
@@ -247,33 +245,22 @@ export function hasRecipeMaterials(
   );
 }
 
-/** Whether the given player's craft skills satisfy a recipe's dual-craft
- *  combo requirement (issue #1132): true if the recipe carries no
- *  `comboRequirement` at all, otherwise true only when the player's
- *  archetype-gated tier ceiling (archetype.ts `craftCeiling`, which composes
- *  wheel.ts `tierCapability` with the #1129 empowerment ceiling) in BOTH
- *  named crafts is at or above `minTier`. Deliberately does not fall back to
- *  any other craft: a high skill in a craft outside the required pair never
- *  satisfies this check. `activeArchetype`/`pairedMajor` default to `null`
- *  (the uncapped-to-rare pre-archetype state) so existing raw-skills callers
- *  keep working unchanged. Every `COMBO_RECIPES` pair in content/recipes.ts
- *  is ring-adjacent (content/professions.ts `adjacentCrafts`), i.e. exactly
- *  the shape of a player's two majors, so a specialist attuned to that pair
- *  qualifies (both sides unlimited via `pairedMajor`); the stubbed default
- *  pair (archetype.ts `defaultPairedMajor`) prefers a craft's content-combo
- *  partner precisely so attuning either side of a combo never strands it. */
+/** Whether the player satisfies a recipe's dual-craft combo requirement.
+ *  Recipes without a combo requirement pass. Combo recipes require the exact
+ *  unordered active pair plus the minimum reachable tier in both crafts.
+ *  Raw skill alone, a hobby craft, or a different adjacent pair never passes. */
 export function meetsComboRequirement(
   skills: CraftSkills,
   recipe: ProfessionRecipeRecord,
   activeArchetype: string | null = null,
   pairedMajor: string | null = null,
+  hobbyCraft: string | null = null,
 ): boolean {
-  const combo = recipe.comboRequirement;
-  if (!combo) return true;
-  return (
-    craftCeiling(skills, activeArchetype, pairedMajor, combo.craftA) >= combo.minTier &&
-    craftCeiling(skills, activeArchetype, pairedMajor, combo.craftB) >= combo.minTier
-  );
+  return comboEligibility(recipe.comboRequirement, skills, {
+    activeArchetype,
+    pairedMajor,
+    hobbyCraft,
+  }).ok;
 }
 
 /** Pure resolution of one craft attempt against an already-resolved recipe
@@ -315,6 +302,7 @@ export function resolveCraftForRecipe(
       recipe,
       meta ? meta.archetype.activeArchetype : null,
       meta ? meta.archetype.pairedMajor : null,
+      meta ? meta.archetype.hobbyCraft : null,
     )
   ) {
     return { ok: false, recipeId: recipe.id, reason: 'combo_requirement_unmet' };
@@ -362,6 +350,7 @@ export function resolveCraftForRecipe(
         meta.archetype.activeArchetype,
         meta.archetype.pairedMajor,
         recipe.professionId,
+        meta.archetype.hobbyCraft,
       )
     : Infinity;
   const quality = clampMaterialRarity(rawQuality, ceilingTier);
@@ -442,6 +431,7 @@ export function craftItem(ctx: SimContext, recipeId: string, pid?: number): Craf
     }
     // The dirty mark also covers the craft-skill gain the resolve applied.
     ctx.markDeedsDirty(r.meta.entityId);
+    ctx.onRecipeCraftedForQuests(recipeId, r.meta);
   }
   return result;
 }

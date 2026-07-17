@@ -4,7 +4,8 @@ The ONLY file every session must trust. Update it at the end of every phase.
 
 ## Current phase
 
-Phase 1 (Ring and identity foundations): not started.
+Phase 1 (Ring and identity foundations): complete (landed on the PR 2039
+head, 2026-07-17). Next: Phase 1 QA (phase-01-qa.md), then Phase 2.
 
 ## Locked design decisions
 
@@ -15,15 +16,18 @@ Phase 1 (Ring and identity foundations): not started.
   Apothecary (alchemy+cooking), Bombardier (engineering+alchemy).
 - CRAFT_RING adopts the design-doc order: engineering, alchemy, cooking,
   leatherworking, tailoring, inscription, enchanting, jewelcrafting,
-  weaponcrafting, armorcrafting. MUST land inside PR 2039's merge window
-  (before players persist attunedPairs pair ids derived from the old ring).
+  weaponcrafting, armorcrafting. LANDED on the PR 2039 head itself (Phase 1,
+  2026-07-17), so pair ids derived from the old ring never exist in any
+  deployed build; the load-bearing invariant (ring order and live quest
+  wiring ship together) is documented at normalizeArchetypeState.
 - Archetypes are pair-named identities: pair-level i18n keys replace the ten
   per-craft practitioner titles. Pair-level attunement history (2039's
   attunedPairs) IS the lore-vs-amends mechanism and stays.
 - Combos require the matching attunement (2039's combo_eligibility: deny
   'not_attuned' / 'wrong_pair' / 'tier_unmet'). Client 'syncing' state
   (pre-cprof): keep the button enabled optimistically (server re-validates);
-  revisit only if players report confusion.
+  revisit only if players report confusion. Confirmed in place at Phase 1
+  (2026-07-17).
 - Masterwork model: deterministic outputs; proc chance from skill +
   self-signed materials + specialization; bounded bonus stats baked via
   src/sim/item_budget.ts into instance.rolled.stats; no five-way quality
@@ -104,6 +108,11 @@ Phase 1 (Ring and identity foundations): not started.
 
 ## Key existing surfaces (verified 2026-07-16, release/v0.27.0 + PR 2039)
 
+Note (2026-07-17): release moved after this verification; re-verify against
+code per the docs anchor rule. Known drift so far: enchanting shipped a
+two-tier table with a shard-consuming Greater tier (#1950, relevant to
+Phase 13), and interaction handlers return an outcome boolean (#1982).
+
 - Craft skills: PlayerMeta.craftSkills; wheel math in
   src/sim/professions/wheel.ts (TIER_SKILL_STEP=25, tierForSkill,
   tierCapability, tierProgressMultiplier 1/0.5/0, materialCostMultiplier at
@@ -123,8 +132,10 @@ Phase 1 (Ring and identity foundations): not started.
   combo_eligibility, isRecipeKnown (acquireRecipe, #1299), materials,
   throttle + gold sink (#1301). NO skillReq admission gate.
 - Instances: ItemInstancePayload {signer, charges, rolled, boundTo} rides the
-  inv wire; bags/bank/equip/save-load correct; trade STRIPS payloads (Phase 3
-  bug); mail/market refuse instanced items (wave 2).
+  inv wire; bags/bank/equip/save-load correct; trade CARRIES payloads (the
+  Phase 3 trade deliverable pre-landed on release via PR 2045, regression
+  test in tests/trade.test.ts; Phase 3 keeps only the harvestClaimedBy
+  mirror); mail/market refuse instanced items (wave 2).
 - Gathering: nodes (harvestNode both hosts, ncd cooldowns), corpse harvesting
   (claims + focus picker + town focus, tfocus), fixed corpse rarity baseline
   40; node yields are placeholder junk until Phase 4.
@@ -151,8 +162,15 @@ Phase 1 (Ring and identity foundations): not started.
 (append as phases land: IWorld members, SimEvents, wire keys, commands,
 tables, i18n key namespaces, files created)
 
-- Phase 1: (planned) pair-title i18n keys hudChrome.archetypePair.*;
-  re-pinned ring geometry tests.
+- Phase 1: (landed 2026-07-17, on the PR 2039 head) i18n keys
+  hudChrome.archetypePair.* (ten pair titles keyed by canonical pair id),
+  hudChrome.craftName.* (ten per-craft display names), and
+  hudChrome.crafting.pairOptionLabel; sim_i18n matcher rows
+  error.professionChoiceUnavailable / error.professionChoiceExpired; ring
+  geometry re-pinned in tests/professions.test.ts (ARCHETYPE_PAIR_TARGETS
+  ring-order pin + COMBO_RECIPES adjacency pin), stale-pair drop-by-design
+  pin in tests/profession_attunement_quests.test.ts, and the deployed
+  v0.26.0 empty-shape pin in tests/professions_archetype.test.ts.
 - Phase 2: (planned) masterwork SimEvent; instance.rolled.masterwork;
   masterwork proc rng-draw pin.
 - Phase 3: (planned) hcb wire key (corpse claims); trade payload carriage.
@@ -188,7 +206,11 @@ tables, i18n key namespaces, files created)
 - RESOLVED (2026-07-16): the maintainer owns the PR 2039 branch outright.
   Phase 1 amendments (ring reorder, pair titles, review fixes, release sync,
   commit-history cleanup) land ON the PR itself before it merges; no
-  merge-window coordination remains.
+  merge-window coordination remains. DONE (2026-07-17): all five review
+  items closed, the newest release head merged in (world_api_parity re-pinned
+  as the union, delta-key census 47), history rewritten so every commit
+  carries a body, and the six review agents passed the amended head with
+  zero blocking findings.
 - Exact FIELD_RECIPES membership (Phase 9 decides; default: the 9 common
   recipes stay field-craftable so nothing breaks).
 - Master NPC names/personalities (content flavor, Phase 8; maintainer may

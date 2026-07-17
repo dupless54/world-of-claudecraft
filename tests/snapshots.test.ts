@@ -25,13 +25,15 @@ import { saveCharacterState } from '../server/db';
 import { type ClientSession, GameServer, wireEntity } from '../server/game';
 import { ClientWorld } from '../src/net/online';
 import { mechHeldWeaponOverride, visualKeyFor } from '../src/render/characters/manifest';
-import { DELVES, GATHER_NODES } from '../src/sim/data';
+import { COMBO_RECIPES } from '../src/sim/content/recipes';
+import { DELVES, GATHER_NODES, ITEMS } from '../src/sim/data';
 import { Sim } from '../src/sim/sim';
 import { type Aura, DT, type PlayerClass } from '../src/sim/types';
 import { terrainHeight } from '../src/sim/world';
 import { absorbTotal } from '../src/ui/absorb_bar';
 import { auraEffectDescriptor } from '../src/ui/aura_effect';
 import { isAuraDebuff } from '../src/ui/auras_view';
+import { buildCraftingView } from '../src/ui/crafting_view';
 
 const DELTA_KEYS = [
   'inv',
@@ -2482,9 +2484,9 @@ describe('lockpick view rebuilds from events on the online client', () => {
 // while the prior decoded value is preserved.
 // ---------------------------------------------------------------------------
 
-// The pinned set of the 44 `maybe(...)` delta keys, sorted. Cross-checked below
+// The pinned set of the 47 `maybe(...)` delta keys, sorted. Cross-checked below
 // against the live `maybe(...)` calls scraped from server/game.ts source, so a
-// 45th unregistered delta key reddens this gate.
+// 48th unregistered delta key reddens this gate.
 const ALL_DELTA_KEYS = [
   'arena',
   'atitle',
@@ -2495,6 +2497,7 @@ const ALL_DELTA_KEYS = [
   'cds',
   'corpse',
   'cosmetics',
+  'cprof',
   'dclears',
   'dcomp',
   'dcompanion',
@@ -2549,6 +2552,7 @@ const TERSE_TO_IWORLD: Record<string, string> = {
   buyback: 'vendorBuyback',
   cds: 'cooldowns',
   cosmetics: 'accountCosmetics',
+  cprof: 'craftingIdentity',
   dclears: 'delveClears',
   dcomp: 'companionUpgrades',
   dcompanion: 'companionState',
@@ -2667,6 +2671,16 @@ function dirtyEveryDeltaField(): {
   meta.delveClears = { 'collapsed_reliquary:heroic': 1 };
   meta.companionUpgrades = { companion_tessa: 2 };
   meta.gatheringProficiency = { mining: 6, logging: 0, herbalism: 0 };
+  meta.craftSkills.armorcrafting = 31;
+  meta.craftSkills.weaponcrafting = 29;
+  meta.archetype = {
+    activeArchetype: 'armorcrafting',
+    pairedMajor: 'weaponcrafting',
+    hobbyCraft: 'leatherworking',
+    attunedPairs: ['weaponcrafting+armorcrafting'],
+    switchCount: 2,
+    amendsProgress: 4,
+  };
   // Per-player gather-node respawn cooldown (#1866): one node still cooling
   // down (readyAt 30s in the sim future), so `ncd` mirrors it as ~30 remaining
   // seconds and nodeHarvestableByMe reports it not ready.
@@ -2734,6 +2748,47 @@ function dirtyEveryDeltaField(): {
 }
 
 describe('full self-state snapshot delta fixture', () => {
+  it('mirrors an exact pair and completes the online combo craft command end to end', () => {
+    const server = new GameServer();
+    const fc = fakeWs();
+    const session = joinServer(server, fc, 71, 'Combo');
+    const meta = server.sim.meta(session.pid)!;
+    meta.craftSkills.armorcrafting = 25;
+    meta.craftSkills.weaponcrafting = 25;
+    meta.archetype = {
+      activeArchetype: 'armorcrafting',
+      pairedMajor: 'weaponcrafting',
+      hobbyCraft: 'leatherworking',
+      attunedPairs: ['weaponcrafting+armorcrafting'],
+      switchCount: 0,
+      amendsProgress: 0,
+    };
+    meta.inventory = [
+      { itemId: 'bone_fragments', count: 4 },
+      { itemId: 'linen_scrap', count: 2 },
+    ];
+
+    broadcast(server);
+    const client = bareClient(session.pid);
+    (client as any).applySnapshot(lastSnap(fc.sent));
+    const recipe = COMBO_RECIPES.find((entry) => entry.id === 'recipe_ironbound_warplate_helm')!;
+    const view = buildCraftingView(
+      [recipe],
+      client.inventory,
+      ITEMS,
+      client.craftSkills,
+      client.craftingIdentity,
+    );
+    expect(client.craftingIdentity.synced).toBe(true);
+    expect(view.recipes[0].craftable).toBe(true);
+
+    server.handleMessage(
+      session,
+      JSON.stringify({ t: 'cmd', cmd: 'craft_item', recipe: recipe.id }),
+    );
+    expect(server.sim.countItem(recipe.resultItemId, session.pid)).toBe(1);
+  });
+
   it('carries every one of the dirtied delta keys on the first snapshot', () => {
     const { server, fc } = dirtyEveryDeltaField();
     broadcast(server);
@@ -2827,6 +2882,22 @@ describe('full self-state snapshot delta fixture', () => {
         { professionId: 'herbalism', skill: 0, maxSkill: 300 },
       ],
     }); // prof -> professionsState
+    expect(client.craftingIdentity).toMatchObject({
+      version: 1,
+      synced: true,
+      activeArchetype: 'armorcrafting',
+      pairedMajor: 'weaponcrafting',
+      hobbyCraft: 'leatherworking',
+      attunedPairs: ['weaponcrafting+armorcrafting'],
+      switchCount: 2,
+      amendsProgress: 4,
+      amendsRequired: 11,
+    }); // cprof -> craftingIdentity
+    // The pair-named archetype title derives LIVE from the mirrored
+    // craftingIdentity (Professions 2.0 Phase 1): the canonical pair id, not a
+    // craft id, and it must reflect the cprof delta just applied.
+    expect(client.archetypeTitle).toBe('weaponcrafting+armorcrafting');
+    expect(client.craftSkills).toMatchObject({ armorcrafting: 31, weaponcrafting: 29 });
     expect(client.delveClears).toEqual({ 'collapsed_reliquary:heroic': 1 }); // dclears -> delveClears
     expect(client.delveDaily).toMatchObject({ markClears: 4 }); // delveDaily
     // deeds -> deedsEarned: the Map rebuilds from the plain wire object with
@@ -2925,9 +2996,9 @@ describe('gather node cooldown wire round trip (ncd)', () => {
 });
 
 describe('delta-key contract pins (anti-drift)', () => {
-  it('ALL_DELTA_KEYS contains exactly 46 unique keys in sorted order', () => {
-    expect(ALL_DELTA_KEYS).toHaveLength(46);
-    expect(new Set(ALL_DELTA_KEYS).size).toBe(46);
+  it('ALL_DELTA_KEYS contains exactly 47 unique keys in sorted order', () => {
+    expect(ALL_DELTA_KEYS).toHaveLength(47);
+    expect(new Set(ALL_DELTA_KEYS).size).toBe(47);
     expect([...ALL_DELTA_KEYS]).toEqual([...ALL_DELTA_KEYS].sort());
   });
 
@@ -2939,7 +3010,7 @@ describe('delta-key contract pins (anti-drift)', () => {
     const scraped = new Set<string>();
     for (let m = re.exec(src); m !== null; m = re.exec(src)) scraped.add(m[1]);
     expect(scraped.has('lockouts')).toBe(true); // the multi-line call IS captured
-    expect(scraped.size).toBe(46);
+    expect(scraped.size).toBe(47);
     expect([...scraped].sort()).toEqual([...ALL_DELTA_KEYS].sort());
   });
 

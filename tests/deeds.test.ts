@@ -1516,15 +1516,12 @@ describe('live sites grant in the same run (retro cannot mask a broken site)', (
     const { meta } = primary(sim);
     const quest = QUESTS.q_prof_intro; // prog_callused_hands, {kind:'quest'}
     expect(quest).toBeDefined();
-    sim.ctx.addItem('chunk_of_ore', 5, meta.entityId); // the collect objective hand-in
     meta.questLog.set('q_prof_intro', { questId: 'q_prof_intro', counts: [5], state: 'ready' });
-    // Consume the addItem dirty mark on its own tick first, so the final
-    // tick's only marks come from the turn-in itself. The live turn-in path
+    // The live turn-in path
     // carries two independent full marks (grantXp marks on every xp grant,
     // and turnInQuestCore marks explicitly for xp-less future quests); this
     // test guards the path as a whole, so it reds only when the in-the-moment
     // grant is actually broken, never on a refactor that keeps either mark.
-    sim.tick();
     expect(meta.deedsEarned.has('prog_callused_hands')).toBe(false);
     turnInQuestCore(sim.ctx, 'q_prof_intro', quest, meta);
     expect(meta.questsDone.has('q_prof_intro')).toBe(true);

@@ -66,6 +66,7 @@ import {
   type CharacterProfile,
   type CharacterSearchResult,
   type ClientCommand,
+  type CraftingIdentityView,
   type CraftResultView,
   type CupInfo,
   type DailyRewardHistory,
@@ -1291,6 +1292,18 @@ export class ClientWorld implements IWorld {
   // all-zero default until the wheel/mass-conservation follow-up wires a self-snap
   // field the way `dmarks`/`dcomp` do for delveMarks/companionUpgrades above.
   craftSkills: Record<string, number> = emptyCraftSkills();
+  craftingIdentity: CraftingIdentityView = {
+    version: 1,
+    synced: false,
+    craftSkills: this.craftSkills,
+    activeArchetype: null,
+    pairedMajor: null,
+    hobbyCraft: null,
+    attunedPairs: [],
+    switchCount: 0,
+    amendsProgress: 0,
+    amendsRequired: 0,
+  };
   // Gathering profession proficiency (Mining/Logging/Herbalism, #1119), mirrored
   // from the `gprof` self-wire delta below (the real read surface; see
   // professionsState below for crafting/secondary professions).
@@ -1324,12 +1337,9 @@ export class ClientWorld implements IWorld {
   // Craft-result surface (#1127), mirrored from the server's `craftResult`
   // event (applyEvent below). Null until this session's first craft attempt.
   lastCraftResult: CraftResultView | null = null;
-  // Active-archetype identity (#1129, superseded scope). Same not-yet-wired-on-the-
-  // wire status as craftSkills/gatheringProficiency above: this change lands the
-  // sim-side state machine + persistence only, so online play sees the all-unset
-  // default (no archetype, switchCount 0) until a follow-up wires a self-snap field
-  // and the corresponding `cmd` dispatch cases in server/game.ts the way
-  // craft_item/harvest_node do for recipeList/nodeHarvestableByMe.
+  // Compatibility scalar projections of the atomic `cprof` identity mirror.
+  // Quest acceptance is the only online transition path, so these direct legacy
+  // methods deliberately send no wire commands.
   activeArchetype: string | null = null;
   archetypeSwitchCount = 0;
   archetypeAmendsProgress = 0;
@@ -1337,20 +1347,19 @@ export class ClientWorld implements IWorld {
   acceptArchetypeQuest(_craftId: string): void {}
   advanceAmendsProgress(): void {}
   switchArchetype(_craftId: string): void {}
-  // Title granted by the active archetype (#1130): derived, not a stored mirror
-  // field, so it stays correct the moment a future wire-up starts pushing
-  // `activeArchetype` snapshot updates (until then it tracks the stub default
-  // above, i.e. always null). See src/sim/professions/archetype.ts.
+  // Title granted by the active pair attunement (#1130, pair-named under
+  // Professions 2.0): the canonical pair id, derived live from the cprof
+  // mirror (applySnapshot replaces craftingIdentity wholesale on every cprof
+  // delta, so this getter tracks the server's pair with no extra wiring).
   get archetypeTitle(): string | null {
-    return getArchetypeTitle(this.activeArchetype);
+    const identity = this.craftingIdentity;
+    return getArchetypeTitle(identity.activeArchetype, identity.pairedMajor);
   }
-  // Hobby craft granted by the active archetype (#1294): derived the same way
-  // as archetypeTitle above, not a stored mirror field, so it stays correct
-  // once a future wire-up starts pushing `activeArchetype` snapshot updates
-  // (until then it tracks the stub default above, i.e. always null). See
-  // src/sim/professions/archetype.ts getHobbyCraft.
+  // Explicit hobby from cprof. The fallback supports pre-cprof servers.
   get hobbyCraft(): string | null {
-    return getHobbyCraft(this.activeArchetype);
+    return this.craftingIdentity.synced
+      ? this.craftingIdentity.hobbyCraft
+      : getHobbyCraft(this.activeArchetype);
   }
   // --- IWorldParty: raid-target marker mirror, from the self-wire `marks` (markerFor
   // reads it, no send). ---
@@ -2363,6 +2372,26 @@ export class ClientWorld implements IWorld {
       if (s.tfocus !== undefined) this.townFocus = s.tfocus ?? {};
       if (s.gprof !== undefined) this.gatheringProficiency = s.gprof ?? {};
       if (s.prof !== undefined) this.professionsState = s.prof ?? { skills: [] };
+      if (s.cprof !== undefined && s.cprof) {
+        const cprof = s.cprof as CraftingIdentityView;
+        this.craftSkills = { ...(cprof.craftSkills ?? {}) };
+        this.craftingIdentity = {
+          version: 1,
+          synced: true,
+          craftSkills: this.craftSkills,
+          activeArchetype: cprof.activeArchetype ?? null,
+          pairedMajor: cprof.pairedMajor ?? null,
+          hobbyCraft: cprof.hobbyCraft ?? null,
+          attunedPairs: [...(cprof.attunedPairs ?? [])],
+          switchCount: cprof.switchCount ?? 0,
+          amendsProgress: cprof.amendsProgress ?? 0,
+          amendsRequired: cprof.amendsRequired ?? 0,
+        };
+        this.activeArchetype = this.craftingIdentity.activeArchetype;
+        this.archetypeSwitchCount = this.craftingIdentity.switchCount;
+        this.archetypeAmendsProgress = this.craftingIdentity.amendsProgress;
+        this.archetypeAmendsRequired = this.craftingIdentity.amendsRequired;
+      }
       // camera follows server-side facing changes when not mouselooking
       if (prevSelfFacing !== undefined && this.mouselookFacing === null) {
         let d = e.facing - prevSelfFacing;
@@ -2417,12 +2446,23 @@ export class ClientWorld implements IWorld {
   // -----------------------------------------------------------------------
 
   questState(questId: string): QuestState {
+    const identity = this.craftingIdentity;
     return optimisticQuestState(
       questId,
       this.questLog,
       this.questsDone,
       this.pendingQuestCommands,
       this.player.level,
+      identity
+        ? {
+            activeArchetype: identity.activeArchetype,
+            pairedMajor: identity.pairedMajor,
+            hobbyCraft: identity.hobbyCraft,
+            attunedPairs: [...identity.attunedPairs],
+            switchCount: identity.switchCount,
+            amendsProgress: identity.amendsProgress,
+          }
+        : undefined,
     );
   }
 
@@ -2548,10 +2588,10 @@ export class ClientWorld implements IWorld {
   pickUpObject(id: number): Promise<boolean> {
     return this.cmdWithOutcome({ cmd: 'pickup', id });
   }
-  acceptQuest(questId: string): void {
+  acceptQuest(questId: string, selection?: string): void {
     if (!this.canSendCommand()) return;
     this.pendingQuestCommands.set(questId, 'accept');
-    this.cmd({ cmd: 'accept', quest: questId });
+    this.cmd({ cmd: 'accept', quest: questId, selection });
   }
   turnInQuest(questId: string): void {
     if (!this.canSendCommand()) return;

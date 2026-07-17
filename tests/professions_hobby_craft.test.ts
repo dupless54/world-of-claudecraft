@@ -51,7 +51,7 @@ describe('IWorld hobbyCraft read surface (#1294)', () => {
     expect(sim.hobbyCraft).toBe(oppositeCraft(CRAFT_A).id);
   });
 
-  it('c. switching the active archetype updates the hobby to match the new opposite craft', () => {
+  it('c. switching the active archetype chooses a valid opposite candidate for the new pair', () => {
     const sim = makeSim();
     sim.acceptArchetypeQuest(CRAFT_A);
     expect(sim.hobbyCraft).toBe(oppositeCraft(CRAFT_A).id);
@@ -61,7 +61,12 @@ describe('IWorld hobbyCraft read surface (#1294)', () => {
     const switched = sim.switchArchetype(CRAFT_B);
     expect(switched).toBe(true);
 
-    expect(sim.hobbyCraft).toBe(oppositeCraft(CRAFT_B).id);
+    const meta = (
+      sim as unknown as { players: Map<number, { archetype: { pairedMajor: string } }> }
+    ).players.get(sim.playerId)!;
+    expect([oppositeCraft(CRAFT_B).id, oppositeCraft(meta.archetype.pairedMajor).id]).toContain(
+      sim.hobbyCraft,
+    );
   });
 
   it('d. per-pid read surface (hobbyCraftFor) matches the primary-player getter', () => {
