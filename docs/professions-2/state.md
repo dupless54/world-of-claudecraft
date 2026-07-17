@@ -5,7 +5,8 @@ The ONLY file every session must trust. Update it at the end of every phase.
 ## Current phase
 
 Phase 1 (Ring and identity foundations): complete (landed on the PR 2039
-head, 2026-07-17). Next: Phase 1 QA (phase-01-qa.md), then Phase 2.
+head, 2026-07-17). Phase 1 QA: complete (2026-07-17, PASS, zero blocking;
+fixes and drift notes below). Next: Phase 2.
 
 ## Locked design decisions
 
@@ -171,6 +172,58 @@ tables, i18n key namespaces, files created)
   ring-order pin + COMBO_RECIPES adjacency pin), stale-pair drop-by-design
   pin in tests/profession_attunement_quests.test.ts, and the deployed
   v0.26.0 empty-shape pin in tests/professions_archetype.test.ts.
+- Phase 1 QA (2026-07-17): direct literal pins for the ring-derived pair
+  helpers (archetypePairId, isAdjacentPairTarget, craftsForPairTarget,
+  hobbyCandidatesForPair, defaultHobbyForPair skill preference) and the
+  attune/switchHobby transition state machine in
+  tests/professions_archetype.test.ts; a same-seed determinism pin for the
+  gather/craft/attune/hobby-switch flow in
+  tests/profession_attunement_quests.test.ts; questObjectiveRequired and
+  resolvedCounts-aware credit pins in tests/quest_credit.test.ts; the
+  restored exact hobby re-pin in tests/professions_hobby_craft.test.ts; a
+  no-magic source scan in tests/profession_identity_card.test.ts. The
+  nythraxis interact-credit site now routes through questObjectiveRequired
+  like every other questProgress emit (behavior identical, golden parity
+  unchanged). Guide wiki professions prose got a minimal accuracy pass
+  (see QA drift notes).
+- Phase 1 QA drift notes (2026-07-17):
+  - The phase docs' "nameplate title path" consumer does not exist:
+    nameplates render Book of Deeds titles only
+    (src/render/nameplate_painter.ts, deedTitleText). The pair title's real
+    surfaces are the character-sheet title line (src/ui/char_window.ts,
+    archetypeTitleText), the crafting-window identity card, and the quest
+    dialog labels. Phase 14's celebration work must not assume a nameplate
+    surface.
+  - COMBO_RECIPES records keep the pre-reorder craftA/craftB field order by
+    design: combo_eligibility compares unordered, so only the crafting
+    window's combo label renders record order. Flip the records only as a
+    deliberate display decision (it stales test comments and screenshots).
+  - Guide wiki: guide.professions.* archetype prose was corrected at QA to
+    match the shipped system (pair archetypes, live declaration and amends
+    quests, the rare/common ceilings, the combo attunement requirement).
+    The full page rewrite remains a Phase 15 deliverable; non-Latin
+    overlays hold pre-reword translations until the release locale fill.
+  - Legacy IWorldProfessions members (acceptArchetypeQuest,
+    advanceAmendsProgress, switchArchetype, and the scalar mirrors) have
+    zero UI consumers after Phase 1; kept per deprecate-not-delete. Retire
+    them together with their world_api_parity pins in a later phase
+    (candidate: Phase 15 teardown).
+  - ClientWorld.questState's identity guard in src/net/online.ts looks
+    dead (the field initializes at declaration) but is load-bearing for
+    the bareClient test idiom, which builds instances via
+    Object.create(ClientWorld.prototype) and skips field initializers.
+  - Save-compat stopping rule: NOT triggered (migration review, full
+    evidence chain in the Phase 1 QA record). Rollback caveat for the
+    release runbook: once v0.27.0 players attune, rolling back to v0.26.0
+    does not crash (its normalize ignores the unknown keys) but its next
+    save DROPS attunedPairs/hobbyCraft and may re-default pairedMajor
+    under the old ring. Do not roll v0.27.0 back to v0.26.0 once the
+    attunement quests are live; mirror this in the v0.27.0 release notes
+    at tag time.
+  - Screenshot convention: this packet's phases commit PR shots under
+    docs/pr-screenshots/ (established earlier in the program), while root
+    CLAUDE.md names docs/screenshots. Keep the program-local convention
+    consistent within the packet; the maintainer may unify later.
 - Phase 2: (planned) masterwork SimEvent; instance.rolled.masterwork;
   masterwork proc rng-draw pin.
 - Phase 3: (planned) hcb wire key (corpse claims); trade payload carriage.
@@ -217,3 +270,9 @@ tables, i18n key namespaces, files created)
   want a naming pass).
 - Whether fishing keeps a separate skill id or folds into professionsState
   shape (Phase 11 decides; wire shape follows gprof pattern either way).
+- q_prof_hobby_switch is an unbounded repeatable 75 XP turn-in (flagged by
+  the Phase 1 QA security review): fully server-authoritative and XP-only,
+  but unlike its two self-limiting siblings it has no escalating gate, so a
+  player can ping-pong the hobby between the two candidates for 75 XP per
+  cycle. Maintainer decision (xpReward 0, or drop repeatable) in a tuning
+  phase; do not change balance numbers inside QA.

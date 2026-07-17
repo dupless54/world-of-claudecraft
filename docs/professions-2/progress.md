@@ -8,7 +8,7 @@ Update this file at the end of every implementation and QA session. Statuses:
 | Phase | Title | Status | Started | Completed |
 |---|---|---|---|---|
 | 1 | Ring and identity foundations | complete | 2026-07-16 | 2026-07-17 |
-| 1 QA | Verify ring and identity foundations | not started | | |
+| 1 QA | Verify ring and identity foundations | complete | 2026-07-17 | 2026-07-17 |
 | 2 | Masterwork model | not started | | |
 | 2 QA | Verify masterwork model | not started | | |
 | 3 | Host-parity bug fixes | not started | | |
@@ -49,6 +49,23 @@ criteria; mirror the checkboxes here as phases complete.
 - [x] Combo eligibility requires the matching attunement in the shared rule, both hosts
 - [x] Pair-named archetype title keys land (Smith, Outfitter, Apothecary, Bombardier + the six future pairs)
 - [x] PR 2039 should-fix items resolved; ring adoption landed on the PR 2039 head pre-merge
+
+Phase 1 QA (2026-07-17): PASS, zero blocking findings across the packet's
+three audit roles plus the full review dispatch matrix (architecture,
+frontend seam, cross-platform sync, privacy/security, migration safety,
+pin quality, qa-checklist). The save-compat stopping rule was evaluated
+and NOT triggered (v0.26.0 shipped the acceptance quests retired, the
+ClientWorld archetype methods as no-op stubs, and no UI caller, so no
+player-held save carries old-ring pair ids; an executed round-trip fixture
+confirmed drop-by-design plus stable canonical ids). QA landed: coverage
+additions for the pair helpers, transition state machine, resolved-count
+credit, and a same-seed determinism pin; the one loosened hobby re-pin
+restored to exact literals; the nythraxis interact-credit site routed
+through questObjectiveRequired; a minimal accuracy pass over the
+guide.professions wiki prose (full rewrite stays Phase 15). Deferred, with
+notes in state.md: the hobby-switch XP repeatable (maintainer balance
+decision), the COMBO_RECIPES record field order (cosmetic), legacy
+IWorldProfessions member retirement (Phase 15 candidate).
 
 ### Phase 2: Masterwork model
 - [ ] Craft outputs deterministic; five-way quality roll retired; `trivialAt` retired
