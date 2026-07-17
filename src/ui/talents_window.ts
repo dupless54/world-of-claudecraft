@@ -24,6 +24,8 @@ import { formatNumber, type TranslationKey, t } from './i18n';
 import { iconDataUrl } from './icons';
 import type { PainterHostPresentation } from './painter_host';
 import { rovingTarget } from './roving_index';
+import { focusActiveTab, wireTabStrip } from './tab_strip_painter';
+import { tabStripHtml, tabStripModel } from './tab_strip_view';
 import { talentBodyMaxHeight } from './talent_body_fit';
 import { roleLabel, tTalent } from './talent_i18n';
 import {
@@ -165,27 +167,38 @@ export class TalentsWindow {
     const view = buildTalentsView(allocation, cls, this.deps.playerLevel());
     root.innerHTML =
       `<div class="panel-title"><span>${t('game.talents.title')} <span class="tal-class-name">${esc(classDisplayName(cls))}</span></span>${close}</div>` +
-      `<div class="tal-tabs" role="tablist" aria-label="${esc(t('game.talents.title'))}">` +
-      `<button type="button" class="tal-tab${this.tab === 'spec' ? ' active' : ''}" role="tab" tabindex="${this.tab === 'spec' ? '0' : '-1'}" aria-selected="${this.tab === 'spec'}" aria-controls="tal-body" data-tab="spec"><span class="tal-tab-label">${t('game.talents.specTab')}</span></button>` +
-      `<button type="button" class="tal-tab${this.tab === 'rows' ? ' active' : ''}" role="tab" tabindex="${this.tab === 'rows' ? '0' : '-1'}" aria-selected="${this.tab === 'rows'}" aria-controls="tal-body" data-tab="rows"><span class="tal-tab-label">${t('hudChrome.talentRows.tab')}</span><span class="tt-pts">${formatNumber(view.pickedCount)}/${formatNumber(view.rows.length)}</span></button>` +
-      `</div><div id="tal-body" role="tabpanel"></div>` +
+      // WAI-ARIA tabs, built from the shared tab_strip_view core (default
+      // button tag; the Choices tab carries its picked-count badge via
+      // extraHtml, the same markup contract social_window follows).
+      tabStripHtml(
+        tabStripModel({
+          ariaLabel: t('game.talents.title'),
+          panelId: 'tal-body',
+          stripClass: 'tal-tabs',
+          tabClass: 'tal-tab',
+          selectedClass: 'active',
+          tabs: [
+            { id: 'spec', label: t('game.talents.specTab') },
+            {
+              id: 'rows',
+              label: t('hudChrome.talentRows.tab'),
+              extraHtml: `<span class="tt-pts">${formatNumber(view.pickedCount)}/${formatNumber(view.rows.length)}</span>`,
+            },
+          ],
+          selected: this.tab,
+        }),
+      ) +
+      `<div id="tal-body" role="tabpanel"></div>` +
       this.footerHtml(view);
 
-    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('.tal-tab'));
-    const switchTab = (tab: HTMLButtonElement): void => {
-      this.tab = tab.dataset.tab as 'spec' | 'rows';
+    // The roving Arrow/Home/End + Enter/Space wiring lives in the shared
+    // tab_strip_painter core; a keyboard move re-renders the window (the root
+    // persists) and refocuses the freshly active tab afterward, matching the
+    // prior hand-rolled handler.
+    wireTabStrip(root, 'tal-tab', (id, focusFollow) => {
+      this.tab = id as 'spec' | 'rows';
       this.render();
-    };
-    tabs.forEach((tab, index) => {
-      tab.addEventListener('click', () => switchTab(tab));
-      tab.addEventListener('keydown', (event) => {
-        const keyEvent = event as KeyboardEvent;
-        const next = rovingTarget(keyEvent.key, index, tabs.length, 'horizontal');
-        if (next === null) return;
-        keyEvent.preventDefault();
-        switchTab(tabs[next]);
-        this.deps.root().querySelector<HTMLElement>('.tal-tab.active')?.focus();
-      });
+      if (focusFollow) focusActiveTab(root, 'tal-tab', 'active');
     });
     root.querySelector('[data-close]')?.addEventListener('click', () => this.close());
 

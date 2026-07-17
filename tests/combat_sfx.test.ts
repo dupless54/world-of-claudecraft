@@ -121,6 +121,8 @@ describe('combat SFX policy', () => {
     expect(mobVoiceCue('water_elemental', 'aggro')).toBe('mob_water_elemental_aggro');
     expect(mobVoiceCue('water_elemental', 'attack')).toBe('mob_water_elemental_attack');
     expect(mobVoiceCue('water_elemental', 'death')).toBe('mob_water_elemental_death');
+    // Owned summon: no idle bark exists, the sweep must get null.
+    expect(mobVoiceCue('water_elemental', 'idle')).toBeNull();
     expect(mobVoiceCue('water_elemental', 'hurt')).toBe('mob_water_elemental_attack');
     expect(mobVoiceFamily('stormcrag_elemental')).toBe('elemental');
   });
@@ -316,6 +318,19 @@ describe('combat SFX policy', () => {
       const expected = `mob_${family}_hurt`;
       expect(mobVoiceCue(templateId, 'hurt'), templateId).toBe(expected);
       expect(expected in SFX_CLIPS, expected).toBe(true);
+    }
+  });
+
+  it('stages a real, buffered idle clip for every family in MOB_VOICE_CUES', () => {
+    // Iterates the live catalog (not a hardcoded template-id table) so a
+    // future 14th family is automatically covered; the `satisfies` clause on
+    // MOB_VOICE_CUES only forces a cue STRING at compile time, not that a
+    // clip is actually staged, which is what this asserts at runtime.
+    const families = Object.entries(MOB_VOICE_CUES);
+    expect(families).toHaveLength(13);
+    for (const [family, cues] of families) {
+      expect(cues.idle, family).toBe(`mob_${family}_idle`);
+      expect(cues.idle in SFX_CLIPS, cues.idle).toBe(true);
     }
   });
 

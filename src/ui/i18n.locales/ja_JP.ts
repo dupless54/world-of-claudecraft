@@ -198,6 +198,24 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.wocStore.armoryTitle': '武器庫',
   'hudChrome.wocStore.armoryBody':
     'シーズン1武器庫の限定武器スキン。アカウント共有の純粋な装飾で、周囲のプレイヤー全員に表示されます。',
+  'hudChrome.wocStore.wallet.title': 'Solanaウォレット',
+  'hudChrome.wocStore.wallet.unlinked':
+    'ウォレットアプリを接続し、一度署名して公開アドレスをWoCアカウントにリンクしてください。リカバリーフレーズや秘密鍵を受け取ることはありません。',
+  'hudChrome.wocStore.wallet.connectedUnlinked':
+    'ウォレットアプリはこのブラウザに接続されていますが、公開アドレスはまだWoCアカウントにリンクされていません。',
+  'hudChrome.wocStore.wallet.linkedDisconnected':
+    '公開アドレスはリンク済みです。SOLまたはWOCで支払うときに、そのウォレットアプリを再接続してください。',
+  'hudChrome.wocStore.wallet.linkedConnected':
+    'リンク済みのウォレットアプリが接続され、SOLまたはWOCで購入できます。',
+  'hudChrome.wocStore.wallet.mismatched':
+    '別のウォレットが接続されています。認証してリンク済みアドレスを置き換えるか、リンク済みウォレットを再接続してください。',
+  'hudChrome.wocStore.wallet.connect': 'ウォレットを接続',
+  'hudChrome.wocStore.wallet.verify': '認証してリンク',
+  'hudChrome.wocStore.wallet.reconnect': 'ウォレットを再接続',
+  'hudChrome.wocStore.wallet.manage': 'ウォレットを管理',
+  'wallet.bagConnect': 'ウォレットをリンク',
+  'wallet.bagLink': 'ウォレットを認証',
+  'wallet.bagReconnect': 'ウォレットを再接続',
   'hudChrome.wocStore.collectionLine': '{collection}コレクション',
   'hudChrome.wocStore.collections.guildmark': 'ギルドマーク',
   'hudChrome.wocStore.collections.emberwrought': '残り火鍛造',
@@ -1238,12 +1256,47 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
     'ホルダー特典が有効です。署名や支払いが必要なときはアプリを接続してください。',
   'wallet.extensionHelp':
     'ここにウォレットを表示するには、Solflare Wallet などのブラウザ用ウォレット拡張機能を有効にしておいてください。',
+  'wallet.mobileAppHelp':
+    'Phantom または Solflare を選択してください。ウォレットアプリで承認を求められます。ゲームを開いたままにし、完了後に戻ってください。',
+  'wallet.standaloneAppHelp':
+    'ホーム画面アプリでは、まだウォレットに接続できません。Phantom または Solflare を使用するには、Safari か Chrome で World of ClaudeCraft を開いてください。',
+  'wallet.openAppTitle': '{wallet} で続行',
+  'wallet.openAppHelp':
+    '{wallet} を開いてこのリクエストを確認してください。ウォレットアプリの使用中も、このゲームタブを開いたままにしてください。',
+  'wallet.openAppButton': '{wallet} を開く',
+  'wallet.manualReturnBrowserHelp':
+    '承認後、このゲームタブに戻ってください。iOS で別のブラウザが開いた場合は閉じ、元のブラウザに手動で戻ってください。',
+  'wallet.manualReturnStandaloneHelp':
+    '承認後、ホーム画面から World of ClaudeCraft に戻ってください。iOS でブラウザが開いた場合は閉じ、ホーム画面のアプリをもう一度開いてください。',
+  'wallet.preparingAppButton': '{wallet} を準備中...',
+  'wallet.walletAppUnavailable':
+    '{wallet} を準備できませんでした。このウィンドウを閉じて、もう一度お試しください。',
   'wallet.flowConnect': 'ウォレットを選択してください。認証は自動的に続行されます。',
   'wallet.flowSign':
     'ウォレットアプリで認証メッセージに署名してください。トランザクションや SOL は不要です。',
   'wallet.flowVerify': 'ウォレット所有権を認証中...',
   'wallet.linkFailed': 'ウォレット認証に失敗しました。',
   'wallet.verifyFailed': 'ウォレット認証に失敗しました。',
+  'wallet.browser.eyebrow': 'デスクトップウォレット認証',
+  'wallet.browser.title': 'Solanaウォレットを接続',
+  'wallet.browser.linkBody':
+    'このブラウザでウォレット拡張機能を選択してください。確認メッセージに署名した後、デスクトップアプリに戻ります。',
+  'wallet.browser.paymentBody':
+    'アカウントにリンクされたウォレットを選択し、このブラウザで取引を承認してください。',
+  'wallet.browser.extensionHelp':
+    '対応するウォレット拡張機能が見つかりません。Phantom、Solflare、または別のSolanaブラウザウォレットをインストールまたはロック解除して、再試行してください。',
+  'wallet.browser.safety':
+    'World of ClaudeCraftがリカバリーフレーズや秘密鍵を求めることはありません。',
+  'wallet.browser.continueWith': '{wallet}で続行',
+  'wallet.browser.reviewTitle': 'ウォレットで確認',
+  'wallet.browser.reviewBody':
+    '{wallet}の指示に従ってください。このブラウザページは開いたままにしてください。',
+  'wallet.browser.completeTitle': 'ウォレット認証が完了しました',
+  'wallet.browser.completeBody': 'World of ClaudeCraftデスクトップアプリに戻れます。',
+  'wallet.browser.returnButton': 'デスクトップアプリに戻る',
+  'wallet.browser.failed':
+    'ウォレット認証に失敗したか期限切れです。デスクトップアプリに戻って再試行してください。',
+  'wallet.browser.retry': '再試行',
   'wallet.unlinkFailed': 'ウォレット連携を解除できませんでした。',
   'wallet.holder': '$WOCホルダー',
   'wallet.holderTierTitle': '{tier} $WOCホルダー',
@@ -3311,6 +3364,26 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.npcs.heroic_quartermaster.title': '英雄補給係',
   'entities.npcs.heroic_quartermaster.greeting':
     '英雄の深部の証があれば、ハイウォッチ一の指輪とペンダントが手に入る。あなたの証を見せてくれ。',
+  'entities.npcs.card_master.name': 'カードマスター',
+  'entities.npcs.card_master.title': '運命の胴元',
+  'entities.npcs.card_master.greeting':
+    'カードデュエルはいかが？三本勝負、勝者には自慢の種が手に入る。',
+  'cardDuel.title': 'カードデュエル',
+  'cardDuel.close': '閉じる',
+  'cardDuel.join': 'キューに参加',
+  'cardDuel.joinAria': 'カードデュエルのキューに参加する',
+  'cardDuel.leave': 'キューを離れる',
+  'cardDuel.leaveAria': 'カードデュエルのキューを離れる',
+  'cardDuel.queued': '対戦相手を待っています……',
+  'cardDuel.vsOpponent': '対 {name}',
+  'cardDuel.round': 'ラウンドスコア：{mine} - {theirs}',
+  'cardDuel.forfeit': '棄権',
+  'cardDuel.forfeitAria': 'カードデュエルを棄権する',
+  'cardDuel.unavailable': 'カードデュエルには、オンラインの対戦相手がもう一人必要です。',
+  'cardDuel.counts': '山札：{deck} ・ 捨て札：{discard}',
+  'cardDuel.playCardAria': '{value}のカードを出す',
+  'cardDuel.waitingOnOpponent': '相手のカードを待っています……',
+  'cardDuel.yourTurn': 'カードを出してください',
   'entities.npcs.loremaster_caddis.name': '博識者キャディス',
   'entities.npcs.loremaster_caddis.title': '博識者',
   'entities.npcs.loremaster_caddis.greeting':
@@ -3325,10 +3398,10 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
     'この沼は月光を飲み干し、{className}よ、溺れし者を吐き返すのだ。私はあの門を三十夜も見張ってきた——そして今宵、門は開いている。',
   'entities.quests.q_prof_intro.title': '剣以外にも稼ぎはある',
   'entities.quests.q_prof_intro.text':
-    'イーストブルックの誰もが剣以外の生業を持っているものだ、{playerName}。町の周りに鉱脈が散らばっている。つるはしを振るって鉱石を5個持ってきてくれ。自分で採掘するんだぞ、見ればわかる。',
+    'イーストブルックでは誰もが剣のほかに生業を持つ、{playerName}。町の南西、カッパー・ディグ周辺の岩場には鉱脈がある。つるはしを振るい、自分の手で5か所採掘してこい。ごまかしても分かるぞ。',
   'entities.quests.q_prof_intro.completion':
-    'どうだ？鞄には鉱石、手にはマメだ。旅の道中も採掘、伐採、薬草採取を続けるといい。町に戻ったら、市場そばのタウンフォーカス掲示板と近くの製作台も気にかけてくれ。その気があれば、どれも実入りのいい仕事になる。',
-  'entities.quests.q_prof_intro.objectives.0.label': '鉱石のかけら',
+    'どうだ？ 鉱石を採り、手にはまめができた。旅の途中でも採掘、伐採、薬草採集を続けるんだ。町へ戻ったら、市場そばのタウンフォーカス掲示板と近くの製作台も忘れるな。望むなら、どの仕事にもまっとうな稼ぎが待っている。',
+  'entities.quests.q_prof_intro.objectives.0.label': '鉱脈を採掘',
   'entities.quests.q_wolves.title': '戸口の狼',
   'entities.quests.q_wolves.text':
     '森の狼が北の道で旅人に牙をむけています、{playerName}。8頭を討ち、イーストブルックに息をつかせてください。',
@@ -3734,16 +3807,22 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_mogger.objectives.0.label': 'モガーを討伐',
   'entities.quests.q_archetype_acceptance.title': '己が選ぶべき技',
   'entities.quests.q_archetype_acceptance.text':
-    'イーストブルックの職人は皆いずれ、己が選ぶべき一つの技に落ち着く。{playerName}よ、一つの行いで己を証明し、進むべき道を宣言せよ。',
+    '技とは知識だ、{playerName}。だが調律は誓いだ。隣り合う二つの技を主専攻として選び、谷で自ら採掘した鉱石を持ってこい。',
   'entities.quests.q_archetype_acceptance.completion':
-    'あなたの道は定まった。その道をしかと歩むがいい。',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'フォレストウルフを討伐',
+    '誓いは結ばれた。この二つの技が今やお前の主専攻となり、その反対側の知識が趣味となる。',
+  'entities.quests.q_archetype_acceptance.objectives.0.label': '鉱脈を採掘',
   'entities.quests.q_prof_make_amends.title': '償い',
   'entities.quests.q_prof_make_amends.text':
-    '一つの技を捨て、別の技へと移るには、職人はまず歩まなかった道への償いを果たさねばならぬ、{playerName}よ。',
+    'その組み合わせは以前にも身につけていたな、{playerName}。戻ることは新たな誓いではない。谷の道の安全を守り、かつて手が覚えていた感覚を働きながら取り戻せ。',
   'entities.quests.q_prof_make_amends.completion':
-    '償いは果たされた。新たな道があなたに開かれている。',
+    '昔の感覚が戻った。以前の組み合わせが再び有効になった。',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'フォレストウルフを討伐',
+  'entities.quests.q_prof_hobby_switch.title': '別の嗜み',
+  'entities.quests.q_prof_hobby_switch.text':
+    '主専攻には誓いが要る。趣味が問うのは、好奇心がどこへ向かうかだけだ、{playerName}。薬草をいくつか採集し、二つの主専攻の反対側にある技のうち、どちらを磨くか決めるのだ。',
+  'entities.quests.q_prof_hobby_switch.completion':
+    '気軽な選択だが、役には立つ。その好奇心を、レア品質の仕事に届くところまで追いかけるといい。',
+  'entities.quests.q_prof_hobby_switch.objectives.0.label': '薬草の群生地を採集',
   'entities.quests.q_drowned_choir.title': '溺れし聖歌隊',
   'entities.quests.q_drowned_choir.text':
     '渡り手どもは独りで動いているのではない。その中に溺れし信徒たちが歩いている——神殿とともに沈んだ教団だ。腐った祭服をまとったまま、岸の岩場から祈りを歌い続けている。八体を沈黙させ、奴らが携える供物を六つ持ち帰れ。奴らが女神に何を捧げようとしているのか、私は知りたいのだ。',
@@ -4536,14 +4615,14 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.intro':
     '功績の書は、始まりの谷を出る最初の一歩から、この王国が用意する最も過酷な戦いまで、あなたが成し遂げたすべてを世界が記録する場所です。遊びながら功績を獲得し、授かった称号を身にまとい、名声が高まっていくのを見届けましょう。',
   'guide.deedsPage.renownBody':
-    '名声は功績の書を支える点数です。獲得した功績はそれぞれ定められた点数を持ち、合計は増える一方なので、静かな一週間があっても築いたものが減ることはありません。一部の功績は技量ではなく運によるもので、偉業はそれ自体が誉れであるため、そのどちらも名声を一切もたらしません。',
+    '名声は功績の書を支える点数です。獲得した功績はそれぞれ定められた点数を持ち、合計は増える一方なので、静かな一週間があっても築いたものが減ることはありません。一部の功績は技量ではなく運によるもので、偉業はそれ自体が誉れであるため、そのどちらも名声を一切もたらしません。名声を持たない功績も功績の書の達成数には数えられますが、点数になることはありません。',
   'guide.deedsPage.renownHeading': '名声',
   'guide.deedsPage.rewardBorder': '枠飾り',
   'guide.deedsPage.rewardsBody':
     '報酬はすべて見せびらかすためのもので、それこそが狙いです。一部の功績は、身につけられる称号や、名前を彩る枠飾りを授けますが、英雄を強くするものは決して与えません。功績の書で好きな称号を選べば、それはネームプレート、チャット、そして順位表にも添えられ、誰の目にも映ります。',
   'guide.deedsPage.rewardsHeading': '称号と枠飾り',
   'guide.deedsPage.standingsNote':
-    '各レルムは、すべてのアカウントにわたる名声の累計を記録しています。誰がどこに位置しているかを見るには、ゲーム内でリーダーボードを開き、その名声タブに切り替えてください。順位はそこにあり、ウィキにはありません。',
+    '各レルムは、すべてのアカウントにわたる名声の累計を記録しています。リーダーボードはアカウント全体を生涯名声で順位付けし、各功績はあなたの全キャラクターを通じて一度だけ数えられ、表示されるのは名声のみです。そのため、名声を持たない功績は功績の書には数えられても、順位を動かすことはありません。誰がどこに位置しているかを見るには、ゲーム内でリーダーボードを開き、その名声タブに切り替えてください。順位はそこにあり、ウィキにはありません。',
   'guide.delvesPage.affixesBody':
     'より高難易度のランでは、潜行の流れを変える修飾効果が抽選されます。安らげぬ死者から淀んだ空気、崩れかけた天井まで、その内容はさまざまです。修飾効果は危険と報酬をともに高めます。各デルヴは、そのテーマに合った修飾効果の中から抽選します。レルム全体で見ると、その顔ぶれは次の通りです:',
   'guide.delvesPage.affixesHeading': 'ランの修飾効果',
@@ -6023,7 +6102,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.name': 'グレイジョーの追跡者の装備',
   'entities.itemSets.greyjaw_stalker.bonus3': '攻撃速度と詠唱速度が15%上昇します。',
   'entities.itemSets.necromancers.name': 'モーンウィーヴの法衣',
-  'entities.itemSets.necromancers.bonus2': 'ノックバックされなくなります（ノックバック耐性100%）。',
+  'entities.itemSets.necromancers.bonus2':
+    '呪文の威力が20増加します。被ダメージによって詠唱が遅れなくなります（詠唱妨害耐性100%）。',
   'entities.itemSets.necromancers.bonus3': '知力が10、スタミナが10上昇します。',
   'entities.itemSets.necromancers.bonus4':
     '呪文に10%の確率で「クリアキャスティング」が発動し、次の呪文が無償になります。',
@@ -6034,13 +6114,15 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.nighttalon.bonus4':
     '武器のクリティカルヒットで「裂けた傷」を与え、対象に2秒ごとに6ダメージの出血を12秒間与えます。最大3回まで累積します。',
   'entities.itemSets.soulflame.name': 'レイスファイアの法衣',
-  'entities.itemSets.soulflame.bonus2': 'ノックバックされなくなります（ノックバック耐性100%）。',
+  'entities.itemSets.soulflame.bonus2':
+    '呪文の威力が20増加します。被ダメージによって詠唱が遅れなくなります（詠唱妨害耐性100%）。',
   'entities.itemSets.soulflame.bonus3':
     '知力が15、精神力が15上昇し、攻撃速度と詠唱速度が15%上昇します。',
   'entities.itemSets.soulflame.bonus4':
     '呪文に10%の確率で「ソウルブレイズ」が発動し、呪文の威力が10秒間40上昇します。',
   'entities.itemSets.stormcallers.name': 'ゲイルコールの法衣',
-  'entities.itemSets.stormcallers.bonus2': 'ノックバックされなくなります（ノックバック耐性100%）。',
+  'entities.itemSets.stormcallers.bonus2':
+    '呪文の威力が20増加します。被ダメージによって詠唱が遅れなくなります（詠唱妨害耐性100%）。',
   'entities.itemSets.stormcallers.bonus3':
     '知力が15、精神力が15上昇し、攻撃速度と詠唱速度が15%上昇します。',
   'entities.itemSets.stormcallers.bonus4':
@@ -6197,6 +6279,44 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.craftedToast': '製作しました:{name}',
   'hudChrome.crafting.insufficientMaterials': '材料が不足しています。',
   'hudChrome.crafting.unknownRecipe': 'そのレシピは存在しません。',
+  'hudChrome.crafting.comboRequires': '調律条件：{craftA} + {craftB}、ティア {tier}。',
+  'hudChrome.crafting.comboMet': '準備完了。',
+  'hudChrome.crafting.comboSyncing': 'サーバーの調律状態を確認しています。',
+  'hudChrome.crafting.comboNotAttuned': '先にアーキタイプの組み合わせを選んでください。',
+  'hudChrome.crafting.comboWrongPair': '製作するには、この組み合わせを有効にしてください。',
+  'hudChrome.crafting.comboTierUnmet': '両方の主専攻を必要ティアまで上げてください。',
+  'hudChrome.crafting.professionChoice': '職業の選択',
+  'hudChrome.crafting.noProfessionChoice': '現在選択できる職業はありません。',
+  'hudChrome.crafting.attunementPreview':
+    '結果：{title}の称号を獲得し、{majorA}と{majorB}が上限なしの主専攻になります。{hobby}はレア上限の趣味になります。他の技能知識はすべて保持されますが、休眠中はコモン上限です。',
+  'hudChrome.crafting.hobbyPreview':
+    '結果：{hobby}がレア上限の趣味になります。二つの主専攻と保持済みの技能値は変わりません。',
+  'hudChrome.crafting.identity.title': '製作の専門性',
+  'hudChrome.crafting.identity.syncing': 'サーバーから製作の専門性を受信しています。',
+  'hudChrome.crafting.identity.unattuned':
+    '有効なアーキタイプの組み合わせがありません。知識は保持されますが、コンボレシピには調律済みの組み合わせが必要です。',
+  'hudChrome.crafting.identity.titleLabel': '称号',
+  'hudChrome.crafting.identity.majorsLabel': '主専攻',
+  'hudChrome.crafting.identity.hobbyLabel': '趣味',
+  'hudChrome.crafting.identity.historyLabel': '履歴',
+  'hudChrome.crafting.identity.history': '発見した組み合わせ：{pairs}、完了した復帰：{returns}',
+  'hudChrome.crafting.identity.roleMajor': '主専攻',
+  'hudChrome.crafting.identity.roleHobby': '趣味',
+  'hudChrome.crafting.identity.roleDormant': '休眠中の知識',
+  'hudChrome.crafting.identity.roleUnattuned': '未調律',
+  'hudChrome.crafting.identity.ceilingUnlimited': '強化上限なし',
+  'hudChrome.crafting.identity.ceilingCommon': 'コモン上限',
+  'hudChrome.crafting.identity.skillAria':
+    '{craft}、技能 {skill}、ティア {tier}、{role}、{ceiling}',
+  'hudChrome.crafting.identity.colCraft': '職種',
+  'hudChrome.crafting.identity.colSkill': '技能',
+  'hudChrome.crafting.identity.colRole': '役割',
+  'hudChrome.crafting.identity.colCap': '上限',
+  'hudChrome.crafting.identity.tutorial':
+    '最初のティア：いずれかの技を技能 {skill} まで上げます。レシピの成功は他の知識を消さず、その技を成長させます。',
+  'hudChrome.crafting.identity.nearTier': '{craft}は次のティアまであと技能 {points} です。',
+  'hudChrome.crafting.identity.dormantKnowledge':
+    '{craft}の知識は保持されていますが、その組み合わせか趣味が有効になるまで休眠します。',
   'hudChrome.devBadge.title': '開発者',
   'hudChrome.devBadge.tiers.tinkerer': '修繕屋',
   'hudChrome.devBadge.tiers.artificer': '工匠',
@@ -6819,6 +6939,8 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'apiError.body.unsupported_media_type': 'サポートされていないリクエスト形式です。',
   'apiError.deeds.invalid_input': '入力が無効です。',
   'apiError.steam.disabled': 'Steam連携は現在利用できません。',
+  'apiError.wallet.handoff_invalid':
+    'ウォレット認証の有効期限が切れたか、確認できませんでした。もう一度お試しください。',
   'apiError.steam.invalid_ticket':
     'Steamがこの連携リクエストを確認できませんでした。デスクトップアプリからもう一度お試しください。',
   'apiError.steam.banned': 'そのSteamアカウントは連携できません。',
@@ -7004,16 +7126,26 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.archetypeTitle.label': '称号',
   'hudChrome.archetypeTitle.none': 'なし',
   'hudChrome.archetypeTitle.hobbyLabel': '趣味',
-  'hudChrome.archetypeTitle.armorcrafting': '防具鍛冶師',
-  'hudChrome.archetypeTitle.weaponcrafting': '武器鍛冶師',
-  'hudChrome.archetypeTitle.jewelcrafting': '宝石職人',
-  'hudChrome.archetypeTitle.alchemy': '錬金術師',
-  'hudChrome.archetypeTitle.engineering': '工作師',
-  'hudChrome.archetypeTitle.cooking': '料理人',
-  'hudChrome.archetypeTitle.inscription': '銘文師',
-  'hudChrome.archetypeTitle.enchanting': 'エンチャンター',
-  'hudChrome.archetypeTitle.tailoring': '仕立て屋',
-  'hudChrome.archetypeTitle.leatherworking': '皮革職人',
+  'hudChrome.archetypePair.engineering+alchemy': '爆破師',
+  'hudChrome.archetypePair.alchemy+cooking': '薬師',
+  'hudChrome.archetypePair.cooking+leatherworking': '罠師',
+  'hudChrome.archetypePair.leatherworking+tailoring': '装具師',
+  'hudChrome.archetypePair.tailoring+inscription': '魔織師',
+  'hudChrome.archetypePair.inscription+enchanting': '秘術師',
+  'hudChrome.archetypePair.enchanting+jewelcrafting': '宝石付与師',
+  'hudChrome.archetypePair.jewelcrafting+weaponcrafting': '刃鍛冶',
+  'hudChrome.archetypePair.weaponcrafting+armorcrafting': '鍛冶師',
+  'hudChrome.archetypePair.armorcrafting+engineering': '歯車鍛冶',
+  'hudChrome.craftName.armorcrafting': '防具鍛冶',
+  'hudChrome.craftName.weaponcrafting': '武器鍛冶',
+  'hudChrome.craftName.jewelcrafting': '宝石細工',
+  'hudChrome.craftName.alchemy': '錬金術',
+  'hudChrome.craftName.engineering': '工作',
+  'hudChrome.craftName.cooking': '料理',
+  'hudChrome.craftName.inscription': '銘文',
+  'hudChrome.craftName.enchanting': 'エンチャント',
+  'hudChrome.craftName.tailoring': '裁縫',
+  'hudChrome.craftName.leatherworking': '皮革加工',
   'hudChrome.crafting.reagentLine': '{name}: {have}/{required}',
   // Protect Yumi locale fill (M16 wordy-key floor).
   'yumi.hud.collapse': 'Protect Yumiのバーを折りたたむ',
@@ -7522,9 +7654,12 @@ export const ja_JP: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.charTitleNone': '称号未選択',
   'hudChrome.deeds.charOpenBook': '功績の書',
   'hudChrome.deeds.lbTab': '名声',
-  'hudChrome.deeds.lbDeedsCol': '功績',
   'hudChrome.deeds.lbTitleCol': '称号',
-  'hudChrome.deeds.lbSelf': 'あなたの順位：{rank} 位（上位 {percent}%）',
+  'hudChrome.deeds.lbScopeNote':
+    'アカウントの生涯名声で順位付けされます。各功績は、アカウントの全キャラクターを通じて一度だけ数えられます。',
+  'hudChrome.deeds.lbSelfAccount':
+    'あなたのアカウント：{rank} 位（上位 {percent}%）、名声 {renown}',
+  'hudChrome.deeds.lbSelfRank': 'あなたのアカウント：{rank} 位（上位 {percent}%）',
   'hudChrome.deeds.lbEmpty': 'ランク入りした年代記作家はまだいません。',
   'hudChrome.deeds.broadcastsLabel': '功績の達成をギルドとフレンドに共有する',
   'guide.deedsPage.catHeading': '{label}（{count}）',

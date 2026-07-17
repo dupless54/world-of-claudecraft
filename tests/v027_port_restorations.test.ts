@@ -303,6 +303,7 @@ describe('spellbook spec gating (spellbook_view specCanLearn)', () => {
       barAbilityIds: [] as const,
       hasFreeSlot: true,
       hasFormBars: false,
+      attackOnBar: false,
     };
     // No committed spec: the whole kit shows (any spec is still open).
     expect(buildSpellbookView(base).rows.map((r) => r.abilityId)).toEqual([

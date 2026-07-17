@@ -96,3 +96,31 @@ describe('talents_window: no magic values', () => {
     expect(hud).toContain('commitSpec: (specId) => this.sim.setSpec(specId),');
   });
 });
+
+describe('talents_window: WAI-ARIA spec/rows tabs', () => {
+  // The spec/rows tab strip's markup and roving Arrow/Home/End + Enter/Space
+  // wiring now come from the shared tab_strip_view.ts / tab_strip_painter.ts
+  // building block (their own contracts are pinned in tab_strip_view.test.ts /
+  // tab_strip_painter.test.ts), the same modules social_window.ts composes for
+  // its plain-button strip. This pins that talents_window composes them with
+  // its button-tag + picked-count-badge shape instead of hand-rolling the
+  // markup or the keyboard handler itself.
+  it('builds its tab strip from the shared tab_strip_view / tab_strip_painter modules', () => {
+    expect(painter).toContain("from './tab_strip_view'");
+    expect(painter).toContain("from './tab_strip_painter'");
+    expect(painter).toContain('tabStripHtml(');
+    expect(painter).toContain('tabStripModel(');
+    expect(painter).toContain('wireTabStrip(');
+    expect(painter).toContain("panelId: 'tal-body'");
+    expect(painter).toContain("stripClass: 'tal-tabs'");
+    expect(painter).toContain("tabClass: 'tal-tab'");
+    expect(painter).toContain("selectedClass: 'active'");
+    expect(painter).toContain("id: 'spec',");
+    expect(painter).toContain("id: 'rows',");
+  });
+
+  it('refocuses the newly active tab only on a keyboard move, matching the shared wiring contract', () => {
+    expect(painter).toContain('(id, focusFollow) => {');
+    expect(painter).toContain('if (focusFollow) focusActiveTab(root,');
+  });
+});

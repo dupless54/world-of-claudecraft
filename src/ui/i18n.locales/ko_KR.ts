@@ -203,6 +203,24 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.wocStore.armoryTitle': '무기고',
   'hudChrome.wocStore.armoryBody':
     '시즌 1 무기고의 한정 무기 스킨입니다. 계정 전체에 적용되는 순수 장식이며 주변 모든 플레이어에게 보입니다.',
+  'hudChrome.wocStore.wallet.title': 'Solana 지갑',
+  'hudChrome.wocStore.wallet.unlinked':
+    '지갑 앱을 연결한 뒤 한 번 서명하여 공개 주소를 WoC 계정에 연결하세요. 복구 문구나 개인 키는 절대로 전달되지 않습니다.',
+  'hudChrome.wocStore.wallet.connectedUnlinked':
+    '지갑 앱이 이 브라우저에 연결되었지만 공개 주소는 아직 WoC 계정에 연결되지 않았습니다.',
+  'hudChrome.wocStore.wallet.linkedDisconnected':
+    '공개 주소가 연결되어 있습니다. SOL 또는 WOC로 결제할 때 해당 지갑 앱을 다시 연결하세요.',
+  'hudChrome.wocStore.wallet.linkedConnected':
+    '연결된 지갑 앱이 접속되어 SOL 또는 WOC 구매에 사용할 수 있습니다.',
+  'hudChrome.wocStore.wallet.mismatched':
+    '다른 지갑이 접속되어 있습니다. 인증하여 연결된 주소를 바꾸거나 기존에 연결된 지갑을 다시 접속하세요.',
+  'hudChrome.wocStore.wallet.connect': '지갑 연결',
+  'hudChrome.wocStore.wallet.verify': '인증하고 연결',
+  'hudChrome.wocStore.wallet.reconnect': '지갑 다시 연결',
+  'hudChrome.wocStore.wallet.manage': '지갑 관리',
+  'wallet.bagConnect': '지갑 연결',
+  'wallet.bagLink': '지갑 인증',
+  'wallet.bagReconnect': '지갑 다시 연결',
   'hudChrome.wocStore.collectionLine': '{collection} 컬렉션',
   'hudChrome.wocStore.collections.guildmark': '길드마크',
   'hudChrome.wocStore.collections.emberwrought': '엠버로트',
@@ -1235,11 +1253,42 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
     '보유자 혜택이 활성화되었습니다. 서명이나 지출이 필요할 때 앱을 연결하세요.',
   'wallet.extensionHelp':
     '여기에 지갑이 표시되려면 Solflare Wallet 같은 브라우저 지갑 확장 프로그램이 활성화되어 있어야 합니다.',
+  'wallet.mobileAppHelp':
+    'Phantom 또는 Solflare를 선택하세요. 지갑 앱에서 승인을 요청합니다. 게임을 열어 둔 채 완료 후 돌아오세요.',
+  'wallet.standaloneAppHelp':
+    '홈 화면 앱에서는 아직 지갑 연결을 사용할 수 없습니다. Phantom 또는 Solflare를 사용하려면 Safari나 Chrome에서 World of ClaudeCraft를 여세요.',
+  'wallet.openAppTitle': '{wallet}에서 계속',
+  'wallet.openAppHelp':
+    '{wallet}을 열어 이 요청을 확인하세요. 지갑 앱을 사용하는 동안 이 게임 탭을 열어 두세요.',
+  'wallet.openAppButton': '{wallet} 열기',
+  'wallet.manualReturnBrowserHelp':
+    '승인 후 이 게임 탭으로 돌아오세요. iOS에서 다른 브라우저가 열리면 닫고 원래 브라우저로 직접 돌아오세요.',
+  'wallet.manualReturnStandaloneHelp':
+    '승인 후 홈 화면에서 World of ClaudeCraft로 돌아오세요. iOS에서 브라우저가 열리면 닫고 홈 화면 앱을 다시 여세요.',
+  'wallet.preparingAppButton': '{wallet} 준비 중...',
+  'wallet.walletAppUnavailable': '{wallet}을 준비하지 못했습니다. 이 창을 닫고 다시 시도하세요.',
   'wallet.flowConnect': '지갑을 선택하세요. 인증은 자동으로 계속됩니다.',
   'wallet.flowSign': '지갑 앱에서 인증 메시지에 서명하세요. 트랜잭션이나 SOL은 필요 없습니다.',
   'wallet.flowVerify': '지갑 소유권 인증 중...',
   'wallet.linkFailed': '지갑 인증에 실패했습니다.',
   'wallet.verifyFailed': '지갑 인증에 실패했습니다.',
+  'wallet.browser.eyebrow': '데스크톱 지갑 인증',
+  'wallet.browser.title': 'Solana 지갑 연결',
+  'wallet.browser.linkBody':
+    '이 브라우저에서 지갑 확장 프로그램을 선택하세요. 인증 메시지에 서명한 뒤 데스크톱 앱으로 돌아갑니다.',
+  'wallet.browser.paymentBody': '계정에 연결된 지갑을 선택하고 이 브라우저에서 거래를 승인하세요.',
+  'wallet.browser.extensionHelp':
+    '호환되는 지갑 확장 프로그램을 찾지 못했습니다. Phantom, Solflare 또는 다른 Solana 브라우저 지갑을 설치하거나 잠금 해제한 뒤 다시 시도하세요.',
+  'wallet.browser.safety': 'World of ClaudeCraft는 복구 문구나 개인 키를 요청하지 않습니다.',
+  'wallet.browser.continueWith': '{wallet}(으)로 계속',
+  'wallet.browser.reviewTitle': '지갑에서 검토',
+  'wallet.browser.reviewBody': '{wallet}의 안내를 따르세요. 이 브라우저 페이지를 열어 두세요.',
+  'wallet.browser.completeTitle': '지갑 인증 완료',
+  'wallet.browser.completeBody': 'World of ClaudeCraft 데스크톱 앱으로 돌아갈 수 있습니다.',
+  'wallet.browser.returnButton': '데스크톱 앱으로 돌아가기',
+  'wallet.browser.failed':
+    '지갑 인증에 실패했거나 만료되었습니다. 데스크톱 앱으로 돌아가 다시 시도하세요.',
+  'wallet.browser.retry': '다시 시도',
   'wallet.unlinkFailed': '지갑 연결을 해제하지 못했습니다.',
   'wallet.holder': '$WOC 보유자',
   'wallet.holderTierTitle': '{tier} $WOC 보유자',
@@ -3297,6 +3346,26 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.npcs.heroic_quartermaster.title': '영웅 병참장교',
   'entities.npcs.heroic_quartermaster.greeting':
     '영웅 던전의 증표는 하이워치 최고의 반지와 펜던트로 바꿀 수 있소. 징표를 보여 주시오.',
+  'entities.npcs.card_master.name': '카드 마스터',
+  'entities.npcs.card_master.title': '운명의 딜러',
+  'entities.npcs.card_master.greeting':
+    '카드 대결 한 판 어떻소? 삼판양승, 승자에게는 자랑거리가 생기지.',
+  'cardDuel.title': '카드 대결',
+  'cardDuel.close': '닫기',
+  'cardDuel.join': '대기열 참가',
+  'cardDuel.joinAria': '카드 대결 대기열에 참가',
+  'cardDuel.leave': '대기열 나가기',
+  'cardDuel.leaveAria': '카드 대결 대기열에서 나가기',
+  'cardDuel.queued': '상대를 기다리는 중...',
+  'cardDuel.vsOpponent': '{name}와(과) 대결',
+  'cardDuel.round': '라운드 점수: {mine} - {theirs}',
+  'cardDuel.forfeit': '기권',
+  'cardDuel.forfeitAria': '카드 대결 기권하기',
+  'cardDuel.unavailable': '카드 대결을 하려면 다른 플레이어가 온라인 상태여야 합니다.',
+  'cardDuel.counts': '덱: {deck} · 버린 카드: {discard}',
+  'cardDuel.playCardAria': '{value} 카드 내기',
+  'cardDuel.waitingOnOpponent': '상대의 카드를 기다리는 중...',
+  'cardDuel.yourTurn': '카드를 내세요',
   'entities.npcs.loremaster_caddis.name': '현자 캐디스',
   'entities.npcs.loremaster_caddis.title': '현자',
   'entities.npcs.loremaster_caddis.greeting':
@@ -3311,10 +3380,10 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
     '이 호수는 달빛을 마시고, {className}, 익사한 자들을 되돌려 보낸다네. 나는 서른 밤 동안 저 관문을 지켜보았지 — 그리고 오늘 밤, 마침내 그것이 열렸네.',
   'entities.quests.q_prof_intro.title': '검 말고도 할 수 있는 일',
   'entities.quests.q_prof_intro.text':
-    '이스트브룩의 모든 사람은 검 말고도 생업이 있다네, {playerName}. 마을 주변에 광맥이 흩어져 있지. 곡괭이를 휘둘러 광석 5덩이를 가져다 주게. 직접 캐야 하네, 내가 다 구분할 수 있으니까.',
+    '이스트브룩 사람이라면 누구나 검술 말고도 생업 하나는 익히지, {playerName}. 마을 남서쪽 구리 광산 주변 바위에는 광맥이 있다네. 곡괭이를 들고 직접 광맥 5곳을 캐 오게. 속이려 해도 나는 차이를 안다네.',
   'entities.quests.q_prof_intro.completion':
-    '봤나? 가방엔 광석, 손엔 굳은살이지. 길을 다니며 채광, 벌목, 약초 채집을 계속해 보게. 마을에 돌아오면 시장 옆의 마을 집중 게시판과 근처 제작대도 눈여겨보고. 원한다면 이 모든 일로 떳떳하게 생계를 꾸릴 수 있다네.',
-  'entities.quests.q_prof_intro.objectives.0.label': '광석 조각',
+    '보게나. 광석도 모았고 손에는 굳은살도 박였군. 길을 다닐 때도 채광과 벌목, 약초 채집을 계속하게. 마을에 돌아오면 시장 옆의 마을 집중 게시판과 근처 제작대도 잊지 말고. 원한다면 이 모든 일에서 정당한 생계를 찾을 수 있다네.',
+  'entities.quests.q_prof_intro.objectives.0.label': '광맥 채굴',
   'entities.quests.q_wolves.title': '문 앞의 늑대들',
   'entities.quests.q_wolves.text':
     '숲늑대들이 북쪽 길의 여행자들을 물어뜯고 있습니다, {playerName}. 8마리를 처치해 이스트브룩이 숨 돌리게 해 주십시오.',
@@ -3722,16 +3791,22 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_mogger.objectives.0.label': '모거 처치',
   'entities.quests.q_archetype_acceptance.title': '스스로 택하는 기술',
   'entities.quests.q_archetype_acceptance.text':
-    '이스트브룩의 모든 장인은 결국 자신만의 기술 하나를 택하게 된다. {playerName}, 하나의 행동으로 스스로를 증명하고 그대의 길을 선언하라.',
+    '기술은 지식이지만, {playerName}, 조율은 약속이라네. 서로 이웃한 두 기술을 주 전공으로 선택하고, 계곡에서 직접 캔 광석을 가져오게.',
   'entities.quests.q_archetype_acceptance.completion':
-    '그대의 길이 정해졌다. 그 길을 굳건히 걸어가라.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': '숲늑대 처치',
+    '약속이 맺어졌네. 이제 이 두 기술이 자네의 주 전공이고, 그 맞은편의 지식은 취미가 되었네.',
+  'entities.quests.q_archetype_acceptance.objectives.0.label': '광맥 채굴',
   'entities.quests.q_prof_make_amends.title': '속죄',
   'entities.quests.q_prof_make_amends.text':
-    '한 기술을 버리고 다른 기술로 나아가려면, 장인은 먼저 걷지 않은 길에 대해 속죄해야 한다, {playerName}.',
+    '이 조합은 전에 익힌 적이 있군, {playerName}. 돌아가는 것은 새로운 맹세가 아니지. 계곡 길을 안전하게 지키는 일을 돕고, 손이 예전에 알던 감각을 되찾게.',
   'entities.quests.q_prof_make_amends.completion':
-    '속죄가 이루어졌다. 그대에게 새로운 길이 열렸다.',
+    '옛 감각이 돌아왔네. 이전 조합이 다시 활성화되었어.',
   'entities.quests.q_prof_make_amends.objectives.0.label': '숲늑대 처치',
+  'entities.quests.q_prof_hobby_switch.title': '색다른 취미',
+  'entities.quests.q_prof_hobby_switch.text':
+    '주 전공에는 맹세가 필요하지만, 취미는 호기심이 어디로 향하는지만 묻지, {playerName}. 약초를 조금 채집하고 두 주 전공의 맞은편 기술 중 무엇을 익힐지 정하게.',
+  'entities.quests.q_prof_hobby_switch.completion':
+    '가벼운 선택이지만 쓸모는 있지. 희귀 등급 작업에 닿을 때까지 그 호기심을 따라가게.',
+  'entities.quests.q_prof_hobby_switch.objectives.0.label': '약초 군락 채집',
   'entities.quests.q_drowned_choir.title': '익사한 성가대',
   'entities.quests.q_drowned_choir.text':
     '물거리들은 홀로 움직이지 않는다네. 그들 사이를 익사한 신도들이 걷고 있지 — 신전과 함께 가라앉은 그 광신도들은, 썩어버린 제의를 여전히 걸친 채 물가 바위에서 부르던 기도를 아직도 노래하고 있네. 그들 중 여덟을 침묵시키고, 그들이 지닌 제물 여섯 개를 내게 가져오게. 그들이 그 여신에게 무엇을 바치려는지 알고 싶네.',
@@ -4529,14 +4604,14 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.intro':
     '업적의 서는 시작의 골짜기를 벗어나는 첫걸음부터 왕국이 내놓을 수 있는 가장 힘든 싸움까지, 당신이 이룬 모든 것을 세계가 기록해 두는 곳입니다. 플레이하며 업적을 얻고, 그것이 주는 칭호를 걸치고, 명성이 오르는 것을 지켜보세요.',
   'guide.deedsPage.renownBody':
-    '명성은 업적의 서 뒤에 있는 점수입니다. 당신이 얻는 모든 업적은 정해진 점수를 지니며, 총점은 오르기만 하므로 한가한 한 주가 있어도 쌓아 온 것을 잃지 않습니다. 일부 업적은 실력이 아니라 운에 달려 있고, 위업은 그 자체로 하나의 영예이므로, 그 둘은 모두 명성을 전혀 주지 않습니다.',
+    '명성은 업적의 서 뒤에 있는 점수입니다. 당신이 얻는 모든 업적은 정해진 점수를 지니며, 총점은 오르기만 하므로 한가한 한 주가 있어도 쌓아 온 것을 잃지 않습니다. 일부 업적은 실력이 아니라 운에 달려 있고, 위업은 그 자체로 하나의 영예이므로, 그 둘은 모두 명성을 전혀 주지 않습니다. 명성이 없는 업적도 업적의 서의 달성 수에는 포함되지만, 점수가 되지는 않습니다.',
   'guide.deedsPage.renownHeading': '명성',
   'guide.deedsPage.rewardBorder': '테두리',
   'guide.deedsPage.rewardsBody':
     '보상은 모두 과시를 위한 것이며, 바로 그것이 핵심입니다. 일부 업적은 걸칠 수 있는 칭호나 이름을 꾸미는 테두리를 주지만, 영웅을 더 강하게 만드는 것은 결코 주지 않습니다. 업적의 서에서 원하는 칭호를 고르면 그것이 당신의 이름표와 채팅, 그리고 순위표에까지 따라붙어 모두의 눈에 보입니다.',
   'guide.deedsPage.rewardsHeading': '칭호와 테두리',
   'guide.deedsPage.standingsNote':
-    '각 왕국은 모든 계정에 걸친 명성의 누계를 기록합니다. 누가 어디에 서 있는지 보려면 게임 내에서 순위표를 열고 명성 탭으로 넘어가세요. 순위는 위키가 아니라 그곳에 있습니다.',
+    '각 왕국은 모든 계정에 걸친 명성의 누계를 기록합니다. 순위표는 계정 전체를 평생 명성으로 순위 매기며, 각 업적은 당신의 모든 캐릭터를 통틀어 한 번만 계산되고, 표시되는 것은 명성뿐입니다. 따라서 명성이 없는 업적은 업적의 서에는 계산되더라도 순위를 움직이지 않습니다. 누가 어디에 서 있는지 보려면 게임 내에서 순위표를 열고 명성 탭으로 넘어가세요. 순위는 위키가 아니라 그곳에 있습니다.',
   'guide.delvesPage.affixesBody':
     '더 어려운 탐굴에서는 진행 방식을 바꾸는 고난 요소가 하나 붙습니다. 잠들지 못한 죽은 자부터 탁한 공기, 무너져 가는 천장까지 그 종류는 다양합니다. 고난 요소는 위험과 보상을 함께 끌어올립니다. 각 탐굴은 저마다의 주제에 어울리는 고난 요소만 뽑아 쓰며, 왕국 전체로 보면 그 목록은 다음과 같습니다:',
   'guide.delvesPage.affixesHeading': '고난 요소',
@@ -6025,7 +6100,8 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.name': '그레이죠 추적자의 장비',
   'entities.itemSets.greyjaw_stalker.bonus3': '공격 속도와 시전 속도가 15% 증가합니다.',
   'entities.itemSets.necromancers.name': '비탄직물 의복',
-  'entities.itemSets.necromancers.bonus2': '넉백되지 않습니다 (넉백 저항 100%).',
+  'entities.itemSets.necromancers.bonus2':
+    '주문력이 20 증가합니다. 피해를 입어도 주문 시전이 지연되지 않습니다 (시전 지연 저항 100%).',
   'entities.itemSets.necromancers.bonus3': '지능이 10, 체력이 10만큼 증가합니다.',
   'entities.itemSets.necromancers.bonus4':
     '주문 사용 시 10% 확률로 "선명한 시전"이 발동하여 다음 주문을 무료로 시전합니다.',
@@ -6036,13 +6112,15 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.nighttalon.bonus4':
     '무기 치명타 적중 시 "찢어진 상처"를 내어 대상이 12초 동안 2초마다 6의 출혈 피해를 입습니다. 최대 3번 중첩됩니다.',
   'entities.itemSets.soulflame.name': '망령불꽃 의복',
-  'entities.itemSets.soulflame.bonus2': '넉백되지 않습니다 (넉백 저항 100%).',
+  'entities.itemSets.soulflame.bonus2':
+    '주문력이 20 증가합니다. 피해를 입어도 주문 시전이 지연되지 않습니다 (시전 지연 저항 100%).',
   'entities.itemSets.soulflame.bonus3':
     '지능이 15, 정신력이 15만큼 증가하고 공격 속도와 시전 속도가 15% 증가합니다.',
   'entities.itemSets.soulflame.bonus4':
     '주문 사용 시 10% 확률로 "영혼의 불길"이 발동하여 주문력이 40만큼 증가합니다. 10초 동안 지속됩니다.',
   'entities.itemSets.stormcallers.name': '강풍부름 의복',
-  'entities.itemSets.stormcallers.bonus2': '넉백되지 않습니다 (넉백 저항 100%).',
+  'entities.itemSets.stormcallers.bonus2':
+    '주문력이 20 증가합니다. 피해를 입어도 주문 시전이 지연되지 않습니다 (시전 지연 저항 100%).',
   'entities.itemSets.stormcallers.bonus3':
     '지능이 15, 정신력이 15만큼 증가하고 공격 속도와 시전 속도가 15% 증가합니다.',
   'entities.itemSets.stormcallers.bonus4':
@@ -6197,6 +6275,43 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.craftedToast': '제작 완료:{name}',
   'hudChrome.crafting.insufficientMaterials': '재료가 부족합니다.',
   'hudChrome.crafting.unknownRecipe': '해당 제작법이 존재하지 않습니다.',
+  'hudChrome.crafting.comboRequires': '조율 조건: {craftA} + {craftB}, 티어 {tier}.',
+  'hudChrome.crafting.comboMet': '준비 완료.',
+  'hudChrome.crafting.comboSyncing': '서버의 조율 상태를 확인하고 있습니다.',
+  'hudChrome.crafting.comboNotAttuned': '먼저 원형 기술 조합을 선택하세요.',
+  'hudChrome.crafting.comboWrongPair': '제작하려면 이 정확한 조합을 활성화하세요.',
+  'hudChrome.crafting.comboTierUnmet': '두 주 전공을 모두 필요한 티어까지 올리세요.',
+  'hudChrome.crafting.professionChoice': '전문 기술 선택',
+  'hudChrome.crafting.noProfessionChoice': '현재 선택할 수 있는 전문 기술이 없습니다.',
+  'hudChrome.crafting.attunementPreview':
+    '결과: {title} 칭호를 얻고, {majorA}와 {majorB}가 상한 없는 주 전공이 됩니다. {hobby}는 희귀 상한의 취미가 됩니다. 다른 기술 지식은 모두 유지되지만 비활성 상태에서는 일반 상한이 적용됩니다.',
+  'hudChrome.crafting.hobbyPreview':
+    '결과: {hobby}가 희귀 상한의 취미가 됩니다. 두 주 전공과 유지된 모든 기술 수치는 그대로입니다.',
+  'hudChrome.crafting.identity.title': '제작 정체성',
+  'hudChrome.crafting.identity.syncing': '서버에서 제작 정체성을 불러오고 있습니다.',
+  'hudChrome.crafting.identity.unattuned':
+    '활성화된 원형 기술 조합이 없습니다. 지식은 유지되지만 조합 제작법에는 조율된 조합이 필요합니다.',
+  'hudChrome.crafting.identity.titleLabel': '칭호',
+  'hudChrome.crafting.identity.majorsLabel': '주 전공',
+  'hudChrome.crafting.identity.hobbyLabel': '취미',
+  'hudChrome.crafting.identity.historyLabel': '기록',
+  'hudChrome.crafting.identity.history': '발견한 조합 {pairs}개, 완료한 복귀 {returns}회',
+  'hudChrome.crafting.identity.roleMajor': '주 전공',
+  'hudChrome.crafting.identity.roleHobby': '취미',
+  'hudChrome.crafting.identity.roleDormant': '비활성 지식',
+  'hudChrome.crafting.identity.roleUnattuned': '미조율',
+  'hudChrome.crafting.identity.ceilingUnlimited': '강화 상한 없음',
+  'hudChrome.crafting.identity.ceilingCommon': '일반 상한',
+  'hudChrome.crafting.identity.skillAria': '{craft}, 기술 {skill}, 티어 {tier}, {role}, {ceiling}',
+  'hudChrome.crafting.identity.colCraft': '제작 분야',
+  'hudChrome.crafting.identity.colSkill': '기술',
+  'hudChrome.crafting.identity.colRole': '역할',
+  'hudChrome.crafting.identity.colCap': '상한',
+  'hudChrome.crafting.identity.tutorial':
+    '첫 티어: 한 기술을 숙련도 {skill}까지 올리세요. 제작에 성공하면 다른 지식을 지우지 않고 해당 기술이 성장합니다.',
+  'hudChrome.crafting.identity.nearTier': '{craft}는 다음 티어까지 숙련도 {points}이 필요합니다.',
+  'hudChrome.crafting.identity.dormantKnowledge':
+    '{craft} 지식은 유지되지만 해당 조합이나 취미가 활성화될 때까지 비활성 상태입니다.',
   'hudChrome.devBadge.title': '개발자',
   'hudChrome.devBadge.tiers.tinkerer': '수선공',
   'hudChrome.devBadge.tiers.artificer': '장인',
@@ -6808,6 +6923,8 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'apiError.body.unsupported_media_type': '지원되지 않는 요청 형식입니다.',
   'apiError.deeds.invalid_input': '입력이 올바르지 않습니다.',
   'apiError.steam.disabled': '현재 Steam 연동을 사용할 수 없습니다.',
+  'apiError.wallet.handoff_invalid':
+    '지갑 인증이 만료되었거나 확인할 수 없습니다. 다시 시도해 주세요.',
   'apiError.steam.invalid_ticket':
     'Steam이 이 연동 요청을 확인하지 못했습니다. 데스크톱 앱에서 다시 시도해 주세요.',
   'apiError.steam.banned': '해당 Steam 계정은 연동할 수 없습니다.',
@@ -6989,16 +7106,26 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.archetypeTitle.label': '칭호',
   'hudChrome.archetypeTitle.none': '없음',
   'hudChrome.archetypeTitle.hobbyLabel': '취미',
-  'hudChrome.archetypeTitle.armorcrafting': '방어구 장인',
-  'hudChrome.archetypeTitle.weaponcrafting': '무기 장인',
-  'hudChrome.archetypeTitle.jewelcrafting': '보석 세공사',
-  'hudChrome.archetypeTitle.alchemy': '연금술사',
-  'hudChrome.archetypeTitle.engineering': '기술자',
-  'hudChrome.archetypeTitle.cooking': '요리사',
-  'hudChrome.archetypeTitle.inscription': '필경사',
-  'hudChrome.archetypeTitle.enchanting': '마법부여사',
-  'hudChrome.archetypeTitle.tailoring': '재단사',
-  'hudChrome.archetypeTitle.leatherworking': '가죽공예사',
+  'hudChrome.archetypePair.engineering+alchemy': '폭격수',
+  'hudChrome.archetypePair.alchemy+cooking': '약제사',
+  'hudChrome.archetypePair.cooking+leatherworking': '덫사냥꾼',
+  'hudChrome.archetypePair.leatherworking+tailoring': '의복 장인',
+  'hudChrome.archetypePair.tailoring+inscription': '마법직조사',
+  'hudChrome.archetypePair.inscription+enchanting': '비전술사',
+  'hudChrome.archetypePair.enchanting+jewelcrafting': '보석결속사',
+  'hudChrome.archetypePair.jewelcrafting+weaponcrafting': '칼날장인',
+  'hudChrome.archetypePair.weaponcrafting+armorcrafting': '대장장이',
+  'hudChrome.archetypePair.armorcrafting+engineering': '톱니장인',
+  'hudChrome.craftName.armorcrafting': '방어구 제작',
+  'hudChrome.craftName.weaponcrafting': '무기 제작',
+  'hudChrome.craftName.jewelcrafting': '보석세공',
+  'hudChrome.craftName.alchemy': '연금술',
+  'hudChrome.craftName.engineering': '기계공학',
+  'hudChrome.craftName.cooking': '요리',
+  'hudChrome.craftName.inscription': '각인',
+  'hudChrome.craftName.enchanting': '마법부여',
+  'hudChrome.craftName.tailoring': '재봉',
+  'hudChrome.craftName.leatherworking': '가죽세공',
   'hudChrome.crafting.reagentLine': '{name}: {have}/{required}',
   // Protect Yumi locale fill (M16 wordy-key floor).
   'yumi.hud.collapse': 'Protect Yumi 게이지 접기',
@@ -7512,9 +7639,11 @@ export const ko_KR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.charTitleNone': '선택한 칭호 없음',
   'hudChrome.deeds.charOpenBook': '업적의 서',
   'hudChrome.deeds.lbTab': '명성',
-  'hudChrome.deeds.lbDeedsCol': '업적',
   'hudChrome.deeds.lbTitleCol': '칭호',
-  'hudChrome.deeds.lbSelf': '내 순위: {rank}위, 상위 {percent}%',
+  'hudChrome.deeds.lbScopeNote':
+    '계정의 평생 명성으로 순위를 매깁니다. 각 업적은 계정의 모든 캐릭터를 통틀어 한 번만 계산됩니다.',
+  'hudChrome.deeds.lbSelfAccount': '내 계정: {rank}위, 상위 {percent}%, 명성 {renown}',
+  'hudChrome.deeds.lbSelfRank': '내 계정: {rank}위, 상위 {percent}%',
   'hudChrome.deeds.lbEmpty': '아직 순위에 오른 연대기 작가가 없습니다.',
   'hudChrome.deeds.broadcastsLabel': '업적 달성을 길드와 친구에게 공유',
   'guide.deedsPage.catHeading': '{label} ({count})',

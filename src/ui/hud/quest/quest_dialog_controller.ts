@@ -1,13 +1,23 @@
 import { DELVES, ITEMS, NPCS, QUESTS, questRewardItem } from '../../../sim/data';
 import { CHRONICLER_TEMPLATE_IDS } from '../../../sim/deeds';
-import { dist2d, type Entity, type ItemDef, isQuestTurnInNpc } from '../../../sim/types';
+import { craftsForPairTarget } from '../../../sim/professions/archetype';
+import { professionQuestSelectionTargets } from '../../../sim/quests/profession_quest_effects';
+import {
+  dist2d,
+  type Entity,
+  type ItemDef,
+  isQuestTurnInNpc,
+  questObjectiveRequired,
+} from '../../../sim/types';
 import type { IWorld } from '../../../world_api';
+import { archetypeTitleText, craftNameText } from '../../char_window';
 import { markDialogRoot } from '../../dialog_root';
 import { itemDisplayName } from '../../entity_i18n';
 import { esc } from '../../esc';
 import type { FocusTrapHandle } from '../../focus_manager';
 import { t } from '../../i18n';
 import { QUALITY_COLOR } from '../../icons';
+import { buildAttunementPreview } from '../../profession_identity_view';
 import { svgIcon } from '../../ui_icons';
 import { gossipMenuIsEmpty } from './gossip_menu';
 
@@ -44,6 +54,7 @@ export interface QuestDialogControllerDeps {
   openMarket(): void;
   openDelveBoard(npcId: number): void;
   openValeCup(): void;
+  openCardDuel(): void;
   voice: {
     play(key: string): void;
     isPlaying(): boolean;
@@ -210,7 +221,8 @@ export class QuestDialogController {
           (objective, objectiveIndex) =>
             objective.type === 'interact' &&
             objective.targetNpcId === npc.templateId &&
-            progress.counts[objectiveIndex] < objective.count,
+            progress.counts[objectiveIndex] <
+              questObjectiveRequired(QUESTS[progress.questId], progress, objectiveIndex),
         ),
       )
       .map((progress) => progress.questId);
@@ -221,6 +233,7 @@ export class QuestDialogController {
       (delve) => delve.boardNpcId === npc.templateId,
     );
     const hasValeCup = npc.templateId === 'groundskeeper_bram';
+    const hasCardMaster = !!definition?.cardMaster;
     if (
       closeIfEmpty &&
       gossipMenuIsEmpty({
@@ -231,6 +244,7 @@ export class QuestDialogController {
         hasHeroicVendor,
         hasDelveBoard,
         hasVcup: hasValeCup,
+        hasCardMaster,
       })
     ) {
       this.close();
@@ -277,6 +291,9 @@ export class QuestDialogController {
     if (hasValeCup) {
       html += `<button type="button" class="qd-list-item" data-vcup="1" aria-label="${esc(t('hudChrome.vcup.gossipOpenAria'))}"><span class="gold">${svgIcon('ball')}</span> ${esc(t('hudChrome.vcup.gossipOpen'))}</button>`;
     }
+    if (hasCardMaster) {
+      html += `<button type="button" class="qd-list-item" data-card-duel="1" aria-label="${esc(t('cardDuel.title'))}"><span class="gold">&#9824;</span> ${esc(t('cardDuel.title'))}</button>`;
+    }
     this.deps.element.innerHTML = html;
     this.deps.element.querySelectorAll<HTMLElement>('[data-quest]').forEach((item) => {
       item.addEventListener('click', () => this.renderQuestDetail(npc, item.dataset.quest ?? ''));
@@ -294,6 +311,7 @@ export class QuestDialogController {
     this.bindRoute('[data-market]', this.deps.openMarket);
     this.bindRoute('[data-delve-board]', () => this.deps.openDelveBoard(npc.id));
     this.bindRoute('[data-vcup]', this.deps.openValeCup);
+    this.bindRoute('[data-card-duel]', this.deps.openCardDuel);
     this.bindClose();
     this.showAndFocus();
   }
@@ -322,20 +340,87 @@ export class QuestDialogController {
       const progress = world.questLog.get(questId);
       html += `<div class="qd-sub">${esc(t('questUi.detail.objectives'))}</div>`;
       html += quest.objectives
-        .map(
-          (objective, index) =>
-            `<div class="qd-obj">${esc(this.deps.text.progress(this.deps.text.objectiveLabel(questId, index), progress ? Math.min(progress.counts[index], objective.count) : 0, objective.count))}</div>`,
-        )
+        .map((objective, index) => {
+          const required = progress
+            ? questObjectiveRequired(quest, progress, index)
+            : quest.resolvedObjectiveCounts === 'archetypeAmends'
+              ? world.craftingIdentity.amendsRequired
+              : objective.count;
+          return `<div class="qd-obj">${esc(this.deps.text.progress(this.deps.text.objectiveLabel(questId, index), progress ? Math.min(progress.counts[index], required) : 0, required))}</div>`;
+        })
         .join('');
+    }
+    let professionTargets: string[] = [];
+    let professionPreviewText: ((target: string) => string) | null = null;
+    if (state === 'available' && quest.completionEffect) {
+      const identity = world.craftingIdentity;
+      professionTargets = professionQuestSelectionTargets(quest, {
+        activeArchetype: identity.activeArchetype,
+        pairedMajor: identity.pairedMajor,
+        hobbyCraft: identity.hobbyCraft,
+        attunedPairs: [...identity.attunedPairs],
+        switchCount: identity.switchCount,
+        amendsProgress: identity.amendsProgress,
+      });
+      const options = professionTargets
+        .map((target) => {
+          const pair = craftsForPairTarget(target);
+          // A pair target leads with its archetype name and keeps both craft
+          // names visible so the choice stays informative, e.g.
+          // "Smith (Weaponcrafting + Armorcrafting)"; a single-craft target
+          // (the hobby-switch quest) is just the craft name.
+          const label = pair
+            ? t('hudChrome.crafting.pairOptionLabel', {
+                pair: archetypeTitleText(target),
+                craftA: craftNameText(pair[0]),
+                craftB: craftNameText(pair[1]),
+              })
+            : craftNameText(target);
+          return `<option value="${esc(target)}">${esc(label)}</option>`;
+        })
+        .join('');
+      professionPreviewText = (target) => {
+        if (quest.completionEffect?.type === 'switchHobby') {
+          return t('hudChrome.crafting.hobbyPreview', { hobby: craftNameText(target) });
+        }
+        const preview = buildAttunementPreview(target, identity.craftSkills);
+        if (!preview) return '';
+        return t('hudChrome.crafting.attunementPreview', {
+          title: archetypeTitleText(preview.target),
+          majorA: craftNameText(preview.majors[0]),
+          majorB: craftNameText(preview.majors[1]),
+          hobby: craftNameText(preview.hobbyCraft),
+        });
+      };
+      const initialPreview = professionTargets[0]
+        ? professionPreviewText(professionTargets[0])
+        : t('hudChrome.crafting.noProfessionChoice');
+      html += `<label class="qd-profession-choice">${esc(t('hudChrome.crafting.professionChoice'))}<select data-profession-selection aria-label="${esc(t('hudChrome.crafting.professionChoice'))}">${options}</select></label><div class="qd-profession-preview" data-profession-preview aria-live="polite">${esc(initialPreview)}</div>`;
     }
     html += this.rewardsHtml(questId);
     this.deps.element.innerHTML = html;
+    const professionSelect = this.deps.element.querySelector<HTMLSelectElement>(
+      '[data-profession-selection]',
+    );
+    const professionPreview = this.deps.element.querySelector<HTMLElement>(
+      '[data-profession-preview]',
+    );
+    if (professionSelect && professionPreviewText && professionPreview) {
+      professionSelect.addEventListener('change', () => {
+        professionPreview.textContent = professionPreviewText?.(professionSelect.value) ?? '';
+      });
+    }
     this.attachRewardTooltip(questId);
     if (state === 'available') {
       const button = this.makeButton(t('questUi.dialog.accept'));
+      if (quest.completionEffect && professionTargets.length === 0) button.disabled = true;
       button.addEventListener('click', () => {
         const liveWorld = this.deps.world();
-        liveWorld.acceptQuest(questId);
+        const selection = this.deps.element.querySelector<HTMLSelectElement>(
+          '[data-profession-selection]',
+        )?.value;
+        if (selection === undefined) liveWorld.acceptQuest(questId);
+        else liveWorld.acceptQuest(questId, selection);
         liveWorld.reportTelemetry('quest_accept', {
           timeMs: this.deps.now() - this.openedAt,
         });

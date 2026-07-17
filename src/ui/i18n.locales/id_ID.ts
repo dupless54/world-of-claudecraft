@@ -329,11 +329,6 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'loading.tips.talents':
     'Kiat: kamu dapat mengatur ulang talenta kapan saja saat tidak bertarung, jadi pilihan awal tidak akan menjadi jebakan.',
   'entities.items.chunk_of_ore.name': 'Bongkahan Bijih',
-  'entities.quests.q_prof_intro.completion':
-    'Lihat? Bijih di tasmu dan kapalan di tanganmu. Teruslah menambang, menebang, dan memetik herba selama menjelajahi jalanan. Saat kembali ke kota, perhatikan papan Fokus Kota di dekat pasar dan bangku kerajinan di sebelahnya. Semua itu bisa menjadi mata pencaharian yang layak, jika kamu menginginkannya.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Bongkahan Bijih',
-  'entities.quests.q_prof_intro.text':
-    'Setiap orang di Eastbrook menekuni pekerjaan selain mengayunkan pedang, {playerName}. Urat bijih tersebar di sekitar kota, jadi ayunkan beliung dan bawakan aku 5 bongkahan. Tambang sendiri, ingat, aku tahu bedanya.',
   'entities.quests.q_prof_intro.title': 'Pekerjaan untuk Setiap Tangan',
   'hudChrome.auth.appleChoiceExpired':
     'Sesi masuk dengan Apple itu telah kedaluwarsa. Silakan masuk lagi dengan Apple.',
@@ -624,16 +619,6 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'hudChrome.vcup.walkUp': 'Datanglah ke Sowfield untuk menonton dari tribun.',
   'hudChrome.archetypeTitle.label': 'Gelar',
   'hudChrome.archetypeTitle.none': 'Tidak Ada',
-  'hudChrome.archetypeTitle.armorcrafting': 'Pandai Zirah',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Pandai Senjata',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Perajin Permata',
-  'hudChrome.archetypeTitle.alchemy': 'Alkemis',
-  'hudChrome.archetypeTitle.engineering': 'Insinyur',
-  'hudChrome.archetypeTitle.cooking': 'Koki',
-  'hudChrome.archetypeTitle.inscription': 'Juru Tulis',
-  'hudChrome.archetypeTitle.enchanting': 'Pemantra',
-  'hudChrome.archetypeTitle.tailoring': 'Penjahit',
-  'hudChrome.archetypeTitle.leatherworking': 'Perajin Kulit',
   'entities.itemSets.crownforged.bonus4':
     'Serangan kritis senjatamu menyerpihkan target dengan Serpih Tulang, membuatnya berdarah sebesar 8 kerusakan setiap 2 detik selama 12 detik. Menumpuk hingga 3 kali.',
   'entities.itemSets.deathlord.bonus4':
@@ -6555,7 +6540,8 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.bonus3':
     'Meningkatkan kecepatan serangan dan rapal sebesar 15%.',
   'entities.itemSets.necromancers.name': 'Jubah Mournweave',
-  'entities.itemSets.necromancers.bonus2': 'Kamu tidak dapat terpental (ketahanan pentalan 100%).',
+  'entities.itemSets.necromancers.bonus2':
+    'Meningkatkan kekuatan sihir sebesar 20. Kerusakan yang diterima tidak lagi menunda perapalan sihirmu (ketahanan penundaan rapalan 100%).',
   'entities.itemSets.necromancers.bonus3':
     'Meningkatkan kecerdasan sebesar 10 dan stamina sebesar 10.',
   'entities.itemSets.nighttalon.name': 'Perlengkapan Kulit Direfang',
@@ -6563,11 +6549,13 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.nighttalon.bonus3':
     'Meningkatkan kelincahan sebesar 15, peluang kritis sebesar 2%, serta kecepatan serangan dan rapal sebesar 15%.',
   'entities.itemSets.soulflame.name': 'Regalia Wraithfire',
-  'entities.itemSets.soulflame.bonus2': 'Kamu tidak dapat terpental (ketahanan pentalan 100%).',
+  'entities.itemSets.soulflame.bonus2':
+    'Meningkatkan kekuatan sihir sebesar 20. Kerusakan yang diterima tidak lagi menunda perapalan sihirmu (ketahanan penundaan rapalan 100%).',
   'entities.itemSets.soulflame.bonus3':
     'Meningkatkan kecerdasan sebesar 15, roh sebesar 15, serta kecepatan serangan dan rapal sebesar 15%.',
   'entities.itemSets.stormcallers.name': 'Jubah Galecall',
-  'entities.itemSets.stormcallers.bonus2': 'Kamu tidak dapat terpental (ketahanan pentalan 100%).',
+  'entities.itemSets.stormcallers.bonus2':
+    'Meningkatkan kekuatan sihir sebesar 20. Kerusakan yang diterima tidak lagi menunda perapalan sihirmu (ketahanan penundaan rapalan 100%).',
   'entities.itemSets.stormcallers.bonus3':
     'Meningkatkan kecerdasan sebesar 15, roh sebesar 15, serta kecepatan serangan dan rapal sebesar 15%.',
   'entities.itemSets.vale_arcanist.name': 'Perlengkapan Arkanis Lembah',
@@ -6979,16 +6967,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.mobileCameraJoystick': 'Joystick kamera',
   'hudChrome.options.mobileLeftHanded': 'Tata letak kidal',
   'entities.quests.q_archetype_acceptance.title': 'Sebuah Kerajinan untuk Disebut Milik Anda',
-  'entities.quests.q_archetype_acceptance.text':
-    'Setiap pengrajin di Eastbrook akhirnya memilih satu kerajinan yang bisa mereka jadikan milik mereka. Buktikan diri Anda dengan satu akta, {playerName}, dan nyatakan jalur Anda.',
-  'entities.quests.q_archetype_acceptance.completion':
-    'Jalan Anda telah dipilih; berjalan dengan baik.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Serigala Hutan dibunuh',
   'entities.quests.q_prof_make_amends.title': 'Membuat Perubahan',
-  'entities.quests.q_prof_make_amends.text':
-    'Untuk menyisihkan satu kerajinan untuk kerajinan lainnya, seorang pengrajin harus terlebih dahulu memperbaiki jalur yang belum dilalui, {playerName}.',
-  'entities.quests.q_prof_make_amends.completion':
-    'Perubahan dilakukan; jalan baru terbuka untuk Anda.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Serigala Hutan dibunuh',
   'entities.npcs.bursar_aldous_crane.name': 'Bendahara Aldous Crane',
   'entities.npcs.bursar_aldous_crane.title': 'Brankas Bersepuh Emas',
@@ -7166,15 +7145,11 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.howHeading': 'Cara kerja jasa',
   'guide.deedsPage.intro':
     'Kitab Jasa adalah tempat dunia mencatat segala yang telah kamu lakukan, dari langkah pertamamu keluar dari lembah permulaan hingga pertarungan tersulit yang bisa disodorkan realm ini. Raih jasa sembari bermain, sandang gelar yang dianugerahkannya, dan saksikan Kemasyhuranmu menanjak.',
-  'guide.deedsPage.renownBody':
-    'Kemasyhuran adalah angka di balik Kitab. Setiap jasa yang kamu raih bernilai jumlah tertentu, dan totalmu hanya akan menanjak, jadi sepekan yang sepi tak pernah membuatmu merosot. Segelintir jasa bergantung pada keberuntungan alih-alih kecakapan, dan Mahajasa adalah kehormatan tersendiri, sehingga keduanya sama sekali tak bernilai Kemasyhuran.',
   'guide.deedsPage.renownHeading': 'Kemasyhuran',
   'guide.deedsPage.rewardBorder': 'Bingkai',
   'guide.deedsPage.rewardsBody':
     'Semua hadiahnya sekadar untuk dipamerkan, dan memang itulah intinya. Sebagian jasa menganugerahkan gelar yang bisa kamu sandang atau bingkai untuk menghiasi namamu, dan tidak pernah ada yang membuat pahlawanmu lebih kuat. Pilih gelar yang kamu inginkan dari Kitab Jasa, dan gelar itu akan menyertaimu di papan namamu, dalam obrolan, dan di papan peringkat untuk dilihat semua orang.',
   'guide.deedsPage.rewardsHeading': 'Gelar dan bingkai',
-  'guide.deedsPage.standingsNote':
-    'Realm-realm menyimpan hitungan berjalan Kemasyhuran di setiap akun. Untuk melihat siapa berdiri di mana, buka Papan Peringkat dalam permainan dan buka tab Kemasyhurannya; papan peringkat itu ada di sana, bukan di wiki ini.',
   'guide.nav.deeds': 'Kitab Jasa',
   'hudChrome.deeds.broadcastLine': '{name} telah mengukir jasa: {deed}',
   'hudChrome.deeds.broadcastsLabel': 'Bagikan jasa yang diraih kepada guild dan teman',
@@ -7207,9 +7182,7 @@ export const id_ID: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.filterNearly': 'Hampir Selesai',
   'hudChrome.deeds.filterUnearned': 'Belum Diraih',
   'hudChrome.deeds.hiddenBadge': 'Tersembunyi',
-  'hudChrome.deeds.lbDeedsCol': 'Jasa',
   'hudChrome.deeds.lbEmpty': 'Belum ada nama yang tercatat di peringkat.',
-  'hudChrome.deeds.lbSelf': 'Kedudukanmu: peringkat {rank}, {percent} persen teratas',
   'hudChrome.deeds.lbTab': 'Kemasyhuran',
   'hudChrome.deeds.lbTitleCol': 'Gelar',
   'hudChrome.deeds.nearestLabel': 'Hampir tercapai:',

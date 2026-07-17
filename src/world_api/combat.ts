@@ -1,4 +1,5 @@
 import type { ResolvedAbility } from '../sim/sim';
+import type { WorldInteractionOutcome } from './interaction';
 
 export interface ActiveFrostRing {
   id: string;
@@ -48,7 +49,7 @@ export interface IWorldCombat {
   // resurrectAtSpiritHealer revives at the angel with Resurrection Sickness.
   releaseSpirit(): void;
   resurrectAtCorpse(): void;
-  resurrectAtSpiritHealer(): void;
+  resurrectAtSpiritHealer(): WorldInteractionOutcome;
   /** Accept or decline the currently pending player-cast resurrection offer. */
   respondToResurrection(accept: boolean): void;
 }

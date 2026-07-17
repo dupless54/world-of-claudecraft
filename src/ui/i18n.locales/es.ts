@@ -599,16 +599,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'hudChrome.vcup.walkUp': 'Acércate al Sembradal para mirar desde las gradas.',
   'hudChrome.archetypeTitle.label': 'Título',
   'hudChrome.archetypeTitle.none': 'Ninguno',
-  'hudChrome.archetypeTitle.armorcrafting': 'Armero',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Forjador de armas',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Joyero',
-  'hudChrome.archetypeTitle.alchemy': 'Alquimista',
-  'hudChrome.archetypeTitle.engineering': 'Ingeniero',
-  'hudChrome.archetypeTitle.cooking': 'Cocinero',
-  'hudChrome.archetypeTitle.inscription': 'Escriba',
-  'hudChrome.archetypeTitle.enchanting': 'Encantador',
-  'hudChrome.archetypeTitle.tailoring': 'Sastre',
-  'hudChrome.archetypeTitle.leatherworking': 'Peletero',
   'entities.itemSets.crownforged.bonus4':
     'Tus golpes críticos con el arma astillan al objetivo con Astilla de Hueso, haciéndolo sangrar 8 de daño cada 2 s durante 12 s. Se acumula hasta 3 veces.',
   'entities.itemSets.deathlord.bonus4':
@@ -6571,7 +6561,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
     'Aumenta la velocidad de ataque y de lanzamiento en 15%.',
   'entities.itemSets.necromancers.name': 'Vestiduras de Mournweave',
   'entities.itemSets.necromancers.bonus2':
-    'No puedes ser empujado hacia atrás (100% de resistencia al empuje).',
+    'Aumenta el poder de los hechizos en 20. El daño recibido ya no retrasa tus hechizos (100% de resistencia al retraso de lanzamiento).',
   'entities.itemSets.necromancers.bonus3': 'Aumenta el intelecto en 10 y el aguante en 10.',
   'entities.itemSets.nighttalon.name': 'Atuendo de cuero Direfang',
   'entities.itemSets.nighttalon.bonus2': 'Aumenta el poder de ataque en 40.',
@@ -6579,12 +6569,12 @@ export const es: Partial<Record<TranslationKey, string>> = {
     'Aumenta la agilidad en 15, la probabilidad de crítico en 2% y la velocidad de ataque y de lanzamiento en 15%.',
   'entities.itemSets.soulflame.name': 'Vestiduras de Wraithfire',
   'entities.itemSets.soulflame.bonus2':
-    'No puedes ser empujado hacia atrás (100% de resistencia al empuje).',
+    'Aumenta el poder de los hechizos en 20. El daño recibido ya no retrasa tus hechizos (100% de resistencia al retraso de lanzamiento).',
   'entities.itemSets.soulflame.bonus3':
     'Aumenta el intelecto en 15, el espíritu en 15 y la velocidad de ataque y de lanzamiento en 15%.',
   'entities.itemSets.stormcallers.name': 'Vestiduras de Galecall',
   'entities.itemSets.stormcallers.bonus2':
-    'No puedes ser empujado hacia atrás (100% de resistencia al empuje).',
+    'Aumenta el poder de los hechizos en 20. El daño recibido ya no retrasa tus hechizos (100% de resistencia al retraso de lanzamiento).',
   'entities.itemSets.stormcallers.bonus3':
     'Aumenta el intelecto en 15, el espíritu en 15 y la velocidad de ataque y de lanzamiento en 15%.',
   'entities.itemSets.vale_arcanist.name': 'Vestiduras del Arcanista del Valle',
@@ -7019,15 +7009,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.mobileCameraJoystick': 'Palanca de mando de la cámara',
   'hudChrome.options.mobileLeftHanded': 'Diseño para zurdos',
   'entities.quests.q_archetype_acceptance.title': 'Un oficio que puedes llamar tuyo',
-  'entities.quests.q_archetype_acceptance.text':
-    'Cada artesano de Eastbrook finalmente se decide por un oficio que puede considerar suyo. Ponte a prueba con una sola acción, {playerName}, y declara tu camino.',
-  'entities.quests.q_archetype_acceptance.completion': 'Tu camino está elegido; caminarlo bien.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Lobo del bosque matado',
   'entities.quests.q_prof_make_amends.title': 'Hacer las paces',
-  'entities.quests.q_prof_make_amends.text':
-    'Para dejar de lado un oficio para otro, un artesano primero debe enmendar el camino no recorrido, {playerName}.',
-  'entities.quests.q_prof_make_amends.completion':
-    'Enmiendas hechas; un nuevo camino está abierto para ti.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Lobo del bosque matado',
   'entities.npcs.bursar_aldous_crane.greeting':
     'Cada cajón, cofre y baratija está a salvo en el Arca Dorada.',
@@ -7207,15 +7189,11 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.howHeading': 'Cómo funcionan las gestas',
   'guide.deedsPage.intro':
     'El Libro de Gestas es donde el mundo lleva la cuenta de todos tus hechos, desde tus primeros pasos fuera del valle inicial hasta los combates más duros que el reino puede ofrecer. Consigue gestas mientras juegas, luce los títulos que otorgan y mira cómo asciende tu Renombre.',
-  'guide.deedsPage.renownBody':
-    'El Renombre es la puntuación detrás del Libro. Cada gesta que consigues vale una cantidad fija, y tu total solo puede subir, así que una semana tranquila nunca te hace perder terreno. Unas pocas gestas dependen de la suerte más que de la destreza, y las proezas son un honor aparte, de modo que ninguna de las dos otorga Renombre.',
   'guide.deedsPage.renownHeading': 'Renombre',
   'guide.deedsPage.rewardBorder': 'Borde',
   'guide.deedsPage.rewardsBody':
     'Las recompensas son pura apariencia, y esa es la gracia. Algunas gestas otorgan un título que puedes lucir o un borde que enmarca tu nombre, y nunca nada que haga más fuerte a tu héroe. Elige el título que quieras desde el Libro de Gestas y te acompañará en tu placa de nombre, en el chat y en las clasificaciones, a la vista de cualquiera.',
   'guide.deedsPage.rewardsHeading': 'Títulos y bordes',
-  'guide.deedsPage.standingsNote':
-    'Los reinos llevan un recuento continuo del Renombre de cada cuenta. Para ver quién ocupa cada puesto, abre la Tabla de Clasificación dentro del juego y ve a su pestaña de Renombre; las posiciones están allí, no en la wiki.',
   'guide.nav.deeds': 'Libro de Gestas',
   'hudChrome.deeds.broadcastLine': '{name} ha logrado una gesta: {deed}',
   'hudChrome.deeds.broadcastsLabel':
@@ -7249,9 +7227,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.filterNearly': 'Casi listas',
   'hudChrome.deeds.filterUnearned': 'Pendientes',
   'hudChrome.deeds.hiddenBadge': 'Oculta',
-  'hudChrome.deeds.lbDeedsCol': 'Gestas',
   'hudChrome.deeds.lbEmpty': 'Aún no hay cronistas clasificados.',
-  'hudChrome.deeds.lbSelf': 'Tu posición: puesto {rank}, dentro del {percent} por ciento superior',
   'hudChrome.deeds.lbTab': 'Renombre',
   'hudChrome.deeds.lbTitleCol': 'Título',
   'hudChrome.deeds.nearestLabel': 'A un paso:',
@@ -7310,11 +7286,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'entities.items.arcane_essence.name': 'Esencia arcana',
   'entities.items.arcane_shard.name': 'Fragmento arcano',
   'entities.items.chunk_of_ore.name': 'Trozo de mineral',
-  'entities.quests.q_prof_intro.completion':
-    '¿Lo ves? Mineral en la mochila y callos en las manos. Sigue minando, talando y recogiendo hierbas mientras recorres los caminos. Cuando vuelvas al pueblo, no pierdas de vista el tablón de Enfoque del pueblo junto al mercado ni el banco de artesanía cercano. En esos oficios te espera una vida honrada, si la quieres.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Trozo de mineral',
-  'entities.quests.q_prof_intro.text':
-    'Cada habitante de Eastbrook ejerce un oficio además de la espada, {playerName}. Hay vetas de mineral dispersas por el pueblo, así que toma un pico y tráeme 5 trozos. Extráelos tú mismo, ¿eh? Sabré si no lo haces.',
   'entities.quests.q_prof_intro.title': 'Un oficio para cada mano',
   'hudChrome.auth.appleChoiceExpired':
     'Ese inicio de sesión con Apple ha caducado. Vuelve a iniciar sesión con Apple.',

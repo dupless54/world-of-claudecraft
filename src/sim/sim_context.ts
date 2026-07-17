@@ -36,6 +36,7 @@ import type {
   ResolvedAbility,
   TradeSession,
 } from './sim';
+import type { CardDuelMatch } from './social/card_duel';
 import type { FinderFormationUnit } from './social/party';
 import type { VcState } from './social/vale_cup';
 import type { SpatialGrid } from './spatial';
@@ -48,6 +49,7 @@ import type {
   DungeonDifficulty,
   Entity,
   ErrorReason,
+  GatherNodeDef,
   ItemInstancePayload,
   PendingResurrection,
   PlayerClass,
@@ -124,6 +126,12 @@ export interface SimContextPrimitives {
   // Backing fields stay on Sim. `duels` is also read per-attack by isHostileTo/
   // dealDamage (PvP hostility), so it stays Sim-owned (A2).
   readonly duels: Map<number, DuelState>;
+  // Card Duel minigame (src/sim/social/card_duel.ts): its own FIFO queue
+  // (mutated in place via shift/splice/push, like cardDuels below, so this is
+  // a readonly getter, not reassigned) and live-match map, independent of the
+  // HP-based duels above.
+  readonly cardDuelQueue: number[];
+  readonly cardDuels: Map<number, CardDuelMatch>;
   // `world` stays optional (custom play-test map, else undefined; perfLap is the
   // temporary host-owned tick profiler probe); the rest defaulted.
   readonly cfg: Required<Omit<SimConfig, 'noPlayer' | 'world' | 'perfLap'>> &
@@ -258,8 +266,8 @@ export interface SimContextCallbacks {
   instanceKeyFor(pid: number): string;
   instanceOriginOf(inst: InstanceSlot): { x: number; z: number };
   instanceClaimIdAt(pos: Vec3): number | null;
-  enterDungeon(dungeonId: string, pid?: number): void;
-  leaveDungeon(pid?: number): void;
+  enterDungeon(dungeonId: string, pid?: number): boolean;
+  leaveDungeon(pid?: number): boolean;
   resetDungeonInstances(pid?: number): void;
   inheritDungeonResetLocks(pid: number): void;
   dungeonDifficulty(pid?: number): DungeonDifficulty;
@@ -441,6 +449,8 @@ export interface SimContextCallbacks {
   // Consumed by social/dungeon_finder.ts.
   formDungeonFinderGroup(units: FinderFormationUnit[], opts: { raid: boolean }): Party | null;
   onMobKilledForQuests(mob: Entity, meta: PlayerMeta): void;
+  onRecipeCraftedForQuests(recipeId: string, meta: PlayerMeta): void;
+  onNodeGatheredForQuests(node: GatherNodeDef, itemId: string, meta: PlayerMeta): void;
   onInventoryChangedForQuests(meta: PlayerMeta): void;
   checkQuestReady(qp: QuestProgress, meta: PlayerMeta): void;
   countItem(itemId: string, pid?: number): number;
@@ -448,14 +458,17 @@ export interface SimContextCallbacks {
   // instead of countItem so an instanced copy is never listed as a plain stack member.
   countFungibleItem(itemId: string, pid?: number): number;
   // Enchanting-eligible count/removal (#1712 review): counts/removes a plain
-  // fungible stack OR an instanced copy with no rolled.stats (crafted rare+
-  // gear), excluding only an already-enchanted (rolled.stats) copy. Used by
+  // fungible stack OR an instanced copy that is not already enchanted per
+  // isEnchantedInstance (the explicit `enchant` marker, or legacy bare
+  // rolled.stats without rolled.masterwork). Masterwork copies carry
+  // rolled.stats without an enchant and stay eligible. Used by
   // professions/enchanting.ts instead of countFungibleItem/removeFungibleItem
   // so crafted single-copy rares remain disenchantable/enchantable.
   countEnchantableItem(itemId: string, pid?: number): number;
   // Returns the consumed slots' `instance` payloads (removeItem's contract),
-  // so applyEnchant can merge a crafted copy's signer/rolled.quality into the
-  // freshly-enchanted instance instead of dropping them.
+  // so applyEnchant can merge a crafted copy's signer, legacy rolled.quality,
+  // and masterwork bonus into the freshly-enchanted instance instead of
+  // dropping them.
   removeEnchantableItem(itemId: string, count: number, pid?: number): ItemInstancePayload[];
   completeQuestForDev(questId: string, pid?: number): boolean;
   completeCurrentQuestsForDev(pid?: number): number;
@@ -900,6 +913,12 @@ export function createSimContext(host: SimContextHost): SimContext {
     get duels() {
       return host.duels;
     },
+    get cardDuelQueue() {
+      return host.cardDuelQueue;
+    },
+    get cardDuels() {
+      return host.cardDuels;
+    },
     get cfg() {
       return host.cfg;
     },
@@ -1094,6 +1113,8 @@ export function createSimContext(host: SimContextHost): SimContext {
     dropPartyMarkers: host.dropPartyMarkers,
     formDungeonFinderGroup: host.formDungeonFinderGroup,
     onMobKilledForQuests: host.onMobKilledForQuests,
+    onRecipeCraftedForQuests: host.onRecipeCraftedForQuests,
+    onNodeGatheredForQuests: host.onNodeGatheredForQuests,
     onInventoryChangedForQuests: host.onInventoryChangedForQuests,
     checkQuestReady: host.checkQuestReady,
     countItem: host.countItem,

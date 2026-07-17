@@ -328,11 +328,6 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'loading.tips.talents':
     'İpucu: savaş dışında olduğun sürece yeteneklerini istediğin zaman sıfırlayabilirsin, bu yüzden erken bir seçim asla tuzak değildir.',
   'entities.items.chunk_of_ore.name': 'Maden Parçası',
-  'entities.quests.q_prof_intro.completion':
-    'Gördün mü? Çantanda maden, ellerinde nasır. Yollarda gezerken madenciliğe, odunculuğa ve ot toplamaya devam et. Kasabaya döndüğünde pazarın yanındaki Kasaba Odağı panosuna ve yakındaki üretim tezgahına göz at. İstersen bunların hepsinde iyi bir geçim var.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Maden Parçası',
-  'entities.quests.q_prof_intro.text':
-    "Doğudere'de herkes kılıcın yanında bir zanaatla uğraşır, {playerName}. Kasabanın etrafına dağılmış maden damarları var; git kazmanı salla ve bana 5 parça getir. Kendin çıkar, unutma; farkı anlarım.",
   'entities.quests.q_prof_intro.title': 'Her Ele Bir Zanaat',
   'hudChrome.auth.appleChoiceExpired':
     'Bu Apple oturum açma işleminin süresi doldu. Lütfen Apple ile yeniden oturum aç.',
@@ -617,16 +612,6 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.vcup.walkUp': "Tribünlerden izlemek için Domuz Tarlası'na gel.",
   'hudChrome.archetypeTitle.label': 'Unvan',
   'hudChrome.archetypeTitle.none': 'Yok',
-  'hudChrome.archetypeTitle.armorcrafting': 'Zırhçı',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Silah Ustası',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Kuyumcu',
-  'hudChrome.archetypeTitle.alchemy': 'Simyacı',
-  'hudChrome.archetypeTitle.engineering': 'Mühendis',
-  'hudChrome.archetypeTitle.cooking': 'Aşçı',
-  'hudChrome.archetypeTitle.inscription': 'Kâtip',
-  'hudChrome.archetypeTitle.enchanting': 'Efsuncu',
-  'hudChrome.archetypeTitle.tailoring': 'Terzi',
-  'hudChrome.archetypeTitle.leatherworking': 'Derici',
   'entities.itemSets.crownforged.bonus4':
     "Silah kritik vuruşların hedefi Kemikkıymık ile parçalar, 12 sn boyunca her 2 sn'de 8 kanama hasarı verir. 3 kata kadar üst üste binebilir.",
   'entities.itemSets.deathlord.bonus4':
@@ -6474,17 +6459,20 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.name': 'Greyjaw İzsürücü takımı',
   'entities.itemSets.greyjaw_stalker.bonus3': 'Saldırı ve büyü hızını %15 artırır.',
   'entities.itemSets.necromancers.name': 'Mournweave Giysileri',
-  'entities.itemSets.necromancers.bonus2': 'Geri itilemezsin (%100 geri itilme direnci).',
+  'entities.itemSets.necromancers.bonus2':
+    'Büyü gücünü 20 artırır. Alınan hasar artık büyü yapmanı geciktirmez (%100 büyü gecikme direnci).',
   'entities.itemSets.necromancers.bonus3': 'Zekayı 10 ve dayanıklılığı 10 artırır.',
   'entities.itemSets.nighttalon.name': 'Direfang Postu',
   'entities.itemSets.nighttalon.bonus2': 'Saldırı gücünü 40 artırır.',
   'entities.itemSets.nighttalon.bonus3':
     'Çevikliği 15, kritik şansını %2, saldırı ve büyü hızını %15 artırır.',
   'entities.itemSets.soulflame.name': 'Wraithfire Kıyafetleri',
-  'entities.itemSets.soulflame.bonus2': 'Geri itilemezsin (%100 geri itilme direnci).',
+  'entities.itemSets.soulflame.bonus2':
+    'Büyü gücünü 20 artırır. Alınan hasar artık büyü yapmanı geciktirmez (%100 büyü gecikme direnci).',
   'entities.itemSets.soulflame.bonus3': 'Zekayı 15, ruhu 15, saldırı ve büyü hızını %15 artırır.',
   'entities.itemSets.stormcallers.name': 'Galecall Cübbeleri',
-  'entities.itemSets.stormcallers.bonus2': 'Geri itilemezsin (%100 geri itilme direnci).',
+  'entities.itemSets.stormcallers.bonus2':
+    'Büyü gücünü 20 artırır. Alınan hasar artık büyü yapmanı geciktirmez (%100 büyü gecikme direnci).',
   'entities.itemSets.stormcallers.bonus3':
     'Zekayı 15, ruhu 15, saldırı ve büyü hızını %15 artırır.',
   'entities.itemSets.vale_arcanist.name': 'Vadi Arkanisti giysileri',
@@ -6895,15 +6883,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.mobileCameraJoystick': "Kamera joystick'i",
   'hudChrome.options.mobileLeftHanded': 'Solak düzen',
   'entities.quests.q_archetype_acceptance.title': 'Kendinize Ait Bir Zanaat',
-  'entities.quests.q_archetype_acceptance.text':
-    "Eastbrook'un her zanaatkarı eninde sonunda kendilerine ait bir zanaatta karar kılıyor. Tek bir hareketle kendinizi kanıtlayın, {playerName}, ve yolunuzu ilan edin.",
-  'entities.quests.q_archetype_acceptance.completion': 'Yolunuz seçilmiştir; iyi yürü.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Orman kurdu öldürüldü',
   'entities.quests.q_prof_make_amends.title': 'Değişiklikler Yapmak',
-  'entities.quests.q_prof_make_amends.text':
-    'Bir zanaatı diğerine ayırmak için, bir zanaatkarın öncelikle yürümediği yolu telafi etmesi gerekir, {playerName}.',
-  'entities.quests.q_prof_make_amends.completion':
-    'Değişiklikler yapıldı; önünüze yeni bir yol açılıyor.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Orman kurdu öldürüldü',
   'entities.npcs.bursar_aldous_crane.greeting':
     "Her sandık, her çekmece, her biblo Yaldızlı Kasa'da güvendedir.",
@@ -7081,15 +7061,11 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.howHeading': 'Yiğitlikler nasıl işler',
   'guide.deedsPage.intro':
     'Yiğitlikler Kitabı, dünyanın yaptığın her şeyin hesabını tuttuğu yerdir; başlangıç vadisinden attığın ilk adımlardan diyarın sunabileceği en çetin dövüşlere kadar. Oynadıkça yiğitlikler kazan, verdikleri unvanları taşı ve Ününün tırmanışını izle.',
-  'guide.deedsPage.renownBody':
-    'Ün, Kitabın ardındaki puandır. Kazandığın her yiğitliğin belirli bir değeri vardır ve toplamın yalnızca yükselir; sakin geçen bir hafta sana asla yer kaybettirmez. Bir avuç yiğitlik ustalıktan çok şansa bağlıdır, Destanlar ise başlı başına bir onurdur; bu yüzden ikisi de hiç Ün getirmez.',
   'guide.deedsPage.renownHeading': 'Ün',
   'guide.deedsPage.rewardBorder': 'Çerçeve',
   'guide.deedsPage.rewardsBody':
     "Ödüllerin hepsi gösteriş içindir ve mesele de zaten budur. Bazı yiğitlikler taşıyabileceğin bir unvan ya da adını kuşatan bir çerçeve verir; kahramanını güçlendiren hiçbir şey vermez. İstediğin unvanı Yiğitlikler Kitabı'ndan seç; o da isim levhanda, sohbette ve lider tablolarında herkesin göreceği biçimde seninle gezsin.",
   'guide.deedsPage.rewardsHeading': 'Unvanlar ve çerçeveler',
-  'guide.deedsPage.standingsNote':
-    "Diyarlar, her hesabın Ününü kapsayan güncel bir çetele tutar. Kimin nerede durduğunu görmek için oyun içinde Lider Tablosu'nu aç ve Ün sekmesine geç; sıralamalar wiki'de değil, orada yaşar.",
   'guide.nav.deeds': 'Yiğitlikler Kitabı',
   'hudChrome.deeds.broadcastLine': '{name} bir yiğitliğe imza attı: {deed}',
   'hudChrome.deeds.broadcastsLabel': 'Kazanılan yiğitlikleri lonca ve arkadaşlarınla paylaş',
@@ -7123,9 +7099,7 @@ export const tr_TR: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.filterNearly': 'Az Kaldı',
   'hudChrome.deeds.filterUnearned': 'Kazanılmayan',
   'hudChrome.deeds.hiddenBadge': 'Gizli',
-  'hudChrome.deeds.lbDeedsCol': 'Yiğitlik',
   'hudChrome.deeds.lbEmpty': 'Henüz sıralamaya girmiş vakanüvis yok.',
-  'hudChrome.deeds.lbSelf': 'Sıralamadaki yerin: {rank}. sıra, en iyi yüzde {percent} içinde',
   'hudChrome.deeds.lbTab': 'Ün',
   'hudChrome.deeds.lbTitleCol': 'Unvan',
   'hudChrome.deeds.nearestLabel': 'Ramak kaldı:',

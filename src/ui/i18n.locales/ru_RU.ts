@@ -198,6 +198,24 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.wocStore.armoryTitle': 'Арсенал',
   'hudChrome.wocStore.armoryBody':
     'Ограниченные облики оружия из Арсенала 1-го сезона. Общие для всей учётной записи, чисто косметические и видимые всем вокруг.',
+  'hudChrome.wocStore.wallet.title': 'Кошелёк Solana',
+  'hudChrome.wocStore.wallet.unlinked':
+    'Подключите приложение кошелька, затем один раз подпишите сообщение, чтобы привязать его публичный адрес к учётной записи WoC. Мы никогда не получаем вашу фразу восстановления или закрытый ключ.',
+  'hudChrome.wocStore.wallet.connectedUnlinked':
+    'Приложение кошелька подключено к этому браузеру, но его публичный адрес ещё не привязан к вашей учётной записи WoC.',
+  'hudChrome.wocStore.wallet.linkedDisconnected':
+    'Ваш публичный адрес привязан. Подключите этот кошелёк снова, когда захотите заплатить SOL или WOC.',
+  'hudChrome.wocStore.wallet.linkedConnected':
+    'Привязанный кошелёк подключён и готов к покупкам за SOL или WOC.',
+  'hudChrome.wocStore.wallet.mismatched':
+    'Подключён другой кошелёк. Подтвердите его, чтобы заменить привязанный адрес, или снова подключите привязанный кошелёк.',
+  'hudChrome.wocStore.wallet.connect': 'Подключить кошелёк',
+  'hudChrome.wocStore.wallet.verify': 'Подтвердить и привязать',
+  'hudChrome.wocStore.wallet.reconnect': 'Подключить кошелёк снова',
+  'hudChrome.wocStore.wallet.manage': 'Управление кошельком',
+  'wallet.bagConnect': 'Привязать кошелёк',
+  'wallet.bagLink': 'Подтвердить кошелёк',
+  'wallet.bagReconnect': 'Подключить кошелёк снова',
   'hudChrome.wocStore.collectionLine': 'Коллекция «{collection}»',
   'hudChrome.wocStore.collections.guildmark': 'Клеймо гильдии',
   'hudChrome.wocStore.collections.emberwrought': 'Закалённое углями',
@@ -1253,12 +1271,46 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
     'Привилегии держателя активны. Подключайте приложение, когда нужно подписать или потратить.',
   'wallet.extensionHelp':
     'Чтобы кошелек появился здесь, держите активным браузерное расширение кошелька, например Solflare Wallet.',
+  'wallet.mobileAppHelp':
+    'Выберите Phantom или Solflare. Приложение кошелька запросит подтверждение. Не закрывайте игру и вернитесь в нее после завершения.',
+  'wallet.standaloneAppHelp':
+    'Подключение кошелька пока недоступно в приложении с главного экрана. Для Phantom или Solflare откройте World of ClaudeCraft в Safari или Chrome.',
+  'wallet.openAppTitle': 'Продолжить в {wallet}',
+  'wallet.openAppHelp':
+    'Откройте {wallet}, чтобы проверить этот запрос. Не закрывайте вкладку с игрой, пока открыто приложение кошелька.',
+  'wallet.openAppButton': 'Открыть {wallet}',
+  'wallet.manualReturnBrowserHelp':
+    'После подтверждения вернитесь на вкладку с игрой. Если iOS откроет другой браузер, закройте его и вручную вернитесь в исходный браузер.',
+  'wallet.manualReturnStandaloneHelp':
+    'После подтверждения вернитесь в World of ClaudeCraft с экрана «Домой». Если iOS откроет браузер, закройте его и снова откройте приложение с экрана «Домой».',
+  'wallet.preparingAppButton': 'Подготовка {wallet}...',
+  'wallet.walletAppUnavailable':
+    'Не удалось подготовить {wallet}. Закройте это окно и повторите попытку.',
   'wallet.flowConnect': 'Выберите кошелек. Подтверждение продолжится автоматически.',
   'wallet.flowSign':
     'Подпишите сообщение подтверждения в приложении кошелька. Транзакция и SOL не требуются.',
   'wallet.flowVerify': 'Подтверждение владения кошельком...',
   'wallet.linkFailed': 'Не удалось подтвердить кошелек.',
   'wallet.verifyFailed': 'Не удалось подтвердить кошелек.',
+  'wallet.browser.eyebrow': 'Авторизация кошелька для приложения',
+  'wallet.browser.title': 'Подключить кошелек Solana',
+  'wallet.browser.linkBody':
+    'Выберите расширение кошелька в этом браузере. Подпишите сообщение проверки, затем вернитесь в приложение.',
+  'wallet.browser.paymentBody':
+    'Выберите кошелек, привязанный к аккаунту, и подтвердите транзакцию в этом браузере.',
+  'wallet.browser.extensionHelp':
+    'Совместимое расширение кошелька не найдено. Установите или разблокируйте Phantom, Solflare либо другой браузерный кошелек Solana и повторите попытку.',
+  'wallet.browser.safety':
+    'World of ClaudeCraft никогда не запрашивает фразу восстановления или закрытый ключ.',
+  'wallet.browser.continueWith': 'Продолжить с {wallet}',
+  'wallet.browser.reviewTitle': 'Проверьте запрос в кошельке',
+  'wallet.browser.reviewBody': 'Следуйте подсказке {wallet}. Не закрывайте эту страницу браузера.',
+  'wallet.browser.completeTitle': 'Авторизация кошелька завершена',
+  'wallet.browser.completeBody': 'Можно вернуться в приложение World of ClaudeCraft.',
+  'wallet.browser.returnButton': 'Вернуться в приложение',
+  'wallet.browser.failed':
+    'Авторизация кошелька не удалась или истекла. Вернитесь в приложение и повторите попытку.',
+  'wallet.browser.retry': 'Повторить',
   'wallet.unlinkFailed': 'Не удалось отвязать кошелек.',
   'wallet.holder': 'держатель $WOC',
   'wallet.holderTierTitle': '{tier}: держатель $WOC',
@@ -3337,6 +3389,26 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'entities.npcs.heroic_quartermaster.title': 'Героический интендант',
   'entities.npcs.heroic_quartermaster.greeting':
     'Знаки героических глубин покупают лучшие кольца и кулоны Хайвотча. Покажи мне свои знаки.',
+  'entities.npcs.card_master.name': 'Карточный мастер',
+  'entities.npcs.card_master.title': 'Дилер удачи',
+  'entities.npcs.card_master.greeting':
+    'Не сыграть ли партию в карточную дуэль? До двух побед, победителю достанется слава.',
+  'cardDuel.title': 'Карточная дуэль',
+  'cardDuel.close': 'Закрыть',
+  'cardDuel.join': 'Встать в очередь',
+  'cardDuel.joinAria': 'Встать в очередь на карточную дуэль',
+  'cardDuel.leave': 'Покинуть очередь',
+  'cardDuel.leaveAria': 'Покинуть очередь на карточную дуэль',
+  'cardDuel.queued': 'Ожидание соперника...',
+  'cardDuel.vsOpponent': 'против {name}',
+  'cardDuel.round': 'Счёт раундов: {mine} - {theirs}',
+  'cardDuel.forfeit': 'Сдаться',
+  'cardDuel.forfeitAria': 'Сдаться в карточной дуэли',
+  'cardDuel.unavailable': 'Для карточной дуэли нужен ещё один игрок онлайн.',
+  'cardDuel.counts': 'Колода: {deck} · Сброс: {discard}',
+  'cardDuel.playCardAria': 'Разыграть карту {value}',
+  'cardDuel.waitingOnOpponent': 'Ожидание карты соперника...',
+  'cardDuel.yourTurn': 'Разыграйте карту',
   'entities.npcs.loremaster_caddis.name': 'Хранитель знаний Каддис',
   'entities.npcs.loremaster_caddis.title': 'Хранитель знаний',
   'entities.npcs.loremaster_caddis.greeting':
@@ -3351,10 +3423,10 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
     'Омут пьёт лунный свет, {className}, и возвращает утопленников. Тридцать ночей я наблюдаю за теми вратами — и нынче ночью они открыты.',
   'entities.quests.q_prof_intro.title': 'Ремесло для каждой руки',
   'entities.quests.q_prof_intro.text':
-    'Каждая душа в Иствруке владеет ремеслом помимо меча, {playerName}. Вокруг города разбросаны рудные жилы - возьми кирку и принеси мне 5 кусков руды. Добудь их сам, учти: я отличу.',
+    'В Иствруке каждый владеет каким-нибудь ремеслом помимо меча, {playerName}. В скалах вокруг Медного прииска к юго-западу от города есть рудные жилы. Берите кирку и сами разработайте 5 жил — меня не обманешь, я замечу разницу.',
   'entities.quests.q_prof_intro.completion':
-    'Видишь? Руда в котомке, мозоли на руках. Продолжай добывать руду, валить лес и собирать травы в пути - а вернувшись в город, загляни на доску городского фокуса у рынка и на ближайший верстак. Честное ремесло ждёт тебя во всём этом, если пожелаешь.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Кусок руды',
+    'Вот видите? Руда добыта, а на руках появились мозоли. В дороге продолжайте добывать руду, рубить лес и собирать травы. Вернувшись в город, не забудьте о доске городского направления у рынка и ремесленном столе рядом. Если захотите, все эти занятия обеспечат честный заработок.',
+  'entities.quests.q_prof_intro.objectives.0.label': 'Рудная жила разработана',
   'entities.quests.q_wolves.title': 'Волки у дверей',
   'entities.quests.q_wolves.text':
     'Лесные волки осмелели и бросаются на путников у северной дороги, {playerName}. Убейте 8, чтобы Истврук вздохнул свободнее.',
@@ -3763,15 +3835,22 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_mogger.objectives.0.label': 'Моггер убит',
   'entities.quests.q_archetype_acceptance.title': 'Ремесло по душе',
   'entities.quests.q_archetype_acceptance.text':
-    'Рано или поздно каждый ремесленник Иствуда выбирает одно ремесло своим призванием. Докажи себя одним делом, {playerName}, и объяви свой путь.',
-  'entities.quests.q_archetype_acceptance.completion': 'Твой путь избран; иди по нему с честью.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Лесной волк убит',
+    'Мастерство — это знание, {playerName}, а настройка — обещание. Выберите два соседних ремесла, которые станут вашими основными, а затем принесите мне руду, добытую вами в долине.',
+  'entities.quests.q_archetype_acceptance.completion':
+    'Обещание скреплено. Эти два ремесла теперь ваши основные, а знание напротив них стало вашим увлечением.',
+  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Рудная жила разработана',
   'entities.quests.q_prof_make_amends.title': 'Искупление',
   'entities.quests.q_prof_make_amends.text':
-    'Чтобы оставить одно ремесло ради другого, ремесленник должен сперва искупить путь, которым не пошёл, {playerName}.',
+    'Вы уже владели этой парой ремёсел, {playerName}. Возвращение — не новая клятва. Помогите расчистить дорогу в долине, и работа напомнит вашим рукам прежние навыки.',
   'entities.quests.q_prof_make_amends.completion':
-    'Искупление свершилось; перед тобой открыт новый путь.',
+    'Прежний ритм вернулся. Ваша старая пара ремёсел снова активна.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Лесной волк убит',
+  'entities.quests.q_prof_hobby_switch.title': 'Другое увлечение',
+  'entities.quests.q_prof_hobby_switch.text':
+    'Главные ремёсла требуют клятвы. Увлечение лишь спрашивает, куда ведёт твоё любопытство, {playerName}. Собери немного трав и реши, какое ремесло напротив твоих главных специальностей ты хочешь развивать.',
+  'entities.quests.q_prof_hobby_switch.completion':
+    'Выбор полегче, но полезный. Следуй за любопытством так далеко, как позволит работа редкого качества.',
+  'entities.quests.q_prof_hobby_switch.objectives.0.label': 'Собран участок трав',
   'entities.quests.q_drowned_choir.title': 'Утонувший хор',
   'entities.quests.q_drowned_choir.text':
     'Бродяги действуют не одни. Среди них ходят Утонувшие служители — культ, что затонул вместе с храмом, всё ещё в истлевших облачениях, всё ещё поющий молитву с прибрежных скал. Заставь умолкнуть восьмерых из них и принеси мне шесть подношений, что они несут. Хочу знать, что они задумали поднести своей богине.',
@@ -4580,14 +4659,14 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.intro':
     'Книга деяний ведет счет всему, что вы совершили в этом мире, от первых шагов из начальной долины до самых тяжелых сражений, какие только может предложить королевство. Зарабатывайте деяния по ходу игры, носите дарованные ими звания и смотрите, как растет ваша Известность.',
   'guide.deedsPage.renownBody':
-    'Известность отражает счет, стоящий за Книгой. Каждое заработанное деяние стоит определенное число очков, а ваш итог только растет, так что тихая неделя никогда не отнимет достигнутого. Некоторые деяния зависят от удачи, а не от умения, а Подвиги остаются честью особого рода, поэтому ни те ни другие не дают Известности вовсе.',
+    'Известность отражает счет, стоящий за Книгой. Каждое заработанное деяние стоит определенное число очков, а ваш итог только растет, так что тихая неделя никогда не отнимет достигнутого. Некоторые деяния зависят от удачи, а не от умения, а Подвиги остаются честью особого рода, поэтому ни те ни другие не дают Известности вовсе. Деяния без Известности всё равно засчитываются в завершение Книги, просто они никогда не приносят очков.',
   'guide.deedsPage.renownHeading': 'Известность',
   'guide.deedsPage.rewardBorder': 'Рамка',
   'guide.deedsPage.rewardsBody':
     'Награды нужны лишь для вида, и в этом весь смысл. Некоторые деяния даруют звание, которое можно носить, или рамку, обрамляющую ваше имя, но никогда ничего, что сделало бы вашего героя сильнее. Выберите желаемое звание в Книге деяний, и оно будет красоваться на вашей именной табличке, в чате и в рейтинговых таблицах у всех на виду.',
   'guide.deedsPage.rewardsHeading': 'Звания и рамки',
   'guide.deedsPage.standingsNote':
-    'Королевства ведут текущий подсчёт Известности по всем учётным записям. Чтобы увидеть, кто где стоит, откройте в игре таблицу лидеров и перейдите на вкладку Известности; рейтинг находится там, а не на вики.',
+    'Королевства ведут текущий подсчёт Известности по всем учётным записям: таблица лидеров ранжирует учётные записи целиком по накопленной Известности, каждое деяние засчитывается один раз для всех ваших персонажей, и показывается только Известность, поэтому деяния без Известности не влияют на рейтинг, даже если они засчитаны в вашей Книге. Чтобы увидеть, кто где стоит, откройте в игре таблицу лидеров и перейдите на вкладку Известности; рейтинг находится там, а не на вики.',
   'guide.delvesPage.affixesBody':
     'Прохождения посложнее выпадают с модификатором, что меняет ход спуска: от беспокойных мертвецов до спёртого воздуха и осыпающихся сводов. Он поднимает и опасность, и награду разом. Каждая вылазка черпает из модификаторов, что подходят её духу; по всему королевству набор выглядит так:',
   'guide.delvesPage.affixesHeading': 'Модификаторы прохождения',
@@ -6126,7 +6205,7 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
     'Скорость атаки и произнесения заклинаний повышается на 15%.',
   'entities.itemSets.necromancers.name': 'Одеяние Скорбного плетения',
   'entities.itemSets.necromancers.bonus2':
-    'Вас невозможно отбросить (100% сопротивление отбрасыванию).',
+    'Увеличивает силу заклинаний на 20. Получаемый урон больше не замедляет чтение ваших заклинаний (100% сопротивление замедлению чтения).',
   'entities.itemSets.necromancers.bonus3': 'Интеллект повышается на 10, выносливость на 10.',
   'entities.itemSets.necromancers.bonus4':
     'Ваши заклинания с вероятностью 10% даруют «Ясность», делая следующее заклинание бесплатным.',
@@ -6138,14 +6217,14 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
     'Критические удары оружием наносят «Рваную рану»: цель теряет 6 ед. здоровья от кровотечения каждые 2 сек. в течение 12 сек. Суммируется до 3 раз.',
   'entities.itemSets.soulflame.name': 'Одеяние Призрачного пламени',
   'entities.itemSets.soulflame.bonus2':
-    'Вас невозможно отбросить (100% сопротивление отбрасыванию).',
+    'Увеличивает силу заклинаний на 20. Получаемый урон больше не замедляет чтение ваших заклинаний (100% сопротивление замедлению чтения).',
   'entities.itemSets.soulflame.bonus3':
     'Интеллект повышается на 15, дух на 15, а скорость атаки и произнесения заклинаний на 15%.',
   'entities.itemSets.soulflame.bonus4':
     'Ваши заклинания с вероятностью 10% даруют «Пламя души», увеличивая силу заклинаний на 40 на 10 сек.',
   'entities.itemSets.stormcallers.name': 'Одеяние Зова Бури',
   'entities.itemSets.stormcallers.bonus2':
-    'Вас невозможно отбросить (100% сопротивление отбрасыванию).',
+    'Увеличивает силу заклинаний на 20. Получаемый урон больше не замедляет чтение ваших заклинаний (100% сопротивление замедлению чтения).',
   'entities.itemSets.stormcallers.bonus3':
     'Интеллект повышается на 15, дух на 15, а скорость атаки и произнесения заклинаний на 15%.',
   'entities.itemSets.stormcallers.bonus4':
@@ -6306,6 +6385,44 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.craftedToast': 'Создано: {name}',
   'hudChrome.crafting.insufficientMaterials': 'У вас недостаточно материалов.',
   'hudChrome.crafting.unknownRecipe': 'Такого рецепта не существует.',
+  'hudChrome.crafting.comboRequires': 'Настройка: {craftA} + {craftB}, ранг {tier}.',
+  'hudChrome.crafting.comboMet': 'Готово.',
+  'hudChrome.crafting.comboSyncing': 'Проверяем настройку на сервере.',
+  'hudChrome.crafting.comboNotAttuned': 'Сначала выберите пару архетипа.',
+  'hudChrome.crafting.comboWrongPair': 'Для создания предмета активируйте именно эту пару.',
+  'hudChrome.crafting.comboTierUnmet': 'Повысьте оба главных ремесла до нужного ранга.',
+  'hudChrome.crafting.professionChoice': 'Выбор профессии',
+  'hudChrome.crafting.noProfessionChoice': 'Сейчас нет доступного выбора профессии.',
+  'hudChrome.crafting.attunementPreview':
+    'Результат: титул «{title}»; {majorA} и {majorB} станут главными ремёслами без потолка; {hobby} станет увлечением с потолком редкого качества; все остальные навыки сохранятся, но в неактивном состоянии будут ограничены обычным качеством.',
+  'hudChrome.crafting.hobbyPreview':
+    'Результат: {hobby} станет увлечением с потолком редкого качества. Оба главных ремесла и все сохранённые значения навыков останутся без изменений.',
+  'hudChrome.crafting.identity.title': 'Ремесленная специализация',
+  'hudChrome.crafting.identity.syncing': 'Ожидаем ремесленную специализацию от сервера.',
+  'hudChrome.crafting.identity.unattuned':
+    'Активной пары архетипа нет. Знания сохраняются, но для комбинированных рецептов нужна настроенная пара.',
+  'hudChrome.crafting.identity.titleLabel': 'Титул',
+  'hudChrome.crafting.identity.majorsLabel': 'Главные ремёсла',
+  'hudChrome.crafting.identity.hobbyLabel': 'Увлечение',
+  'hudChrome.crafting.identity.historyLabel': 'История',
+  'hudChrome.crafting.identity.history': 'Открыто пар: {pairs}, завершено возвращений: {returns}',
+  'hudChrome.crafting.identity.roleMajor': 'Главное ремесло',
+  'hudChrome.crafting.identity.roleHobby': 'Увлечение',
+  'hudChrome.crafting.identity.roleDormant': 'Неактивные знания',
+  'hudChrome.crafting.identity.roleUnattuned': 'Без настройки',
+  'hudChrome.crafting.identity.ceilingUnlimited': 'Без потолка усиления',
+  'hudChrome.crafting.identity.ceilingCommon': 'Потолок обычного качества',
+  'hudChrome.crafting.identity.skillAria': '{craft}, навык {skill}, ранг {tier}, {role}, {ceiling}',
+  'hudChrome.crafting.identity.colCraft': 'Ремесло',
+  'hudChrome.crafting.identity.colSkill': 'Навык',
+  'hudChrome.crafting.identity.colRole': 'Роль',
+  'hudChrome.crafting.identity.colCap': 'Потолок',
+  'hudChrome.crafting.identity.tutorial':
+    'Первый ранг: достигните навыка {skill} в одном ремесле. Успешные рецепты развивают это ремесло, не стирая остальные знания.',
+  'hudChrome.crafting.identity.nearTier':
+    'Ремеслу {craft} не хватает {points} навыка до следующего ранга.',
+  'hudChrome.crafting.identity.dormantKnowledge':
+    'Знания ремесла {craft} сохранены, но неактивны, пока не выбрана его пара или увлечение.',
   'hudChrome.devBadge.title': 'Разработчик',
   'hudChrome.devBadge.tiers.tinkerer': 'Мастеровой',
   'hudChrome.devBadge.tiers.artificer': 'Искусник',
@@ -6937,6 +7054,8 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'apiError.body.unsupported_media_type': 'Неподдерживаемый формат запроса.',
   'apiError.deeds.invalid_input': 'Недопустимые данные.',
   'apiError.steam.disabled': 'Привязка Steam сейчас недоступна.',
+  'apiError.wallet.handoff_invalid':
+    'Срок действия авторизации кошелька истек или ее не удалось проверить. Повторите попытку.',
   'apiError.steam.invalid_ticket':
     'Steam не смог подтвердить этот запрос на привязку. Повторите попытку из настольного приложения.',
   'apiError.steam.banned': 'Этот аккаунт Steam нельзя привязать.',
@@ -7120,16 +7239,26 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.archetypeTitle.label': 'Титул',
   'hudChrome.archetypeTitle.none': 'Нет',
   'hudChrome.archetypeTitle.hobbyLabel': 'Хобби',
-  'hudChrome.archetypeTitle.armorcrafting': 'Бронник',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Оружейник',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Ювелир',
-  'hudChrome.archetypeTitle.alchemy': 'Алхимик',
-  'hudChrome.archetypeTitle.engineering': 'Механик',
-  'hudChrome.archetypeTitle.cooking': 'Повар',
-  'hudChrome.archetypeTitle.inscription': 'Писарь',
-  'hudChrome.archetypeTitle.enchanting': 'Зачарователь',
-  'hudChrome.archetypeTitle.tailoring': 'Портной',
-  'hudChrome.archetypeTitle.leatherworking': 'Кожевник',
+  'hudChrome.archetypePair.engineering+alchemy': 'Бомбардир',
+  'hudChrome.archetypePair.alchemy+cooking': 'Аптекарь',
+  'hudChrome.archetypePair.cooking+leatherworking': 'Зверолов',
+  'hudChrome.archetypePair.leatherworking+tailoring': 'Экипировщик',
+  'hudChrome.archetypePair.tailoring+inscription': 'Чароткач',
+  'hudChrome.archetypePair.inscription+enchanting': 'Чародей',
+  'hudChrome.archetypePair.enchanting+jewelcrafting': 'Камневяз',
+  'hudChrome.archetypePair.jewelcrafting+weaponcrafting': 'Клинкодел',
+  'hudChrome.archetypePair.weaponcrafting+armorcrafting': 'Кузнец',
+  'hudChrome.archetypePair.armorcrafting+engineering': 'Шестерёнщик',
+  'hudChrome.craftName.armorcrafting': 'Бронное дело',
+  'hudChrome.craftName.weaponcrafting': 'Оружейное дело',
+  'hudChrome.craftName.jewelcrafting': 'Ювелирное дело',
+  'hudChrome.craftName.alchemy': 'Алхимия',
+  'hudChrome.craftName.engineering': 'Инженерное дело',
+  'hudChrome.craftName.cooking': 'Кулинария',
+  'hudChrome.craftName.inscription': 'Начертание',
+  'hudChrome.craftName.enchanting': 'Наложение чар',
+  'hudChrome.craftName.tailoring': 'Портняжное дело',
+  'hudChrome.craftName.leatherworking': 'Кожевничество',
   'hudChrome.crafting.reagentLine': '{name}: {have}/{required}',
   // Protect Yumi locale fill (M16 wordy-key floor).
   'yumi.hud.collapse': 'Свернуть полосы Protect Yumi',
@@ -7655,9 +7784,12 @@ export const ru_RU: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.charTitleNone': 'Звание не выбрано',
   'hudChrome.deeds.charOpenBook': 'Книга деяний',
   'hudChrome.deeds.lbTab': 'Известность',
-  'hudChrome.deeds.lbDeedsCol': 'Деяния',
   'hudChrome.deeds.lbTitleCol': 'Звание',
-  'hudChrome.deeds.lbSelf': 'Ваше место: {rank}, лучшие {percent} процентов',
+  'hudChrome.deeds.lbScopeNote':
+    'Учётные записи ранжируются по накопленной Известности. Каждое деяние засчитывается один раз для всех персонажей учётной записи.',
+  'hudChrome.deeds.lbSelfAccount':
+    'Ваша учётная запись: место {rank}, лучшие {percent} процентов, Известность {renown}',
+  'hudChrome.deeds.lbSelfRank': 'Ваша учётная запись: место {rank}, лучшие {percent} процентов',
   'hudChrome.deeds.lbEmpty': 'В рейтинге пока нет летописцев.',
   'hudChrome.deeds.broadcastsLabel': 'Делиться деяниями с гильдией и друзьями',
   'guide.deedsPage.catHeading': '{label} ({count})',

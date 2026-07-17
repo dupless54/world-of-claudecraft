@@ -571,16 +571,6 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'hudChrome.vcup.walkUp': 'Přijď k Prasečímu poli a sleduj zápas z tribun.',
   'hudChrome.archetypeTitle.label': 'Titul',
   'hudChrome.archetypeTitle.none': 'Žádný',
-  'hudChrome.archetypeTitle.armorcrafting': 'Zbrojíř',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Kovář zbraní',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Klenotník',
-  'hudChrome.archetypeTitle.alchemy': 'Alchymista',
-  'hudChrome.archetypeTitle.engineering': 'Inženýr',
-  'hudChrome.archetypeTitle.cooking': 'Kuchař',
-  'hudChrome.archetypeTitle.inscription': 'Písař',
-  'hudChrome.archetypeTitle.enchanting': 'Očarovatel',
-  'hudChrome.archetypeTitle.tailoring': 'Krejčí',
-  'hudChrome.archetypeTitle.leatherworking': 'Koželuh',
   'entities.itemSets.crownforged.bonus4':
     'Kritické zásahy tvé zbraně roztříští cíl efektem Kostitříska a způsobí mu krvácení za 8 poškození každé 2 s po dobu 12 s. Nasčítá se až 3krát.',
   'entities.itemSets.deathlord.bonus4':
@@ -4949,18 +4939,21 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.deathlord.name': 'Bojová výbava mohylového pána',
   'entities.itemSets.greyjaw_stalker.bonus3': 'Zvyšuje rychlost útoku a sesílání o 15 %.',
   'entities.itemSets.greyjaw_stalker.name': 'Výbava stopaře Šedočelista',
-  'entities.itemSets.necromancers.bonus2': 'Nelze tě odhodit (100% odolnost proti odhození).',
+  'entities.itemSets.necromancers.bonus2':
+    'Zvyšuje sílu kouzel o 20. Utrpěné poškození již nezdržuje tvé sesílání kouzel (100% odolnost proti zdržení sesílání).',
   'entities.itemSets.necromancers.bonus3': 'Zvyšuje intelekt o 10 a výdrž o 10.',
   'entities.itemSets.necromancers.name': 'Oděv smutkotkaní',
   'entities.itemSets.nighttalon.bonus2': 'Zvyšuje sílu útoku o 40.',
   'entities.itemSets.nighttalon.bonus3':
     'Zvyšuje obratnost o 15, šanci na kritický zásah o 2 % a rychlost útoku i sesílání o 15 %.',
   'entities.itemSets.nighttalon.name': 'Kožešina děsivého tesáku',
-  'entities.itemSets.soulflame.bonus2': 'Nelze tě odhodit (100% odolnost proti odhození).',
+  'entities.itemSets.soulflame.bonus2':
+    'Zvyšuje sílu kouzel o 20. Utrpěné poškození již nezdržuje tvé sesílání kouzel (100% odolnost proti zdržení sesílání).',
   'entities.itemSets.soulflame.bonus3':
     'Zvyšuje intelekt o 15, ducha o 15 a rychlost útoku i sesílání o 15 %.',
   'entities.itemSets.soulflame.name': 'Regálie přízračného ohně',
-  'entities.itemSets.stormcallers.bonus2': 'Nelze tě odhodit (100% odolnost proti odhození).',
+  'entities.itemSets.stormcallers.bonus2':
+    'Zvyšuje sílu kouzel o 20. Utrpěné poškození již nezdržuje tvé sesílání kouzel (100% odolnost proti zdržení sesílání).',
   'entities.itemSets.stormcallers.bonus3':
     'Zvyšuje intelekt o 15, ducha o 15 a rychlost útoku i sesílání o 15 %.',
   'entities.itemSets.stormcallers.name': 'Roucha volání vichru',
@@ -5264,10 +5257,6 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_aldrics_fallen_star.text':
     'Viděl jsem, jak ze západního nebe spadl kámen, {playerName}. Udeřil do stěny močálu a vybuchl jako výheň, daleko za vdovím houštím. Jdi na západ, najdi, co přežilo výbuch, a přines mi cokoli, co nepatří do tohoto světa.',
   'entities.quests.q_aldrics_fallen_star.title': 'Aldricova spadlá hvězda',
-  'entities.quests.q_archetype_acceptance.completion': 'Tvá cesta je zvolena, kráčej po ní dobře.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Lesní vlk zabit',
-  'entities.quests.q_archetype_acceptance.text':
-    'Každý řemeslník Eastbrooku si časem vybere jedno řemeslo za své. Dokaž svou cenu jediným činem, {playerName}, a urči svou cestu.',
   'entities.quests.q_archetype_acceptance.title': 'Vlastní řemeslo',
   'entities.quests.q_bandits.completion':
     'O deset nožů ve tmě méně. Vezmi si tohle, zasloužíš si to.',
@@ -5578,10 +5567,7 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_palecoil.text':
     'Jeden tvar v plese není žádný utopený člověk. Had barvy kosti klouže po hluboké římse, kde začínají schody, Sethrael, říkají jí opisy, Bledá spirála, vlastní strážná šelma měsíce. Dokud střeží tu vodu, nikdo se k bráně živý nedostane. Sestup na římsu a zabij ji, {playerName}. Vezmi její srdeční šupinu, abych věděl, že je hotovo.',
   'entities.quests.q_palecoil.title': 'Sethrael Bledá spirála',
-  'entities.quests.q_prof_make_amends.completion': 'Náprava vykonána, otevírá se ti nová cesta.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Lesní vlk zabit',
-  'entities.quests.q_prof_make_amends.text':
-    'Aby řemeslník odložil jedno řemeslo pro druhé, musí nejdřív napravit cestu, kterou nešel, {playerName}.',
   'entities.quests.q_prof_make_amends.title': 'Náprava',
   'entities.quests.q_prowler_pelts.completion': 'Dobré silné kožešiny. Hráz teď přežije nás oba.',
   'entities.quests.q_prowler_pelts.objectives.0.label': 'Kožešina slatinného plížence',
@@ -7007,11 +6993,6 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'entities.abilities.chain_heal.name': 'Řetězové léčení',
   'entities.items.chunk_of_ore.name': 'Kus rudy',
   'entities.quests.q_prof_intro.title': 'Řemeslo pro každou ruku',
-  'entities.quests.q_prof_intro.text':
-    'Každý v Eastbrooku ovládá vedle meče i nějaké řemeslo, {playerName}. Kolem města jsou roztroušené rudné žíly, tak se rozmáchni krumpáčem a přines mi 5 kusů. Vytěž je vlastníma rukama; rozdíl poznám.',
-  'entities.quests.q_prof_intro.completion':
-    'Vidíš? Rudu v batohu a mozoly na rukou. Pokračuj v těžbě, kácení dřeva a sběru bylin, když cestuješ po cestách, a až se vrátíš do města, nezapomeň na tabuli Zaměření města u tržiště a řemeslnický ponk poblíž. V tom všem čeká poctivé živobytí, pokud o něj stojíš.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Kus rudy',
   'game.talents.choicesTab': 'Volby',
   'game.talents.readout.rowsSummary': 'Talenty: {head}, vybráno {picked}/{unlocked} řádků voleb.',
   'game.talents.rowUnlockToast': 'Odemkla se nová volba talentu!',
@@ -7086,15 +7067,11 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.howHeading': 'Jak skutky fungují',
   'guide.deedsPage.intro':
     'Kniha skutků je místo, kde si svět počítá vše, co máš za sebou: od prvních kroků z počátečního údolí až po nejtěžší boje, jaké říše nabízí. Vykonávej skutky při hraní, nos tituly, které ti udělí, a sleduj, jak tvůj věhlas roste.',
-  'guide.deedsPage.renownBody':
-    'Věhlas je skóre, které stojí za Knihou. Každý vykonaný skutek má pevně danou hodnotu a tvůj součet jen roste, takže klidný týden tě nikdy nepřipraví o pozici. Hrstka skutků závisí spíš na štěstí než na umu a počiny jsou poctou samy o sobě, proto ani jedny nenesou žádný věhlas.',
   'guide.deedsPage.renownHeading': 'Věhlas',
   'guide.deedsPage.rewardBorder': 'Rámeček',
   'guide.deedsPage.rewardsBody':
     'Odměny jsou čistě na parádu, a přesně o to jde. Některé skutky udělují titul, který můžeš nosit, nebo rámeček, jenž orámuje tvé jméno, nikdy však nic, co by tvého hrdinu posílilo. Vyber si v Knize skutků titul, o který stojíš, a ponese se s tebou na jmenovce, v chatu i na žebříčcích, všem na očích.',
   'guide.deedsPage.rewardsHeading': 'Tituly a rámečky',
-  'guide.deedsPage.standingsNote':
-    'Světy si vedou průběžný součet věhlasu napříč všemi účty. Chceš-li vidět, kdo si jak stojí, otevři ve hře žebříček a přejdi na jeho záložku Věhlas; pořadí žije tam, ne na wiki.',
   'guide.nav.deeds': 'Kniha skutků',
   'hudChrome.deeds.broadcastLine': '{name} završuje skutek: {deed}',
   'hudChrome.deeds.broadcastsLabel': 'Sdílet vykonané skutky s cechem a přáteli',
@@ -7127,9 +7104,7 @@ export const cs_CZ: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.filterNearly': 'Skoro hotové',
   'hudChrome.deeds.filterUnearned': 'Nevykonané',
   'hudChrome.deeds.hiddenBadge': 'Skrytý',
-  'hudChrome.deeds.lbDeedsCol': 'Skutky',
   'hudChrome.deeds.lbEmpty': 'V žebříčku zatím nejsou žádní kronikáři.',
-  'hudChrome.deeds.lbSelf': 'Tvoje umístění: pořadí {rank}, horních {percent} procent',
   'hudChrome.deeds.lbTab': 'Věhlas',
   'hudChrome.deeds.lbTitleCol': 'Titul',
   'hudChrome.deeds.nearestLabel': 'Skoro tam:',

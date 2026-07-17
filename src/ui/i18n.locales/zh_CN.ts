@@ -198,6 +198,23 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.wocStore.armoryTitle': '兵器库',
   'hudChrome.wocStore.armoryBody':
     '第一赛季兵器库限定武器外观。全账号通用，纯装饰性，周围所有玩家都能看到。',
+  'hudChrome.wocStore.wallet.title': 'Solana 钱包',
+  'hudChrome.wocStore.wallet.unlinked':
+    '连接钱包应用，然后签名一次，将其公开地址绑定到你的 WoC 账号。我们绝不会获取你的恢复短语或私钥。',
+  'hudChrome.wocStore.wallet.connectedUnlinked':
+    '钱包应用已连接到此浏览器，但其公开地址尚未绑定到你的 WoC 账号。',
+  'hudChrome.wocStore.wallet.linkedDisconnected':
+    '你的公开地址已绑定。需要用 SOL 或 WOC 支付时，请重新连接该钱包应用。',
+  'hudChrome.wocStore.wallet.linkedConnected': '已绑定的钱包应用已连接，可以使用 SOL 或 WOC 购买。',
+  'hudChrome.wocStore.wallet.mismatched':
+    '当前连接的是另一个钱包。验证它即可替换已绑定的地址，或重新连接原先绑定的钱包。',
+  'hudChrome.wocStore.wallet.connect': '连接钱包',
+  'hudChrome.wocStore.wallet.verify': '验证并绑定',
+  'hudChrome.wocStore.wallet.reconnect': '重新连接钱包',
+  'hudChrome.wocStore.wallet.manage': '管理钱包',
+  'wallet.bagConnect': '绑定钱包',
+  'wallet.bagLink': '验证钱包',
+  'wallet.bagReconnect': '重新连接钱包',
   'hudChrome.wocStore.collectionLine': '{collection}系列',
   'hudChrome.wocStore.seasonOne': '第一赛季',
   'hudChrome.wocStore.rarity.uncommon': '优秀',
@@ -1187,11 +1204,40 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'wallet.helpLinkedDisconnectedWithBalance': '持有者特权已启用。需要签名或消费时请连接应用。',
   'wallet.extensionHelp':
     '若要在此处看到钱包，请保持 Solflare Wallet 等浏览器钱包扩展处于启用状态。',
+  'wallet.mobileAppHelp':
+    '选择 Phantom 或 Solflare。钱包应用会请求批准。请保持游戏打开，完成后返回游戏。',
+  'wallet.standaloneAppHelp':
+    '主屏幕应用暂不支持连接钱包。若要使用 Phantom 或 Solflare，请在 Safari 或 Chrome 中打开 World of ClaudeCraft。',
+  'wallet.openAppTitle': '在 {wallet} 中继续',
+  'wallet.openAppHelp':
+    '打开 {wallet} 查看此请求。钱包应用处于活动状态时，请保持此游戏标签页打开。',
+  'wallet.openAppButton': '打开 {wallet}',
+  'wallet.manualReturnBrowserHelp':
+    '批准后请返回此游戏标签页。如果 iOS 打开了其他浏览器，请将其关闭并手动返回原浏览器。',
+  'wallet.manualReturnStandaloneHelp':
+    '批准后请从主屏幕返回 World of ClaudeCraft。如果 iOS 打开了浏览器，请将其关闭并重新打开主屏幕应用。',
+  'wallet.preparingAppButton': '正在准备 {wallet}...',
+  'wallet.walletAppUnavailable': '无法准备 {wallet}。请关闭此窗口并重试。',
   'wallet.flowConnect': '选择一个钱包。验证会自动继续。',
   'wallet.flowSign': '在钱包应用中签署验证消息。无需交易或 SOL。',
   'wallet.flowVerify': '正在验证钱包所有权...',
   'wallet.linkFailed': '钱包验证失败。',
   'wallet.verifyFailed': '钱包验证失败。',
+  'wallet.browser.eyebrow': '桌面钱包授权',
+  'wallet.browser.title': '连接 Solana 钱包',
+  'wallet.browser.linkBody': '在此浏览器中选择钱包扩展。签署验证消息后返回桌面应用。',
+  'wallet.browser.paymentBody': '选择已关联到账号的钱包，并在此浏览器中批准交易。',
+  'wallet.browser.extensionHelp':
+    '未找到兼容的钱包扩展。请安装或解锁 Phantom、Solflare 或其他 Solana 浏览器钱包，然后重试。',
+  'wallet.browser.safety': 'World of ClaudeCraft 绝不会索要助记词或私钥。',
+  'wallet.browser.continueWith': '使用 {wallet} 继续',
+  'wallet.browser.reviewTitle': '在钱包中查看',
+  'wallet.browser.reviewBody': '按照 {wallet} 中的提示操作。请保持此浏览器页面打开。',
+  'wallet.browser.completeTitle': '钱包授权完成',
+  'wallet.browser.completeBody': '现在可以返回 World of ClaudeCraft 桌面应用。',
+  'wallet.browser.returnButton': '返回桌面应用',
+  'wallet.browser.failed': '钱包授权失败或已过期。请返回桌面应用并重试。',
+  'wallet.browser.retry': '重试',
   'wallet.unlinkFailed': '无法解除钱包绑定。',
   'wallet.holder': '$WOC 持有者',
   'wallet.holderTierTitle': '{tier} $WOC 持有者',
@@ -3184,6 +3230,25 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.npcs.heroic_quartermaster.title': '英雄军需官',
   'entities.npcs.heroic_quartermaster.greeting':
     '英雄深渊的凭证能换来高崖望最上等的戒指和吊坠。把你的徽记拿给我看。',
+  'entities.npcs.card_master.name': '牌局大师',
+  'entities.npcs.card_master.title': '运气经销人',
+  'entities.npcs.card_master.greeting': '来一局纸牌对决？三局两胜，赢家赢得吹嘘的资本。',
+  'cardDuel.title': '纸牌对决',
+  'cardDuel.close': '关闭',
+  'cardDuel.join': '加入队列',
+  'cardDuel.joinAria': '加入纸牌对决队列',
+  'cardDuel.leave': '离开队列',
+  'cardDuel.leaveAria': '离开纸牌对决队列',
+  'cardDuel.queued': '正在等待对手……',
+  'cardDuel.vsOpponent': '对战 {name}',
+  'cardDuel.round': '局分：{mine} - {theirs}',
+  'cardDuel.forfeit': '认输',
+  'cardDuel.forfeitAria': '认输退出纸牌对决',
+  'cardDuel.unavailable': '纸牌对决需要另一名玩家在线。',
+  'cardDuel.counts': '牌堆：{deck} · 弃牌堆：{discard}',
+  'cardDuel.playCardAria': '打出 {value} 号牌',
+  'cardDuel.waitingOnOpponent': '正在等待对手出牌……',
+  'cardDuel.yourTurn': '出一张牌',
   'entities.npcs.loremaster_caddis.name': '凯迪斯博学者',
   'entities.npcs.loremaster_caddis.title': '博学者',
   'entities.npcs.loremaster_caddis.greeting':
@@ -3198,10 +3263,10 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
     '潭水饮尽月光，{className}，又将溺者吐还。我守望那道门户已有三十夜——而今夜，它开了。',
   'entities.quests.q_prof_intro.title': '人人都有一技之长',
   'entities.quests.q_prof_intro.text':
-    '伊斯特布鲁克的每个人都有除了剑术之外的手艺，{playerName}。镇子周围散落着矿脉，去挥镐采上5块矿石带给我。要亲自采，别耍花招，我看得出来。',
+    '东溪人人除了舞刀弄剑，还得有门手艺，{playerName}。镇子西南的铜矿坑周围岩石里有矿脉。拿起矿镐，亲手开采5处；别想蒙我，我看得出差别。',
   'entities.quests.q_prof_intro.completion':
-    '看到了吧？矿石进了包里，手上也磨出了茧子。继续在路上采矿、伐木、采药，回到镇上时，留意市场旁的城镇专注面板和附近的制作台。只要你愿意，靠这些都能正经谋生。',
-  'entities.quests.q_prof_intro.objectives.0.label': '矿石块',
+    '看吧？矿石采到了，手上也磨出了茧。赶路时继续采矿、伐木和采药；回城后，别忘了市场旁的城镇专注告示板和附近的制作台。只要你愿意，这些手艺都能换来公道的生计。',
+  'entities.quests.q_prof_intro.objectives.0.label': '已开采矿脉',
   'entities.quests.q_wolves.title': '门前群狼',
   'entities.quests.q_wolves.text':
     '森林狼已经敢扑咬北路旅人，{playerName}。击败8只森林狼，让东溪能松一口气。',
@@ -3591,14 +3656,21 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_mogger.objectives.0.label': '击败莫格',
   'entities.quests.q_archetype_acceptance.title': '属于你自己的技艺',
   'entities.quests.q_archetype_acceptance.text':
-    '东溪的每一位匠人最终都会选定一门属于自己的技艺。用一件事证明自己吧，{playerName}，宣告你的道路。',
-  'entities.quests.q_archetype_acceptance.completion': '你的道路已经选定；愿你走得稳当。',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': '击败森林之狼',
+    '技艺是学识，{playerName}，而调谐是一份承诺。选择两门相邻的技艺作为你的主修，再把你亲手从谷地矿脉中采出的矿石带给我。',
+  'entities.quests.q_archetype_acceptance.completion':
+    '承诺已经立下。这两门技艺现为你的主修，与它们相对的技艺则成为你的爱好。',
+  'entities.quests.q_archetype_acceptance.objectives.0.label': '已开采矿脉',
   'entities.quests.q_prof_make_amends.title': '弥补',
   'entities.quests.q_prof_make_amends.text':
-    '若要放下一门技艺、转投另一门，匠人必须先为放弃的道路做出弥补，{playerName}。',
-  'entities.quests.q_prof_make_amends.completion': '弥补已经完成；一条新的道路已向你敞开。',
+    '你曾掌握过这组技艺，{playerName}。重拾旧途并非新的誓言。去帮忙清理谷地道路，让劳作唤醒双手曾经熟悉的节奏。',
+  'entities.quests.q_prof_make_amends.completion': '昔日的节奏回来了。你曾经的那组技艺再次生效。',
   'entities.quests.q_prof_make_amends.objectives.0.label': '击败森林之狼',
+  'entities.quests.q_prof_hobby_switch.title': '别样消遣',
+  'entities.quests.q_prof_hobby_switch.text':
+    '主修技艺需要誓言。爱好只问你的好奇心将去往何处，{playerName}。采集一些草药，然后决定要钻研哪一门与主修技艺相对的手艺。',
+  'entities.quests.q_prof_hobby_switch.completion':
+    '这是个轻松些却很实用的选择。追随这份好奇心，直到稀有品质的作品所能抵达之处。',
+  'entities.quests.q_prof_hobby_switch.objectives.0.label': '采集草药丛',
   'entities.quests.q_drowned_choir.title': '溺亡唱诗班',
   'entities.quests.q_drowned_choir.text':
     '那些涉行者并非孤身行动。它们之中游走着溺亡信徒——随神殿一同沉没的邪教徒，至今仍披着腐烂的法衣，仍在岸边礁石上吟唱祷词。让其中八名永远噤声，再为我带回它们随身携带的六件祭品。我想知道它们打算献给女神什么。',
@@ -4361,14 +4433,14 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.intro':
     '功绩之书记录着你在这个世界所做的一切，从走出新手山谷的第一步，到王国所能提供的最艰难的战斗。一边游玩一边赢得功绩，佩戴它们授予的头衔，看着你的名望不断攀升。',
   'guide.deedsPage.renownBody':
-    '名望是功绩之书背后的分数。你赢得的每个功绩都价值固定的点数，而你的总分只增不减，因此清闲的一周绝不会让你失去已有的成绩。少数功绩取决于运气而非技巧，而壮举则自成一份荣誉，因此这两者都不提供任何名望。',
+    '名望是功绩之书背后的分数。你赢得的每个功绩都价值固定的点数，而你的总分只增不减，因此清闲的一周绝不会让你失去已有的成绩。少数功绩取决于运气而非技巧，而壮举则自成一份荣誉，因此这两者都不提供任何名望。不带名望的功绩仍会计入功绩之书的完成度，只是从不计分。',
   'guide.deedsPage.renownHeading': '名望',
   'guide.deedsPage.rewardBorder': '边框',
   'guide.deedsPage.rewardsBody':
     '这些奖励纯粹是为了炫耀，而这正是它们的意义所在。有些功绩会授予你可佩戴的头衔，或是为你的名字增添装饰的边框，绝不会给出任何让你的英雄变强的东西。在功绩之书中选择你想要的头衔，它便会显示在你的铭牌上、聊天中和排行榜上，供所有人观看。',
   'guide.deedsPage.rewardsHeading': '头衔与边框',
   'guide.deedsPage.standingsNote':
-    '各王国会统计所有账号累积的名望。想知道谁位居何处，请在游戏内打开排行榜并转到它的名望标签页；排名在那里，而不在维基上。',
+    '各王国会统计所有账号累积的名望：排行榜按账号的累计名望排名，每个功绩在你所有角色中只计一次，且榜上只显示名望，因此不带名望的功绩即使计入你的功绩之书，也绝不会影响排名。想知道谁位居何处，请在游戏内打开排行榜并转到它的名望标签页；排名在那里，而不在维基上。',
   'guide.delvesPage.affixesBody':
     '难度更高的探秘会随机附带一种词缀，改变下潜的玩法走向，从不安的亡者，到污浊的浊气，再到摇摇欲坠的顶棚。它们会让危险与回报一同提升。每座探秘只从契合自身主题的词缀中抽取；就整个王国而言，词缀池如下：',
   'guide.delvesPage.affixesHeading': '探秘词缀',
@@ -5755,7 +5827,8 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.name': '灰颚追猎者装备',
   'entities.itemSets.greyjaw_stalker.bonus3': '攻击速度和施法速度提高 15%。',
   'entities.itemSets.necromancers.name': '哀织法衣',
-  'entities.itemSets.necromancers.bonus2': '你不会被击退（击退抗性 100%）。',
+  'entities.itemSets.necromancers.bonus2':
+    '法术强度提高 20 点。受到伤害不再延迟你的施法（施法延迟抗性 100%）。',
   'entities.itemSets.necromancers.bonus3': '智力提高 10 点，耐力提高 10 点。',
   'entities.itemSets.necromancers.bonus4':
     '你的法术有 10% 的几率触发“清晰施法”，使你的下一个法术免费施放。',
@@ -5766,13 +5839,15 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.nighttalon.bonus4':
     '你的武器致命一击会撕开“撕裂伤口”，使目标每 2 秒流血 6 点伤害，持续 12 秒。最多叠加 3 层。',
   'entities.itemSets.soulflame.name': '魂焰法衣',
-  'entities.itemSets.soulflame.bonus2': '你不会被击退（击退抗性 100%）。',
+  'entities.itemSets.soulflame.bonus2':
+    '法术强度提高 20 点。受到伤害不再延迟你的施法（施法延迟抗性 100%）。',
   'entities.itemSets.soulflame.bonus3':
     '智力提高 15 点，精神提高 15 点，攻击速度和施法速度提高 15%。',
   'entities.itemSets.soulflame.bonus4':
     '你的法术有 10% 的几率触发“灼魂之焰”，使法术强度提高 40 点，持续 10 秒。',
   'entities.itemSets.stormcallers.name': '唤风法衣',
-  'entities.itemSets.stormcallers.bonus2': '你不会被击退（击退抗性 100%）。',
+  'entities.itemSets.stormcallers.bonus2':
+    '法术强度提高 20 点。受到伤害不再延迟你的施法（施法延迟抗性 100%）。',
   'entities.itemSets.stormcallers.bonus3':
     '智力提高 15 点，精神提高 15 点，攻击速度和施法速度提高 15%。',
   'entities.itemSets.stormcallers.bonus4':
@@ -5926,6 +6001,43 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.craftedToast': '已制作:{name}',
   'hudChrome.crafting.insufficientMaterials': '你没有足够的材料。',
   'hudChrome.crafting.unknownRecipe': '该配方不存在。',
+  'hudChrome.crafting.comboRequires': '调谐要求：{craftA} + {craftB}，阶级 {tier}。',
+  'hudChrome.crafting.comboMet': '已就绪。',
+  'hudChrome.crafting.comboSyncing': '正在检查服务器调谐状态。',
+  'hudChrome.crafting.comboNotAttuned': '请先选择一个原型组合。',
+  'hudChrome.crafting.comboWrongPair': '启用这个确切组合才能制作。',
+  'hudChrome.crafting.comboTierUnmet': '将两项主修技艺提升到所需阶级。',
+  'hudChrome.crafting.professionChoice': '专业选择',
+  'hudChrome.crafting.noProfessionChoice': '当前没有可用的专业选择。',
+  'hudChrome.crafting.attunementPreview':
+    '结果：获得{title}称号；{majorA}和{majorB}成为无上限主修技艺；{hobby}成为上限为稀有品质的爱好技艺；所有其他技能知识都会保留，但休眠时上限为普通品质。',
+  'hudChrome.crafting.hobbyPreview':
+    '结果：{hobby}成为上限为稀有品质的爱好技艺。两项主修技艺和所有已保留的技能数值保持不变。',
+  'hudChrome.crafting.identity.title': '制作身份',
+  'hudChrome.crafting.identity.syncing': '正在等待服务器发送你的制作身份。',
+  'hudChrome.crafting.identity.unattuned':
+    '当前未启用任何原型组合。你的知识会被保留，但组合配方需要先完成调谐。',
+  'hudChrome.crafting.identity.titleLabel': '称号',
+  'hudChrome.crafting.identity.majorsLabel': '主修技艺',
+  'hudChrome.crafting.identity.hobbyLabel': '爱好',
+  'hudChrome.crafting.identity.historyLabel': '历史',
+  'hudChrome.crafting.identity.history': '已发现 {pairs} 个组合，已完成 {returns} 次回归',
+  'hudChrome.crafting.identity.roleMajor': '主修',
+  'hudChrome.crafting.identity.roleHobby': '爱好',
+  'hudChrome.crafting.identity.roleDormant': '休眠知识',
+  'hudChrome.crafting.identity.roleUnattuned': '未调谐',
+  'hudChrome.crafting.identity.ceilingUnlimited': '无强化上限',
+  'hudChrome.crafting.identity.ceilingCommon': '普通品质上限',
+  'hudChrome.crafting.identity.skillAria': '{craft}，技能 {skill}，阶级 {tier}，{role}，{ceiling}',
+  'hudChrome.crafting.identity.colCraft': '专业',
+  'hudChrome.crafting.identity.colSkill': '技能',
+  'hudChrome.crafting.identity.colRole': '定位',
+  'hudChrome.crafting.identity.colCap': '上限',
+  'hudChrome.crafting.identity.tutorial':
+    '第一个阶级：将一门技艺提升到技能 {skill}。成功完成配方会提升对应技艺，且不会抹去其他知识。',
+  'hudChrome.crafting.identity.nearTier': '{craft}距离下一阶级还差 {points} 点技能。',
+  'hudChrome.crafting.identity.dormantKnowledge':
+    '{craft}知识已保留，但在其组合或爱好未启用时处于休眠状态。',
   'hudChrome.devBadge.title': '开发者',
   'hudChrome.devBadge.tiers.tinkerer': '修补匠',
   'hudChrome.devBadge.tiers.artificer': '工巧师',
@@ -6493,6 +6605,7 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'apiError.body.unsupported_media_type': '不支持的请求格式。',
   'apiError.deeds.invalid_input': '输入无效。',
   'apiError.steam.disabled': 'Steam 关联当前不可用。',
+  'apiError.wallet.handoff_invalid': '钱包授权已过期或无法验证。请重试。',
   'apiError.steam.invalid_ticket': 'Steam 无法验证此关联请求。请在桌面客户端中重试。',
   'apiError.steam.banned': '该 Steam 账号无法关联。',
   'apiError.steam.already_linked': '你的账号已关联一个 Steam 账号。',
@@ -6663,16 +6776,26 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.archetypeTitle.label': '称号',
   'hudChrome.archetypeTitle.none': '无',
   'hudChrome.archetypeTitle.hobbyLabel': '爱好',
-  'hudChrome.archetypeTitle.armorcrafting': '锻甲师',
-  'hudChrome.archetypeTitle.weaponcrafting': '武器匠',
-  'hudChrome.archetypeTitle.jewelcrafting': '珠宝匠',
-  'hudChrome.archetypeTitle.alchemy': '炼金师',
-  'hudChrome.archetypeTitle.engineering': '工程师',
-  'hudChrome.archetypeTitle.cooking': '厨师',
-  'hudChrome.archetypeTitle.inscription': '铭文师',
-  'hudChrome.archetypeTitle.enchanting': '附魔师',
-  'hudChrome.archetypeTitle.tailoring': '裁缝',
-  'hudChrome.archetypeTitle.leatherworking': '制皮师',
+  'hudChrome.archetypePair.engineering+alchemy': '爆破师',
+  'hudChrome.archetypePair.alchemy+cooking': '药剂师',
+  'hudChrome.archetypePair.cooking+leatherworking': '捕兽人',
+  'hudChrome.archetypePair.leatherworking+tailoring': '制装师',
+  'hudChrome.archetypePair.tailoring+inscription': '织法师',
+  'hudChrome.archetypePair.inscription+enchanting': '秘法师',
+  'hudChrome.archetypePair.enchanting+jewelcrafting': '缚晶师',
+  'hudChrome.archetypePair.jewelcrafting+weaponcrafting': '铸刃师',
+  'hudChrome.archetypePair.weaponcrafting+armorcrafting': '铁匠',
+  'hudChrome.archetypePair.armorcrafting+engineering': '齿轮匠',
+  'hudChrome.craftName.armorcrafting': '护甲锻造',
+  'hudChrome.craftName.weaponcrafting': '武器锻造',
+  'hudChrome.craftName.jewelcrafting': '珠宝加工',
+  'hudChrome.craftName.alchemy': '炼金术',
+  'hudChrome.craftName.engineering': '工程学',
+  'hudChrome.craftName.cooking': '烹饪',
+  'hudChrome.craftName.inscription': '铭文',
+  'hudChrome.craftName.enchanting': '附魔',
+  'hudChrome.craftName.tailoring': '裁缝',
+  'hudChrome.craftName.leatherworking': '制皮',
   'hudChrome.crafting.reagentLine': '{name}: {have}/{required}',
   // Protect Yumi locale fill (M16 wordy-key floor).
   'yumi.hud.collapse': '折叠Protect Yumi血条',
@@ -7172,9 +7295,11 @@ export const zh_CN: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.charTitleNone': '未选择头衔',
   'hudChrome.deeds.charOpenBook': '功绩之书',
   'hudChrome.deeds.lbTab': '名望',
-  'hudChrome.deeds.lbDeedsCol': '功绩',
   'hudChrome.deeds.lbTitleCol': '头衔',
-  'hudChrome.deeds.lbSelf': '你的排名：第 {rank} 名，位居前 {percent}%',
+  'hudChrome.deeds.lbScopeNote':
+    '排行榜按账号的累计名望排名。每个功绩在一个账号的所有角色中只计一次。',
+  'hudChrome.deeds.lbSelfAccount': '你的账号：第 {rank} 名，位居前 {percent}%，名望 {renown}',
+  'hudChrome.deeds.lbSelfRank': '你的账号：第 {rank} 名，位居前 {percent}%',
   'hudChrome.deeds.lbEmpty': '暂无上榜的编年史家。',
   'hudChrome.deeds.broadcastsLabel': '与公会和好友分享功绩达成',
   'guide.deedsPage.catHeading': '{label}（{count}）',

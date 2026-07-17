@@ -3,6 +3,7 @@ import type {
   ActiveFrostRing,
   ActiveTemporalHourglass,
   BankBonusSource,
+  CraftingIdentityView,
   DailyRewardHistory,
   DailyRewardLeaderboardPage,
   DailyRewardSpinResult,
@@ -282,6 +283,7 @@ import {
   applyEnchant as applyEnchantImpl,
   type DisenchantResult,
   disenchantItem as disenchantItemImpl,
+  isEnchantedInstance,
 } from './professions/enchanting';
 import * as professionsFocus from './professions/focus';
 import {
@@ -293,6 +295,7 @@ import {
   isNodeHarvestableBy,
   normalizeGatheringProficiency,
 } from './professions/gathering';
+import type { MasterworkProc } from './professions/masterwork';
 import { type SalvageResult, salvageItem as salvageItemImpl } from './professions/salvage';
 import type { ProfessionRecipeRecord as RecipeDef } from './professions/types';
 import {
@@ -376,6 +379,8 @@ import {
   checkQuestReady,
   onInventoryChangedForQuests,
   onMobKilledForQuests,
+  onNodeGatheredForQuests,
+  onRecipeCraftedForQuests,
 } from './quests/quest_credit';
 
 // computeQuestState (the pure quest-state fn) moved to quests/quest_commands.ts (W4);
@@ -385,6 +390,8 @@ export { computeQuestState } from './quests/quest_commands';
 
 import { completeCurrentQuestsForDev, completeQuestForDev } from './quests/dev_quest_commands';
 import * as arenaMod from './social/arena';
+import type { CardDuelMatch } from './social/card_duel';
+import * as cardDuelMod from './social/card_duel';
 import * as duelMod from './social/duel';
 // A4: Protect Yumi (formats yumi3/yumi5); match logic in social/yumi.ts, reached
 // via ctx callbacks + the two hostility arms in isHostileTo/isFriendlyTo.
@@ -483,6 +490,7 @@ import {
   type PlayerClass,
   type QuestProgress,
   type QuestState,
+  questObjectiveRequired,
   REVENGE_FREE_CHANCE,
   REVENGE_FREE_DURATION,
   type ReadyCheck,
@@ -983,6 +991,11 @@ export interface PlayerMeta {
   // toast/log line off, without deciding the outcome itself. Null until the
   // player's first craft attempt.
   lastCraftResult: CraftResult | null;
+  // This player's most recent masterwork proc (Professions 2.0 Phase 2), same
+  // session-only shape as lastCraftResult above: never persisted into
+  // CharacterState. Null until the player's first masterwork proc this
+  // session. Backs the IWorld lastMasterwork read surface.
+  lastMasterwork: MasterworkProc | null;
   // Outcome of this player's most recent salvageItem command (#1300), same
   // session-only shape as lastCraftResult above. Null until the player's
   // first salvage attempt. Not yet wired onto the IWorld/wire surface (same
@@ -1202,7 +1215,7 @@ export interface CharacterState {
   // load path (never destroys items; tolerates an over-capacity inventory).
   bank?: BankState;
   vendorBuyback?: InvSlot[];
-  questLog: { questId: string; counts: number[]; state: 'active' | 'ready' | 'done' }[];
+  questLog: QuestProgress[];
   questsDone: string[];
   // Legacy arenaRating/Wins/Losses are treated as 1v1 data. The explicit
   // 1v1 fields are written by new saves, while old saves fall back cleanly.
@@ -1421,6 +1434,10 @@ export class Sim {
   tradeInvites = new Map<number, { fromPid: number; expires: number }>();
   duels = new Map<number, DuelState>(); // pid -> shared duel (both pids)
   duelInvites = new Map<number, { fromPid: number; expires: number }>();
+  // Card Duel minigame (src/sim/social/card_duel.ts): its own FIFO queue and
+  // live-match map, independent of the HP-based duels above.
+  cardDuelQueue: number[] = [];
+  cardDuels = new Map<number, CardDuelMatch>(); // pid -> shared match (both pids)
   // arena: format-specific queues, live bouts keyed by every participant pid,
   // and the set of busy instance slots
   arenaQueue1v1: number[] = [];
@@ -2018,6 +2035,7 @@ export class Sim {
       pendingGatherGrants: [],
       nodeHarvestReadyAt: {},
       lastCraftResult: null,
+      lastMasterwork: null,
       lastSalvageResult: null,
       lastDisenchantResult: null,
       lastEnchantResult: null,
@@ -2148,6 +2166,8 @@ export class Sim {
             questId: q.questId,
             counts: [...q.counts],
             state: q.state,
+            ...(q.selection === undefined ? {} : { selection: q.selection }),
+            ...(q.resolvedCounts === undefined ? {} : { resolvedCounts: [...q.resolvedCounts] }),
           });
       }
       for (const q of s.questsDone) meta.questsDone.add(q);
@@ -2169,7 +2189,7 @@ export class Sim {
       }
       meta.craftSkills = normalizeCraftSkills(s.craftSkills);
       if (s.knownRecipes) meta.knownRecipes = new Set(s.knownRecipes);
-      meta.archetype = normalizeArchetypeState(s.archetype);
+      meta.archetype = normalizeArchetypeState(s.archetype, meta.craftSkills);
       meta.mailWelcomed = s.mailWelcomed === true;
       meta.delveMarks = s.delveMarks ?? 0;
       meta.delveClears = { ...(s.delveClears ?? {}) };
@@ -2312,13 +2332,14 @@ export class Sim {
     }
     // Book of Deeds retro-on-join, after the saved state is fully restored:
     // seed the discovery ledger from current holdings, apply the retro
-    // fallbacks a predicate cannot express, then evaluate every predicate
-    // against the loaded state (a pure function of that state and the
-    // catalog: no rng, so join order cannot fork the draw order). Counters
-    // start at zero, so counter deeds never retro-grant; the emitted events
-    // carry retro: true and drain with the next tick to this player only.
+    // fallbacks a predicate cannot express (proof inferences plus the
+    // stranded-deed heals), then evaluate every predicate against the loaded
+    // state (a pure function of that state and the catalog: no rng, so join
+    // order cannot fork the draw order). Counters start at zero, so counter
+    // deeds never retro-grant; the emitted events carry retro: true and
+    // drain with the next tick to this player only.
     deedsMod.seedItemDiscovery(this.ctx, meta);
-    deedsMod.retroFallbackGrants(this.ctx, meta);
+    deedsMod.retroFallbackGrants(this.ctx, meta, player);
     deedsMod.evaluateDeedsFor(this.ctx, meta, player, true);
     this.deedDirtyPids.delete(player.id);
     this.deedDirtyKeys.delete(player.id);
@@ -2557,6 +2578,11 @@ export class Sim {
     // arena: leaving the queue is free; disconnecting mid-bout forfeits it
     this.arenaDequeue(pid);
     this.arenaResolveDesertion(pid);
+    // Card Duel: leaving the queue is free; a live match is forfeited to the
+    // opponent (mirrors the disconnect/jail paths in server/game.ts, and keeps
+    // the offline Sim / headless env from leaking cardDuels/cardDuelQueue
+    // entries for a departed pid).
+    this.leaveCardMinigameEntirely(pid);
     // Vale Cup: leaving the queue is free; deserting a counted match benches
     // the fighter (the team plays short), takes the loss, and arms the
     // Groundskeeper's lockout. Idempotent: the server already resolved it
@@ -2753,6 +2779,8 @@ export class Sim {
         questId: q.questId,
         counts: [...q.counts],
         state: q.state,
+        ...(q.selection === undefined ? {} : { selection: q.selection }),
+        ...(q.resolvedCounts === undefined ? {} : { resolvedCounts: [...q.resolvedCounts] }),
       })),
       questsDone: [...meta.questsDone],
       arenaRating: meta.arenaRating,
@@ -2806,7 +2834,7 @@ export class Sim {
       pendingSkinItemId: meta.pendingSkinItemId,
       craftSkills: { ...meta.craftSkills },
       knownRecipes: [...meta.knownRecipes],
-      archetype: { ...meta.archetype },
+      archetype: { ...meta.archetype, attunedPairs: [...meta.archetype.attunedPairs] },
       delveMarks: meta.delveMarks,
       delveClears: { ...meta.delveClears },
       companionUpgrades: { ...meta.companionUpgrades },
@@ -3411,6 +3439,12 @@ export class Sim {
       get duels() {
         return sim.duels;
       },
+      get cardDuelQueue() {
+        return sim.cardDuelQueue;
+      },
+      get cardDuels() {
+        return sim.cardDuels;
+      },
       get cfg() {
         return sim.cfg;
       },
@@ -3672,6 +3706,10 @@ export class Sim {
       // through `sim.ctx` (lazily read at call time, after the ctor sets it). countItem
       // stays on Sim (L2 inventory hub) and is consumed by the collect updater.
       onMobKilledForQuests: (mob, meta) => onMobKilledForQuests(sim.ctx, mob, meta),
+      onRecipeCraftedForQuests: (recipeId, meta) =>
+        onRecipeCraftedForQuests(sim.ctx, recipeId, meta),
+      onNodeGatheredForQuests: (node, itemId, meta) =>
+        onNodeGatheredForQuests(sim.ctx, node, itemId, meta),
       onInventoryChangedForQuests: (meta) => onInventoryChangedForQuests(sim.ctx, meta),
       checkQuestReady: (qp, meta) => checkQuestReady(sim.ctx, qp, meta),
       countItem: sim.countItem.bind(sim),
@@ -4262,6 +4300,9 @@ export class Sim {
 
     this.updateDuels();
     lap?.('duels');
+    this.updateCardDuelQueue();
+    this.updateCardDuelDeadlines();
+    lap?.('cardDuel');
     this.updateArena();
     lap?.('arena');
     this.updateTradesAndInvites();
@@ -6293,13 +6334,16 @@ export class Sim {
         template,
         inst?.dungeonId ?? '',
         difficulty,
+        { summonedAdd: true },
       );
       const level = mobLevelForDungeonDifficulty(inst?.dungeonId ?? '', difficulty, rolledLevel);
       const add = createMob(this.nextId++, addTemplate, level, pos);
-      applyHeroicMobTuning(add, inst?.dungeonId ?? '', difficulty);
-      // Leash to the boss's ORIGINAL spawn (not his current, possibly-kited position):
-      // pulled too far from it, the add's chase-case leash check evades it home.
-      add.spawnPos = { ...boss.spawnPos };
+      applyHeroicMobTuning(add, inst?.dungeonId ?? '', difficulty, { summonedAdd: true });
+      // The add is anchored where it ERUPTED (createMob already set spawnPos to the
+      // spawn point beside the boss): a boss kited far from HIS original spawn must
+      // not hatch adds that are instantly past their own leash and evade home without
+      // ever swinging. Kited from here, the chase-case leash check walks it back to
+      // this eruption point, not the boss's distant home.
       add.tappedById = boss.tappedById;
       this.addEntity(add);
       boss.summonedIds.push(add.id);
@@ -6309,6 +6353,9 @@ export class Sim {
         add.aggroTargetId = victim.id;
         add.inCombat = true;
         add.aiState = dist2d(add.pos, victim.pos) > this.mobMeleeRange(add) ? 'chase' : 'attack';
+        // Same seeding aggroMob does on a normal pull: the leash measures from the
+        // eruption point until a hostile player action refreshes it.
+        add.leashAnchor = { ...add.pos };
         addThreat(add, victim.id, 1);
       }
       // Book of Deeds kill-order tasks track every add this attempt summoned.
@@ -6459,20 +6506,22 @@ export class Sim {
   }
 
   // Enchanting-eligible count for `itemId` (#1712 review): a plain fungible
-  // stack counts, and so does an instanced copy that carries NO rolled.stats
-  // (e.g. crafting.ts's single-copy rare+ grant, which instances every
-  // rare-or-better craft for its signer/rolled-quality payload but does not
-  // itself apply an enchant). Only a copy that already has rolled.stats (i.e.
-  // is already enchanted) is excluded, so disenchant/apply-enchant never
-  // consumes an already-enchanted copy but DOES accept crafted gear, unlike
-  // the fungible-only gate this replaces for enchanting.ts specifically.
+  // stack counts, and so does an instanced copy that is not itself already
+  // enchanted (e.g. crafting.ts's single-copy rare+ grant or a Phase 2
+  // masterwork copy, whose rolled.stats are its baked bonus, NOT an enchant).
+  // Only an already-enchanted copy (professions/enchanting.ts
+  // isEnchantedInstance: the explicit `enchant` marker, or legacy bare
+  // rolled.stats without rolled.masterwork) is excluded, so disenchant/
+  // apply-enchant never consumes an already-enchanted copy but DOES accept
+  // crafted and masterwork gear, unlike the fungible-only gate this replaces
+  // for enchanting.ts specifically.
   countEnchantableItem(itemId: string, pid?: number): number {
     const r = this.resolve(pid);
     if (!r) return 0;
     let n = 0;
     for (const s of r.meta.inventory) {
       if (s.itemId !== itemId) continue;
-      if (s.instance?.rolled?.stats) continue;
+      if (s.instance && isEnchantedInstance(s.instance)) continue;
       n += s.count;
     }
     return n;
@@ -6481,11 +6530,12 @@ export class Sim {
   // Removal counterpart to countEnchantableItem above: prefers plain fungible
   // stacks (matching removeFungibleItem's ordering within that subset) and only
   // reaches for an instanced-but-unenchanted copy once no fungible copy is left.
-  // Never removes a copy that already carries rolled.stats. Returns the
+  // Never removes an already-enchanted copy (isEnchantedInstance). Returns the
   // `instance` payload of every instanced slot actually consumed (matching
   // removeItem's return contract) so a caller applying an enchant can merge a
-  // crafted copy's signer/rolled.quality into the freshly-enchanted instance
-  // instead of silently dropping them (#1712 round-3 review).
+  // crafted copy's signer/masterwork/legacy rolled.quality into the
+  // freshly-enchanted instance instead of silently dropping them (#1712
+  // round-3 review).
   removeEnchantableItem(itemId: string, count: number, pid?: number): ItemInstancePayload[] {
     const consumedInstances: ItemInstancePayload[] = [];
     const r = this.resolve(pid);
@@ -6500,10 +6550,10 @@ export class Sim {
       count -= take;
       if (s.count <= 0) meta.inventory.splice(i, 1);
     }
-    // Pass 2: instanced copies without rolled.stats.
+    // Pass 2: instanced copies that are not already enchanted.
     for (let i = meta.inventory.length - 1; i >= 0 && count > 0; i--) {
       const s = meta.inventory[i];
-      if (s.itemId !== itemId || !s.instance || s.instance.rolled?.stats) continue;
+      if (s.itemId !== itemId || !s.instance || isEnchantedInstance(s.instance)) continue;
       consumedInstances.push(s.instance);
       const take = Math.min(s.count, count);
       s.count -= take;
@@ -6684,8 +6734,8 @@ export class Sim {
   // Gather-node harvest (#1121): a thin delegate onto
   // src/sim/professions/gathering.ts, resolved on the deterministic tick the
   // command arrives on, same as buyItem/useItem above.
-  harvestNode(nodeId: string, pid?: number): void {
-    harvestNodeImpl(this.ctx, nodeId, pid);
+  harvestNode(nodeId: string, pid?: number): boolean {
+    return harvestNodeImpl(this.ctx, nodeId, pid);
   }
 
   // IWorld read surface (IWorldProfessions): whether the given node is
@@ -6728,15 +6778,34 @@ export class Sim {
       itemId: result.itemId,
       count: result.count,
       quality: result.quality,
+      masterwork: result.masterwork,
       reason: result.reason,
       pid: meta?.entityId,
     });
+    // Masterwork proc surface (Professions 2.0 Phase 2): stash the per-player
+    // view (session-only, like lastCraftResult above) and emit the personal
+    // masterwork event, in addition to the craftResult emit.
+    if (result.masterwork && result.itemId && meta) {
+      const proc: MasterworkProc = {
+        recipeId: result.recipeId,
+        itemId: result.itemId,
+        crafter: meta.entityId,
+      };
+      meta.lastMasterwork = proc;
+      this.emit({ type: 'masterwork', ...proc, pid: meta.entityId });
+    }
   }
 
   // IWorld read surface (IWorldProfessions, #1127): the local viewer's most
   // recent craft-result, or null before their first craft attempt this session.
   get lastCraftResult(): CraftResult | null {
     return this.players.get(this.primaryId)?.lastCraftResult ?? null;
+  }
+
+  // IWorld read surface (IWorldProfessions, Phase 2): the local viewer's most
+  // recent masterwork proc, or null before their first proc this session.
+  get lastMasterwork(): MasterworkProc | null {
+    return this.players.get(this.primaryId)?.lastMasterwork ?? null;
   }
 
   // Recipe acquisition command (#1299): a thin delegate onto
@@ -6828,8 +6897,8 @@ export class Sim {
   // tests resolve them on the Sim facade unchanged; each forwards via this.ctx. The
   // quest-NPC dispatch they fan into (talkToNpc / isQuestInteractionEntity below) STAYS
   // on Sim (W4) and is reached through two append-only SimContext callbacks.
-  lootCorpse(mobId: number, pid?: number): void {
-    interaction.lootCorpse(this.ctx, mobId, pid);
+  lootCorpse(mobId: number, pid?: number): boolean {
+    return interaction.lootCorpse(this.ctx, mobId, pid);
   }
 
   // Walk-by autoloot: the passive counterpart to lootCorpse, called every
@@ -6844,8 +6913,8 @@ export class Sim {
     interaction.harvestCorpse(this.ctx, mobId, components, pid);
   }
 
-  pickUpObject(objId: number, pid?: number): void {
-    interaction.pickUpObject(this.ctx, objId, pid);
+  pickUpObject(objId: number, pid?: number): boolean {
+    return interaction.pickUpObject(this.ctx, objId, pid);
   }
 
   townFocusFor(pid: number): Record<string, number> {
@@ -6922,6 +6991,7 @@ export class Sim {
     for (const qid of npc.questIds) {
       if (
         QUESTS[qid].giverNpcId === npc.templateId &&
+        !QUESTS[qid].completionEffect &&
         this.questState(qid, meta.entityId) === 'available'
       ) {
         this.acceptQuest(qid, meta.entityId);
@@ -6937,14 +7007,18 @@ export class Sim {
       const quest = QUESTS[qp.questId];
       quest.objectives.forEach((objective, objectiveIndex) => {
         if (objective.type !== 'interact' || objective.targetNpcId !== npc.templateId) return;
-        if (qp.counts[objectiveIndex] >= objective.count) return;
+        const required = questObjectiveRequired(quest, qp, objectiveIndex);
+        if (qp.counts[objectiveIndex] >= required) return;
         qp.counts[objectiveIndex]++;
         progressed = true;
         meta.counters.questProgress++;
         this.emit({
           type: 'questProgress',
           questId: qp.questId,
-          text: `${objective.label}: ${qp.counts[objectiveIndex]}/${objective.count}`,
+          objectiveIndex,
+          current: qp.counts[objectiveIndex],
+          required,
+          text: `${objective.label}: ${qp.counts[objectiveIndex]}/${required}`,
           pid: meta.entityId,
         });
         this.ctx.checkQuestReady(qp, meta);
@@ -6969,8 +7043,8 @@ export class Sim {
     return questCommands.questState(this.ctx, questId, pid);
   }
 
-  acceptQuest(questId: string, pid?: number): void {
-    questCommands.acceptQuest(this.ctx, questId, pid);
+  acceptQuest(questId: string, selectionOrPid?: string | number, pid?: number): void {
+    questCommands.acceptQuest(this.ctx, questId, selectionOrPid, pid);
   }
 
   acceptLinkedQuest(questId: string, sharerPid: number, pid?: number): void {
@@ -7020,8 +7094,8 @@ export class Sim {
     resurrectAtCorpse(this.ctx, pid);
   }
 
-  resurrectAtSpiritHealer(pid?: number): void {
-    resurrectAtSpiritHealer(this.ctx, pid);
+  resurrectAtSpiritHealer(pid?: number): boolean {
+    return resurrectAtSpiritHealer(this.ctx, pid);
   }
 
   respondToResurrection(accept: boolean, pid?: number): void {
@@ -7474,6 +7548,63 @@ export class Sim {
 
   duelFor(pid: number): DuelState | null {
     return duelMod.duelFor(this.ctx, pid);
+  }
+
+  // -------------------------------------------------------------------------
+  // Card Duel minigame (src/sim/social/card_duel.ts): thin delegates for the
+  // IWorld card_minigame facet.
+  private updateCardDuelQueue(): void {
+    cardDuelMod.updateCardDuelQueue(this.ctx);
+  }
+
+  private updateCardDuelDeadlines(): void {
+    cardDuelMod.updateCardDuelDeadlines(this.ctx);
+  }
+
+  joinCardDuelQueue(pid?: number): void {
+    cardDuelMod.joinCardMinigameQueue(this.ctx, pid);
+  }
+
+  leaveCardDuelQueue(pid?: number): void {
+    cardDuelMod.leaveCardMinigameQueue(this.ctx, pid);
+  }
+
+  isQueuedForCardMinigame(pid: number): boolean {
+    return cardDuelMod.isQueuedForCardMinigame(this.ctx, pid);
+  }
+
+  cardDuelMatchFor(pid: number): CardDuelMatch | null {
+    return cardDuelMod.cardDuelMatchFor(this.ctx, pid);
+  }
+
+  playCardInDuel(cardValue: number, pid?: number): void {
+    cardDuelMod.playCardInDuel(this.ctx, cardValue, pid);
+  }
+
+  // Player-issuable forfeit of a LIVE match (distinct from leaveCardDuelQueue,
+  // which only leaves the matchmaking queue): lets a player stuck against an
+  // idle opponent get out immediately instead of waiting for the AFK deadline.
+  forfeitCardDuel(pid?: number): void {
+    cardDuelMod.forfeitCardDuelMatch(this.ctx, pid);
+  }
+
+  // IWorldCardMinigame read surface: the local player's queue/match snapshot.
+  get cardMinigameInfo(): cardDuelMod.CardMinigameInfo {
+    return this.cardMinigameInfoFor(this.primaryId);
+  }
+
+  // Server-side pid-parameterized reader (like arenaInfoFor), for wiring an
+  // arbitrary session's snapshot rather than only the local/primary player.
+  // View assembly itself lives in card_duel.ts (buildCardMinigameInfo): it
+  // needs nothing from Sim's private state, matching the six thin delegates
+  // directly above.
+  cardMinigameInfoFor(pid: number): cardDuelMod.CardMinigameInfo {
+    return cardDuelMod.buildCardMinigameInfo(this.ctx, pid);
+  }
+
+  // Called from the leave/disconnect path (mirrors duel forfeit-on-leave).
+  leaveCardMinigameEntirely(pid: number): void {
+    cardDuelMod.leaveCardMinigameEntirely(this.ctx, pid);
   }
 
   // -------------------------------------------------------------------------
@@ -8101,12 +8232,12 @@ export class Sim {
     updateDoorTriggersImpl(this.ctx, p);
   }
 
-  enterDungeon(dungeonId: string, pid?: number): void {
-    enterDungeonImpl(this.ctx, dungeonId, pid);
+  enterDungeon(dungeonId: string, pid?: number): boolean {
+    return enterDungeonImpl(this.ctx, dungeonId, pid);
   }
 
-  leaveDungeon(pid?: number): void {
-    leaveDungeonImpl(this.ctx, pid);
+  leaveDungeon(pid?: number): boolean {
+    return leaveDungeonImpl(this.ctx, pid);
   }
 
   resetDungeonInstances(pid?: number): void {
@@ -8640,8 +8771,8 @@ export class Sim {
     this.emit({ type: 'companionBark', barkId, companionId: run.companion.companionId, pid });
   }
 
-  delveInteract(objectId: number, pid?: number): void {
-    runsMod.delveInteract(this.ctx, objectId, pid);
+  delveInteract(objectId: number, pid?: number): boolean {
+    return runsMod.delveInteract(this.ctx, objectId, pid);
   }
 
   // -------------------------------------------------------------------------
@@ -8763,6 +8894,26 @@ export class Sim {
     return this.craftSkillsFor(this.primaryId);
   }
 
+  craftingIdentityFor(pid: number): CraftingIdentityView {
+    const state = archetypeStateFor(this.ctx, pid);
+    return {
+      version: 1,
+      synced: true,
+      craftSkills: this.craftSkillsFor(pid),
+      activeArchetype: state.activeArchetype,
+      pairedMajor: state.pairedMajor,
+      hobbyCraft: state.hobbyCraft,
+      attunedPairs: [...state.attunedPairs],
+      switchCount: state.switchCount,
+      amendsProgress: state.amendsProgress,
+      amendsRequired: requiredAmendsProgress(state.switchCount),
+    };
+  }
+
+  get craftingIdentity(): CraftingIdentityView {
+    return this.craftingIdentityFor(this.primaryId);
+  }
+
   /** The active-archetype craft id, or null before the zone-1 acceptance quest has
    *  ever been completed (see professions/archetype.ts). */
   activeArchetypeFor(pid: number): string | null {
@@ -8800,8 +8951,9 @@ export class Sim {
     return this.archetypeAmendsRequiredFor(this.primaryId);
   }
 
-  /** The title granted by the CURRENTLY-ACTIVE archetype (#1130): the craft id
-   *  whose named title is earned, or null before an archetype is ever chosen. See
+  /** The title granted by the CURRENTLY-ACTIVE pair attunement (#1130,
+   *  pair-named under Professions 2.0): the canonical pair id whose named title
+   *  is earned, or null before an archetype is ever chosen. See
    *  professions/archetype.ts getArchetypeTitle for the "no title" rule. */
   archetypeTitleFor(pid: number): string | null {
     return archetypeTitleFor(this.ctx, pid);

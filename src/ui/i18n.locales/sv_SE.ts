@@ -563,16 +563,6 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.vcup.walkUp': 'Gå fram till Suggfältet för att titta från läktarna.',
   'hudChrome.archetypeTitle.label': 'Titel',
   'hudChrome.archetypeTitle.none': 'Ingen',
-  'hudChrome.archetypeTitle.armorcrafting': 'Rustningssmed',
-  'hudChrome.archetypeTitle.weaponcrafting': 'Vapensmed',
-  'hudChrome.archetypeTitle.jewelcrafting': 'Juvelerare',
-  'hudChrome.archetypeTitle.alchemy': 'Alkemist',
-  'hudChrome.archetypeTitle.engineering': 'Ingenjör',
-  'hudChrome.archetypeTitle.cooking': 'Kock',
-  'hudChrome.archetypeTitle.inscription': 'Skrivare',
-  'hudChrome.archetypeTitle.enchanting': 'Förtrollare',
-  'hudChrome.archetypeTitle.tailoring': 'Skräddare',
-  'hudChrome.archetypeTitle.leatherworking': 'Garvare',
   'entities.itemSets.crownforged.bonus4':
     'Dina kritiska vapenträffar splittrar målet med Benflisa och får det att blöda för 8 skada var 2:e sek i 12 sek. Staplas upp till 3 gånger.',
   'entities.itemSets.deathlord.bonus4':
@@ -6416,7 +6406,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.bonus3': 'Ökar attack- och magihastighet med 15%.',
   'entities.itemSets.necromancers.name': 'Mournweave-skrud',
   'entities.itemSets.necromancers.bonus2':
-    'Du kan inte knuffas bakåt (100% motstånd mot tillbakastöt).',
+    'Ökar trollformelskraft med 20. Skada du tar fördröjer inte längre dina besvärjelser (100% motstånd mot fördröjning av besvärjelser).',
   'entities.itemSets.necromancers.bonus3': 'Ökar intellekt med 10 och uthållighet med 10.',
   'entities.itemSets.nighttalon.name': 'Direfang-päls',
   'entities.itemSets.nighttalon.bonus2': 'Ökar attackkraft med 40.',
@@ -6424,12 +6414,12 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
     'Ökar smidighet med 15, kritisk chans med 2% samt attack- och magihastighet med 15%.',
   'entities.itemSets.soulflame.name': 'Wraithfire-regalier',
   'entities.itemSets.soulflame.bonus2':
-    'Du kan inte knuffas bakåt (100% motstånd mot tillbakastöt).',
+    'Ökar trollformelskraft med 20. Skada du tar fördröjer inte längre dina besvärjelser (100% motstånd mot fördröjning av besvärjelser).',
   'entities.itemSets.soulflame.bonus3':
     'Ökar intellekt med 15, ande med 15 samt attack- och magihastighet med 15%.',
   'entities.itemSets.stormcallers.name': 'Galecall-skrud',
   'entities.itemSets.stormcallers.bonus2':
-    'Du kan inte knuffas bakåt (100% motstånd mot tillbakastöt).',
+    'Ökar trollformelskraft med 20. Skada du tar fördröjer inte längre dina besvärjelser (100% motstånd mot fördröjning av besvärjelser).',
   'entities.itemSets.stormcallers.bonus3':
     'Ökar intellekt med 15, ande med 15 samt attack- och magihastighet med 15%.',
   'entities.itemSets.vale_arcanist.name': 'Dalarkanistens skrud',
@@ -6850,14 +6840,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.options.mobileCameraJoystick': 'Kamera joystick',
   'hudChrome.options.mobileLeftHanded': 'Vänsterhänt layout',
   'entities.quests.q_archetype_acceptance.title': 'Ett hantverk att kalla ditt eget',
-  'entities.quests.q_archetype_acceptance.text':
-    'Varje hantverkare i Eastbrook nöjer sig så småningom med ett hantverk att kalla sitt eget. Bevisa dig själv med en enda gärning, {playerName}, och förklara din väg.',
-  'entities.quests.q_archetype_acceptance.completion': 'Din väg är vald; gå det bra.',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': 'Skogsvarg dödad',
   'entities.quests.q_prof_make_amends.title': 'Att göra gott',
-  'entities.quests.q_prof_make_amends.text':
-    'För att avsätta ett hantverk åt ett annat måste en hantverkare först göra gott för vägen som inte gicks, {playerName}.',
-  'entities.quests.q_prof_make_amends.completion': 'Gjorda ändringar; en ny väg är öppen för dig.',
   'entities.quests.q_prof_make_amends.objectives.0.label': 'Skogsvarg dödad',
   'entities.npcs.bursar_aldous_crane.greeting':
     'Varje låda, kista och krimskrams är i tryggt förvar hos Förgyllda kassakistan.',
@@ -7035,15 +7018,11 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.howHeading': 'Så fungerar bedrifter',
   'guide.deedsPage.intro':
     'Bedrifternas bok är där världen håller räkning på allt du har uträttat, från dina första steg ut ur startdalen till de hårdaste strider riket kan bjuda. Fullborda bedrifter medan du spelar, bär titlarna de skänker och se din ryktbarhet stiga.',
-  'guide.deedsPage.renownBody':
-    'Ryktbarhet är poängräkningen bakom boken. Varje bedrift du fullbordar är värd en bestämd summa, och din totalsumma kan bara stiga, så en lugn vecka gör aldrig att du tappar mark. En handfull bedrifter avgörs av tur snarare än skicklighet, och bragder är en ära för sig, så ingen av dem ger någon ryktbarhet alls.',
   'guide.deedsPage.renownHeading': 'Ryktbarhet',
   'guide.deedsPage.rewardBorder': 'Ram',
   'guide.deedsPage.rewardsBody':
     'Belöningarna är enbart för syns skull, och det är hela poängen. Vissa bedrifter skänker en titel att bära eller en ram som pryder ditt namn, men aldrig något som gör din hjälte starkare. Välj den titel du vill ha i Bedrifternas bok, så följer den med på din namnskylt, i chatten och på topplistorna där alla kan se den.',
   'guide.deedsPage.rewardsHeading': 'Titlar och ramar',
-  'guide.deedsPage.standingsNote':
-    'Rikena för en löpande räkning av Ryktbarhet över alla konton. Vill du se vem som står var, öppna topplistan i spelet och slå upp dess Ryktbarhet-flik; ställningen finns där, inte på wikin.',
   'guide.nav.deeds': 'Bedrifternas bok',
   'hudChrome.deeds.broadcastLine': '{name} har fullbordat en bedrift: {deed}',
   'hudChrome.deeds.broadcastsLabel': 'Dela fullbordade bedrifter med gille och vänner',
@@ -7076,9 +7055,7 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.filterNearly': 'Nästan klara',
   'hudChrome.deeds.filterUnearned': 'Ofullbordade',
   'hudChrome.deeds.hiddenBadge': 'Dold',
-  'hudChrome.deeds.lbDeedsCol': 'Bedrifter',
   'hudChrome.deeds.lbEmpty': 'Inga rankade krönikörer ännu.',
-  'hudChrome.deeds.lbSelf': 'Din placering: plats {rank}, bland de främsta {percent} procenten',
   'hudChrome.deeds.lbTab': 'Ryktbarhet',
   'hudChrome.deeds.lbTitleCol': 'Titel',
   'hudChrome.deeds.nearestLabel': 'Nästan framme:',
@@ -7116,11 +7093,6 @@ export const sv_SE: Partial<Record<TranslationKey, string>> = {
   'hudChrome.steam.title': 'Steam',
   'hudChrome.steam.unlink': 'Koppla bort Steam',
   'entities.items.chunk_of_ore.name': 'Malmklump',
-  'entities.quests.q_prof_intro.completion':
-    'Ser du? Malm i packningen och valkar på händerna. Fortsätt med gruvdrift, skogsavverkning och örtplockning medan du färdas längs vägarna. När du är tillbaka i staden, kom ihåg Stadsfokus-tavlan vid marknaden och arbetsbänken i närheten. Det går att försörja sig hederligt på alltihop, om du vill.',
-  'entities.quests.q_prof_intro.objectives.0.label': 'Malmklump',
-  'entities.quests.q_prof_intro.text':
-    'Alla i Östbäck har ett yrke vid sidan om svärdet, {playerName}. Det finns malmådror utspridda runt staden, så svinga en hacka och ge mig 5 klumpar. Bryt dem själv, märk väl; jag ser skillnaden.',
   'entities.quests.q_prof_intro.title': 'Ett yrke för varje hand',
   'hudChrome.auth.appleChoiceExpired':
     'Den här Apple-inloggningen har gått ut. Logga in med Apple igen.',

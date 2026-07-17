@@ -872,8 +872,19 @@ export interface ItemInstancePayload {
   signer?: string;
   /** Remaining charges for a per-effect-limited item, keyed by effect id. */
   charges?: Record<string, number>;
-  /** Rolled quality/stat values baked into this specific copy at creation time. */
-  rolled?: { quality?: string; stats?: Record<string, number> };
+  /** Quality/stat values baked into this specific copy at creation time.
+   *  `quality` is legacy-only under the Phase 2 masterwork model: crafted
+   *  outputs are deterministic and new crafts never write it (persisted
+   *  payloads that carry it keep loading and reading as before). `masterwork`
+   *  marks a masterwork proc copy (professions/masterwork.ts) whose `stats`
+   *  are the baked tier-delta bonus rather than an enchant; the enchanted
+   *  marker is the separate `enchant` field below. */
+  rolled?: { quality?: string; stats?: Record<string, number>; masterwork?: boolean };
+  /** Id of the enchant applied to this specific copy (content/enchants.ts):
+   *  the authoritative already-enchanted marker (professions/enchanting.ts
+   *  isEnchantedInstance). Legacy enchanted copies predate this field and are
+   *  detected by bare rolled.stats WITHOUT rolled.masterwork instead. */
+  enchant?: string;
   /** Player id (Entity id) this specific copy is bound to. */
   boundTo?: number;
 }
@@ -2224,6 +2235,9 @@ export interface NpcDef {
   // The Heroic Quartermaster: talking to this NPC opens the Heroic Marks
   // shop (src/sim/content/heroic_vendor.ts) instead of a copper vendor stock.
   heroicVendor?: boolean;
+  // The Card Master: talking to this NPC joins/leaves the Card Duel minigame
+  // queue (src/sim/social/card_duel.ts) instead of any vendor/bank flow.
+  cardMaster?: boolean;
   greeting: string;
   // Registered but not surface-placed at world init. The owning system spawns
   // the entity on demand (e.g. the Nythraxis encounter walks Brother Aldric in
@@ -2364,15 +2378,24 @@ export function emptyZoneProps(): ZonePropsDef {
   };
 }
 
-export interface QuestObjective {
-  type: 'kill' | 'collect' | 'interact';
-  targetMobId?: string; // for kill
-  itemId?: string; // for collect
-  targetObjectItemId?: string; // for interactable ground objects
-  targetNpcId?: string; // for interactable NPC objectives
+interface QuestObjectiveBase {
   count: number;
   label: string;
 }
+
+export type QuestObjective =
+  | (QuestObjectiveBase & { type: 'kill'; targetMobId: string })
+  | (QuestObjectiveBase & { type: 'collect'; itemId: string })
+  | (QuestObjectiveBase & {
+      type: 'interact';
+      targetObjectItemId?: string;
+      targetNpcId?: string;
+    })
+  | (QuestObjectiveBase & { type: 'craft'; recipeId: string })
+  | (QuestObjectiveBase & { type: 'gather' } & (
+        | { nodeType: GatherNodeType; itemId?: string }
+        | { nodeType?: undefined; itemId: string }
+      ));
 
 export interface QuestDef {
   id: string;
@@ -2393,6 +2416,15 @@ export interface QuestDef {
   retired?: boolean; // remains finishable if already accepted, but cannot be newly accepted
   shareable?: boolean; // quest-link sharing allowed (default true; set false to opt out)
   suggestedPlayers?: number; // group quests ("Suggested players: 5")
+  // Repeatable quests remain in questsDone as history but become available
+  // again when they are not active.
+  repeatable?: boolean;
+  // Typed, server-authoritative profession transition applied only by the
+  // validated turn-in path. The selected target is persisted on QuestProgress.
+  completionEffect?: { type: 'attunePair'; mode: 'new' | 'return' } | { type: 'switchHobby' };
+  // Resolve the first objective's count from the character's return history at
+  // acceptance time. The snapshotted value stays stable while the quest is active.
+  resolvedObjectiveCounts?: 'archetypeAmends';
 }
 
 export function questTurnInNpcIds(quest: QuestDef): readonly string[] {
@@ -2411,6 +2443,16 @@ export interface QuestProgress {
   questId: string;
   counts: number[]; // per objective
   state: 'active' | 'ready' | 'done';
+  selection?: string;
+  resolvedCounts?: number[];
+}
+
+export function questObjectiveRequired(
+  quest: QuestDef,
+  progress: QuestProgress | undefined,
+  objectiveIndex: number,
+): number {
+  return progress?.resolvedCounts?.[objectiveIndex] ?? quest.objectives[objectiveIndex]?.count ?? 0;
 }
 
 // Consumables restore their total over CONSUME_DURATION seconds while sitting,
@@ -3008,7 +3050,16 @@ export type SimEvent = { pid?: number } & (
     }
   | { type: 'error'; text: string; reason?: ErrorReason }
   | { type: 'questAccepted'; questId: string }
-  | { type: 'questProgress'; questId: string; text: string }
+  | {
+      type: 'questProgress';
+      questId: string;
+      objectiveIndex: number;
+      current: number;
+      required: number;
+      // English compatibility fallback for older clients. Current clients use
+      // the structured identity and values above to localize without parsing it.
+      text: string;
+    }
   | { type: 'questReady'; questId: string }
   | { type: 'questDone'; questId: string }
   | { type: 'aura'; targetId: number; name: string; gained: boolean; auraKind?: AuraKind }
@@ -3404,7 +3455,11 @@ export type SimEvent = { pid?: number } & (
       recipeId: string;
       itemId?: string;
       count?: number;
+      // Phase 2: the OUTPUT DEF quality (outputs are deterministic; the
+      // quality roll is retired). `masterwork` mirrors CraftResult.masterwork
+      // so the online client's lastCraftResult mirror stays field-complete.
       quality?: ItemDef['quality'];
+      masterwork?: boolean;
       reason?:
         | 'unknown_recipe'
         | 'insufficient_materials'
@@ -3413,6 +3468,12 @@ export type SimEvent = { pid?: number } & (
         | 'throttled'
         | 'not_at_hub';
     }
+  // Masterwork proc (Professions 2.0 Phase 2): a successful craft's single
+  // output-side rng draw procced, minting a masterwork instance with baked
+  // bonus stats. Personal (emitted with pid = the crafter's entity id, which
+  // `crafter` repeats as payload). Ids only, text-free on purpose (like
+  // craftResult above): the client renders its own localized copy.
+  | { type: 'masterwork'; recipeId: string; itemId: string; crafter: number }
   // Gather-node harvest outcome (#1729): a successful resource harvest emits
   // this so the client can play a gathering audio cue for the acting player.
   // Personal (carries pid), delivered only to the harvester. Emitted only on a
@@ -3767,6 +3828,7 @@ export type DeedStatKey =
   | 'lootCopper'
   | 'duelsWon'
   | 'duelsLost'
+  | 'cardDuelsWon'
   | 'tradesCompleted'
   | 'mailAttachmentsSent'
   | 'craftsPerformed'
@@ -3791,6 +3853,7 @@ export const DEED_STAT_KEYS: readonly DeedStatKey[] = [
   'lootCopper',
   'duelsWon',
   'duelsLost',
+  'cardDuelsWon',
   'tradesCompleted',
   'mailAttachmentsSent',
   'craftsPerformed',

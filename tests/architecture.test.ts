@@ -124,6 +124,7 @@ const UI_PURE_CORES = [
   'src/ui/char_bags_pairing_core.ts',
   'src/ui/equip_drop_core.ts',
   'src/ui/log_event_route.ts',
+  'src/ui/mob_idle_sfx.ts',
   'src/ui/unit_portrait.ts',
   'src/ui/xp_bar.ts',
   'src/ui/absorb_bar.ts',
@@ -144,6 +145,7 @@ const UI_PURE_CORES = [
   'src/ui/mob_tooltip_view.ts',
   'src/ui/talents_view.ts',
   'src/ui/social_view.ts',
+  'src/ui/tab_strip_view.ts',
   'src/ui/bags_view.ts',
   'src/ui/bank_view.ts',
   'src/ui/item_set_tooltip_view.ts',
@@ -151,11 +153,14 @@ const UI_PURE_CORES = [
   'src/ui/options_view.ts',
   'src/ui/hud/vendor/vendor_view.ts',
   'src/ui/hud/vendor/heroic_vendor_view.ts',
+  'src/ui/card_duel_view.ts',
   'src/ui/claudium_view.ts',
   'src/ui/woc_store_view.ts',
+  'src/ui/wallet_connection_view.ts',
   'src/ui/hud/loot/loot_roll_status_view.ts',
   'src/ui/hud/loot/loot_settings_view.ts',
   'src/ui/crafting_view.ts',
+  'src/ui/profession_identity_view.ts',
   'src/ui/market_view.ts',
   'src/ui/mailbox_view.ts',
   'src/ui/calendar_view.ts',
@@ -238,6 +243,7 @@ const RENDER_PURE_CORES = [
 // updating this list) fails the cross-check instead of silently escaping the
 // reverse-completeness guard.
 const BARE_NAMED = [
+  'src/ui/mob_idle_sfx.ts',
   'src/ui/unit_portrait.ts',
   'src/ui/xp_bar.ts',
   'src/ui/absorb_bar.ts',

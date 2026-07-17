@@ -197,6 +197,24 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.wocStore.armoryTitle': '兵器庫',
   'hudChrome.wocStore.armoryBody':
     '第一賽季兵器庫限定武器外觀。全帳號通用，純裝飾性，周圍所有玩家都能看到。',
+  'hudChrome.wocStore.wallet.title': 'Solana 錢包',
+  'hudChrome.wocStore.wallet.unlinked':
+    '連接錢包應用程式，然後簽署一次，將其公開地址綁定到你的 WoC 帳號。我們絕不會取得你的復原短語或私鑰。',
+  'hudChrome.wocStore.wallet.connectedUnlinked':
+    '錢包應用程式已連接到此瀏覽器，但其公開地址尚未綁定到你的 WoC 帳號。',
+  'hudChrome.wocStore.wallet.linkedDisconnected':
+    '你的公開地址已綁定。需要使用 SOL 或 WOC 付款時，請重新連接該錢包應用程式。',
+  'hudChrome.wocStore.wallet.linkedConnected':
+    '已綁定的錢包應用程式已連接，可以使用 SOL 或 WOC 購買。',
+  'hudChrome.wocStore.wallet.mismatched':
+    '目前連接的是另一個錢包。驗證它即可取代已綁定的地址，或重新連接原先綁定的錢包。',
+  'hudChrome.wocStore.wallet.connect': '連接錢包',
+  'hudChrome.wocStore.wallet.verify': '驗證並綁定',
+  'hudChrome.wocStore.wallet.reconnect': '重新連接錢包',
+  'hudChrome.wocStore.wallet.manage': '管理錢包',
+  'wallet.bagConnect': '綁定錢包',
+  'wallet.bagLink': '驗證錢包',
+  'wallet.bagReconnect': '重新連接錢包',
   'hudChrome.wocStore.collectionLine': '{collection}系列',
   'hudChrome.wocStore.seasonOne': '第一賽季',
   'hudChrome.wocStore.rarity.uncommon': '優秀',
@@ -1188,11 +1206,39 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'wallet.helpLinkedDisconnectedWithBalance': '持有者特權已啟用。需要簽名或花費時請連接應用程式。',
   'wallet.extensionHelp':
     '若要在此處看到錢包，請保持 Solflare Wallet 等瀏覽器錢包擴充功能處於啟用狀態。',
+  'wallet.mobileAppHelp':
+    '選擇 Phantom 或 Solflare。錢包應用程式會要求核准。請保持遊戲開啟，完成後返回遊戲。',
+  'wallet.standaloneAppHelp':
+    '主畫面應用程式目前尚不支援連接錢包。若要使用 Phantom 或 Solflare，請在 Safari 或 Chrome 中開啟 World of ClaudeCraft。',
+  'wallet.openAppTitle': '在 {wallet} 中繼續',
+  'wallet.openAppHelp': '開啟 {wallet} 檢視此請求。錢包應用程式啟用時，請保持此遊戲分頁開啟。',
+  'wallet.openAppButton': '開啟 {wallet}',
+  'wallet.manualReturnBrowserHelp':
+    '核准後請返回此遊戲分頁。如果 iOS 開啟了其他瀏覽器，請將其關閉並手動返回原本的瀏覽器。',
+  'wallet.manualReturnStandaloneHelp':
+    '核准後請從主畫面返回 World of ClaudeCraft。如果 iOS 開啟了瀏覽器，請將其關閉並重新開啟主畫面 App。',
+  'wallet.preparingAppButton': '正在準備 {wallet}...',
+  'wallet.walletAppUnavailable': '無法準備 {wallet}。請關閉此視窗並重試。',
   'wallet.flowConnect': '選擇一個錢包。驗證會自動繼續。',
   'wallet.flowSign': '在錢包應用程式中簽署驗證訊息。無需交易或 SOL。',
   'wallet.flowVerify': '正在驗證錢包所有權...',
   'wallet.linkFailed': '錢包驗證失敗。',
   'wallet.verifyFailed': '錢包驗證失敗。',
+  'wallet.browser.eyebrow': '桌面錢包授權',
+  'wallet.browser.title': '連接 Solana 錢包',
+  'wallet.browser.linkBody': '在此瀏覽器中選擇錢包擴充功能。簽署驗證訊息後返回桌面應用程式。',
+  'wallet.browser.paymentBody': '選擇已連結至帳號的錢包，並在此瀏覽器中核准交易。',
+  'wallet.browser.extensionHelp':
+    '找不到相容的錢包擴充功能。請安裝或解鎖 Phantom、Solflare 或其他 Solana 瀏覽器錢包，然後再試一次。',
+  'wallet.browser.safety': 'World of ClaudeCraft 絕不會要求復原短語或私鑰。',
+  'wallet.browser.continueWith': '使用 {wallet} 繼續',
+  'wallet.browser.reviewTitle': '在錢包中檢視',
+  'wallet.browser.reviewBody': '按照 {wallet} 的提示操作。請保持此瀏覽器頁面開啟。',
+  'wallet.browser.completeTitle': '錢包授權完成',
+  'wallet.browser.completeBody': '現在可以返回 World of ClaudeCraft 桌面應用程式。',
+  'wallet.browser.returnButton': '返回桌面應用程式',
+  'wallet.browser.failed': '錢包授權失敗或已過期。請返回桌面應用程式並再試一次。',
+  'wallet.browser.retry': '再試一次',
   'wallet.unlinkFailed': '無法解除錢包綁定。',
   'wallet.holder': '$WOC 持有者',
   'wallet.holderTierTitle': '{tier} $WOC 持有者',
@@ -3187,6 +3233,25 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.npcs.heroic_quartermaster.title': '英雄軍需官',
   'entities.npcs.heroic_quartermaster.greeting':
     '英雄深淵的憑證能換來高崖望最上等的戒指和吊墜。把你的徽記拿給我看。',
+  'entities.npcs.card_master.name': '牌局大師',
+  'entities.npcs.card_master.title': '運氣經銷人',
+  'entities.npcs.card_master.greeting': '來一局紙牌對決？三局兩勝，贏家贏得吹噓的資本。',
+  'cardDuel.title': '紙牌對決',
+  'cardDuel.close': '關閉',
+  'cardDuel.join': '加入隊列',
+  'cardDuel.joinAria': '加入紙牌對決隊列',
+  'cardDuel.leave': '離開隊列',
+  'cardDuel.leaveAria': '離開紙牌對決隊列',
+  'cardDuel.queued': '正在等待對手……',
+  'cardDuel.vsOpponent': '對戰 {name}',
+  'cardDuel.round': '局分：{mine} - {theirs}',
+  'cardDuel.forfeit': '認輸',
+  'cardDuel.forfeitAria': '認輸退出紙牌對決',
+  'cardDuel.unavailable': '紙牌對決需要另一名玩家在線。',
+  'cardDuel.counts': '牌堆：{deck} · 棄牌堆：{discard}',
+  'cardDuel.playCardAria': '打出 {value} 號牌',
+  'cardDuel.waitingOnOpponent': '正在等待對手出牌……',
+  'cardDuel.yourTurn': '出一張牌',
   'entities.npcs.loremaster_caddis.name': '凱迪斯博學者',
   'entities.npcs.loremaster_caddis.title': '博學者',
   'entities.npcs.loremaster_caddis.greeting':
@@ -3201,10 +3266,10 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
     '湖水飲盡了月光，{className}，再將溺者吐還。我已守望那道門三十夜——而今夜，它開了。',
   'entities.quests.q_prof_intro.title': '人人都有一技之長',
   'entities.quests.q_prof_intro.text':
-    '伊斯特布魯克的每個人都有除了劍術之外的手藝，{playerName}。鎮子周圍散落著礦脈，去揮鎬採上5塊礦石帶給我。要親自採，別耍花招，我看得出來。',
+    '東溪人人除了舞刀弄劍，還得有門手藝，{playerName}。鎮子西南的銅礦坑周圍岩石裡有礦脈。拿起礦鎬，親手開採5處；別想蒙我，我看得出差別。',
   'entities.quests.q_prof_intro.completion':
-    '看到了吧？礦石進了包裡，手上也磨出了繭子。繼續在路上採礦、伐木、採藥，回到鎮上時，留意市場旁的城鎮專注面板和附近的製作台。只要你願意，靠這些都能正經謀生。',
-  'entities.quests.q_prof_intro.objectives.0.label': '礦石塊',
+    '看吧？礦石採到了，手上也磨出了繭。趕路時繼續採礦、伐木和採藥；回城後，別忘了市場旁的城鎮專注告示板和附近的製作台。只要你願意，這些手藝都能換來公道的生計。',
+  'entities.quests.q_prof_intro.objectives.0.label': '已開採礦脈',
   'entities.quests.q_wolves.title': '門前群狼',
   'entities.quests.q_wolves.text':
     '森林狼已敢撲咬北路旅人，{playerName}。擊敗8隻森林狼，讓東溪能鬆一口氣。',
@@ -3594,14 +3659,21 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.quests.q_mogger.objectives.0.label': '擊敗莫格',
   'entities.quests.q_archetype_acceptance.title': '屬於你自己的技藝',
   'entities.quests.q_archetype_acceptance.text':
-    '東溪的每一位工匠最終都會選定一門屬於自己的技藝。用一件事證明自己吧，{playerName}，宣告你的道路。',
-  'entities.quests.q_archetype_acceptance.completion': '你的道路已經選定；願你走得穩當。',
-  'entities.quests.q_archetype_acceptance.objectives.0.label': '擊敗森林之狼',
+    '技藝是學識，{playerName}，而調諧是一份承諾。選擇兩門相鄰的技藝作為你的主修，再把你親手從谷地礦脈中採出的礦石帶給我。',
+  'entities.quests.q_archetype_acceptance.completion':
+    '承諾已經立下。這兩門技藝現為你的主修，與它們相對的技藝則成為你的嗜好。',
+  'entities.quests.q_archetype_acceptance.objectives.0.label': '已開採礦脈',
   'entities.quests.q_prof_make_amends.title': '彌補',
   'entities.quests.q_prof_make_amends.text':
-    '若要放下一門技藝、轉投另一門，工匠必須先為放棄的道路做出彌補，{playerName}。',
-  'entities.quests.q_prof_make_amends.completion': '彌補已經完成；一條新的道路已向你敞開。',
+    '你曾掌握過這組技藝，{playerName}。重拾舊途並非新的誓言。去幫忙清理谷地道路，讓勞作喚醒雙手曾經熟悉的節奏。',
+  'entities.quests.q_prof_make_amends.completion': '昔日的節奏回來了。你曾經的那組技藝再次生效。',
   'entities.quests.q_prof_make_amends.objectives.0.label': '擊敗森林之狼',
+  'entities.quests.q_prof_hobby_switch.title': '別樣消遣',
+  'entities.quests.q_prof_hobby_switch.text':
+    '主修技藝需要誓言。嗜好只問你的好奇心將去往何處，{playerName}。採集一些草藥，然後決定要鑽研哪一門與主修技藝相對的手藝。',
+  'entities.quests.q_prof_hobby_switch.completion':
+    '這是個輕鬆些卻很實用的選擇。追隨這份好奇心，直到稀有品質的作品所能抵達之處。',
+  'entities.quests.q_prof_hobby_switch.objectives.0.label': '採集草藥叢',
   'entities.quests.q_drowned_choir.title': '溺亡唱詩班',
   'entities.quests.q_drowned_choir.text':
     '那些涉者並非單獨行動。在牠們之間行走的，是溺亡信徒——隨神殿一同沉沒的邪教徒，仍披著腐朽的法衣，仍從岸岩之間唱著那篇禱文。讓其中八人歸於沉寂，並為我帶回他們所攜的六件供品。我想知道他們要獻給女神的究竟是什麼。',
@@ -4363,14 +4435,14 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'guide.deedsPage.intro':
     '功績之書記錄著你在這個世界所做的一切，從走出新手山谷的第一步，到王國所能提供的最艱難的戰鬥。一邊遊玩一邊贏得功績，佩戴它們授予的頭銜，看著你的名望不斷攀升。',
   'guide.deedsPage.renownBody':
-    '名望是功績之書背後的分數。你贏得的每個功績都價值固定的點數，而你的總分只增不減，因此清閒的一週絕不會讓你失去已有的成績。少數功績取決於運氣而非技巧，而壯舉則自成一份榮譽，因此這兩者都不提供任何名望。',
+    '名望是功績之書背後的分數。你贏得的每個功績都價值固定的點數，而你的總分只增不減，因此清閒的一週絕不會讓你失去已有的成績。少數功績取決於運氣而非技巧，而壯舉則自成一份榮譽，因此這兩者都不提供任何名望。不帶名望的功績仍會計入功績之書的完成度，只是從不計分。',
   'guide.deedsPage.renownHeading': '名望',
   'guide.deedsPage.rewardBorder': '邊框',
   'guide.deedsPage.rewardsBody':
     '這些獎勵純粹是為了炫耀，而這正是它們的意義所在。有些功績會授予你可佩戴的頭銜，或是為你的名字增添裝飾的邊框，絕不會給出任何讓你的英雄變強的東西。在功績之書中選擇你想要的頭銜，它便會隨你出現在銘牌上、聊天中與排行榜上，供所有人觀看。',
   'guide.deedsPage.rewardsHeading': '頭銜與邊框',
   'guide.deedsPage.standingsNote':
-    '各王國會持續統計所有帳號累積的名望。想知道誰位居何處，請在遊戲內打開排行榜並轉到其名望分頁；排名在那裡，而不在維基上。',
+    '各王國會持續統計所有帳號累積的名望：排行榜按帳號的累計名望排名，每個功績在你所有角色中只計一次，且榜上只顯示名望，因此不帶名望的功績即使計入你的功績之書，也絕不會影響排名。想知道誰位居何處，請在遊戲內打開排行榜並轉到其名望分頁；排名在那裡，而不在維基上。',
   'guide.delvesPage.affixesBody':
     '較高難度的旅程會擲出一項詞綴，改變這趟探索的進行方式，從不安的亡者到污濁的空氣，再到搖搖欲墜的屋頂結構。它們同時提高了危險與獎勵。每座秘探都會從契合自身主題的詞綴中抽取；就整個王國而言，詞綴池如下：',
   'guide.delvesPage.affixesHeading': '旅程詞綴',
@@ -5756,7 +5828,8 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.greyjaw_stalker.name': '灰顎追獵者裝備',
   'entities.itemSets.greyjaw_stalker.bonus3': '攻擊速度和施法速度提高 15%。',
   'entities.itemSets.necromancers.name': '哀織法衣',
-  'entities.itemSets.necromancers.bonus2': '你不會被擊退（擊退抗性 100%）。',
+  'entities.itemSets.necromancers.bonus2':
+    '法術強度提高 20 點。受到傷害不再延遲你的施法（施法延遲抗性 100%）。',
   'entities.itemSets.necromancers.bonus3': '智力提高 10 點，耐力提高 10 點。',
   'entities.itemSets.necromancers.bonus4':
     '你的法術有 10% 的機率觸發「清晰施法」，使你的下一個法術免費施放。',
@@ -5767,13 +5840,15 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'entities.itemSets.nighttalon.bonus4':
     '你的武器致命一擊會撕開「撕裂傷口」，使目標每 2 秒流血 6 點傷害，持續 12 秒。最多疊加 3 層。',
   'entities.itemSets.soulflame.name': '怨焰法衣',
-  'entities.itemSets.soulflame.bonus2': '你不會被擊退（擊退抗性 100%）。',
+  'entities.itemSets.soulflame.bonus2':
+    '法術強度提高 20 點。受到傷害不再延遲你的施法（施法延遲抗性 100%）。',
   'entities.itemSets.soulflame.bonus3':
     '智力提高 15 點，精神提高 15 點，攻擊速度和施法速度提高 15%。',
   'entities.itemSets.soulflame.bonus4':
     '你的法術有 10% 的機率觸發「灼魂之焰」，使法術強度提高 40 點，持續 10 秒。',
   'entities.itemSets.stormcallers.name': '喚風法衣',
-  'entities.itemSets.stormcallers.bonus2': '你不會被擊退（擊退抗性 100%）。',
+  'entities.itemSets.stormcallers.bonus2':
+    '法術強度提高 20 點。受到傷害不再延遲你的施法（施法延遲抗性 100%）。',
   'entities.itemSets.stormcallers.bonus3':
     '智力提高 15 點，精神提高 15 點，攻擊速度和施法速度提高 15%。',
   'entities.itemSets.stormcallers.bonus4':
@@ -5926,6 +6001,43 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.crafting.craftedToast': '已製作:{name}',
   'hudChrome.crafting.insufficientMaterials': '你沒有足夠的材料。',
   'hudChrome.crafting.unknownRecipe': '該配方不存在。',
+  'hudChrome.crafting.comboRequires': '調諧要求：{craftA} + {craftB}，階級 {tier}。',
+  'hudChrome.crafting.comboMet': '已就緒。',
+  'hudChrome.crafting.comboSyncing': '正在檢查伺服器調諧狀態。',
+  'hudChrome.crafting.comboNotAttuned': '請先選擇一個原型組合。',
+  'hudChrome.crafting.comboWrongPair': '啟用這個確切組合才能製作。',
+  'hudChrome.crafting.comboTierUnmet': '將兩項主修技藝提升到所需階級。',
+  'hudChrome.crafting.professionChoice': '專業選擇',
+  'hudChrome.crafting.noProfessionChoice': '目前沒有可用的專業選擇。',
+  'hudChrome.crafting.attunementPreview':
+    '結果：獲得{title}稱號；{majorA}和{majorB}成為無上限主修技藝；{hobby}成為上限為稀有品質的嗜好技藝；所有其他技能知識都會保留，但休眠時上限為普通品質。',
+  'hudChrome.crafting.hobbyPreview':
+    '結果：{hobby}成為上限為稀有品質的嗜好技藝。兩項主修技藝和所有已保留的技能數值維持不變。',
+  'hudChrome.crafting.identity.title': '製作身分',
+  'hudChrome.crafting.identity.syncing': '正在等待伺服器傳送你的製作身分。',
+  'hudChrome.crafting.identity.unattuned':
+    '目前未啟用任何原型組合。你的知識會被保留，但組合配方需要先完成調諧。',
+  'hudChrome.crafting.identity.titleLabel': '稱號',
+  'hudChrome.crafting.identity.majorsLabel': '主修技藝',
+  'hudChrome.crafting.identity.hobbyLabel': '嗜好',
+  'hudChrome.crafting.identity.historyLabel': '歷史',
+  'hudChrome.crafting.identity.history': '已發現 {pairs} 個組合，已完成 {returns} 次回歸',
+  'hudChrome.crafting.identity.roleMajor': '主修',
+  'hudChrome.crafting.identity.roleHobby': '嗜好',
+  'hudChrome.crafting.identity.roleDormant': '休眠知識',
+  'hudChrome.crafting.identity.roleUnattuned': '未調諧',
+  'hudChrome.crafting.identity.ceilingUnlimited': '無強化上限',
+  'hudChrome.crafting.identity.ceilingCommon': '普通品質上限',
+  'hudChrome.crafting.identity.skillAria': '{craft}，技能 {skill}，階級 {tier}，{role}，{ceiling}',
+  'hudChrome.crafting.identity.colCraft': '專業',
+  'hudChrome.crafting.identity.colSkill': '技能',
+  'hudChrome.crafting.identity.colRole': '定位',
+  'hudChrome.crafting.identity.colCap': '上限',
+  'hudChrome.crafting.identity.tutorial':
+    '第一個階級：將一門技藝提升到技能 {skill}。成功完成配方會提升對應技藝，且不會抹去其他知識。',
+  'hudChrome.crafting.identity.nearTier': '{craft}距離下一階級還差 {points} 點技能。',
+  'hudChrome.crafting.identity.dormantKnowledge':
+    '{craft}知識已保留，但在其組合或嗜好未啟用時處於休眠狀態。',
   'hudChrome.devBadge.title': '開發者',
   'hudChrome.devBadge.tiers.tinkerer': '修補匠',
   'hudChrome.devBadge.tiers.artificer': '工巧師',
@@ -6494,6 +6606,7 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'apiError.body.unsupported_media_type': '不支援的請求格式。',
   'apiError.deeds.invalid_input': '輸入無效。',
   'apiError.steam.disabled': 'Steam 連結目前無法使用。',
+  'apiError.wallet.handoff_invalid': '錢包授權已過期或無法驗證。請再試一次。',
   'apiError.steam.invalid_ticket': 'Steam 無法驗證此連結請求。請在桌面應用程式中重試。',
   'apiError.steam.banned': '該 Steam 帳號無法連結。',
   'apiError.steam.already_linked': '你的帳號已連結一個 Steam 帳號。',
@@ -6664,16 +6777,26 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.archetypeTitle.label': '稱號',
   'hudChrome.archetypeTitle.none': '無',
   'hudChrome.archetypeTitle.hobbyLabel': '愛好',
-  'hudChrome.archetypeTitle.armorcrafting': '鍛甲師',
-  'hudChrome.archetypeTitle.weaponcrafting': '武器匠',
-  'hudChrome.archetypeTitle.jewelcrafting': '珠寶匠',
-  'hudChrome.archetypeTitle.alchemy': '煉金師',
-  'hudChrome.archetypeTitle.engineering': '工程師',
-  'hudChrome.archetypeTitle.cooking': '廚師',
-  'hudChrome.archetypeTitle.inscription': '銘文師',
-  'hudChrome.archetypeTitle.enchanting': '附魔師',
-  'hudChrome.archetypeTitle.tailoring': '裁縫',
-  'hudChrome.archetypeTitle.leatherworking': '製皮師',
+  'hudChrome.archetypePair.engineering+alchemy': '爆破師',
+  'hudChrome.archetypePair.alchemy+cooking': '藥劑師',
+  'hudChrome.archetypePair.cooking+leatherworking': '捕獸人',
+  'hudChrome.archetypePair.leatherworking+tailoring': '製裝師',
+  'hudChrome.archetypePair.tailoring+inscription': '織法師',
+  'hudChrome.archetypePair.inscription+enchanting': '秘法師',
+  'hudChrome.archetypePair.enchanting+jewelcrafting': '縛晶師',
+  'hudChrome.archetypePair.jewelcrafting+weaponcrafting': '鑄刃師',
+  'hudChrome.archetypePair.weaponcrafting+armorcrafting': '鐵匠',
+  'hudChrome.archetypePair.armorcrafting+engineering': '齒輪匠',
+  'hudChrome.craftName.armorcrafting': '護甲鍛造',
+  'hudChrome.craftName.weaponcrafting': '武器鍛造',
+  'hudChrome.craftName.jewelcrafting': '珠寶設計',
+  'hudChrome.craftName.alchemy': '鍊金術',
+  'hudChrome.craftName.engineering': '工程學',
+  'hudChrome.craftName.cooking': '烹飪',
+  'hudChrome.craftName.inscription': '銘文學',
+  'hudChrome.craftName.enchanting': '附魔',
+  'hudChrome.craftName.tailoring': '裁縫',
+  'hudChrome.craftName.leatherworking': '製皮',
   'hudChrome.crafting.reagentLine': '{name}: {have}/{required}',
   // Protect Yumi locale fill (M16 wordy-key floor).
   'yumi.hud.collapse': '摺疊Protect Yumi血條',
@@ -7173,9 +7296,11 @@ export const zh_TW: Partial<Record<TranslationKey, string>> = {
   'hudChrome.deeds.charTitleNone': '未選擇頭銜',
   'hudChrome.deeds.charOpenBook': '功績之書',
   'hudChrome.deeds.lbTab': '名望',
-  'hudChrome.deeds.lbDeedsCol': '功績',
   'hudChrome.deeds.lbTitleCol': '頭銜',
-  'hudChrome.deeds.lbSelf': '你的排名：第 {rank} 名，位居前 {percent}%',
+  'hudChrome.deeds.lbScopeNote':
+    '排行榜按帳號的累計名望排名。每個功績在一個帳號的所有角色中只計一次。',
+  'hudChrome.deeds.lbSelfAccount': '你的帳號：第 {rank} 名，位居前 {percent}%，名望 {renown}',
+  'hudChrome.deeds.lbSelfRank': '你的帳號：第 {rank} 名，位居前 {percent}%',
   'hudChrome.deeds.lbEmpty': '尚無上榜的編年史家。',
   'hudChrome.deeds.broadcastsLabel': '與公會和好友分享功績達成',
   'guide.deedsPage.catHeading': '{label}（{count}）',
