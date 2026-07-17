@@ -9151,6 +9151,14 @@ function procResponseDescription(
           : formatNumber(response.amount ?? 0, lang);
       return `${t('hudChrome.auraEffect.absorb', { value: absorbValue })} (${seconds(response.duration, lang)})`;
     }
+    case 'aura': {
+      // Multiplier-shaped kinds (buff_speed 1.4 = +40%) render their delta;
+      // additive kinds render the raw fraction.
+      const multiplierShaped =
+        response.auraKind === 'buff_speed' || response.auraKind === 'buff_haste';
+      const fraction = multiplierShaped ? response.value - 1 : response.value;
+      return `+${formatPercent(fraction, lang)} (${seconds(response.duration, lang)})`;
+    }
     case 'echo': {
       const echoValue =
         response.healPctMaxHp !== undefined

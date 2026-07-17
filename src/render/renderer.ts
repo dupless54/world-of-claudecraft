@@ -4603,6 +4603,9 @@ export class Renderer {
         if (a.kind === 'form_moonkin') hasMoonkin = true;
         if (a.kind === 'form_metamorph') hasMetamorph = true;
         if (a.id === 'ice_block' && a.kind === 'stasis') hasIceBlock = true;
+        // Rime Snare victims wear the same ice shell (maintainer request);
+        // the freeze aura is already wired, so this is render-only sugar.
+        if (a.id === 'frost_trap_freeze') hasIceBlock = true;
         if (a.id === 'temporal_hourglass') {
           if (a.kind === 'stasis') temporalHourglassMode = 'protective';
           if (a.kind === 'incapacitate') temporalHourglassMode = 'hostile';

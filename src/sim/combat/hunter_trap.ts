@@ -13,6 +13,9 @@ import { segmentTouchesAnnulus } from './ring_of_frost';
 
 // Hostile query padding so a fast mover cannot tunnel past the contact sweep.
 const SWEEP_QUERY_PADDING = 30;
+// Armed-trap ground indicator cadence and size (a subtle frost ring).
+const SHIMMER_EVERY_TICKS = 40;
+const SHIMMER_RADIUS = 1.2;
 
 export interface HunterTrapEffect {
   duration: number;
@@ -68,6 +71,19 @@ export function tickHunterTrap(ctx: SimContext, effect: GroundAoE): void {
   }
   const source = ctx.entities.get(effect.sourceId);
   if (!source) return;
+  // The maintainer's ground indicator: an armed trap shimmers every 2 sec (a
+  // small frost ring on the existing spellfxAt channel, interest-scoped like
+  // every event, so offline and online render identically). Deterministic.
+  if (ctx.tickCount % SHIMMER_EVERY_TICKS === 0) {
+    ctx.emit({
+      type: 'spellfxAt',
+      x: effect.pos.x,
+      z: effect.pos.z,
+      school: 'frost',
+      fx: 'nova',
+      radius: SHIMMER_RADIUS,
+    });
+  }
   for (const target of ctx.hostilesInRadius(
     source,
     effect.pos,

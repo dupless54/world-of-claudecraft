@@ -534,12 +534,12 @@ export const HUNTER_CHOICE_ROWS: ClassChoiceRows = {
           // a level-5 row from modifying a later-learned ability.
           id: 'hun_r5_aspect_mastery',
           name: 'Guisecraft',
-          description: "Harrier's Guise and Marten's Guise effects are 50% stronger.",
+          description: "Harrier's Guise and Marten's Guise effects are 25% stronger.",
           icon: 'aspect_of_the_hawk',
           effect: {
             ability: [
-              { ability: 'aspect_of_the_hawk', buffPct: 0.5 },
-              { ability: 'aspect_of_the_monkey', buffPct: 0.5 },
+              { ability: 'aspect_of_the_hawk', buffPct: 0.25 },
+              { ability: 'aspect_of_the_monkey', buffPct: 0.25 },
             ],
           },
         },
@@ -565,13 +565,22 @@ export const HUNTER_CHOICE_ROWS: ClassChoiceRows = {
           effect: { grant: { ability: 'frost_trap' } },
         },
         {
-          // Balance pass: the 2 sec root is gone (a 7.2s-cadence ranged root
-          // chain was permanent CC) and the cooldown cut is 25%, not 40%.
+          // Balance pass round two: NO cooldown cut either (it pushed the 50%
+          // slow toward half uptime). The talent deepens the slow inside the
+          // same window instead: a second slow aura at 0.3 wins the
+          // moveSpeedMult min() over the baseline 0.5.
           id: 'hun_r8_improved_concussive',
           name: 'Pinning Barb',
-          description: 'Rattling Shot cooldown reduced by 25%.',
+          description: "Rattling Shot's slow deepens to 70% for its 4 sec duration.",
           icon: 'concussive_shot',
-          effect: { ability: [{ ability: 'concussive_shot', cooldownPct: -0.25 }] },
+          effect: {
+            ability: [
+              {
+                ability: 'concussive_shot',
+                addEffects: [{ type: 'slow', mult: 0.3, duration: 4 }],
+              },
+            ],
+          },
         },
       ],
     },
@@ -609,20 +618,27 @@ export const HUNTER_CHOICE_ROWS: ClassChoiceRows = {
           },
         },
         {
-          // Phase-2 defensive pass: the flat 200 was ~45% of an 11-hunter's
-          // bar; the ward is 20% of max health now and scales forever.
+          // Balance pass round three (maintainer rule: shields belong to
+          // priests only): the panic response is the skirmisher escape burst.
           id: 'hun_r11_survival_instincts',
           name: 'Deathless Will',
           description:
-            'Taking a hit for at least 30% of your maximum health grants a shield absorbing 20% of your maximum health for 8 sec. 30 sec internal cooldown.',
+            'Taking a hit for at least 30% of your maximum health grants 40% movement speed for 4 sec. 30 sec internal cooldown.',
           icon: 'aspect_of_the_monkey',
           effect: {
             proc: {
               id: 'hun_deathless_will',
               name: 'Deathless Will',
+              school: 'nature',
               trigger: { on: 'bigHitTaken', hpFrac: 0.3, icd: 30 },
               responses: [
-                { kind: 'absorb', amountPctMaxHp: 0.2, duration: 8, name: 'Deathless Will' },
+                {
+                  kind: 'aura',
+                  auraKind: 'buff_speed',
+                  value: 1.4,
+                  duration: 4,
+                  name: 'Deathless Will',
+                },
               ],
             },
           },

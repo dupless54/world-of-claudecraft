@@ -179,19 +179,20 @@ export const TALENT_ABILITIES_V2_A = {
     learnLevel: 10,
     cost: 0,
     castTime: 0,
-    cooldown: 120,
+    cooldown: 300,
     range: 0,
     school: 'physical',
     requiresTarget: false,
     offGcd: true,
-    // Balance pass: also cuts all damage taken (buff_dr, the Ironhold kind)
-    // so the wall works against casters, not just melee swings.
+    // Balance pass round two (maintainer): 5 min cooldown and 25% dodge (the
+    // 50pp wall on 2 min was too much); the all-school damage cut stays so it
+    // still works against casters.
     effects: [
-      { type: 'selfBuff', kind: 'buff_dodge', value: 0.5, duration: 10 },
+      { type: 'selfBuff', kind: 'buff_dodge', value: 0.25, duration: 10 },
       { type: 'selfBuff', kind: 'buff_dr', value: 0.3, duration: 10 },
     ],
     description:
-      'Increases your dodge chance by 50 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)',
+      'Increases your dodge chance by 25 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)',
   },
   aspect_of_the_wild: {
     id: 'aspect_of_the_wild',

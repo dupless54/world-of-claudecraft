@@ -65,6 +65,23 @@ describe('G6: Rime Snare is an armed single-target trap at your feet', () => {
     expect(trapEntries(sim)).toHaveLength(0); // sprung traps are consumed
   });
 
+  it('an armed trap shimmers its ground indicator periodically', () => {
+    const { sim } = setup();
+    sim.castAbility('frost_trap');
+    const events: { type?: string; fx?: string; school?: string }[] = [];
+    const anySim = sim as unknown as { emit(e: (typeof events)[number]): void };
+    const orig = anySim.emit.bind(sim);
+    anySim.emit = (e) => {
+      events.push(e);
+      return orig(e);
+    };
+    for (let i = 0; i < 120; i++) sim.tick(); // arm + three shimmer windows
+    const shimmers = events.filter(
+      (e) => e.type === 'spellfxAt' && e.fx === 'nova' && e.school === 'frost',
+    );
+    expect(shimmers.length).toBeGreaterThanOrEqual(2);
+  });
+
   it('freezes only ONE enemy even with several in the radius', () => {
     const { sim } = setup();
     sim.castAbility('frost_trap');

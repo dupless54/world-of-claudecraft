@@ -1,4 +1,4 @@
-import type { AbilityEffect, ResourceType } from '../types';
+import type { AbilityEffect, AuraKind, ResourceType } from '../types';
 import { ALL_CLASSES, MAX_LEVEL, type PlayerClass } from '../types';
 import {
   isTalentRowLevel,
@@ -187,7 +187,11 @@ export type ProcResponse =
       heal?: number;
       healPctMaxHp?: number;
       name: string;
-    };
+    }
+  // A plain self-aura (Deathless Will's escape burst): applied to the proc
+  // owner with the def's school; value semantics follow the aura kind (a
+  // buff_speed of 1.4 is +40% movement).
+  | { kind: 'aura'; auraKind: AuraKind; value: number; duration: number; name: string };
 
 export interface ProcDef {
   id: string;

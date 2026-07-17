@@ -7058,7 +7058,7 @@ export const en: EnTranslations = {
       },
       "deterrence": {
         "name": "Bristleguard",
-        "description": "Increases your dodge chance by 50 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)"
+        "description": "Increases your dodge chance by 25 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)"
       },
       "divine_shield": {
         "name": "Lightward",

@@ -220,6 +220,22 @@ function expectedTokens(effect: unknown): string[] {
   const toks: string[] = [];
   const walk = (obj: unknown) => {
     if (!obj || typeof obj !== 'object') return;
+    // Aura proc responses with multiplier-shaped kinds (buff_speed 1.4 =
+    // "+40% movement"): the delta is the stated number, not the raw 1.4.
+    const shapedAura = obj as {
+      kind?: string;
+      auraKind?: string;
+      value?: number;
+      duration?: number;
+    };
+    if (
+      shapedAura.kind === 'aura' &&
+      (shapedAura.auraKind === 'buff_speed' || shapedAura.auraKind === 'buff_haste')
+    ) {
+      toks.push(`${+(((shapedAura.value ?? 1) - 1) * 100).toFixed(1)}%`);
+      if (shapedAura.duration) toks.push(`${+shapedAura.duration.toFixed(1)}`);
+      return;
+    }
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'number') {
         if (value === 0) continue;
@@ -271,6 +287,22 @@ function legitNumbers(effect: unknown): Set<number> {
   };
   const walk = (obj: unknown) => {
     if (!obj || typeof obj !== 'object') return;
+    // Aura proc responses with multiplier-shaped kinds (buff_speed 1.4 =
+    // "+40% movement"): the delta is the stated number, not the raw 1.4.
+    const shapedAura = obj as {
+      kind?: string;
+      auraKind?: string;
+      value?: number;
+      duration?: number;
+    };
+    if (
+      shapedAura.kind === 'aura' &&
+      (shapedAura.auraKind === 'buff_speed' || shapedAura.auraKind === 'buff_haste')
+    ) {
+      add((shapedAura.value ?? 1) - 1, true);
+      if (shapedAura.duration) add(shapedAura.duration, false);
+      return;
+    }
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'number') {
         if (key === 'battleRhythm') {

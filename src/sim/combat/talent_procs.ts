@@ -134,6 +134,18 @@ function fireOne(
         fx: 'wardBloom',
       });
       break;
+    case 'aura':
+      ctx.applyAura(player, {
+        id: def.id,
+        name: response.name,
+        kind: response.auraKind,
+        remaining: response.duration,
+        duration: response.duration,
+        value: response.value,
+        sourceId: player.id,
+        school: def.school ?? 'holy',
+      });
+      break;
     case 'echo':
       ctx.applyAura(subject, {
         id: def.id,

@@ -1695,7 +1695,7 @@ const classAbilityNamesEn = {
       [
         'deterrence',
         'Bristleguard',
-        'Increases your dodge chance by 50 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)',
+        'Increases your dodge chance by 25 percentage points and reduces all damage taken by 30% for 10 sec. (Hunter talent)',
       ],
       [
         'divine_shield',

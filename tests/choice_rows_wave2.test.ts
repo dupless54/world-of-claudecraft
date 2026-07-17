@@ -101,19 +101,23 @@ describe('hunter wave 2 choice rows', () => {
   });
 
   it('Pinning Barb and Guisecraft are plain ability improvements now', () => {
-    // Balance pass: Pinning Barb lost its 2 sec root and the cut is 25%
-    // (12 -> 9 sec); Guisecraft strengthens the two early Guises instead of
-    // discounting shots on a swap.
+    // Balance pass round two: Pinning Barb keeps the base 12 sec cooldown
+    // (a cut pushed the 50% slow toward half uptime) and instead deepens the
+    // slow to 70% inside the same window; Guisecraft is 25% (50% was too
+    // strong once the swap-discount abuse case was gone).
     const { sim } = rig('hunter', 20, {
       5: 'hun_r5_aspect_mastery',
       8: 'hun_r8_improved_concussive',
     });
     const rattling = sim.resolvedAbility('concussive_shot');
-    expect(rattling?.cooldown).toBeCloseTo(9);
+    expect(rattling?.cooldown).toBeCloseTo(12);
     expect(rattling?.effects.some((e) => e.type === 'root')).toBe(false);
+    expect(
+      rattling?.effects.some((e) => e.type === 'slow' && e.mult === 0.3 && e.duration === 4),
+    ).toBe(true);
     expect(sim.resolvedAbility('aspect_of_the_hawk')?.effects[0]).toMatchObject({
       type: 'selfBuff',
-      value: 75, // rank 3 at level 20: 50 AP * 1.5
+      value: 63, // rank 3 at level 20: 50 AP * 1.25 rounded
     });
   });
 
@@ -155,10 +159,11 @@ describe('hunter wave 2 choice rows', () => {
 
     const guarded = rig('hunter', 20, { 11: 'hun_r11_survival_instincts' });
     dealDamage(guarded.sim, guarded.p, Math.ceil(guarded.p.maxHp * 0.35));
-    // Phase-2 defensive pass: the ward is 20% of max health, not a flat 200.
-    expect(guarded.p.auras.find((a) => a.id === 'hun_deathless_will')?.value).toBe(
-      Math.round(guarded.p.maxHp * 0.2),
-    );
+    // Balance pass round three: shields are priest-only, so the panic
+    // response is the 40% escape burst.
+    const burst = guarded.p.auras.find((a) => a.id === 'hun_deathless_will');
+    expect(burst?.kind).toBe('buff_speed');
+    expect(burst?.value).toBeCloseTo(1.4);
   });
 });
 
