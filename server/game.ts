@@ -978,6 +978,9 @@ function dynamicFields(e: Entity): Record<string, unknown> {
   if (e.weaponStowed) out.ws = 1; // Z-key sheathe: weapons render on the back
   if (e.aggroTargetId !== null) out.aggro = e.aggroTargetId;
   if (e.tappedById !== null) out.tap = e.tappedById;
+  // corpse harvest claim (single-use, first-come): the online corpse picker
+  // must stop offering a corpse another player already harvested
+  if (e.harvestClaimedBy !== null) out.hcb = e.harvestClaimedBy;
   if (e.ownerId !== null) out.own = e.ownerId;
   if (e.overheadEmoteId) {
     out.emo = e.overheadEmoteId;

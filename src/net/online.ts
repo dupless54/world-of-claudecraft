@@ -2096,6 +2096,9 @@ export class ClientWorld implements IWorld {
       e.weaponStowed = !!w.ws;
       e.aggroTargetId = w.aggro ?? null;
       e.tappedById = w.tap ?? null;
+      // corpse harvest claim: unconditional so a record without hcb (unclaimed,
+      // or a respawn that cleared the claim) resets any stale mirrored pid
+      e.harvestClaimedBy = typeof w.hcb === 'number' ? w.hcb : null;
       e.ownerId = w.own ?? null;
       e.petMode = w.pm ?? 'defensive';
       e.petTauntTimer = w.pt ?? 0;

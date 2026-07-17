@@ -26,7 +26,8 @@ import { type ClientSession, GameServer, wireEntity } from '../server/game';
 import { ClientWorld } from '../src/net/online';
 import { mechHeldWeaponOverride, visualKeyFor } from '../src/render/characters/manifest';
 import { COMBO_RECIPES } from '../src/sim/content/recipes';
-import { DELVES, GATHER_NODES, ITEMS } from '../src/sim/data';
+import { DELVES, GATHER_NODES, ITEMS, MOBS } from '../src/sim/data';
+import { createMob } from '../src/sim/entity';
 import { Sim } from '../src/sim/sim';
 import { type Aura, DT, type PlayerClass } from '../src/sim/types';
 import { terrainHeight } from '../src/sim/world';
@@ -458,6 +459,62 @@ describe('account flair over the wire', () => {
     const client = bareClient(e.id + 1000);
     (client as any).applySnapshot({ t: 'snap', ents: [wire] });
     expect(client.entities.get(e.id)!.streamerLinks).toBeUndefined();
+  });
+});
+
+// Corpse harvest claims over the wire. The corpse picker
+// (src/game/corpse_loot_availability.ts) reads mob.harvestClaimedBy; offline the
+// Sim entity carries it, so online the same field must ride the sparse terse key
+// `hcb` or the online picker keeps offering already-claimed corpses. Same pin
+// shape as the account-flair suite above: the REAL server emit (wireEntity) into
+// the REAL client mirror (applySnapshot), never a hand-built wire record alone.
+describe('corpse harvest claim over the wire', () => {
+  function deadWolfCorpse(id: number): ReturnType<typeof createMob> {
+    const template = MOBS.forest_wolf;
+    const mob = createMob(id, template, template.maxLevel, { x: 0, y: 0, z: 0 });
+    mob.dead = true;
+    return mob;
+  }
+
+  it('mirrors the claimer pid onto another player client via hcb', () => {
+    const claimer = 42;
+    const mob = deadWolfCorpse(9001);
+    mob.harvestClaimedBy = claimer;
+
+    const w = wireEntity(mob);
+    expect(w.hcb).toBe(claimer);
+
+    const client = bareClient(claimer + 1000);
+    (client as any).applySnapshot({ t: 'snap', ents: [w] });
+    expect(client.entities.get(mob.id)!.harvestClaimedBy).toBe(claimer);
+  });
+
+  it('keeps an unclaimed corpse sparse: no hcb key, mirrored as null', () => {
+    const mob = deadWolfCorpse(9002);
+
+    const w = wireEntity(mob);
+    // Absent, not `hcb: null`: an unclaimed corpse's record must be byte-unchanged
+    // by this feature, so the per-entity delta cache keeps eliding it.
+    expect(w).not.toHaveProperty('hcb');
+
+    const client = bareClient(1);
+    (client as any).applySnapshot({ t: 'snap', ents: [w] });
+    expect(client.entities.get(mob.id)!.harvestClaimedBy).toBeNull();
+  });
+
+  it('clears a stale mirrored claim when a later record arrives without hcb', () => {
+    const mob = deadWolfCorpse(9003);
+    mob.harvestClaimedBy = 42;
+
+    const client = bareClient(1);
+    (client as any).applySnapshot({ t: 'snap', ents: [wireEntity(mob)] });
+    expect(client.entities.get(mob.id)!.harvestClaimedBy).toBe(42);
+
+    // Respawn clears the claim server-side (src/sim/mob/lifecycle.ts); the next
+    // record simply omits hcb, and the mirror must reset, not keep the stale pid.
+    mob.harvestClaimedBy = null;
+    (client as any).applySnapshot({ t: 'snap', ents: [wireEntity(mob)] });
+    expect(client.entities.get(mob.id)!.harvestClaimedBy).toBeNull();
   });
 });
 
