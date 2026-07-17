@@ -394,6 +394,7 @@ import {
   statTooltipHtml,
 } from './stat_tooltip_view';
 import { mountStorePromoCard, type StorePromoCardController } from './store_promo_card';
+import { recordStoreStackSample } from './store_stack_diag';
 import { nearestSubzone } from './subzone';
 import { swingTimerState } from './swing_timer';
 import { SwingTimerPainter } from './swing_timer_painter';
@@ -2226,13 +2227,11 @@ export class Hud {
     document.body.classList.toggle('mobile-window-open', anyOpen);
     const storeWindow = document.getElementById('daily-rewards-window') as HTMLElement | null;
     const claudiumWindow = document.getElementById('claudium-window') as HTMLElement | null;
-    document.body.classList.toggle(
-      'store-stack-open',
-      stackedWindowsVisible(
-        !!storeWindow && this.isWindowVisible(storeWindow),
-        !!claudiumWindow && this.isWindowVisible(claudiumWindow),
-      ),
-    );
+    const storeVisible = !!storeWindow && this.isWindowVisible(storeWindow);
+    const claudiumVisible = !!claudiumWindow && this.isWindowVisible(claudiumWindow);
+    const storeStacked = stackedWindowsVisible(storeVisible, claudiumVisible);
+    document.body.classList.toggle('store-stack-open', storeStacked);
+    recordStoreStackSample(storeVisible, claudiumVisible, storeStacked);
     const mapWindow = document.getElementById('map-window');
     const questLogWindow = document.getElementById('quest-log-window');
     document.body.classList.toggle(
@@ -2532,6 +2531,11 @@ export class Hud {
         break;
       case 'daily-rewards-window':
         this.dailyRewardsWindow.close();
+        break;
+      case 'claudium-window':
+        // Route through the painter so focus returns to the opener (WCAG 2.2 AA)
+        // and the refresh state resets, consistent with the toggle / X close path.
+        this.claudiumWindow.close();
         break;
       case 'emote-editor':
         this.closeEmoteEditor();

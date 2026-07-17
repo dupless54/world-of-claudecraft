@@ -2758,12 +2758,16 @@
     contain: paint;
     isolation: isolate;
   }
-  /* Promote these large layers only while they overlap. Keeping the promotion
-     conditional avoids permanently reserving two Retina-sized GPU surfaces. */
-  body.store-stack-open #daily-rewards-window,
-  body.store-stack-open #claudium-window {
-    will-change: transform;
-  }
+  /* Deliberately NO will-change promotion here, conditional or permanent. The
+     old body.store-stack-open rule dropped will-change in the same frame a
+     window's inline display flipped (the class recomputes from live window
+     visibility), racing Chromium's teardown of two Retina-sized promoted
+     layers at once; a layer stranded by that race composites as an opaque
+     near-black rectangle over the play area. Containment + isolation above
+     already scope invalidation, and a window drag promotes via its own live
+     transform, so the standing promotion bought nothing worth that risk.
+     body.store-stack-open itself is still maintained (hud.ts
+     syncAnyWindowOpenState) as the store-lifecycle diagnostic signal. */
   #claudium-window {
     width: min(940px, calc(100vw - 40px));
     max-height: calc(100vh - 40px);
