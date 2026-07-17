@@ -2453,6 +2453,9 @@ export class ClientWorld implements IWorld {
       this.questsDone,
       this.pendingQuestCommands,
       this.player.level,
+      // The guard looks dead (craftingIdentity is initialized at declaration)
+      // but is load-bearing for prototype-built instances: the bareClient test
+      // idiom (Object.create(ClientWorld.prototype)) skips field initializers.
       identity
         ? {
             activeArchetype: identity.activeArchetype,

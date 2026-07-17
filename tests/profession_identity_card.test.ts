@@ -99,7 +99,9 @@ describe('profession identity card painter contract', () => {
     const button = parent.querySelector<HTMLButtonElement>('button.vendor-item');
     const note = parent.querySelector<HTMLElement>('.crafting-combo-requirement');
     expect(button?.disabled).toBe(true);
-    expect(note?.textContent).toBeTruthy();
+    // The rendered guidance is the localized copy for the given reason
+    // (not_attuned), so a wrong or empty reason string reddens here.
+    expect(note?.textContent).toContain('Choose an archetype pair first.');
     expect(button?.contains(note ?? null)).toBe(false);
     expect(note?.parentElement?.classList.contains('crafting-recipe-item')).toBe(true);
   });
@@ -123,5 +125,16 @@ describe('profession identity card painter contract', () => {
     expect(craftingWindow.indexOf('renderProfessionIdentityCard(')).toBeLessThan(
       craftingWindow.indexOf('const sections = new Map'),
     );
+  });
+
+  // The card is a cold *_card consumer (not a *_painter.ts), so it escapes the
+  // per-painter no-magic sweep in hud_perf_budget; this source scan carries the
+  // same contract: colors and sizes live in the stylesheet, never in TS.
+  it('carries no literal hex or rgb color in TS (no-magic-values contract)', () => {
+    const code = painter.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+    const hex = code.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [];
+    const rgb = code.match(/\brgba?\s*\(/g) ?? [];
+    expect(hex, `hex colors: ${hex.join(', ')}`).toEqual([]);
+    expect(rgb, `rgb colors: ${rgb.join(', ')}`).toEqual([]);
   });
 });
