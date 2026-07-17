@@ -34,19 +34,26 @@ QA drift notes below). Next: Phase 3 (phase-03-parity-bug-fixes.md).
   revisit only if players report confusion. Confirmed in place at Phase 1
   (2026-07-17).
 - Masterwork model: deterministic outputs; proc chance from skill +
-  self-signed materials + specialization; bounded bonus stats baked via
+  signed materials + specialization; bounded bonus stats baked via
   src/sim/item_budget.ts into instance.rolled.stats; no five-way quality
   roll; trivialAt retired. Power bounds: baseline crafted below dungeon BiS;
   masterwork at dungeon-drop level, always below the raid floor.
-- RNG in, determinism out: input RNG (node rarity, pristine veins, fishing
-  catches, corpse components) stays and grows; output RNG is only the
-  masterwork proc (add-only, never a downgrade).
+  AMENDED 2026-07-17 (design review): the signed-reagent proc term counts
+  ANY player's signature, not only the crafter's own, and is decoupled from
+  the #1145 quantity-discount flag (a count-1 signed reagent qualifies).
+  The self-signed reagent-QUANTITY discount stays self-only. Ships as its
+  own code change ahead of Phase 3, not inside a phase.
+- RNG in, determinism out: input RNG (node rarity, the per-node-type rare
+  events, fishing catches, corpse components) stays and grows; output RNG is
+  only the masterwork proc (add-only, never a downgrade).
 - Hands vs stations: field recipes (a named FIELD_RECIPES subset) craft
   anywhere; every uncommon+ recipe requires its typed station. Stations are
   master NPCs (shop + teach + quest hooks) in guard-safe locations. The
   mobile-crafting-station specialization perk bypasses the gate.
 - Recipe acquisition: training at masters on the existing acquireRecipe gate;
   every recipe that exists before Phase 9 is grandfathered known on load.
+  AMENDED 2026-07-17: training is additionally skill-tier gated (see the
+  Phase 9 amendment below); the gate is on learning, never on use.
 - No skillReq admission gate on known recipes, ever (documented rule stands).
 - Pacing: fast early, slow top; scarcity (materials, adventure) is the clock.
 - Economy: players trade with players; NPCs only sink (training fees, tools,
@@ -54,11 +61,67 @@ QA drift notes below). Next: Phase 3 (phase-03-parity-bug-fixes.md).
   that no recipe vendors above its input value.
 - Deeds: basic universal only (first craft, first masterwork, first
   attunement, per-craft tier milestones, the rare fish). Cosmetic only.
+  AMENDED 2026-07-17: plus the Specialist deed and the rare-find deeds, and
+  first attunement / first masterwork carry titles and marquee-tier renown
+  (see the Phase 15 amendment below). Still cosmetic-only.
 - Identity costs: first attunement free; make-amends escalation stays
   5 + 3 * switchCount with cheap early costs.
 - Tool effects/charges/recharge: PARKED. Pure modules in
   src/sim/professions/tools.ts stay dormant; do not wire, do not delete.
-- Wave 2+ excluded from this packet (see implementation-plan.md).
+- Wave 2+ excluded from this packet (see implementation-plan.md); EXCEPTION
+  2026-07-17: salvage wiring moved INTO Phase 13 (see the amendments below).
+- 2026-07-17 design-review amendments (maintainer-approved; the response to
+  the external Codex review). Each binds its owning phase file, which
+  carries the full deliverable wording:
+  - Phase 4: the rare-event module ships PER-NODE-TYPE flavors on one
+    shared cadence knob: pristine vein (ore), ancient heartwood (wood),
+    moonlit bloom (herb); per-flavor broadcast ids and deed-mark hooks.
+    Fishing keeps the shipped glimmerfin catch; corpse harvesting gains
+    the perfect specimen component in Phase 10.
+  - Phase 5: the wheel window preserves the identity-view semantics (role,
+    ceiling, nudges, tutorial), adds a per-craft next-unlock line and a
+    client-computed switch-cost-at-rest line, and renders a SIMPLIFIED
+    pre-first-tier/unattuned state (progressive disclosure).
+  - Phase 6: the zone-visible masterwork broadcast rides the Phase 4
+    soft-zone-broadcast mechanism (the Phase 2 SimEvent is personal,
+    pid = crafter, and keeps feeding the crafter's own toast); online
+    inspect EXTENDS the identity wire with equipped instance payloads
+    (the Phase 2 QA drift decision resolves as extend); client-derived
+    tier-up toasts fire at every TIER_SKILL_STEP crossing.
+  - Phase 7 QA is the vertical-slice checkpoint: play the eight-step
+    journey end to end before wave one begins (see README).
+  - Phase 8: masters spread across the three zone hubs. Default
+    assignment: forge, kitchens, loom, toolworks in the zone 1 hub (every
+    wave-one archetype keeps a zone-1 anchor master); the tannery roots
+    in Fenbridge (zone 2); the apothecary in Highwatch (zone 3, keeping
+    the #1297 hub lore, dropping its level gate). CRAFTING_HUB_STATIONS
+    offsets are ZONE-3 coordinates and may seed only the Highwatch
+    placement. The mobile-station perk ships SPECIALIZATION-gated.
+  - Phase 9: recipe training is skill-tier gated at the masters. The
+    general predicate: a master teaches a recipe only at
+    tierForSkill(craft skill) >= tierForSkill(recipe skillReq). Wave-one
+    ladder: common always, uncommon at 25, rare at 50; any
+    higher-skillReq recipe a later phase authors (the existing
+    TOOL_RECIPES sit at 75/150 but are grandfathered known) gates by the
+    same formula with no extra rule. The gate is on LEARNING via
+    acquireRecipe, never on using a known recipe (the no-admission-gate
+    rule stands). Hobby crafts use the same thresholds. The Train view
+    always SHOWS locked rows with their named requirement (the visible
+    ladder).
+  - Phase 10: higher-tier recipes also consume some lower-tier materials;
+    cooking and alchemy carry combat-worthy consumables at EVERY tier;
+    the named Phase 2 materialTierBonus hook gets wired with real values.
+  - Phase 13: salvage wiring joins disenchant/enchant on the same seam
+    and confirm machinery (salvage.ts is already sim-complete).
+  - Phase 14: one cadence-capped repeatable work-order quest per master
+    (a recurring material sink with a face) and a one-shot-per-tier
+    congratulation mail from the attuned archetype's master.
+  - Phase 15: first attunement and first masterwork deeds carry TITLE
+    rewards and marquee-tier renown (>= 25) so the deeds pipeline
+    (nameplate title, banner, marquee broadcast, Renown board) celebrates
+    professions; a cosmetic Specialist deed lands at the 75-skill
+    threshold; a faucet-vs-sink review runs in the tuning pass. Still
+    basic, universal, cosmetic-only, append-only.
 
 ## Non-negotiable constraints
 
@@ -146,7 +209,8 @@ Phase 13), and interaction handlers return an outcome boolean (#1982).
   40; node yields are placeholder junk until Phase 4.
 - Salvage/disenchant/enchant: sim-complete in salvage.ts / enchanting.ts;
   lastSalvageResult/lastDisenchantResult/lastEnchantResult on PlayerMeta;
-  no IWorld/wire/UI until Phase 13 (salvage stays wave 2).
+  no IWorld/wire/UI until Phase 13 (salvage wiring JOINS Phase 13 per the
+  2026-07-17 amendments; it no longer waits for wave 2).
 - Stations today: requiresHubStation + CRAFTING_HUB_STATIONS (per-craft
   coordinates, unrendered) + canUseCraftingHubStation.
 - Icons: iconDataUrl(kind, id, size), procedural recipes + WebP override sets
@@ -304,9 +368,9 @@ tables, i18n key namespaces, files created)
   - Online inspect never carries equippedInstances (the identity wire
     has no instance payloads; offline builds them for the render
     mirror), so another player's masterwork and enchant stats are
-    invisible to online inspection. Pre-existing for enchants; Phase 6
-    (masterwork surfacing) decides whether to extend the identity wire
-    or accept the limitation.
+    invisible to online inspection. Pre-existing for enchants.
+    RESOLVED 2026-07-17: Phase 6 EXTENDS the identity wire (see the
+    design-review amendments above); the choice is no longer open.
   - Quality-roll retirement cleanup landed in QA: clampMaterialRarity
     and its private ladder deleted from gathering.ts (zero consumers
     after the craft-side clamp retirement); the professions CLAUDE.md
@@ -316,25 +380,36 @@ tables, i18n key namespaces, files created)
     ignores unknown SimEvent types, so a new server's masterwork event
     is harmless to an old client during a staged rollout.
 - Phase 3: (planned) hcb wire key (corpse claims); trade payload carriage.
-- Phase 4: (planned) node material tables; pristine vein event + deed mark.
+- Phase 4: (planned) node material tables; per-node-type rare events
+  (pristine vein / ancient heartwood / moonlit bloom) + deed-mark hooks.
 - Phase 5: (planned) professions window (.window id professions-window) +
   view core + painter + hudChrome.professions.* keys.
 - Phase 7: (planned) trend detection module; Guild letter content; S3 scan
   list gains src/sim/quests/quest_commands.ts.
-- Phase 8: (planned) station registry (typed stations); master NpcDefs;
-  placement-safety test.
-- Phase 13: (planned) disenchantItem/applyEnchant IWorld members + wire
-  commands.
+- Phase 8: (planned) station registry (typed stations, multi-zone); master
+  NpcDefs across the three hubs; placement-safety test.
+- Phase 13: (planned) disenchantItem/applyEnchant/salvageItem IWorld
+  members + wire commands.
 
 ## Tuning targets (placeholders until Phase 15 tunes against live data)
 
 - Masterwork proc: base 3 percent at recipe tier parity, +1 percent per tier
-  of skill above, +2 percent with any self-signed reagent, +3 percent at the
-  75-skill specialization threshold; cap 15 percent. Masterwork bonus: +1
-  quality tier for the stat budget, never above the raid floor band.
+  of skill above, +2 percent with any signed reagent (any player's
+  signature; decoupled from the quantity-discount flag per the 2026-07-17
+  amendment), +3 percent at the 75-skill specialization threshold; cap 15
+  percent. Masterwork bonus: +1 quality tier for the stat budget, never
+  above the raid floor band.
 - Training fees: common tier free (starter recipes), uncommon 25s, rare 1g.
+- Teach tiers (Phase 9): the general predicate is tierForSkill(craft skill)
+  >= tierForSkill(recipe skillReq); the wave-one ladder is common always,
+  uncommon at 25 skill, rare at 50. Hobby crafts use the same thresholds.
 - Craft fee (#1301) and throttle: unchanged until live data.
-- Pristine vein: roughly 1 per zone per 20 minutes, 5x yield, always signed.
+- Rare gather events (all three node flavors): roughly 1 per zone per 20
+  minutes, 5x yield, always signed; one shared cadence knob until Phase 15
+  tunes per family.
+- Work-order quests (Phase 14): reward numbers need MAINTAINER numbers
+  before Phase 14 runs (never gold-positive against the input vendor value;
+  the cadence cap reuses the nudge cadence pattern). Flagged in OPEN items.
 
 ## OPEN items
 
@@ -344,6 +419,8 @@ tables, i18n key namespaces, files created)
   Phase 5 (the wheel window). Each UI phase probes the rollout state at
   session start (see implementation-plan.md guardrails) and uses the new
   vocabulary once it exists; until then, today's tokens, grammar-ready.
+  Relief valve (2026-07-17): Phase 6 depends on Phases 2 and 4, not on
+  Phase 5, and may leapfrog the wheel window if the rollout stalls it.
 
 - RESOLVED (2026-07-16): the maintainer owns the PR 2039 branch outright.
   Phase 1 amendments (ring reorder, pair titles, review fixes, release sync,
@@ -365,3 +442,14 @@ tables, i18n key namespaces, files created)
   player can ping-pong the hobby between the two candidates for 75 XP per
   cycle. Maintainer decision (xpReward 0, or drop repeatable) in a tuning
   phase; do not change balance numbers inside QA.
+- Master-to-zone assignment (2026-07-17 default): forge, kitchens, loom,
+  toolworks in Eastbrook; tannery in Fenbridge; apothecary in Highwatch.
+  The maintainer may reshuffle in the Phase 8 PR review; positions are
+  data-only records, so a move is cheap before Phase 9 renders them.
+- Work-order reward numbers (see Tuning targets): maintainer numbers
+  required before Phase 14 runs; never invent balance numbers.
+- Masterwork discovery-deed credit: a masterwork copy credits its DEF
+  quality toward discovery deeds, never the bumped tier (Phase 2 QA drift
+  note, intended). Flagged 2026-07-17 for a maintainer call; if masterworks
+  should credit the bumped tier, that is a deliberate design change for a
+  tuning phase, never a QA fix.
