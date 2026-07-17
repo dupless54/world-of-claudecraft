@@ -144,16 +144,27 @@ export function onCastCompleted(
   abilityId: string,
   target?: Entity | null,
 ): void {
+  // G1 guard: a cast that consumed an empower aura (flag set at the consume
+  // funnel in empower_next.ts) never advances a castNth counter, so free-cast
+  // relay procs cannot feed cast-counter procs. The flag covers exactly one
+  // cast: read it, clear it.
+  const wasEmpowered = player.castConsumedEmpower === true;
+  if (player.castConsumedEmpower !== undefined) player.castConsumedEmpower = undefined;
   // Elemental Convergence (mage choice row): school-alternation memory, kept
   // here because every completed cast funnels through this hook. Draws no rng.
   convergenceOnCast(ctx, player, abilityId);
+  if (wasEmpowered) return;
   for (const def of procsFor(ctx, player)) {
     const trigger = def.trigger;
     if (trigger.on !== 'castNth' || !trigger.abilities.includes(abilityId)) continue;
     const procState = state(player);
+    // G2 guard: while a castNth internal cooldown runs, matching casts are
+    // ignored entirely: nothing fires and nothing is banked toward n.
+    if (trigger.icd !== undefined && procState.icds[def.id] !== undefined) continue;
     const count = (procState.counters[def.id] ?? 0) + 1;
     if (count >= trigger.n) {
       procState.counters[def.id] = 0;
+      if (trigger.icd !== undefined) procState.icds[def.id] = trigger.icd;
       fire(ctx, player, def, target && !target.dead ? target : player);
     } else {
       procState.counters[def.id] = count;
@@ -181,6 +192,13 @@ export function onSpellCrit(
     if (trigger.on !== 'spellCrit') continue;
     if (trigger.abilities && (abilityId === null || !trigger.abilities.includes(abilityId))) {
       continue;
+    }
+    // G2 guard: an optional internal cooldown caps the fire rate (crit streams
+    // from dot ticks and multi-target spells would otherwise chain-fire).
+    if (trigger.icd !== undefined) {
+      const procState = state(player);
+      if (procState.icds[def.id] !== undefined) continue;
+      procState.icds[def.id] = trigger.icd;
     }
     fire(ctx, player, def, target);
   }

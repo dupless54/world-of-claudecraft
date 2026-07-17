@@ -2445,6 +2445,13 @@ export interface Entity {
   // Transient talent-proc counters and internal cooldowns (combat/talent_procs.ts).
   // Never serialized; reset on death.
   procState?: { counters: Record<string, number>; icds: Record<string, number> };
+  // Set when a cast consumes a next_cast_free / next_execute_free /
+  // next_cast_instant / next_cast_cheap aura (combat/empower_next.ts), read and
+  // cleared by that cast's onCastCompleted so an empowered cast never advances
+  // a castNth counter (no free-cast proc loops). Lives only inside one cast's
+  // resolution: never serialized or wired, excluded from the parity digest
+  // (tests/parity/trace.ts ENTITY_EXCLUDE).
+  castConsumedEmpower?: boolean;
   // Chronomancy Rewind (combat/damage_history.ts): a bounded ring of the REAL HP
   // loss this player took, tagged by sim tick, pruned to the last few seconds on
   // every write. Recorded only for players, only at the canonical post-mitigation/

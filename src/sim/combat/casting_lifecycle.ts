@@ -796,6 +796,11 @@ export function castAbility(
       if (cheap === null) delete p.queuedOnSwingCostMultiplier;
       else p.queuedOnSwingCostMultiplier = cheap;
     }
+    // A queued-on-swing ability bills on the swing, not through this cast's
+    // completion, so the empower flag the consumes above set must not leak
+    // onto whatever cast completes next (the castNth guard in talent_procs.ts
+    // deliberately exempts on-next-swing abilities).
+    if (p.castConsumedEmpower !== undefined) p.castConsumedEmpower = undefined;
     if (!p.autoAttack && target) ctx.startAutoAttack(p.id);
     return;
   }

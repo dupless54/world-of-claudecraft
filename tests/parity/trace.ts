@@ -186,6 +186,11 @@ export const ENTITY_EXCLUDE: ReadonlySet<string> = new Set([
   // gameplay coverage (like wireRev above).
   'damageHistory',
   'weaponStowed', // Z-key sheathe pose; render-only, no gameplay path reads it
+  // The castNth empower guard flag (combat/empower_next.ts sets it, the same
+  // cast's onCastCompleted clears it): lives only inside one cast's resolution,
+  // never serialized or wired. Its EFFECT (which procs fire) is pinned by the
+  // event digest and procState counters.
+  'castConsumedEmpower',
 ]);
 
 // Session-only / presentation / derived PlayerMeta fields. Derived fields

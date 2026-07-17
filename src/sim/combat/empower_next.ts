@@ -6,6 +6,17 @@ function matches(aura: Aura, abilityId?: string): boolean {
   return abilityId !== undefined && aura.empowerAbilities.includes(abilityId);
 }
 
+// The aura kinds whose consumption marks the cast as empowered for the castNth
+// guard in talent_procs.ts (Entity.castConsumedEmpower). Deliberately excludes
+// the warrior bespoke kinds (battle_trance, sudden_death, revenge_free) and
+// next_attack_crit: those bill on swings, not casts.
+const EMPOWER_CAST_KINDS: ReadonlySet<string> = new Set([
+  'next_cast_free',
+  'next_execute_free',
+  'next_cast_instant',
+  'next_cast_cheap',
+]);
+
 export function consumeAuraKind(
   ctx: SimContext,
   e: Entity,
@@ -14,6 +25,7 @@ export function consumeAuraKind(
 ): Aura | null {
   const idx = e.auras.findIndex((aura) => aura.kind === kind && matches(aura, abilityId));
   if (idx < 0) return null;
+  if (EMPOWER_CAST_KINDS.has(kind)) e.castConsumedEmpower = true;
   const [aura] = e.auras.splice(idx, 1);
   ctx.emit({
     type: 'aura',

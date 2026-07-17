@@ -139,8 +139,11 @@ export interface GlobalModEffect {
 }
 
 export type ProcTrigger =
-  | { on: 'castNth'; n: number; abilities: string[] }
-  | { on: 'spellCrit'; abilities?: string[] }
+  // icd: optional internal cooldown in seconds (talent_procs.ts). While it
+  // runs, matching casts/crits are ignored entirely: nothing fires and nothing
+  // is banked toward n.
+  | { on: 'castNth'; n: number; abilities: string[]; icd?: number }
+  | { on: 'spellCrit'; abilities?: string[]; icd?: number }
   | { on: 'shieldConsumed'; ability: string }
   | { on: 'hotExpired'; ability: string }
   | { on: 'bigHitTaken'; hpFrac: number; icd: number }
