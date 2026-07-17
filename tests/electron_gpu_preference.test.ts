@@ -244,6 +244,15 @@ describe('summarizeGpuDevices', () => {
     ).toBe(false);
   });
 
+  it('stays quiet on an integrated-only machine (no discrete adapter present at all)', () => {
+    // Isolates the present-but-inactive-discrete dimension: an ordinary Intel-only laptop
+    // satisfies the active-iGPU half, so without this pin the discrete-presence clause
+    // could be dropped and every integrated-only machine would false-alarm.
+    expect(
+      summarizeGpuDevices([{ vendorId: 0x8086, deviceId: 0x9a49, active: true }]).discreteInactive,
+    ).toBe(false);
+  });
+
   it('handles a missing or malformed device list', () => {
     expect(summarizeGpuDevices(undefined)).toEqual({ devices: [], discreteInactive: false });
     expect(summarizeGpuDevices('nope')).toEqual({ devices: [], discreteInactive: false });
@@ -408,6 +417,23 @@ describe('forceHighPerformanceGpu', () => {
     expect(warn).toHaveBeenCalled();
   });
 
+  it('skips the write when reg exited 1 but was killed (status alone is not proof of absence)', () => {
+    // A kill can surface alongside any status; only a clean, unkilled, unsignaled exit 1
+    // means "value absent". Pins the killed/signal guards in isRegValueAbsent.
+    const { app } = fakeApp();
+    const execFileSync = vi.fn((_cmd: string, args: string[], _opts?: unknown) => {
+      if (args[0] === 'query')
+        throw Object.assign(new Error('killed mid-query'), {
+          status: 1,
+          killed: true,
+          signal: 'SIGTERM',
+        });
+      return '';
+    });
+    forceHighPerformanceGpu({ app, platform: 'win32', execFileSync, regExe: 'reg.exe' });
+    expect(execFileSync.mock.calls.some((c) => c[1][0] === 'add')).toBe(false);
+  });
+
   it('skips the write when reg.exe itself cannot run (no status at all)', () => {
     const { app } = fakeApp();
     const execFileSync = vi.fn((_cmd: string, args: string[], _opts?: unknown) => {
@@ -520,6 +546,10 @@ describe('main.cjs gpu wiring pin', () => {
   });
 
   it('logs the adapter list so a hybrid-laptop wrong-adapter case is visible in main.log', () => {
+    // Beyond symbol presence: the discreteInactive verdict must actually be consumed and
+    // the wrong-adapter warning must exist, so gutting the warn path cannot pass.
     expect(source).toContain('summarizeGpuDevices');
+    expect(source).toContain('discreteInactive');
+    expect(source).toContain('discrete GPU is present but INACTIVE');
   });
 });

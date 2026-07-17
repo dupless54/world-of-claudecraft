@@ -78,6 +78,24 @@ describe('probeMajorPerformanceCaveat', () => {
     expect(loseContext).toHaveBeenCalledTimes(1);
   });
 
+  it('returns false via the webgl fallback when webgl2 is refused but webgl succeeds', () => {
+    // The arm that keeps a webgl2-less hardware machine (old driver, forced GL1) from
+    // being misclassified as software: webgl2 refused, plain webgl accelerated.
+    const loseContext = vi.fn();
+    const getExtension = vi.fn((name: string) =>
+      name === 'WEBGL_lose_context' ? { loseContext } : null,
+    );
+    const getContext = vi.fn((contextId: string) =>
+      contextId === 'webgl' ? { getExtension } : null,
+    );
+    expect(probeMajorPerformanceCaveat(fakeCanvas(getContext))).toBe(false);
+    // webgl2 was tried first, the webgl fallback succeeded, and that context was released
+    expect(getContext).toHaveBeenCalledTimes(2);
+    expect(getContext).toHaveBeenNthCalledWith(1, 'webgl2', { failIfMajorPerformanceCaveat: true });
+    expect(getContext).toHaveBeenNthCalledWith(2, 'webgl', { failIfMajorPerformanceCaveat: true });
+    expect(loseContext).toHaveBeenCalledTimes(1);
+  });
+
   it('returns null when getContext itself throws', () => {
     const getContext = vi.fn(() => {
       throw new Error('context creation failed');
