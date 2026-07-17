@@ -339,19 +339,6 @@ export class CharacterVisual {
       } else if (baseChanged && !this.currentIsOneShot) {
         this.fadeTo(this.baseAction(), FADE, false);
       }
-      // Rigs with a rigid "limb" (staticIdle): hold idle on its first frame
-      // instead of looping the biped gesture, which would swing that rigid
-      // part through the body. One-shot gestures (attack/hit/emote/...) are
-      // untouched: currentIsOneShot guards this to the plain idle state only.
-      if (
-        this.def.staticIdle &&
-        this.baseState === 'idle' &&
-        !this.currentIsOneShot &&
-        this.current
-      ) {
-        this.current.paused = true;
-        this.current.time = 0;
-      }
       // foot-speed matching on locomotion cycles
       if (!this.currentIsOneShot && this.current) {
         const timeScale = locomotionTimeScale(this.baseState, s, this.def.walkRef, this.def.runRef);

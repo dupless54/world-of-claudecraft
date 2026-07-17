@@ -1,11 +1,10 @@
 // One-off capture script for extra training-dummy PR screenshots (close-up + in-combat).
 // Not part of the pr_shot_targets registry: a throwaway aid for this PR, run manually.
-// Camera-framing approach mirrors the proven pattern from the earlier
-// scripts/screenshot_training_dummy.mjs draft (direct player.pos + renderer.editorCam).
+// Camera-framing approach directly sets player.pos + renderer.editorCam.
 import puppeteer from 'puppeteer-core';
+import { BROWSER_PATH } from './browser_path.mjs';
 import { enterOfflineGame } from './enter_offline_game.mjs';
 
-const BROWSER_PATH = process.env.BROWSER_PATH || '/usr/bin/chromium';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 const OUT_DIR = process.env.OUT_DIR || 'pr-shots';
 
