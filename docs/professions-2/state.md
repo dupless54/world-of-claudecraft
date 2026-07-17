@@ -185,8 +185,10 @@ tables, i18n key namespaces, files created)
   session start (see implementation-plan.md guardrails) and uses the new
   vocabulary once it exists; until then, today's tokens, grammar-ready.
 
-- PR 2039 merge timing and who lands the Phase 1 amendments (same PR vs
-  immediate follow-up in one deploy window). Coordinate with the maintainer.
+- RESOLVED (2026-07-16): the maintainer owns the PR 2039 branch outright.
+  Phase 1 amendments (ring reorder, pair titles, review fixes, release sync,
+  commit-history cleanup) land ON the PR itself before it merges; no
+  merge-window coordination remains.
 - Exact FIELD_RECIPES membership (Phase 9 decides; default: the 9 common
   recipes stay field-craftable so nothing breaks).
 - Master NPC names/personalities (content flavor, Phase 8; maintainer may

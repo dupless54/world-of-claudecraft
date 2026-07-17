@@ -37,8 +37,9 @@ This is Phase 01 of the Professions 2.0 feature: Ring and identity foundations.
 Model: Opus 4.8, xhigh effort. Harness: Claude Code.
 
 Goal: land the blueprint identity foundations (ring reorder, pair-named archetype titles, the
-five PR 2039 review resolutions) inside PR 2039's merge window, before any player persists pair
-ids derived from the old ring.
+five PR 2039 review resolutions) DIRECTLY ON the PR 2039 branch, which the maintainer now owns
+outright, so the PR merges once, already correct, and pair ids derived from the old ring never
+exist in any deployed build.
 
 STEP 0 - PRE-FLIGHT:
 - Sync with the LATEST release branch FIRST: git fetch origin "+refs/heads/release/*:refs/remotes/origin/release/*"; pick
@@ -49,9 +50,15 @@ STEP 0 - PRE-FLIGHT:
 - Verify `git status` is clean before starting. If not, ask the user (a concurrent session may
   share this checkout).
 - Memory scan: check the MEMORY.md index for entries relevant to this phase, at minimum: the
-  node25 gate rule (run npm run gate under Node 24), the PR 2039 state and merge-window
-  coordination, and the combo-recipes-broken-online entry (#2033, the ClientWorld stub trap for
-  professions wire parity).
+  node25 gate rule (run npm run gate under Node 24), the professions-2-program entry (the
+  maintainer owns the PR 2039 branch; amendments land on it pre-merge), and the
+  combo-recipes-broken-online entry (#2033, the ClientWorld stub trap for professions wire
+  parity).
+- This phase's working branch IS the PR 2039 branch: bring its head into a maintainer-owned
+  branch (or push rights on the existing head), apply the release-branch sync above TO IT
+  (2039 was cut from an older release/v0.27.0 head; merge the newest release in and run the
+  release-merge-audit skill), and do all Phase 1 work on top. The PR history is yours to
+  clean: rewrite or squash so every commit carries a body.
 
 STEP 1 - LOAD CONTEXT (do NOT read planning docs directly):
 Spawn an Explore agent to read and summarize:
@@ -117,9 +124,8 @@ Agent coordination deliverables (PR 2039 review items):
   3. Revert the 13 Latin-overlay hand fills (locale overlays are release-time maintainer work).
   4. Add bodies to the commits that lack them.
   5. Fix the PRD staleness.
-- Note the merge-window coordination in the final response: whether the Phase 1 amendments land
-  in PR 2039 itself or as an immediate follow-up inside one deploy window (the state.md OPEN
-  item; coordinate with the maintainer).
+- All amendments land in PR 2039 itself (the maintainer owns the branch; nothing is set in
+  stone). The final response records the amended PR's head and its green CI run.
 
 INVARIANTS THIS PHASE MUST KEEP:
 - Determinism: all randomness via Rng; no Math.random / Date.now / performance.now anywhere in
@@ -205,8 +211,9 @@ End your turn with: phase status, files touched, validation results, review-agen
 deferred items, and a one-line handoff for the Phase 01 QA session.
 
 STOPPING RULES:
-- Stop and surface to the maintainer if PR 2039 cannot merge in this window; the ring reorder
-  must not land detached from it.
+- Stop and surface to the maintainer if the PR 2039 branch cannot be updated or its release
+  merge produces conflicts beyond this phase's scope; the ring reorder must not land detached
+  from the PR.
 - Stop and surface to the maintainer if any production player already holds attunedPairs pair
   ids derived from the old ring: a save migration becomes required and is not in this phase's
   scope to improvise.
