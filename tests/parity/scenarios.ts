@@ -4154,8 +4154,9 @@ function professionsCraft(seed = 21): Scenario {
       meta.craftSkills.tailoring = 200;
       // The one self-signed linen scrap satisfies the whole linen requirement (the
       // #1145 minus-one reduction composes with the #1134 specialization discount:
-      // 3 -> 2 -> floor(2 * 0.8) = 1) and marks selfSignedBonusApplied for the
-      // proc-chance input, mirroring the crafting suite's proc test.
+      // 3 -> 2 -> floor(2 * 0.8) = 1) and feeds the signed-reagent proc-chance
+      // input (any-signed since the 2026-07-17 ruling; a self-signed copy still
+      // qualifies), mirroring the crafting suite's proc test.
       sim.addItemInstance('linen_scrap', { signer: meta.name }, pid);
       sim.addItem('spider_leg', 1, pid);
       sim.craftItem('recipe_eastbrook_ritual_vestments', pid);

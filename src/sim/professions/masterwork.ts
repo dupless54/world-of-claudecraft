@@ -15,13 +15,16 @@
 import { normalizePrimaryStats, PRIMARY_STATS, primaryStatBudget } from '../item_budget';
 import type { CoreStats, ItemDef, ItemSlot } from '../types';
 
-// Locked Phase 2 tuning: base chance at recipe-tier parity, plus a small bump
-// per tier of craft skill above the recipe's tier, plus flat bonuses for a
-// self-signed reagent and for reaching the specialization threshold, hard
+// Locked Phase 2 tuning, amended 2026-07-17: base chance at recipe-tier
+// parity, plus a small bump per tier of craft skill above the recipe's tier,
+// plus flat bonuses for a signed reagent (ANY player's signature, the
+// crafter's own included; the amendment widened this from self-signed-only so
+// buying a gatherer's signed materials is worth as much to the proc as
+// gathering your own) and for reaching the specialization threshold, hard
 // capped. Fractions of 1 (0.03 = 3 percent).
 export const MASTERWORK_BASE_CHANCE = 0.03;
 export const MASTERWORK_PER_TIER_ABOVE_CHANCE = 0.01;
-export const MASTERWORK_SELF_SIGNED_CHANCE = 0.02;
+export const MASTERWORK_SIGNED_CHANCE = 0.02;
 export const MASTERWORK_SPECIALIZATION_CHANCE = 0.03;
 export const MASTERWORK_CHANCE_CAP = 0.15;
 
@@ -30,9 +33,12 @@ export interface MasterworkChanceInput {
   // tier (wheel.ts tierCapability / tierForSkill). Clamped below at 0 here, so
   // crafting ABOVE one's tier never subtracts from the base chance.
   tiersAboveRecipe: number;
-  // At least one consumed reagent was self-signed (crafting.ts's existing
-  // #1145 self-signed-reagent computation).
-  selfSignedReagent: boolean;
+  // At least one consumed reagent is a signed instance, ANY player's
+  // signature (crafting.ts's holding check over the recipe's reagents).
+  // Deliberately DECOUPLED from the #1145 self-signed quantity discount,
+  // which stays self-only: a count-1 signed reagent qualifies here even
+  // though the discount can never fire for it.
+  signedReagent: boolean;
   // The crafter has reached the specialization threshold in the recipe's craft
   // (wheel.ts isSpecialized, content-driven, never hardcoded).
   specialized: boolean;
@@ -50,7 +56,7 @@ export function masterworkProcChance(input: MasterworkChanceInput): number {
   const chance =
     MASTERWORK_BASE_CHANCE +
     MASTERWORK_PER_TIER_ABOVE_CHANCE * tiersAbove +
-    (input.selfSignedReagent ? MASTERWORK_SELF_SIGNED_CHANCE : 0) +
+    (input.signedReagent ? MASTERWORK_SIGNED_CHANCE : 0) +
     (input.specialized ? MASTERWORK_SPECIALIZATION_CHANCE : 0) +
     (input.materialTierBonus ?? 0);
   return Math.min(MASTERWORK_CHANCE_CAP, chance);

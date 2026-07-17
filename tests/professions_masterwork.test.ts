@@ -19,7 +19,7 @@ import {
   MASTERWORK_CHANCE_CAP,
   MASTERWORK_PER_TIER_ABOVE_CHANCE,
   MASTERWORK_QUALITY_LADDER,
-  MASTERWORK_SELF_SIGNED_CHANCE,
+  MASTERWORK_SIGNED_CHANCE,
   MASTERWORK_SPECIALIZATION_CHANCE,
   type MasterworkQuality,
   masterworkBonusStats,
@@ -44,60 +44,60 @@ describe('masterworkProcChance (Phase 2 tuning)', () => {
     // would satisfy, so the constants themselves are pinned here.
     expect(MASTERWORK_BASE_CHANCE).toBe(0.03);
     expect(MASTERWORK_PER_TIER_ABOVE_CHANCE).toBe(0.01);
-    expect(MASTERWORK_SELF_SIGNED_CHANCE).toBe(0.02);
+    expect(MASTERWORK_SIGNED_CHANCE).toBe(0.02);
     expect(MASTERWORK_SPECIALIZATION_CHANCE).toBe(0.03);
     expect(MASTERWORK_CHANCE_CAP).toBe(0.15);
   });
 
   it('is 3 percent at recipe-tier parity with no bonuses', () => {
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 0, selfSignedReagent: false, specialized: false }),
+      masterworkProcChance({ tiersAboveRecipe: 0, signedReagent: false, specialized: false }),
     ).toBe(0.03);
   });
 
   it('adds 1 percent per tier of capability above the recipe tier', () => {
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 1, selfSignedReagent: false, specialized: false }),
+      masterworkProcChance({ tiersAboveRecipe: 1, signedReagent: false, specialized: false }),
     ).toBeCloseTo(0.04, 12);
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 2, selfSignedReagent: false, specialized: false }),
+      masterworkProcChance({ tiersAboveRecipe: 2, signedReagent: false, specialized: false }),
     ).toBeCloseTo(0.05, 12);
   });
 
-  it('adds 2 percent for a self-signed consumed reagent', () => {
+  it('adds 2 percent for a signed consumed reagent (any signer)', () => {
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 0, selfSignedReagent: true, specialized: false }),
+      masterworkProcChance({ tiersAboveRecipe: 0, signedReagent: true, specialized: false }),
     ).toBeCloseTo(0.05, 12);
   });
 
   it('adds 3 percent when specialized', () => {
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 0, selfSignedReagent: false, specialized: true }),
+      masterworkProcChance({ tiersAboveRecipe: 0, signedReagent: false, specialized: true }),
     ).toBeCloseTo(0.06, 12);
   });
 
   it('stacks every bonus additively while under the cap', () => {
     // 0.03 + 0.05 + 0.02 + 0.03 = 0.13, below the 0.15 cap: no clamp.
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 5, selfSignedReagent: true, specialized: true }),
+      masterworkProcChance({ tiersAboveRecipe: 5, signedReagent: true, specialized: true }),
     ).toBeCloseTo(0.13, 12);
   });
 
   it('clamps a sum exceeding the cap to exactly 15 percent', () => {
     // 0.03 + 0.08 + 0.02 + 0.03 = 0.16 exceeds the cap and clamps.
     expect(
-      masterworkProcChance({ tiersAboveRecipe: 8, selfSignedReagent: true, specialized: true }),
+      masterworkProcChance({ tiersAboveRecipe: 8, signedReagent: true, specialized: true }),
     ).toBe(0.15);
   });
 
   it('clamps a negative tiersAboveRecipe to 0 (never below the base chance)', () => {
     expect(
-      masterworkProcChance({ tiersAboveRecipe: -1, selfSignedReagent: false, specialized: false }),
+      masterworkProcChance({ tiersAboveRecipe: -1, signedReagent: false, specialized: false }),
     ).toBe(0.03);
     expect(
       masterworkProcChance({
         tiersAboveRecipe: -100,
-        selfSignedReagent: false,
+        signedReagent: false,
         specialized: false,
       }),
     ).toBe(0.03);
@@ -106,12 +106,12 @@ describe('masterworkProcChance (Phase 2 tuning)', () => {
   it('materialTierBonus (the Phase 10 hook) defaults to 0 and is a real additive summand', () => {
     const omitted = masterworkProcChance({
       tiersAboveRecipe: 0,
-      selfSignedReagent: false,
+      signedReagent: false,
       specialized: false,
     });
     const explicitZero = masterworkProcChance({
       tiersAboveRecipe: 0,
-      selfSignedReagent: false,
+      signedReagent: false,
       specialized: false,
       materialTierBonus: 0,
     });
@@ -122,7 +122,7 @@ describe('masterworkProcChance (Phase 2 tuning)', () => {
     expect(
       masterworkProcChance({
         tiersAboveRecipe: 0,
-        selfSignedReagent: false,
+        signedReagent: false,
         specialized: false,
         materialTierBonus: 0.025,
       }),
@@ -131,7 +131,7 @@ describe('masterworkProcChance (Phase 2 tuning)', () => {
     expect(
       masterworkProcChance({
         tiersAboveRecipe: 0,
-        selfSignedReagent: false,
+        signedReagent: false,
         specialized: false,
         materialTierBonus: 0.2,
       }),
@@ -505,9 +505,10 @@ describe('proc-chance wiring over a real Sim (hunted boundary-window seeds)', ()
 
   it('a self-signed reagent feeds the proc chance: the same seed procs only with the signed copy', () => {
     // Seed 69, hunted: the single proc draw lands in [0.03, 0.05), above the
-    // 3 percent base but under base plus the 2 percent self-signed bonus, so
-    // the proc fires ONLY when crafting.ts passes selfSignedBonusApplied into
-    // masterworkProcChance. Spares on record: 89, 117, 134, 185.
+    // 3 percent base but under base plus the 2 percent signed-reagent bonus,
+    // so the proc fires ONLY when crafting.ts passes the signed-reagent
+    // holding check into masterworkProcChance. Spares on record: 89, 117,
+    // 134, 185.
     const SEED = 69;
     const signed = craftVestments(SEED, (sim, pid) => {
       const meta = (sim as any).players.get(pid);
@@ -531,6 +532,40 @@ describe('proc-chance wiring over a real Sim (hunted boundary-window seeds)', ()
     expect(plain.ok).toBe(true);
     expect(plain.selfSignedBonusApplied).toBe(false);
     expect(plain.masterwork).toBeUndefined();
+  });
+
+  it("another player's signed reagent feeds the proc chance equally (the 2026-07-17 any-signed ruling)", () => {
+    // Same hunted seed-69 window: the draw sits in [0.03, 0.05), so the proc
+    // fires exactly when the 2 percent signed-reagent term applies. The signed
+    // copy carries SOMEONE ELSE'S signature, so the #1145 quantity discount
+    // must NOT apply (all 3 linen are required and consumed) while the proc
+    // bonus MUST: trade-bought signed materials are worth as much to the proc
+    // as self-gathered ones.
+    const SEED = 69;
+    const traded = craftVestments(SEED, (sim, pid) => {
+      sim.addItemInstance('linen_scrap', { signer: 'Gatherer Friend' }, pid);
+      sim.addItem('linen_scrap', 2, pid);
+      sim.addItem('spider_leg', 1, pid);
+    });
+    expect(traded.ok).toBe(true);
+    expect(traded.selfSignedBonusApplied).toBe(false);
+    expect(traded.masterwork).toBe(true);
+  });
+
+  it('a count-1 signed reagent feeds the proc chance (decoupled from the quantity-discount flag)', () => {
+    // Same hunted seed-69 window. The signed copy is the SPIDER LEG, whose
+    // reagent count is 1: the #1145 reduction floors at 1 so the discount
+    // flag can never set for it (the old coupling made this exact case lose
+    // the proc bonus). The signed-reagent term must fire anyway.
+    const SEED = 69;
+    const countOne = craftVestments(SEED, (sim, pid) => {
+      const meta = (sim as any).players.get(pid);
+      for (let i = 0; i < 3; i++) sim.addItem('linen_scrap', 1, pid);
+      sim.addItemInstance('spider_leg', { signer: meta.name }, pid);
+    });
+    expect(countOne.ok).toBe(true);
+    expect(countOne.selfSignedBonusApplied).toBe(false);
+    expect(countOne.masterwork).toBe(true);
   });
 
   it('the specialization threshold binds in the craft path: skill 74 misses where 75 and 76 proc', () => {

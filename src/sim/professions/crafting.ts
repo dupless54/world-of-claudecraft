@@ -51,6 +51,14 @@
 // specialized crafter using their own self-signed material gets both
 // benefits and neither discount can ever waive a reagent entirely.
 //
+// The masterwork proc's signed-reagent term (masterwork.ts) is DELIBERATELY
+// wider than #1145 (the 2026-07-17 design ruling): it counts a held signed
+// instance with ANY player's signature, the crafter's own included, so buying
+// a gatherer's signed materials is worth as much to the proc as gathering
+// your own. It is also decoupled from the quantity discount: a count-1 signed
+// reagent feeds the proc even though the discount can never fire for it. Only
+// the quantity discount stays self-only.
+//
 // Combo-recipe requirement (issue #1132): a recipe may carry a
 // `comboRequirement` naming one specific adjacent craft pair and a minimum
 // tier both must meet. The character must be attuned to that exact unordered
@@ -202,6 +210,14 @@ function hasSelfSignedInstance(meta: PlayerMeta, itemId: string): boolean {
   return meta.inventory.some((s) => s.itemId === itemId && s.instance?.signer === meta.name);
 }
 
+/** Whether `meta` holds an inventory slot for `itemId` carrying a signed
+ *  instance with ANY signer (the crafter's own name included). Feeds the
+ *  masterwork proc's signed-reagent term (2026-07-17 ruling); the #1145
+ *  quantity discount keeps using the self-only check above. */
+function hasSignedInstance(meta: PlayerMeta, itemId: string): boolean {
+  return meta.inventory.some((s) => s.itemId === itemId && !!s.instance?.signer);
+}
+
 /** The result of resolving one reagent's required quantity: the final count
  *  after both discounts compose, plus whether the #1145 self-signed
  *  reduction specifically (not the composed total) actually lowered it. */
@@ -347,9 +363,14 @@ export function resolveCraftForRecipe(
   }
   const craftSkills = meta ? meta.craftSkills : {};
   let selfSignedBonusApplied = false;
+  // The masterwork signed-reagent input: a holding check over the recipe's
+  // reagents BEFORE consumption (removeItem consumes end-backward, so the
+  // signed copy itself may be what gets consumed), any signer counting.
+  let signedReagentUsed = false;
   for (const reagent of recipe.reagents) {
     const required = requiredReagentCount(meta, reagent, craftSkills, recipe.professionId);
     if (required.selfSignedBonusApplied) selfSignedBonusApplied = true;
+    if (meta && hasSignedInstance(meta, reagent.itemId)) signedReagentUsed = true;
     ctx.removeItem(reagent.itemId, required.count, pid);
   }
   // Masterwork proc draw (Phase 2): the single output-side rng draw, at the
@@ -389,7 +410,7 @@ export function resolveCraftForRecipe(
   const procChance = masterworkProcChance({
     tiersAboveRecipe:
       tierCapability(craftSkills, recipe.professionId) - tierForSkill(recipe.skillReq),
-    selfSignedReagent: selfSignedBonusApplied,
+    signedReagent: signedReagentUsed,
     specialized: isSpecialized(craftSkills, recipe.professionId),
   });
   // Effect gate (gates the EFFECT, never the draw): the def must bake a
