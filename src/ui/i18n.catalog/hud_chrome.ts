@@ -86,6 +86,7 @@ export const hudChromeStrings = {
     spinButton: 'Spin',
     tasks: 'Tasks',
     taskMultiplier: 'x{multiplier} multiplier',
+    oneVsOneExcluded: '1v1 matches do not grant daily reward points.',
     pointsGained: '{points} daily rewards points gained.',
     showChestButton: 'Show Chest',
     hideChestButton: 'Hide Chest',
@@ -784,6 +785,10 @@ export const hudChromeStrings = {
       'Auto picks desktop or touch controls from your device. Choose Desktop to force keyboard and mouse (useful on a tablet with a keyboard), or Touch for the on-screen controls.',
     // Audio panel toggle for the per-footfall step clips (off by default).
     footstepSounds: 'Footstep Sounds',
+    // Audio panel toggle for the discrete interface and feedback cues (loot, level,
+    // quest, whisper, and the combat miss/dodge/parry beeps; on by default). Off
+    // silences just those without touching the SFX volume or the world sounds.
+    interfaceSounds: 'Interface and Feedback Sounds',
     // Toggle for the OSRS-style click-feedback marker: entity targets and
     // click-to-move destinations (on by default).
     clickFeedback: 'Click Marker',
@@ -1531,7 +1536,7 @@ export const hudChromeStrings = {
     imbueRange: 'Weapon imbued: {min} to {max} bonus damage on Verdict',
     stealth: 'Concealed; movement speed reduced by {pct}%',
     formBear: 'Bruin Form: increased health and armor',
-    formCat: 'Cat Form: melee damage and energy',
+    formCat: 'Wolf Form: melee damage and energy',
     formTravel: 'Fleet Form: movement speed increased by {pct}%',
     defensiveStance: 'Guarded Stance: reduced damage taken, more threat',
     righteousFury: 'Burning Oath: greatly increased threat from Holy damage',
@@ -2294,12 +2299,17 @@ export const hudChromeStrings = {
     charOpenBook: 'Book of Deeds',
     // The Renown tab of the high-score window: tab label, the deeds-board
     // column headers (rank/name reuse the shared game.leaderboard.* headers,
-    // the Renown column reuses renownLabel above), the viewer's standing
-    // line, and the empty-board state.
+    // the Renown column reuses renownLabel above), the visible account-scope
+    // note, the viewer's standing line (the Renown-carrying arm for a current
+    // server, the rank-only arm when an older server omits self.renown), and
+    // the empty-board state. Renown is the ONE ranked number on the board:
+    // there is deliberately no deed-count column (issue #2044).
     lbTab: 'Renown',
-    lbDeedsCol: 'Deeds',
     lbTitleCol: 'Title',
-    lbSelf: 'Your standing: rank {rank}, top {percent} percent',
+    lbScopeNote:
+      'Accounts ranked by lifetime Renown. Each deed counts once across all characters on an account.',
+    lbSelfAccount: 'Your account: rank {rank}, top {percent} percent, {renown} Renown',
+    lbSelfRank: 'Your account: rank {rank}, top {percent} percent',
     lbEmpty: 'No ranked chroniclers yet.',
     // The options-window account row (accounts.deed_broadcasts): whether a
     // marquee unlock is shared with guildmates and followers.

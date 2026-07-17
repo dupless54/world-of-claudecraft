@@ -62,6 +62,7 @@ import {
   type AccountCosmetics,
   type ArenaInfo,
   type BankInfo,
+  type CardMinigameInfo,
   type CharacterProfile,
   type CharacterSearchResult,
   type ClientCommand,
@@ -771,6 +772,18 @@ export class Api {
     return this.get('/api/discord');
   }
 
+  // Server-side Welcome Screen flags (today: the Season 1 Armory promo gate).
+  async welcomeFlags(): Promise<{ armoryPromoEnabled: boolean }> {
+    return this.get('/api/welcome/flags');
+  }
+
+  // Daily rewards status (bearer-only, no world/character needed): the Welcome
+  // Screen's chest-tile readiness read reuses the same endpoint the in-world
+  // daily rewards window polls via ClientWorld.dailyRewards().
+  async dailyRewards(): Promise<DailyRewardStatus> {
+    return this.get('/api/daily-rewards');
+  }
+
   // Unlink Discord. A Discord-provisioned account (no real password yet) must send a
   // `password` so it stays reachable after unlinking; the server 400s with
   // 'password_required' otherwise. A normal account passes nothing.
@@ -1155,6 +1168,9 @@ export class ClientWorld implements IWorld {
   dungeonFinderBoard: import('../world_api').DungeonFinderBoard | null = null;
   honor = 0;
   lifetimeHonor = 0;
+  // --- IWorldCardMinigame: Card Duel queue/match state, mirrored from the
+  // snapshot self (`s.cardDuel`, delta-omitted). ---
+  cardMinigameInfo: CardMinigameInfo = { queued: false, available: true, match: null };
   // --- IWorldValeCup: Vale Cup queue/match state, mirrored from the snapshot
   // self (`s.vcup`, delta-omitted: a missing key keeps the prior mirror, an
   // explicit null clears it, same as `s.arena`). ---
@@ -2188,6 +2204,7 @@ export class ClientWorld implements IWorld {
       if (s.arena !== undefined) this.arenaInfo = s.arena;
       if (s.df !== undefined) this.dungeonFinderInfo = s.df;
       if (s.dfb !== undefined) this.dungeonFinderBoard = s.dfb;
+      if (s.cardDuel !== undefined) this.cardMinigameInfo = s.cardDuel;
       if (s.honor !== undefined) this.honor = s.honor ?? 0;
       if (s.lhonor !== undefined) this.lifetimeHonor = s.lhonor ?? 0;
       if (s.vcup !== undefined) this.cupInfo = s.vcup;
@@ -2719,6 +2736,20 @@ export class ClientWorld implements IWorld {
   }
   dungeonFinderApplicationRespond(applicantPid: number, accept: boolean): void {
     this.cmd({ cmd: 'df_app_respond', applicant: applicantPid, accept });
+  }
+  // --- IWorldCardMinigame: Card Duel queue + in-match card plays (cardMinigameInfo
+  // is a snapshot read). ---
+  joinCardDuelQueue(): void {
+    this.cmd({ cmd: 'card_queue_join' });
+  }
+  leaveCardDuelQueue(): void {
+    this.cmd({ cmd: 'card_queue_leave' });
+  }
+  playCardInDuel(cardValue: number): void {
+    this.cmd({ cmd: 'play_card', value: cardValue });
+  }
+  forfeitCardDuel(): void {
+    this.cmd({ cmd: 'card_forfeit' });
   }
   // --- IWorldValeCup: boarball queue sends (cupInfo is a snapshot read; the
   // sport-kit swap rides the heavy `sport` self field decoded in applySnapshot). ---
