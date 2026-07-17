@@ -3497,6 +3497,148 @@
     text-transform: uppercase;
     letter-spacing: 0.4px;
   }
+  /* Spec panel detail body (description, meta chips, mastery, example strip):
+     restored from the warrior-overhaul styling the #1757 revert deleted; the
+     panel DOM (talents_window.ts paintSpecTab) and the hud.mobile.css
+     overrides always kept these class names. */
+  .ts-det-desc {
+    font-size: 14px;
+    color: #e8d6a0;
+    line-height: 1.5;
+    margin-bottom: 11px;
+    text-align: center;
+  }
+  /* Compact meta: primary attribute as a small content-hugging chip, complexity as a
+     lone colored line (no heavy box), matching the WoW-style spec screen reference. */
+  .ts-det-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 11px;
+  }
+  .ts-det-attr {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 4px 10px;
+    border: 1px solid #5a4a22;
+    border-radius: 5px;
+    background: #191207;
+  }
+  .ts-det-attr-cap,
+  .ts-det-cx-cap {
+    font-size: 10px;
+    color: #9a8a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+  .ts-det-attr-val {
+    font-size: 14px;
+    color: #ffd97a;
+    font-weight: 700;
+  }
+  .ts-det-cx {
+    font-size: 13px;
+    font-weight: 700;
+    padding-left: 2px;
+  }
+  .ts-cx-low {
+    color: #7fc77f;
+  }
+  .ts-cx-medium {
+    color: var(--gold);
+  }
+  .ts-cx-high {
+    color: #e07a5a;
+  }
+  /* Standalone section heading (the example-abilities strip). */
+  .ts-det-label {
+    font-size: 12px;
+    color: #9a8a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .ts-det-mastery {
+    font-size: 11px;
+    color: #c8b888;
+    margin: 0 0 8px;
+    padding: 6px 8px;
+    border: 1px solid #463a1c;
+    border-radius: 4px;
+    background: #14100a;
+  }
+  .ts-det-mastery b {
+    color: var(--gold);
+  }
+  /* The example strip + the primary action are the card's bottom group: push them
+     together to the bottom (margin-top:auto on the block) so the empty space is one
+     gap ABOVE them, not a big gap between the examples and the button. Centered. */
+  .ts-ex-block {
+    margin-top: auto;
+    text-align: center;
+  }
+  .ts-ex-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin: 4px 0 10px;
+  }
+  .ts-ex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 64px;
+    gap: 3px;
+    cursor: var(--cursor-point);
+    border-radius: 6px;
+    outline: none;
+  }
+  .ts-ex:focus-visible {
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+  .ts-ex-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #5a4a22;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #15110a;
+  }
+  .ts-ex:hover .ts-ex-icon,
+  .ts-ex:focus-visible .ts-ex-icon {
+    border-color: var(--gold);
+  }
+  .ts-ex:hover .ts-ex-name {
+    color: #fff;
+  }
+  .ts-ex-name {
+    font-size: 9px;
+    color: #b8a878;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .ts-view-talents {
+    display: block;
+    width: 100%;
+    margin-top: auto;
+    margin-right: 0;
+  }
+  /* When the example strip is present it already pins the bottom group, so the button
+     sits directly under it instead of taking its own auto gap. */
+  .ts-view-talents.has-ex {
+    margin-top: 0;
+  }
+  /* The currently-selected spec's button reads as the primary/committed action. */
+  .ts-view-talents.primary {
+    background: linear-gradient(#b8902a, #8a6a1c 55%, #6a4f12);
+    color: #fff;
+    border-color: #ffd100;
+  }
   .tal-specs {
     display: flex;
     gap: 8px;
@@ -10609,6 +10751,18 @@
     border-color: var(--color-border-default);
     box-shadow: none;
     cursor: default;
+  }
+  /* The CTA is autofocused by the welcome focus trap, so its ring shows on
+     every load: a warm-white ring reads as deliberate on the gilded gradient
+     where the generic .btn:focus-visible gold ring read as an artifact. The
+     !important mirrors that generic rule so the same-layer tie falls to this
+     later, equally specific declaration. */
+  .ws-continue:focus-visible {
+    outline: 2px solid #fff6d8 !important;
+    outline-offset: 2px !important;
+    box-shadow:
+      0 4px 22px rgba(255, 209, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
   }
   .ws-continue-hint {
     font-size: 11.5px;
