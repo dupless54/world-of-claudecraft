@@ -2082,7 +2082,9 @@ export const pt_BR: EnTranslations = {
       "mining": "Mineração",
       "logging": "Lenharia",
       "herbalism": "Herborismo",
-      "notReady": "Este nó de recursos ainda não se regenerou para você."
+      "notReady": "Este nó de recursos ainda não se regenerou para você.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Título",
@@ -2331,6 +2333,11 @@ export const pt_BR: EnTranslations = {
       "broadcastsLabel": "Compartilhar feitos desbloqueados com a guilda e os amigos",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const pt_BR: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Cajado de Guerra de Vidro de Brasa"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Água de Nascente Conjurada"

@@ -2082,7 +2082,9 @@ export const vi_VN: EnTranslations = {
       "mining": "Khai mỏ",
       "logging": "Đốn gỗ",
       "herbalism": "Thảo dược học",
-      "notReady": "Điểm tài nguyên này chưa hồi sinh lại dành cho bạn."
+      "notReady": "Điểm tài nguyên này chưa hồi sinh lại dành cho bạn.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Danh hiệu",
@@ -2331,6 +2333,11 @@ export const vi_VN: EnTranslations = {
       "broadcastsLabel": "Chia sẻ kỳ công vừa lập với bang hội và bạn bè",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const vi_VN: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Chiến Trượng Emberglass"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Nước Suối Được Tạo Phép"

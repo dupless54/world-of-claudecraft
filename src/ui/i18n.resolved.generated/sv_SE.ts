@@ -2082,7 +2082,9 @@ export const sv_SE: EnTranslations = {
       "mining": "Gruvdrift",
       "logging": "Skogsavverkning",
       "herbalism": "Örtkunskap",
-      "notReady": "Den här resursnoden har inte återspawnats för dig ännu."
+      "notReady": "Den här resursnoden har inte återspawnats för dig ännu.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Titel",
@@ -2331,6 +2333,11 @@ export const sv_SE: EnTranslations = {
       "broadcastsLabel": "Dela fullbordade bedrifter med gille och vänner",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const sv_SE: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Glödglas-Krigsstav"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Frambesvärjt källvatten"

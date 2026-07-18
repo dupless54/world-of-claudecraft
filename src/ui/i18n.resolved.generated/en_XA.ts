@@ -2082,7 +2082,9 @@ export const en_XA: EnTranslations = {
       "mining": "[Ɱíñíñĝ]",
       "logging": "[Ļóĝĝíñĝ]",
       "herbalism": "[Ĥéŕƀáļíšɱ]",
-      "notReady": "[Ţĥíš ŕéšóúŕçé ñóðé ĥáš ñóţ ŕéšþáŵñéð ƒóŕ ýóú ýéţ.]"
+      "notReady": "[Ţĥíš ŕéšóúŕçé ñóðé ĥáš ñóţ ŕéšþáŵñéð ƒóŕ ýóú ýéţ.]",
+      "gatherLine": "[Ýóú ĝáţĥéŕ: {name}.]",
+      "gatherLineQty": "[Ýóú ĝáţĥéŕ: {name} ẋ{qty}.]"
     },
     "archetypeTitle": {
       "label": "[Ţíţļé]",
@@ -2331,6 +2333,11 @@ export const en_XA: EnTranslations = {
       "broadcastsLabel": "[Šĥáŕé ðééð úñļóçķš ŵíţĥ ĝúíļð áñð ƒŕíéñðš]",
       "titledName": "[{name} [{title}]]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "[{finder} šţŕúçķ á þŕíšţíñé ʋéíñ!]",
+    "ancientHeartwood": "[{finder} ƒéļļéð áñ áñçíéñţ ĥéáŕţŵóóð!]",
+    "moonlitBloom": "[{finder} ðíšçóʋéŕéð á ɱóóñļíţ ƀļóóɱ!]"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const en_XA: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "[Éɱƀéŕĝļášš Ŵáŕšţáƒƒ]"
+      },
+      "copper_ore": {
+        "name": "[Çóþþéŕ Óŕé]"
+      },
+      "iron_ore": {
+        "name": "[Íŕóñ Óŕé]"
+      },
+      "ironbark_log": {
+        "name": "[Íŕóñƀáŕķ Ļóĝ]"
+      },
+      "silverleaf_herb": {
+        "name": "[Šíļʋéŕļéáƒ Ĥéŕƀ]"
       },
       "conjured_water4": {
         "name": "[Çóñĵúŕéð Šþŕíñĝŵáţéŕ]"

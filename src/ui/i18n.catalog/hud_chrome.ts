@@ -2178,6 +2178,10 @@ export const hudChromeStrings = {
     // #1866: click/tap/interact-key error when a targeted node's per-viewer
     // respawn timer has not elapsed yet (IWorldProfessions#nodeHarvestableByMe).
     notReady: 'This resource node has not respawned for you yet.',
+    // Harvest loot line (Professions 2.0 Phase 4), rendered from the id-based
+    // gatherResult SimEvent in the "You receive:" loot-family wording.
+    gatherLine: 'You gather: {name}.',
+    gatherLineQty: 'You gather: {name} x{qty}.',
   },
   // Archetype title chrome (#1130, pair-named under Professions 2.0 Phase 1):
   // `label` heads the character-sheet title line, `none` is shown before the

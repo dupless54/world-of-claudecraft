@@ -2082,7 +2082,9 @@ export const da_DK: EnTranslations = {
       "mining": "Minedrift",
       "logging": "Skovhugst",
       "herbalism": "Urtekundskab",
-      "notReady": "Denne ressourcekilde er endnu ikke genskabt for dig."
+      "notReady": "Denne ressourcekilde er endnu ikke genskabt for dig.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Titel",
@@ -2331,6 +2333,11 @@ export const da_DK: EnTranslations = {
       "broadcastsLabel": "Del nye bedrifter med laug og venner",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const da_DK: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Glødeglas-Krigsstav"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Fremmanet kildevand"

@@ -2082,7 +2082,9 @@ export const pl_PL: EnTranslations = {
       "mining": "Górnictwo",
       "logging": "Wyrąb",
       "herbalism": "Zielarstwo",
-      "notReady": "Ten węzeł zasobu jeszcze nie odrósł dla ciebie."
+      "notReady": "Ten węzeł zasobu jeszcze nie odrósł dla ciebie.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Tytuł",
@@ -2331,6 +2333,11 @@ export const pl_PL: EnTranslations = {
       "broadcastsLabel": "Ogłaszaj zdobyte czyny gildii i znajomym",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const pl_PL: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Warstaff z Żarowego Szkła"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Wyczarowana woda źródlana"

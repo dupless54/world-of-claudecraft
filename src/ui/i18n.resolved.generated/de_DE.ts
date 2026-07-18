@@ -2082,7 +2082,9 @@ export const de_DE: EnTranslations = {
       "mining": "Bergbau",
       "logging": "Holzfällen",
       "herbalism": "Kräuterkunde",
-      "notReady": "Dieser Ressourcenknoten ist fur dich noch nicht nachgewachsen."
+      "notReady": "Dieser Ressourcenknoten ist fur dich noch nicht nachgewachsen.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Titel",
@@ -2331,6 +2333,11 @@ export const de_DE: EnTranslations = {
       "broadcastsLabel": "Errungene Taten mit Gilde und Freunden teilen",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const de_DE: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Glutglas-Kriegsstab"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Herbeigezaubertes Quellwasser"

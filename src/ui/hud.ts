@@ -8654,6 +8654,43 @@ export class Hud {
           if ($('#crafting-window').style.display === 'block') this.renderCrafting();
           break;
         }
+        case 'gatherResult': {
+          // Harvest feedback line (Professions 2.0 Phase 4), colored by rolled
+          // material rarity. Identical on every graphics tier (player feedback
+          // is never profile-gated). The grant hub's own 'loot' event already
+          // prints the "You receive:" line and plays the loot cue, so this
+          // line uses distinct gather wording and adds no second cue.
+          const item = ITEMS[ev.itemId];
+          const name = item ? itemDisplayName(item) : ev.itemId;
+          this.log(
+            ev.qty > 1
+              ? t('hudChrome.gathering.gatherLineQty', {
+                  name,
+                  qty: formatNumber(ev.qty, { maximumFractionDigits: 0 }),
+                })
+              : t('hudChrome.gathering.gatherLine', { name }),
+            QUALITY_COLOR[ev.rarity],
+          );
+          break;
+        }
+        case 'gatherRareEvent': {
+          // Soft zone broadcast (Professions 2.0 Phase 4): every recipient in
+          // the zone logs the localized flavor line; only the finder also gets
+          // the celebratory cue. The finder name splices verbatim.
+          this.log(
+            t(
+              ev.flavor === 'pristine_vein'
+                ? 'gatherEvent.pristineVein'
+                : ev.flavor === 'ancient_heartwood'
+                  ? 'gatherEvent.ancientHeartwood'
+                  : 'gatherEvent.moonlitBloom',
+              { finder: ev.finderName },
+            ),
+            QUALITY_COLOR.epic,
+          );
+          if (ev.finderPid === sim.playerId) audio.achievement();
+          break;
+        }
         case 'lootRoll': {
           this.lootRolls.showRoll(ev);
           break;

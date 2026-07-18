@@ -2082,7 +2082,9 @@ export const cs_CZ: EnTranslations = {
       "mining": "Těžba",
       "logging": "Dřevorubectví",
       "herbalism": "Bylinkářství",
-      "notReady": "Tento zdroj pro tebe ještě neobnovil zásoby."
+      "notReady": "Tento zdroj pro tebe ještě neobnovil zásoby.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Titul",
@@ -2331,6 +2333,11 @@ export const cs_CZ: EnTranslations = {
       "broadcastsLabel": "Sdílet vykonané skutky s cechem a přáteli",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const cs_CZ: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Bojová hůl z uhlíkového skla"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Vyčarovaná pramenitá voda"

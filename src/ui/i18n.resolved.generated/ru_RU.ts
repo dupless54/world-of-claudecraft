@@ -2082,7 +2082,9 @@ export const ru_RU: EnTranslations = {
       "mining": "Горное дело",
       "logging": "Лесозаготовка",
       "herbalism": "Травничество",
-      "notReady": "Этот ресурсный узел еще не восстановился для вас."
+      "notReady": "Этот ресурсный узел еще не восстановился для вас.",
+      "gatherLine": "Вы добываете: {name}.",
+      "gatherLineQty": "Вы добываете: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Титул",
@@ -2331,6 +2333,11 @@ export const ru_RU: EnTranslations = {
       "broadcastsLabel": "Делиться деяниями с гильдией и друзьями",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} находит нетронутую жилу!",
+    "ancientHeartwood": "{finder} добывает древнюю сердцевину!",
+    "moonlitBloom": "{finder} находит лунный цветок!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const ru_RU: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Боевой посох из огненного стекла"
+      },
+      "copper_ore": {
+        "name": "Медная руда"
+      },
+      "iron_ore": {
+        "name": "Железная руда"
+      },
+      "ironbark_log": {
+        "name": "Бревно железнокорого дерева"
+      },
+      "silverleaf_herb": {
+        "name": "Трава серебролист"
       },
       "conjured_water4": {
         "name": "Сотворённая родниковая вода"

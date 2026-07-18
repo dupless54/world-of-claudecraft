@@ -2082,7 +2082,9 @@ export const fr_FR: EnTranslations = {
       "mining": "Minage",
       "logging": "Bûcheronnage",
       "herbalism": "Herboristerie",
-      "notReady": "Ce nœud de ressource n'a pas encore réapparu pour vous."
+      "notReady": "Ce nœud de ressource n'a pas encore réapparu pour vous.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Titre",
@@ -2331,6 +2333,11 @@ export const fr_FR: EnTranslations = {
       "broadcastsLabel": "Partager les hauts faits accomplis avec la guilde et les amis",
       "titledName": "{name} « {title} »"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const fr_FR: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Bâton de guerre de verre ardent"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Eau de source invoquée"

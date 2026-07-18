@@ -2082,7 +2082,9 @@ export const ko_KR: EnTranslations = {
       "mining": "채광",
       "logging": "벌목",
       "herbalism": "약초학",
-      "notReady": "이 자원 채집지는 아직 당신을 위해 재생성되지 않았습니다."
+      "notReady": "이 자원 채집지는 아직 당신을 위해 재생성되지 않았습니다.",
+      "gatherLine": "{name}을(를) 채집했습니다.",
+      "gatherLineQty": "{name}을(를) {qty}개 채집했습니다."
     },
     "archetypeTitle": {
       "label": "칭호",
@@ -2331,6 +2333,11 @@ export const ko_KR: EnTranslations = {
       "broadcastsLabel": "업적 달성을 길드와 친구에게 공유",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder}님이 순수한 광맥을 발견했습니다!",
+    "ancientHeartwood": "{finder}님이 고대 심목을 베어냈습니다!",
+    "moonlitBloom": "{finder}님이 달빛 꽃을 발견했습니다!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const ko_KR: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "불씨유리 전투지팡이"
+      },
+      "copper_ore": {
+        "name": "구리 광석"
+      },
+      "iron_ore": {
+        "name": "철 광석"
+      },
+      "ironbark_log": {
+        "name": "무쇠껍질나무 통나무"
+      },
+      "silverleaf_herb": {
+        "name": "은빛잎 약초"
       },
       "conjured_water4": {
         "name": "창조된 샘물"

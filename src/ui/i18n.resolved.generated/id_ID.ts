@@ -2082,7 +2082,9 @@ export const id_ID: EnTranslations = {
       "mining": "Penambangan",
       "logging": "Penebangan",
       "herbalism": "Herbalisme",
-      "notReady": "Simpul sumber daya ini belum muncul kembali untukmu."
+      "notReady": "Simpul sumber daya ini belum muncul kembali untukmu.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Gelar",
@@ -2331,6 +2333,11 @@ export const id_ID: EnTranslations = {
       "broadcastsLabel": "Bagikan jasa yang diraih kepada guild dan teman",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const id_ID: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Tongkat Perang Emberglass"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Air Mata Air Sihir"

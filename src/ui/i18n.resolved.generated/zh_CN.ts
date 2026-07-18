@@ -2082,7 +2082,9 @@ export const zh_CN: EnTranslations = {
       "mining": "采矿",
       "logging": "伐木",
       "herbalism": "草药学",
-      "notReady": "这个资源节点尚未为你重新生成。"
+      "notReady": "这个资源节点尚未为你重新生成。",
+      "gatherLine": "你采集了：{name}。",
+      "gatherLineQty": "你采集了：{name} x{qty}。"
     },
     "archetypeTitle": {
       "label": "称号",
@@ -2331,6 +2333,11 @@ export const zh_CN: EnTranslations = {
       "broadcastsLabel": "与公会和好友分享功绩达成",
       "titledName": "{name}【{title}】"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder}挖到了一条纯净的矿脉！",
+    "ancientHeartwood": "{finder}砍倒了一棵远古心木！",
+    "moonlitBloom": "{finder}发现了一朵月光之花！"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const zh_CN: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "烬晶战杖"
+      },
+      "copper_ore": {
+        "name": "铜矿石"
+      },
+      "iron_ore": {
+        "name": "铁矿石"
+      },
+      "ironbark_log": {
+        "name": "铁皮木原木"
+      },
+      "silverleaf_herb": {
+        "name": "银叶草"
       },
       "conjured_water4": {
         "name": "魔法泉水"

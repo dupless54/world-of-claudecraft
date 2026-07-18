@@ -2082,7 +2082,9 @@ export const ja_JP: EnTranslations = {
       "mining": "採掘",
       "logging": "伐採",
       "herbalism": "薬草学",
-      "notReady": "この資源ノードはまだあなたのために再生していません。"
+      "notReady": "この資源ノードはまだあなたのために再生していません。",
+      "gatherLine": "{name}を採集した。",
+      "gatherLineQty": "{name}を{qty}個採集した。"
     },
     "archetypeTitle": {
       "label": "称号",
@@ -2331,6 +2333,11 @@ export const ja_JP: EnTranslations = {
       "broadcastsLabel": "功績の達成をギルドとフレンドに共有する",
       "titledName": "{name}【{title}】"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder}が純粋な鉱脈を掘り当てた！",
+    "ancientHeartwood": "{finder}が太古の心木を切り倒した！",
+    "moonlitBloom": "{finder}が月光の花を発見した！"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const ja_JP: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "熾火硝子の戦杖"
+      },
+      "copper_ore": {
+        "name": "銅鉱石"
+      },
+      "iron_ore": {
+        "name": "鉄鉱石"
+      },
+      "ironbark_log": {
+        "name": "アイアンバークの丸太"
+      },
+      "silverleaf_herb": {
+        "name": "シルバーリーフ草"
       },
       "conjured_water4": {
         "name": "魔法の湧き水"

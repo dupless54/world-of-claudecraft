@@ -2082,7 +2082,9 @@ export const tr_TR: EnTranslations = {
       "mining": "Madencilik",
       "logging": "Ağaç kesme",
       "herbalism": "Bitkicilik",
-      "notReady": "Bu kaynak noktası senin için henüz yeniden oluşmadı."
+      "notReady": "Bu kaynak noktası senin için henüz yeniden oluşmadı.",
+      "gatherLine": "You gather: {name}.",
+      "gatherLineQty": "You gather: {name} x{qty}."
     },
     "archetypeTitle": {
       "label": "Unvan",
@@ -2331,6 +2333,11 @@ export const tr_TR: EnTranslations = {
       "broadcastsLabel": "Kazanılan yiğitlikleri lonca ve arkadaşlarınla paylaş",
       "titledName": "{name} [{title}]"
     }
+  },
+  "gatherEvent": {
+    "pristineVein": "{finder} struck a pristine vein!",
+    "ancientHeartwood": "{finder} felled an ancient heartwood!",
+    "moonlitBloom": "{finder} discovered a moonlit bloom!"
   },
   "apiError": {
     "validation": {
@@ -8137,6 +8144,18 @@ export const tr_TR: EnTranslations = {
       },
       "emberglass_warstaff": {
         "name": "Korgözlü Savaş Asası"
+      },
+      "copper_ore": {
+        "name": "Copper Ore"
+      },
+      "iron_ore": {
+        "name": "Iron Ore"
+      },
+      "ironbark_log": {
+        "name": "Ironbark Log"
+      },
+      "silverleaf_herb": {
+        "name": "Silverleaf Herb"
       },
       "conjured_water4": {
         "name": "Sihirle Yaratılmış Kaynak Suyu"
