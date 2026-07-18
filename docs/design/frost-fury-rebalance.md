@@ -1,7 +1,9 @@
 # Frost Mage and Fury Warrior Rebalance
 
 Status: incremental implementation plan. A mandatory transition to five abilities is on hold.
-Broad class redesign still requires owner approval and PBE validation.
+Broad class redesign still requires owner approval and PBE validation. The first Fury
+corrections shipped in the v0.27.1 hotfix (PR #2112); their measured results are recorded
+below.
 
 This document applies `docs/design/class-design-rules.md` to Cryomancy Mage and Bloodrush
 Warrior. It reduces excess damage, redundant mechanics, and mobile input burden without replacing
@@ -20,6 +22,15 @@ throughput layers than they need. The next phase is therefore incremental:
 
 Builder, spender, proc, offensive cooldown, and defensive cooldown remain useful labels for
 explaining a core loop. They are not a required five-ability destination.
+
+The community keep-list constrains every cut. Players singled out dual wielding, the
+dual-wield area attack, Blink, Charge (with a request to review its range), the slowing
+attack, and the execute as abilities they love, and warrior mobility as the class identity.
+Cuts target redundancy and hidden multipliers, never these anchors. Passive stat buffs are
+popular, so maintained buffs such as Arcane Intellect are candidates to become passives
+rather than buttons. Community kit sketches (a defensive that casts itself below 30 percent
+health, an execute that lands automatically under 20 percent, a one-stance Arms) are audit
+input for later passes, not decisions.
 
 ## Problem statement
 
@@ -134,45 +145,58 @@ White attacks provide steady pressure and supplementary rage. They do not provid
 rotation by themselves. Distinct movement, control, area, and support actions may remain, but a
 talent must not stack several personal throughput layers onto the core loop.
 
-### Immediate Fury slice: white damage first
+### Immediate Fury slice: white damage first (shipped in v0.27.1)
 
-Fury white damage must be corrected before rage coefficients. Damage-based rage means changing
-both without separate attribution would hide how much each source contributes.
+Fury white damage had to be corrected before rage coefficients. Damage-based rage means
+changing both without separate attribution would hide how much each source contributes.
 
-The first Fury fixture compares one two-handed weapon against the supported Fury loadouts,
-including a two-handed main hand plus a one-handed offhand. It uses comparable item levels and
-reports main-hand damage, offhand damage, attack power from each item, and rage by hand.
+The correction shipped in the v0.27.1 hotfix (PR #2112) with two parts:
 
-The correction follows these rules:
+1. A game-wide two-hander re-budget. Two-handers incorrectly carried both hands' stat
+   budgets, so the invariant is now written into `src/sim/item_budget.ts`: a two-hander
+   differentiates on weapon DPS and big hits, never on stats, and any dual-wield or
+   one-hand-plus-shield setup must total more stats than a 2H. `TWOHAND_STAT_MULT` dropped
+   from 2.0 to 1.3 and the damage side was codified as `TWOHAND_DPS_MULT` 1.15, which
+   protects Arms and other single-2H builds. The epic two-handers were re-statted in place
+   with unchanged ids, so the correction was retroactive on deploy.
+2. The Titan's Grip penalty: while dual-wielding with a two-hander in either hand, physical
+   damage done drops 12 percent across white attacks and abilities, on the WoW 3.1.0 model.
+   Solo-2H and dual-1H are untouched. The 15 percent miss-chance variant was deliberately
+   not shipped: misses also generate no rage, so it double-throttles, but the historical
+   version caused a player revolt. It remains a candidate for a measured experiment.
 
-- Keep the supported dual-wield fantasy.
-- Normalize the combined weapon-stat contribution instead of nerfing the one-handed item for
-  every class.
-- Apply an explicit offhand stat budget for Fury.
-- Tune offhand white damage after stat normalization.
-- Add a Titan's Grip white-damage modifier only if the measured loadout still exceeds the band.
-- Keep active ability coefficients unchanged in this slice.
+The measured white-DPS ceiling rule stands: no more than 10 to 15 percent above the
+selected one-weapon baseline before the player presses a button.
 
-The measured white-DPS ceiling is no more than 10 to 15 percent above the selected one-weapon
-baseline. White damage may remain a Fury strength, but it cannot begin far outside the class DPS
-band before the player presses a button.
+### Immediate Fury slice: rage second (shipped in v0.27.1)
 
-### Immediate Fury slice: rage second
+After the weapon correction, the same hotfix shipped the rage-economy cuts:
 
-After the weapon correction lands and the fixture is re-run:
+1. Warrior auto-attack rage uses the shared classic `rageFromDealing` 7.5x scale. The
+   Warrior-only 9x special case in `dealDamage` is deleted.
+2. Twinstrike generates 4 rage, down from 8. Bladed Gyre generates none. Bloodletting keeps
+   +12 and is unambiguously the one generating builder.
+3. Anger Management is trimmed to +10 percent auto and +5 percent ability rage. Its row id
+   is unchanged, so saved builds survive.
+4. Red Harvest deliberately keeps no cooldown. A spender is gated by its resource, and
+   post-fix income makes it an 8 to 10 second cadence on its own. A spender cooldown was
+   rejected in review because income, not the spender, was the problem.
+5. Colossal Might's cooldown recovery is capped at 10 seconds per 30 second rolling window,
+   copied from the mage Overflowing Power pattern. Red Harvest spam no longer collapses the
+   180 second offensive cooldowns to about 78 seconds.
 
-1. Replace the Warrior-only white-hit rage coefficient of 9 with the shared classic coefficient
-   of 7.5.
-2. Remove Recklessness's additional rage generation. Recklessness owns critical reliability,
-   not critical chance plus resource acceleration.
-3. Make offhand rage supplementary and derive it from corrected offhand damage.
-4. Remove the damage component from Battle Rhythm. A resource-row talent cannot grant both rage
-   and damage.
-5. Tune remaining active rage around an explicit Red Harvest cadence. During continuous target
-   uptime, the rotation must not refill to the cap before it can spend again.
+The same hotfix also folded all melee haste into one additive bucket, mirroring spell haste,
+and stopped Wildfang Rally stacking with itself, closing two further amplifiers.
 
-Report rage generation separately at leveling checkpoints so the cap correction does not starve
-early Fury.
+Measured effect on the deterministic probe (`scripts/fury_dps_probe.ts`, a 123 second fight):
+sustained 230.6 to 147.2 DPS, Red Harvests per minute 13.2 to 7.3. Projected through the
+live-meter ratio, Fury lands near 142 against a 116 to 126 DPS pack, inside the band. Arms
+gained about 12 percent from the 2H damage premium, as intended.
+
+Rage generation is still reported separately at leveling checkpoints so the cap correction
+does not starve early Fury. One review question stayed open: whether offhand hits should
+generate less rage than main-hand hits. The hotfix judged the shared-coefficient correction
+sufficient, so measure before splitting.
 
 ### Warrior choice rows
 
@@ -189,17 +213,19 @@ The Warrior rows keep six decisions but stop creating six additional throughput 
 
 Immediate one-effect corrections:
 
-- Anger Management stops multiplying both white and ability rage. It keeps one rage-smoothing
-  role.
+- Anger Management is trimmed to one rage-smoothing role. Shipped in v0.27.1.
+- Colossal Might caps its cooldown recovery at 10 seconds per 30 second rolling window.
+  Shipped in v0.27.1.
 - Battle Rhythm loses its damage multiplier and remains resource behavior only.
 - Recklessness loses rage generation and keeps critical-strike reliability.
 - Avatar keeps its damage effect and control break.
 - Bloodbath becomes one nonstacking effect that refreshes.
-- Colossal Might targets one named cooldown rather than rotational attacks and several cooldowns.
 
-Combat Mastery, Bladestorm, Sanguine Aura, Enrage, and any action removal remain later audit
-candidates. Change them one at a time only after the corrected white-damage and rage profiles are
-available. Avatar is the reference burst anchor, not a mandate to delete every alternative.
+Combat Mastery, Bladestorm, Sanguine Aura, and any action removal remain later audit
+candidates. Change them one at a time only after the corrected white-damage and rage profiles
+are available. Avatar is the reference burst anchor, not a mandate to delete every
+alternative. Enrage's haste value sits in the pre-sized reserve round below rather than a
+standing change.
 
 ## Talent and aura stacking invariant
 
@@ -233,6 +259,9 @@ rotation actions using the same cooldown, resource, range, target, and global-co
 manual play. It must be optional, show the next action, leave defensives and utility deliberate,
 and provide no throughput advantage over manual input.
 
+Warrior leap and mage meteor-style ground targeting are the first named candidates for the
+mobile review, alongside Charge's range, which players asked to extend.
+
 ## Incremental delivery plan
 
 Each delivery unit changes one power source or redundant behavior, ships with deterministic
@@ -246,23 +275,25 @@ The open Frost quick-correction PR contains the four immediate source removals l
 does not remove actions or establish a fixed action count. Any later Frost reduction is a separate
 review after play and mobile feedback.
 
-### Fury sequence
+### Fury delivery
 
-The Fury corrections remain ordered because damage-based rage converts whatever white damage
-remains:
+The first Fury corrections shipped together in the v0.27.1 hotfix (PR #2112) as an urgent
+tuning pass, each with its own deterministic pins inside that PR: the game-wide 2H re-budget,
+the Titan's Grip penalty, the four rage-economy cuts, the Colossal Might cap, additive melee
+haste, and the Wildfang Rally self-stack guard. That covered W2 to W4 of the earlier sequence
+plus the choice-row corrections for Anger Management and Colossal Might. W1's fixture exists
+in first form as `scripts/fury_dps_probe.ts`.
+
+Remaining Fury work, one behavior per PR:
 
 | Unit | One change | Depends on | Evidence |
 |---|---|---|---|
-| W1 | Measurement fixture for one two-handed and supported dual-wield loadouts | None | Checked-in main-hand, offhand, attack-power, and rage attribution |
-| W2 | Explicit Fury offhand stat budget | W1 | Combined weapon stats normalized |
-| W3 | Offhand white-damage tuning, with a Titan modifier only if still needed | W2 | White DPS within 10 to 15 percent of baseline |
-| W4 | Shared 7.5 white-hit rage coefficient and corrected rage by hand | W3 | Rage-attribution rows fail before and pass after |
-| W5 | Recklessness loses rage generation | W4 | Talent interaction test |
-| W6 | Battle Rhythm loses damage | W4 | Talent interaction test |
-| W7 | Active rage checked against Red Harvest cadence | W4 to W6 | Sustained resource-stability report |
-
-Anger Management, Bloodbath, and Colossal Might use the same one-behavior evidence pattern. Do
-not bundle an action-bar overhaul into these balance corrections.
+| W5 | Recklessness loses rage generation, keeps critical reliability | None | Talent interaction test |
+| W6 | Battle Rhythm loses its damage multiplier, stays resource behavior | None | Talent interaction test |
+| W7 | Reserve round, only if the post-deploy live meter still reads above the band: Red Harvest coefficients -20 percent, Enrage haste 25 to 15 to 18, optional Twinstrike -10 to -15 percent | Live measurement | Probe plus live meter |
+| W8 | Bloodbath becomes one nonstacking refreshing effect | None | Aura stacking test |
+| W9 | Loadout-attribution fixture: 2H versus dual-wield at comparable item level, damage and rage by hand; answers the open offhand-rage question | None | Test-only; extends `scripts/fury_dps_probe.ts` |
+| W10 | Titan's Grip miss-chance variant as a measured experiment | W9 | Probe comparison against the shipped 12 percent penalty |
 
 ### Final gate
 
