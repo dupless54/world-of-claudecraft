@@ -3,8 +3,8 @@
 Status: incremental implementation plan. A mandatory transition to five abilities is on hold.
 Broad class redesign still requires owner approval and PBE validation. The first Fury
 corrections shipped in the v0.27.1 hotfix (PR #2112); their measured results are recorded
-below. In flight: the Frost proc-stacking and CC-immunity correction (draft PR #2115) and the
-Battle Rhythm resource-only follow-up (draft PR #2117).
+below. Ready for maintainer review: the Frost proc-stacking and CC-immunity correction (PR #2115)
+and the Battle Rhythm resource-only follow-up (PR #2117).
 
 This document applies `docs/design/class-design-rules.md` to Cryomancy Mage and Bloodrush
 Warrior. It reduces excess damage, redundant mechanics, and mobile input burden without replacing
@@ -328,8 +328,9 @@ re-run relevant profiles, and name what target-dummy tests cannot prove.
    be consumed by Temporal Rift, regardless of the later talent direction.
 3. PR #2117 is the smallest recommended Fury follow-up. It removes Battle Rhythm's damage layer
    while preserving its resource identity, but it is not another emergency coefficient pass.
-4. PR #2115 is the Frost balance and talent slice. It needs owner approval and PBE evidence rather
-   than emergency-hotfix treatment.
+4. PR #2115 is the small Frost balance and talent baseline, ready after PR #2113. Any later
+   coefficient round or broader spell and passive consolidation still needs measured evidence and
+   the normal owner approval path.
 5. PR #2114 records the plan and has no runtime effect.
 
 The active follow-up branches target `main` and contain the merged PR #2112 state, so none can
@@ -337,11 +338,11 @@ accidentally land ahead of the Fury incident correction.
 
 ### Frost delivery
 
-The Frost quick corrections are in flight as draft PR #2115, containing the four immediate
-source removals listed above plus the Temporal Rift replacement. It does not remove actions or
-establish a fixed action count. PR #2113 separately closes the scripted boss-control leak and
-should land first; replacing the passive talent remains the broader balance decision. Any later
-Frost reduction is a separate review after play and mobile feedback.
+The Frost quick corrections are ready for maintainer review as PR #2115. They contain the four
+immediate source removals listed above plus the Temporal Rift replacement. The slice does not
+remove actions or establish a fixed action count. PR #2113 separately closes the scripted
+boss-control leak and should land first; replacing the passive talent remains the broader balance
+decision. Any later Frost reduction is a separate review after play and mobile feedback.
 
 ### Fury delivery
 
@@ -356,7 +357,7 @@ Remaining Fury work, one behavior per PR:
 
 | Unit | One change | Depends on | Evidence |
 |---|---|---|---|
-| W5 | Battle Rhythm loses its damage multiplier and stays resource behavior. In flight as draft PR #2117 | None | Talent interaction test |
+| W5 | Battle Rhythm loses its damage multiplier and stays resource behavior. Ready as PR #2117 | None | Talent interaction test |
 | W6 | Recklessness is tested without rage generation and keeps critical reliability | Normalized profile | Talent interaction and cadence tests |
 | W7 | Bloodbath becomes one nonstacking refreshing effect or a lateral option | Raid-add profile | Aura stacking and add-wave tests |
 | W8 | Loadout attribution for comparable 2H, dual-1H, and mixed Titan's Grip setups | None | Damage and rage by hand |
