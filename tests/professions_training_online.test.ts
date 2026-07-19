@@ -131,6 +131,10 @@ describe('train_recipe over the live GameServer wire (session routing)', () => {
     const st = joinServer(server, fcTrainee, 97, 'Alchpupil');
     placeAt(server, st.pid, APOTHECARY_POS);
     const meta = metaOf(server, st.pid);
+    // A server-created fresh character sits past the grandfather cut too (the
+    // shared no-state addPlayer path): the explicit both-hosts pin.
+    expect(meta.recipesGrandfathered).toBe(true);
+    expect(meta.knownRecipes.size).toBe(0);
     meta.craftSkills.alchemy = 25;
     meta.copper = 10000;
 
