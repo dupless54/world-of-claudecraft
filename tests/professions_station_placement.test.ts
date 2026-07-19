@@ -194,6 +194,21 @@ describe('hands-vs-stations recipe split (FIELD_RECIPES)', () => {
       recipe_sootscale_mantle: 'forge',
     });
   });
+
+  it('every station-stamped recipe resolves to a station that exists in the world', () => {
+    // The stranding guard: a future recipe stamped with a stationType that has
+    // no STATIONS record would be silently uncraftable everywhere (the gate
+    // denies and no physical station can ever satisfy it). Derived from
+    // content so it moves with both tables.
+    const placedTypes = new Set(STATIONS.map((s) => s.type));
+    for (const recipe of ALL_RECIPES) {
+      if (!recipe.stationType) continue;
+      expect(
+        placedTypes.has(recipe.stationType),
+        `${recipe.id} requires a '${recipe.stationType}' station but STATIONS places none`,
+      ).toBe(true);
+    }
+  });
 });
 
 describe('determinism with the six masters spawned', () => {

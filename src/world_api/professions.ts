@@ -138,9 +138,10 @@ export interface IWorldProfessions {
   placeMobileStation(craftId: string): void;
   // The craft id of the viewer's own currently ACTIVE (placed, unexpired)
   // mobile station, or null. An identifier, string-free per the seam rule.
-  // Offline this reads the authoritative PlayerMeta slot; online it is the
-  // client's own optimistic placement mirror (the server re-validates the
-  // gate on every craft regardless), since the transient slot is never
-  // serialized or mirrored over the wire.
+  // Offline this reads the live PlayerMeta slot (expiry checked against the
+  // sim tick); online it mirrors the server's `mst` self-delta
+  // (server/game.ts computes active-vs-expired against ITS tickCount, so the
+  // client never predicts placement or reasons about tick domains). The slot
+  // is transient either way: never serialized into the character save.
   activeMobileStationCraft: string | null;
 }

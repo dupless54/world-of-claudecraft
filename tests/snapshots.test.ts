@@ -3335,6 +3335,26 @@ describe('full self-state snapshot delta fixture', () => {
     expect(client.activeLoadout).toBe(0);
   });
 
+  it('flips mst to null when the mobile station expires (server-side tick-domain check)', () => {
+    // The expiry arm of the mst self-delta: activeMobileStationCraftFor
+    // resolves active-vs-expired against the SERVER sim's own tickCount, so
+    // the lapse must reach the client as an explicit mst: null delta (a
+    // nullable scalar; omission would leave the stale craft id mirrored).
+    const { server, fc, leader } = dirtyEveryDeltaField();
+    broadcast(server);
+    const client = bareClient(leader.pid);
+    (client as any).applySnapshot(lastSnap(fc.sent));
+    expect(client.activeMobileStationCraft).toBe('armorcrafting');
+
+    const meta = server.sim.meta(leader.pid);
+    if (!meta?.mobileStation) throw new Error('mobile station missing from the harness');
+    meta.mobileStation.expiresAtTick = server.sim.tickCount; // isStationActive: now < expiry fails
+    server.sim.tick();
+    broadcast(server);
+    (client as any).applySnapshot(lastSnap(fc.sent));
+    expect(client.activeMobileStationCraft).toBeNull();
+  });
+
   it('omits all delta keys on a no-op re-broadcast and preserves the prior mirror', () => {
     const { server, fc, leader, memberPid } = dirtyEveryDeltaField();
     broadcast(server);
