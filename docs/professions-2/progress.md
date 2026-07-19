@@ -721,3 +721,73 @@ resolveCraft denies combo_requirement_unmet before recipe_not_learned;
 wardweave_cowl/duskhide_wraps/sootscale_mantle genuinely consume
 thorium_ore, so the master-stock mapping is thorium-heavy by content,
 not by choice.
+
+Phase 9 QA (2026-07-19): PASS with fixes, zero blocking. Ten-agent
+fan-out (three packet audits plus privacy-security, migration-safety,
+cross-platform-sync, architecture, frontend-seam, test-coverage-
+auditor and the closing qa-checklist; database-performance did not
+match the diff), with the phase validation matrix pre-verified green
+at the untouched tip and passed to every agent as ground. Seven of
+ten completed inside the Workflow; frontend-seam, privacy-security
+and qa-checklist finished their investigations but failed structured
+delivery and were re-dispatched fresh via the Agent tool (the
+established recovery recipe), all completing there. Played behavior
+was verified twice over: the correctness audit ran six live
+headless-Sim probes (exact-balance train to zero, key-absent legacy
+blob, mobile-station craft beside the training deny, same-row ladder
+flip, multi-violation deny order, a grandfathered common crafted at
+skill 0), and the orchestrator drove the real offline client over
+CDP (gossip Train option, tier deny with the named "You need Alchemy
+25" line, exact-fee train, replay deny with no re-charge, fee-1
+cannot-afford, out-of-range, the 8yd proximity auto-close, the
+crafting-window known-filter in both directions, the station minimap
+marker and token, trained-not-known on a fresh character); the
+online arm rests on the live GameServer routing suite plus the
+snapshots cprof-mirror pin, both re-verified decisive. All nine
+acceptance criteria hold. Fixes landed: the exactly-affordable fee
+edge (copper equal to fee) pinned at the Sim level; per-pair deny
+reason-to-key mapping pins (a key swap inside the hud ternary chain
+previously passed every pin); isStationMasterNpc parametrized over
+all six STATIONS masters with a smith_haldren negative; a same-row
+locked-to-teachable flip pin at the 24/25 boundary; a full
+multi-violation deny-order pin; an explicit server-side
+recipesGrandfathered-true pin on a fresh online join; a key-absent
+(pre-#1299) legacy-save arm; and the accepted rollback caveat turned
+into a pin (a full current-shape blob stripped of the flag re-unions
+on return, fee-free, exactly the state.md release-notes wording).
+One frontend should-fix landed as a small extraction: the
+viewer-side knownness predicate was duplicated between the crafting
+window filter and the train ladder, now shared as train_view.ts
+isRecipeKnownForViewer (both call sites delegate; the known-filter
+source pin deliberately re-pinned to the delegation), and rowState
+now calls the sim's own teachTierMet instead of restating it.
+Dissolved on verification (the seventh phase running): the
+correctness agent's claim that the legacy fixture shape was wrong
+(knownRecipes existed at phase start d40f0a90f; the hand-frozen
+fixture is a genuine pre-Phase-9 shape). Deferred with reasons: the
+unknown-deny-reason fallback renders the out-of-range line instead
+of nothing (reachable only under client/server version skew on a
+closed 5-member union; maintainer call for a later phase); a
+same-state same-craft mobile-craft-versus-training-deny contrast is
+impossible in wave-one content (no plain station-gated alchemy
+recipe and no engineering trainer recipe exist; covered by
+cross-suite composition plus the live probe); the tokens-coverage
+pin for --color-minimap-station stays the accepted build-time
+deferral; the pr_shot_targets forge position literals are
+script-only. Privacy INFO for the economy owner: the master
+stocking makes thorium_ore and the six premium reagents purchasable
+in zones 1 and 2 where previously only quartermaster_bree (zone 3)
+sold them; deliberate, no price/arbitrage loop. The closing
+qa-checklist returned READY (zero blocking, zero should-fix); its
+five verify items all closed from session ground: the architecture
+suite ran green in the matrix, the fee table matches the state.md
+tuning targets verbatim (common free, uncommon 25s, rare 1g), the
+asset budget output is byte-identical to phase start (zero public/
+changes; its red rows are pre-existing debt outside the gate), guide
+freshness rides the gate's pretest wiki:content plus
+tests/guide.test.ts, and mobile rests on the green mobile window
+suites plus the phase's committed mobile screenshots (live mobile
+E2E not re-run, the Phase 8-precedent deferral). Its remaining INFO,
+a dedicated train_recipe rate limit, stays optional: the command is
+idempotent (already-known denies without charging) and the global
+command cadence limiter applies.
