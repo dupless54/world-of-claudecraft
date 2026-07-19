@@ -3513,7 +3513,7 @@ export const de_DE: Partial<Record<TranslationKey, string>> = {
     'Verwandelt den Gegner bis zu {duration} Sek. lang in eine Kröte. Die Kröte wandert umher und heilt sich schnell. Jeder Schaden bricht den Effekt. Nur Wildtiere und Humanoide.',
   'entities.abilities.frost_nova.name': 'Icebind',
   'entities.abilities.frost_nova.description':
-    'Friert alle nahen Gegner bis zu 8 Sek. lang fest und verursacht {damage} Frostschaden.',
+    'Friert alle nahen Gegner bis zu 8 Sek. lang fest und verursacht {damage} Frostschaden. Der Festhalteeffekt endet nach kumulativem Schaden in Höhe von 15 % der maximalen Gesundheit des Ziels, mindestens jedoch 20 und höchstens 60 Schaden.',
   'entities.abilities.arcane_explosion.name': 'Aetherburst',
   'entities.abilities.arcane_explosion.description':
     'Ein Ausbruch arkaner Energie trifft alle nahen Gegner für {damage} Arkanschaden.',

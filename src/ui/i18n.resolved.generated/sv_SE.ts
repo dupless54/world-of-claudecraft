@@ -6449,7 +6449,7 @@ export const sv_SE: EnTranslations = {
       },
       "frost_nova": {
         "name": "Isbindning",
-        "description": "Fryser fast alla närliggande fiender på platsen i upp till 8 sek och vållar {damage} frostskada."
+        "description": "Fryser fast alla närliggande fiender på platsen i upp till 8 sek och vållar {damage} frostskada. Fasthållningen bryts efter sammanlagd skada motsvarande 15 % av målets maximala hälsa, dock minst 20 och högst 60 skada."
       },
       "arcane_explosion": {
         "name": "Etersalva",

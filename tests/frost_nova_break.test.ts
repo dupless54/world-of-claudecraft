@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MOBS } from '../src/sim/data';
+import { ABILITIES, MOBS } from '../src/sim/data';
 import { createMob } from '../src/sim/entity';
 import { Sim } from '../src/sim/sim';
 import type { Aura, Entity } from '../src/sim/types';
+import { tEntity } from '../src/ui/entity_i18n';
+import { ensureLocaleLoaded, setLanguage } from '../src/ui/i18n';
 
 function icebindRig(targetMaxHp: number, level = 7): { sim: Sim; target: Entity } {
   const sim = new Sim({ seed: 811, playerClass: 'mage', autoEquip: true });
@@ -47,6 +49,38 @@ function dealDamage(sim: Sim, target: Entity, amount: number): void {
 }
 
 describe('Icebind damage break', () => {
+  it('tells players the exact cumulative damage budget', async () => {
+    const description =
+      "Freezes all nearby enemies in place for up to 8 sec, dealing $d Frost damage. The root breaks after cumulative damage equal to 15% of the target's maximum health, with a minimum of 20 and a maximum of 60 damage.";
+
+    expect(ABILITIES.frost_nova.description).toBe(description);
+    expect(
+      tEntity({
+        kind: 'ability',
+        id: 'frost_nova',
+        field: 'description',
+        values: { damage: '6 to 7' },
+      }),
+    ).toBe(description.replace('$d', '6 to 7'));
+
+    await ensureLocaleLoaded('es');
+    setLanguage('es');
+    try {
+      expect(
+        tEntity({
+          kind: 'ability',
+          id: 'frost_nova',
+          field: 'description',
+          values: { damage: '6 a 7' },
+        }),
+      ).toBe(
+        'Congela a todos los enemigos cercanos en el sitio durante hasta 8 s e inflige 6 a 7 de daño de Escarcha. El enraizamiento se rompe tras recibir daño acumulado equivalente al 15 % de la salud máxima del objetivo, con un mínimo de 20 y un máximo de 60 de daño.',
+      );
+    } finally {
+      setLanguage('en');
+    }
+  });
+
   it('breaks after cumulative damage equal to 15% max health', () => {
     const { sim, target } = icebindRig(152);
     const root = icebindRoot(target);

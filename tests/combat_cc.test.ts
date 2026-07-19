@@ -15,7 +15,54 @@ import {
   isStunned,
   tonguesMult,
 } from '../src/sim/combat/cc';
-import type { Aura, Entity } from '../src/sim/types';
+import type { AbilityEffect, Aura, Entity } from '../src/sim/types';
+
+const directBreakableRoot: AbilityEffect = {
+  type: 'aoeRoot',
+  duration: 8,
+  radius: 10,
+  min: 6,
+  max: 7,
+  breakOnDamage: { maxHpPct: 0.15, min: 20, max: 60 },
+};
+
+const invalidBreakableRing: AbilityEffect = {
+  type: 'aoeRoot',
+  duration: 4,
+  radius: 6,
+  min: 0,
+  max: 0,
+  ring: { duration: 10, innerRadius: 4.5 },
+  // @ts-expect-error persistent ring roots must not silently accept a direct-root damage budget
+  breakOnDamage: { maxHpPct: 0.15, min: 20, max: 60 },
+};
+
+const invalidBreakableTrap: AbilityEffect = {
+  type: 'aoeRoot',
+  duration: 8,
+  radius: 2,
+  min: 0,
+  max: 0,
+  trap: { armTime: 1, lifetime: 60 },
+  // @ts-expect-error armed traps must not silently accept a direct-root damage budget
+  breakOnDamage: { maxHpPct: 0.15, min: 20, max: 60 },
+};
+
+const invalidBreakableStun: AbilityEffect = {
+  type: 'aoeRoot',
+  duration: 4,
+  radius: 8,
+  min: 6,
+  max: 7,
+  stun: true,
+  // @ts-expect-error stuns must not silently accept a direct-root damage budget
+  breakOnDamage: { maxHpPct: 0.15, min: 20, max: 60 },
+};
+
+void directBreakableRoot;
+void invalidBreakableRing;
+void invalidBreakableTrap;
+void invalidBreakableStun;
 
 function aura(kind: Aura['kind'], value = 1, extra: Partial<Aura> = {}): Aura {
   return {

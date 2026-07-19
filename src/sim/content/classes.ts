@@ -472,6 +472,7 @@ export const CLASSES: Record<PlayerClass, ClassDef> = {
 // ---------------------------------------------------------------------------
 
 const MAGE_PERSONAL_BARRIER_SPELL_POWER_COEFF = 0.5;
+const MAGE_TEMPORAL_BARRIER_SPELL_POWER_COEFF = 0.25;
 
 export const ABILITIES: Record<string, AbilityDef> = {
   // ====================== WARRIOR ======================
@@ -1901,7 +1902,8 @@ export const ABILITIES: Record<string, AbilityDef> = {
         ],
       },
     ],
-    description: 'Freezes all nearby enemies in place for up to 8 sec, dealing $d Frost damage.',
+    description:
+      "Freezes all nearby enemies in place for up to 8 sec, dealing $d Frost damage. The root breaks after cumulative damage equal to 15% of the target's maximum health, with a minimum of 20 and a maximum of 60 damage.",
   },
   arcane_explosion: {
     id: 'arcane_explosion',
@@ -2105,10 +2107,41 @@ export const ABILITIES: Record<string, AbilityDef> = {
     school: 'arcane',
     requiresTarget: true,
     targetType: 'friendly',
-    effects: [{ type: 'absorb', amount: 55, duration: 10 }],
+    effects: [
+      {
+        type: 'absorb',
+        amount: 55,
+        duration: 10,
+        spellPowerCoeff: MAGE_TEMPORAL_BARRIER_SPELL_POWER_COEFF,
+      },
+    ],
     ranks: [
-      { rank: 2, level: 12, cost: 75, effects: [{ type: 'absorb', amount: 100, duration: 10 }] },
-      { rank: 3, level: 18, cost: 105, effects: [{ type: 'absorb', amount: 160, duration: 10 }] },
+      {
+        rank: 2,
+        level: 12,
+        cost: 75,
+        effects: [
+          {
+            type: 'absorb',
+            amount: 100,
+            duration: 10,
+            spellPowerCoeff: MAGE_TEMPORAL_BARRIER_SPELL_POWER_COEFF,
+          },
+        ],
+      },
+      {
+        rank: 3,
+        level: 18,
+        cost: 105,
+        effects: [
+          {
+            type: 'absorb',
+            amount: 160,
+            duration: 10,
+            spellPowerCoeff: MAGE_TEMPORAL_BARRIER_SPELL_POWER_COEFF,
+          },
+        ],
+      },
     ],
     description:
       'Shifts the target a heartbeat out of the present, a temporal shell absorbing $d damage for 10 sec before the timeline snaps back.',

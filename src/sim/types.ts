@@ -1689,6 +1689,44 @@ export interface MobTemplate {
   purgeOnHit?: { chance: number; name: string };
 }
 
+interface AoeRootBase {
+  type: 'aoeRoot';
+  duration: number;
+  radius: number;
+  min: number;
+  max: number;
+}
+
+type AoeRootEffect =
+  | (AoeRootBase & {
+      breakOnDamage?: DamageBreakBudget;
+      stun?: false;
+      ring?: never;
+      trap?: never;
+    })
+  | (AoeRootBase & {
+      breakOnDamage?: never;
+      stun: true;
+      ring?: never;
+      trap?: never;
+    })
+  | (AoeRootBase & {
+      breakOnDamage?: never;
+      stun?: boolean;
+      // Persistent annular root. `duration` remains the root duration; the
+      // nested duration is how long the ring can catch new enemies.
+      ring: { duration: number; innerRadius: number };
+      trap?: never;
+    })
+  | (AoeRootBase & {
+      breakOnDamage?: never;
+      ring?: never;
+      stun?: boolean;
+      // Armed trap at the caster's feet. It freezes the first enemy contact
+      // after armTime and expires after lifetime.
+      trap: { armTime: number; lifetime: number };
+    });
+
 export type AbilityEffect =
   | { type: 'weaponDamage'; bonus: number } // on-next-swing bonus (heroic strike)
   | {
@@ -1929,22 +1967,7 @@ export type AbilityEffect =
   | { type: 'aoeAllyDamage'; pct: number; duration: number; radius: number }
   | { type: 'aoeAllySureCrit'; charges: number; duration: number; radius: number }
   | { type: 'aoeSlow'; mult: number; duration: number; radius: number }
-  | {
-      type: 'aoeRoot';
-      duration: number;
-      radius: number;
-      min: number;
-      max: number;
-      stun?: boolean;
-      breakOnDamage?: DamageBreakBudget;
-      // Optional persistent annular trap. `duration` remains the root duration;
-      // the nested duration is how long the ring can catch new enemies.
-      ring?: { duration: number; innerRadius: number };
-      // Optional armed trap at the caster's feet (combat/hunter_trap.ts):
-      // arms after armTime, freezes the first enemy contact for `duration`,
-      // expires after lifetime. One per owner.
-      trap?: { armTime: number; lifetime: number };
-    }
+  | AoeRootEffect
   | {
       type: 'empoweredCone';
       angle: number;

@@ -6449,7 +6449,7 @@ export const pt_BR: EnTranslations = {
       },
       "frost_nova": {
         "name": "Grilhão de Gelo",
-        "description": "Congela todos os inimigos próximos no lugar por até 8 s e causa {damage} de dano de Gelo."
+        "description": "Congela todos os inimigos próximos no lugar por até 8 s e causa {damage} de dano de Gelo. O enraizamento se rompe após receber dano acumulado equivalente a 15% da vida máxima do alvo, com um mínimo de 20 e um máximo de 60 de dano."
       },
       "arcane_explosion": {
         "name": "Explosão Etérea",

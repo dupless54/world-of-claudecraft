@@ -26,6 +26,32 @@ function castBarrier(
   };
 }
 
+function castTemporalBarrier(
+  level: number,
+  spellPower: number,
+): { absorb: number; cost: number; spellPower: number } {
+  const sim = new Sim({ seed: 708, playerClass: 'mage', autoEquip: true });
+  sim.setPlayerLevel(level);
+  expect(sim.setSpec('arcane')).toBe(true);
+  sim.player.resource = sim.player.maxResource;
+  const manaBefore = sim.player.resource;
+  const allyId = sim.addPlayer('warrior', 'Barrier Target');
+  const ally = sim.entities.get(allyId);
+  if (!ally) throw new Error('missing barrier target');
+  sim.targetEntity(allyId);
+  sim.player.spellPower = spellPower;
+
+  sim.castAbility('temporal_barrier');
+
+  const barrier = ally.auras.find((aura) => aura.id === 'temporal_barrier');
+  expect(barrier?.kind).toBe('absorb');
+  return {
+    absorb: barrier?.value ?? 0,
+    cost: manaBefore - sim.player.resource,
+    spellPower: sim.player.spellPower,
+  };
+}
+
 describe('mage personal barrier rank scaling', () => {
   it.each([
     ['frost', 'ice_barrier'],
@@ -49,5 +75,19 @@ describe('mage personal barrier rank scaling', () => {
     expect(castBarrier(17, spec, id, 123)).toMatchObject({ absorb: 152, cost: 65 });
     expect(castBarrier(18, spec, id, 0)).toMatchObject({ absorb: 130, cost: 90 });
     expect(castBarrier(20, spec, id, 123)).toMatchObject({ absorb: 192, cost: 90 });
+  });
+
+  it('adds 25% Spell Power to every Temporal Barrier rank', () => {
+    for (const [level, cost] of [
+      [5, 50],
+      [12, 75],
+      [18, 105],
+    ] as const) {
+      const baseline = castTemporalBarrier(level, 0);
+      const scaled = castTemporalBarrier(level, 123);
+      expect(scaled.spellPower).toBe(123);
+      expect(scaled.absorb - baseline.absorb).toBe(Math.round(scaled.spellPower * 0.25));
+      expect(scaled.cost).toBe(cost);
+    }
   });
 });

@@ -3894,7 +3894,7 @@ export const fr_FR: Partial<Record<TranslationKey, string>> = {
     "Transforme l'ennemi en crapaud pendant un maximum de {duration} s. Le crapaud erre et récupère rapidement. Tout dégât interrompt l'effet. Bêtes et humanoïdes uniquement.",
   'entities.abilities.frost_nova.name': 'Icebind',
   'entities.abilities.frost_nova.description':
-    'Gèle tous les ennemis proches sur place pendant un maximum de 8 s et inflige {damage} points de dégâts de Givre.',
+    'Gèle tous les ennemis proches sur place pendant un maximum de 8 s et inflige {damage} points de dégâts de Givre. L’immobilisation prend fin après avoir subi un total de dégâts égal à 15 % des points de vie maximum de la cible, avec un minimum de 20 et un maximum de 60 points de dégâts.',
   'entities.abilities.arcane_explosion.name': 'Aetherburst',
   'entities.abilities.arcane_explosion.description':
     "Une explosion d'énergie des Arcanes touche tous les ennemis proches pour {damage} points de dégâts des Arcanes.",

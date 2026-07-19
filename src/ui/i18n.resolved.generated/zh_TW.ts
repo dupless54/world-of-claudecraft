@@ -6449,7 +6449,7 @@ export const zh_TW: EnTranslations = {
       },
       "frost_nova": {
         "name": "縛冰術",
-        "description": "將附近所有敵人凍結在原地，最多持續 8 秒，並造成 {damage} 點冰霜傷害。"
+        "description": "將附近所有敵人凍結在原地，最多持續 8 秒，並造成 {damage} 點冰霜傷害。定身效果會在累計受到相當於目標最大生命值15%的傷害後解除，傷害門檻最低為20點，最高為60點。"
       },
       "arcane_explosion": {
         "name": "乙太爆發",

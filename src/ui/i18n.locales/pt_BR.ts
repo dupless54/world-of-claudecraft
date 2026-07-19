@@ -3489,7 +3489,7 @@ export const pt_BR: Partial<Record<TranslationKey, string>> = {
     'Transforma o inimigo em sapo por até {duration} s. O sapo vagueia e se cura rapidamente. Qualquer dano quebra o efeito. Apenas feras e humanoides.',
   'entities.abilities.frost_nova.name': 'Grilhão de Gelo',
   'entities.abilities.frost_nova.description':
-    'Congela todos os inimigos próximos no lugar por até 8 s e causa {damage} de dano de Gelo.',
+    'Congela todos os inimigos próximos no lugar por até 8 s e causa {damage} de dano de Gelo. O enraizamento se rompe após receber dano acumulado equivalente a 15% da vida máxima do alvo, com um mínimo de 20 e um máximo de 60 de dano.',
   'entities.abilities.arcane_explosion.name': 'Explosão Etérea',
   'entities.abilities.arcane_explosion.description':
     'Uma explosão de energia Arcana atinge todos os inimigos próximos com {damage} de dano Arcano.',

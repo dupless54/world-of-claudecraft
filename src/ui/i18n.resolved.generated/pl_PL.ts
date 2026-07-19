@@ -6449,7 +6449,7 @@ export const pl_PL: EnTranslations = {
       },
       "frost_nova": {
         "name": "Lodowe okowy",
-        "description": "Zamraża wszystkich pobliskich wrogów w miejscu na nawet 8 sek, zadając {damage} obrażeń od mrozu."
+        "description": "Zamraża wszystkich pobliskich wrogów w miejscu na nawet 8 sek, zadając {damage} obrażeń od mrozu. Unieruchomienie zostaje przerwane po otrzymaniu łącznych obrażeń równych 15% maksymalnego zdrowia celu, nie mniej niż 20 i nie więcej niż 60 obrażeń."
       },
       "arcane_explosion": {
         "name": "Wybuch eteru",

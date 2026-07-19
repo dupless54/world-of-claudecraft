@@ -16,4 +16,17 @@ describe('mage personal barrier tooltip', () => {
       '130 (+40)',
     );
   });
+
+  it('shows Temporal Barrier at its lower ally-shield coefficient', () => {
+    const mods = emptyModifiers();
+    mods.spec = 'arcane';
+    const barrier = abilitiesKnownAt('mage', 20, mods).find(
+      (known) => known.def.id === 'temporal_barrier',
+    );
+    if (!barrier) throw new Error('missing temporal_barrier');
+
+    expect(abilityEffectText(barrier, { spellPower: 80, rangedPower: 0, attackPower: 0 })).toBe(
+      '160 (+20)',
+    );
+  });
 });

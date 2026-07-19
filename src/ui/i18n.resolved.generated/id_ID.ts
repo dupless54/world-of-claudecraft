@@ -6449,7 +6449,7 @@ export const id_ID: EnTranslations = {
       },
       "frost_nova": {
         "name": "Icebind",
-        "description": "Membekukan semua musuh di sekitar di tempatnya hingga 8 detik, memberi {damage} kerusakan Beku."
+        "description": "Membekukan semua musuh di sekitar di tempatnya hingga 8 detik, memberi {damage} kerusakan Beku. Efek pengakaran berakhir setelah menerima total kerusakan sebesar 15% kesehatan maksimum target, dengan minimal 20 dan maksimal 60 kerusakan."
       },
       "arcane_explosion": {
         "name": "Aetherburst",

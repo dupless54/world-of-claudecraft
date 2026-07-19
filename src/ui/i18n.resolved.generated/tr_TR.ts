@@ -6449,7 +6449,7 @@ export const tr_TR: EnTranslations = {
       },
       "frost_nova": {
         "name": "Buz Bağı",
-        "description": "Yakındaki tüm düşmanları 8 saniyeye kadar yerinde dondurur ve {damage} Ayaz hasarı verir."
+        "description": "Yakındaki tüm düşmanları 8 saniyeye kadar yerinde dondurur ve {damage} Ayaz hasarı verir. Köklenme etkisi, hedefin azami sağlığının %15’ine eşit toplam hasar aldıktan sonra kırılır; bu değer en az 20, en fazla 60 hasardır."
       },
       "arcane_explosion": {
         "name": "Aether Patlaması",
