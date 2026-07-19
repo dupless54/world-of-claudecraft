@@ -173,6 +173,23 @@ describe('resolveTrain deny order (replay safety)', () => {
     expect(result.reason).toBe('train_out_of_range');
   });
 
+  it('full multi-violation state (out of range, tier 0, copper 0) still reads train_out_of_range', () => {
+    // The richest deny pile a real player can present: every arm below
+    // already_known/not_taught_here violated at once must still resolve in
+    // the documented order (range first), with the fee carried unpaid.
+    const sim = makeSim();
+    const meta = metaOf(sim, sim.playerId);
+    meta.copper = 0;
+    meta.craftSkills.alchemy = 0;
+    const result = resolveTrain(meta, FIELD_POS, ALCH_COMBO_ID);
+    expect(result).toEqual({
+      ok: false,
+      recipeId: ALCH_COMBO_ID,
+      reason: 'train_out_of_range',
+      fee: 2500,
+    });
+  });
+
   it('tier precedes fee: skill 24 at the station with 0 copper reads train_tier_unmet', () => {
     const sim = makeSim();
     const pid = sim.playerId;
@@ -317,6 +334,24 @@ describe('Sim.trainRecipe (fee exactly once, grant, event, probe)', () => {
     expect(meta.lastTrainResult).toMatchObject({ ok: false, reason: 'train_cannot_afford' });
     expect(meta.copper).toBe(2499);
     expect(meta.knownRecipes.has(ALCH_COMBO_ID)).toBe(false);
+  });
+
+  it('exactly-affordable trains ok: copper === fee (2500) succeeds and leaves 0', () => {
+    // Pins the strict `<` in resolveTrain's afford arm: an off-by-one to `<=`
+    // would deny a player holding the exact fee (the 2499 arm above cannot
+    // catch that regression on its own).
+    const sim = makeSim();
+    const pid = sim.playerId;
+    const meta = metaOf(sim, pid);
+    placeAtTrainerFor(sim, pid, ALCH_COMBO_ID);
+    meta.craftSkills.alchemy = 25;
+    meta.copper = 2500;
+
+    sim.trainRecipe(ALCH_COMBO_ID, pid);
+
+    expect(meta.lastTrainResult).toMatchObject({ ok: true, fee: 2500 });
+    expect(meta.copper).toBe(0);
+    expect(meta.knownRecipes.has(ALCH_COMBO_ID)).toBe(true);
   });
 
   it('records the malformed-id deny on the probe and event with no reason code', () => {

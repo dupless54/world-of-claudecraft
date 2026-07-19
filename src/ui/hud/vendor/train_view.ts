@@ -18,7 +18,7 @@
 import { STATION_TYPE_BY_CRAFT, STATIONS } from '../../../sim/content/professions';
 import { ALL_RECIPES } from '../../../sim/content/recipes';
 import type { StationType } from '../../../sim/professions/stations';
-import { trainingFeeFor } from '../../../sim/professions/training';
+import { teachTierMet, trainingFeeFor } from '../../../sim/professions/training';
 import type { ProfessionRecipeRecord } from '../../../sim/professions/types';
 import { TIER_SKILL_STEP, tierForSkill } from '../../../sim/professions/wheel';
 import type { ItemDef } from '../../../sim/types';
@@ -66,22 +66,35 @@ export function isStationMasterNpc(masterNpcId: string): boolean {
   return STATIONS.some((station) => station.masterNpcId === masterNpcId);
 }
 
+/** The viewer-side knownness predicate over the MIRRORED known set: exactly
+ *  crafting.ts isRecipeKnown's rule (an empty or absent acquisition list is
+ *  grandfathered known to everyone; otherwise the id must be in the set),
+ *  restated for hosts that hold CraftingIdentityView data instead of
+ *  PlayerMeta. The crafting window's known-filter and the train ladder's
+ *  known state MUST agree, so both call this one helper. */
+export function isRecipeKnownForViewer(
+  recipe: ProfessionRecipeRecord,
+  known: ReadonlySet<string>,
+): boolean {
+  return !recipe.acquisition || recipe.acquisition.length === 0 || known.has(recipe.id);
+}
+
 function rowState(
   recipe: ProfessionRecipeRecord,
   known: ReadonlySet<string>,
   craftSkills: Readonly<Record<string, number>>,
 ): TrainRowState | null {
-  if (!recipe.acquisition || recipe.acquisition.length === 0 || known.has(recipe.id)) {
+  if (isRecipeKnownForViewer(recipe, known)) {
     return 'known';
   }
   // A recipe this master's station serves but that is not trainer-taught
   // (drop/quest acquisition; none exist today) has no honest row state at a
   // trainer: it is neither teachable nor tier-locked here, so it is omitted
   // rather than rendered with a misleading requirement.
-  if (!recipe.acquisition.includes('trainer')) return null;
-  const tierMet =
-    tierForSkill(craftSkills[recipe.professionId] ?? 0) >= tierForSkill(recipe.skillReq);
-  return tierMet ? 'teachable' : 'locked';
+  if (!recipe.acquisition?.includes('trainer')) return null;
+  // The sim's own predicate, not a mirror of it: the row can never drift
+  // from what resolveTrain will actually allow.
+  return teachTierMet(recipe, craftSkills) ? 'teachable' : 'locked';
 }
 
 /**

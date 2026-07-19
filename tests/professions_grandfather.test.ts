@@ -178,6 +178,42 @@ describe('legacy save load (the one-time union) and persistence', () => {
     );
   });
 
+  it('a pre-#1299 save with NO knownRecipes key at all still unions the full record', () => {
+    // Even older than the hand-frozen fixture: before knownRecipes existed as
+    // a CharacterState key, the load guard's false arm leaves the constructed
+    // empty set in place and the union must still land all 21 ids.
+    const state = legacySave();
+    delete (state as { knownRecipes?: string[] }).knownRecipes;
+    const sim = makeSim();
+    const pid = sim.addPlayer('warrior', 'Ancient', { state });
+    const meta = metaOf(sim, pid);
+    expect(meta.recipesGrandfathered).toBe(true);
+    for (const id of PRE_TRAINING_RECIPE_IDS) {
+      expect(meta.knownRecipes.has(id), id).toBe(true);
+    }
+  });
+
+  it('the accepted rollback caveat, pinned: an old-code strip of the flag re-unions on return', () => {
+    // A full CURRENT-shape blob (not the sparse fixture): serialize a fresh
+    // Phase 9 character (flag true, nothing learned), then model the
+    // documented old-code round-trip, which rebuilds CharacterState WITHOUT
+    // the unknown recipesGrandfathered key while preserving knownRecipes.
+    // Returning to new code must re-run the union: the three combos read
+    // known fee-free, exactly the state.md release-notes caveat.
+    const sim = makeSim();
+    const full = sim.serializeCharacter(sim.playerId)!;
+    expect(full.recipesGrandfathered).toBe(true);
+    delete (full as { recipesGrandfathered?: boolean }).recipesGrandfathered;
+
+    const back = makeSim(11);
+    const pid = back.addPlayer('warrior', 'Returned', { state: full });
+    const meta = metaOf(back, pid);
+    expect(meta.recipesGrandfathered).toBe(true);
+    for (const recipe of COMBO_RECIPES) {
+      expect(isRecipeKnown(meta, recipe), recipe.id).toBe(true);
+    }
+  });
+
   it('a save WITH the flag and an empty knownRecipes stays empty (no re-union)', () => {
     // The flag, not the set contents, decides: a post-Phase-9 character who
     // has learned nothing must never be silently handed the combo recipes.

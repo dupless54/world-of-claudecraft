@@ -719,7 +719,14 @@ tables, i18n key namespaces, files created)
   maps get the sim gate with no props; the mobile-station prop stays
   deferred (pos/placedAtTick still consumer-less); smith_haldren does
   not train (the forge's masterNpcId is forgemistress_darva, the
-  locked Phase 8 seating). ROLLBACK CAVEAT (reviewed and consciously
+  locked Phase 8 seating); since the Phase 9 QA pass, the viewer-side
+  knownness predicate is the SHARED train_view.ts
+  isRecipeKnownForViewer (the train ladder's known state and the
+  crafting window's known-filter both delegate to it, and rowState
+  delegates to training.ts teachTierMet, so neither UI site can
+  drift from the sim's rule; the hud known-filter source pin in
+  tests/train_window_hud.test.ts pins the delegation itself).
+  ROLLBACK CAVEAT (reviewed and consciously
   accepted, migration-safety 2026-07-19): a character created under
   Phase 9 code whose save round-trips through pre-Phase-9 server code
   loses the unknown recipesGrandfathered field (old serialize rebuilds

@@ -303,7 +303,7 @@ import { QuestTrackerController } from './hud/quest/quest_tracker_controller';
 import { QuestLogWindow } from './hud/quest/questlog_window';
 import { buildHeroicVendorView } from './hud/vendor/heroic_vendor_view';
 import { renderHeroicVendorWindow } from './hud/vendor/heroic_vendor_window';
-import { buildTrainView } from './hud/vendor/train_view';
+import { buildTrainView, isRecipeKnownForViewer } from './hud/vendor/train_view';
 import { renderTrainWindow } from './hud/vendor/train_window';
 import { buildVendorView } from './hud/vendor/vendor_view';
 import { renderVendorWindow } from './hud/vendor/vendor_window';
@@ -10954,15 +10954,14 @@ export class Hud {
       this.sim.activeMobileStationCraft,
     );
     this.lastCraftingStationSig = stationTypesSignature(inRangeStations);
-    // Phase 9: the window lists only KNOWN recipes (isRecipeKnown semantics
-    // over the mirrored knownRecipes: a recipe with no/empty acquisition list
-    // is grandfathered known to everyone; otherwise its id must be in the
-    // viewer's known set), so an unlearned trainer recipe never renders as a
-    // craftable row. The server still re-validates recipe_not_learned.
+    // Phase 9: the window lists only KNOWN recipes, so an unlearned trainer
+    // recipe never renders as a craftable row (it surfaces in the Train
+    // ladder instead). The SAME viewer-side predicate the ladder's known
+    // state uses (train_view.ts isRecipeKnownForViewer), so the two windows
+    // cannot disagree. The server still re-validates recipe_not_learned.
     const knownRecipeIds = new Set(this.sim.craftingIdentity.knownRecipes);
-    const knownRecipes = this.sim.recipeList.filter(
-      (recipe) =>
-        !recipe.acquisition || recipe.acquisition.length === 0 || knownRecipeIds.has(recipe.id),
+    const knownRecipes = this.sim.recipeList.filter((recipe) =>
+      isRecipeKnownForViewer(recipe, knownRecipeIds),
     );
     renderCraftingWindow(
       $('#crafting-window'),

@@ -5,8 +5,8 @@
 //  - the trainResult event arm logs exactly one localized line per outcome,
 //    with NO banner/toast/audio (the grant-hub double-log trap), derives the
 //    tier threshold from static content, and repaints both open windows;
-//  - renderCrafting filters the recipe list to KNOWN recipes with the
-//    isRecipeKnown-shaped predicate before buildCraftingView;
+//  - renderCrafting filters the recipe list to KNOWN recipes through the
+//    SHARED isRecipeKnownForViewer predicate before buildCraftingView;
 //  - the train window wires the pure view core to the IWorld seam
 //    (identity.knownRecipes in, sim.trainRecipe out);
 //  - both HTML entries declare the #train-window container.
@@ -47,6 +47,21 @@ describe('hud.ts trainResult event arm (source pins)', () => {
     }
   });
 
+  it('pairs each deny reason with ITS OWN key (a key swap in the chain must fail here)', () => {
+    // The presence pins above cannot catch two keys swapped inside the ternary
+    // chain (all five keys and four reason literals would still be present), so
+    // pin each reason-to-key pairing. train_out_of_range is deliberately the
+    // fallback arm (its literal never appears in hud.ts), so its pairing is
+    // pinned as the else branch of the alreadyKnown arm.
+    const arm = trainResultArm();
+    expect(arm).toMatch(/'train_tier_unmet'\s*\?\s*t\('hudChrome\.training\.tierUnmet'/);
+    expect(arm).toMatch(/'train_cannot_afford'\s*\?\s*'hudChrome\.training\.cannotAfford'/);
+    expect(arm).toMatch(/'train_not_taught_here'\s*\?\s*'hudChrome\.training\.notTaughtHere'/);
+    expect(arm).toMatch(
+      /'train_already_known'\s*\?\s*'hudChrome\.training\.alreadyKnown'\s*:\s*'hudChrome\.training\.outOfRange'/,
+    );
+  });
+
   it('derives the tierUnmet craft and threshold from recipeId plus static content', () => {
     const arm = trainResultArm();
     // The event is text-free: the threshold is tier * step from the recipe
@@ -79,12 +94,16 @@ describe('hud.ts trainResult event arm (source pins)', () => {
 });
 
 describe('hud.ts crafting known-filter (source pins)', () => {
-  it('filters the recipe list with the isRecipeKnown-shaped predicate before the view build', () => {
-    expect(hudSource).toContain('const knownRecipes = this.sim.recipeList.filter(');
-    expect(hudSource).toContain(
-      '!recipe.acquisition || recipe.acquisition.length === 0 || knownRecipeIds.has(recipe.id)',
-    );
+  it('filters the recipe list through the SHARED viewer predicate before the view build', () => {
+    // Deliberate re-pin (Phase 9 QA): the filter must delegate to the one
+    // isRecipeKnownForViewer helper the train ladder also uses, never an
+    // inline restatement the two windows could let drift apart.
+    expect(hudSource).toContain('const knownRecipes = this.sim.recipeList.filter((recipe) =>');
+    expect(hudSource).toContain('isRecipeKnownForViewer(recipe, knownRecipeIds)');
     expect(hudSource).toContain('new Set(this.sim.craftingIdentity.knownRecipes)');
+    expect(hudSource).toMatch(
+      /import \{ buildTrainView, isRecipeKnownForViewer \} from '\.\/hud\/vendor\/train_view';/,
+    );
   });
 });
 

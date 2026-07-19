@@ -6,11 +6,13 @@
 // and a ClientWorld-mirror-shaped deps bag (the identity mirror carries the
 // same plain fields either way; sim-only junk must be ignored).
 import { describe, expect, it } from 'vitest';
+import { STATIONS } from '../src/sim/content/professions';
 import { COMBO_RECIPES } from '../src/sim/content/recipes';
 import { ITEMS } from '../src/sim/data';
 import { TIER_SKILL_STEP } from '../src/sim/professions/wheel';
 import {
   buildTrainView,
+  isRecipeKnownForViewer,
   isStationMasterNpc,
   type TrainViewDeps,
 } from '../src/ui/hud/vendor/train_view';
@@ -35,10 +37,27 @@ const SHAPES: Array<['sim' | 'client', Record<string, unknown>]> = [
 
 describe('isStationMasterNpc', () => {
   it('is true for every STATIONS master and false for anyone else', () => {
-    expect(isStationMasterNpc('forgemistress_darva')).toBe(true);
-    expect(isStationMasterNpc('alchemist_verane')).toBe(true);
+    // ALL six masters, parametrized over the registry itself: dropping any
+    // master from recognition (a non-combo master included) must fail here,
+    // not just the two combo-teaching ones.
+    for (const station of STATIONS) {
+      expect(isStationMasterNpc(station.masterNpcId), station.masterNpcId).toBe(true);
+    }
+    expect(STATIONS).toHaveLength(6);
     expect(isStationMasterNpc('marshal_redbrook')).toBe(false);
+    expect(isStationMasterNpc('smith_haldren')).toBe(false); // the stall smith is NOT the forge master
     expect(isStationMasterNpc('')).toBe(false);
+  });
+});
+
+describe('isRecipeKnownForViewer (the one shared viewer predicate)', () => {
+  it('grandfathered (no/empty acquisition) always known; trainer recipes only via the set', () => {
+    const grandfathered = COMBO_RECIPES[0] && { ...COMBO_RECIPES[0], acquisition: undefined };
+    const trainer = COMBO_RECIPES[0];
+    expect(isRecipeKnownForViewer(grandfathered, new Set())).toBe(true);
+    expect(isRecipeKnownForViewer({ ...trainer, acquisition: [] }, new Set())).toBe(true);
+    expect(isRecipeKnownForViewer(trainer, new Set())).toBe(false);
+    expect(isRecipeKnownForViewer(trainer, new Set([trainer.id]))).toBe(true);
   });
 });
 
@@ -77,6 +96,21 @@ describe('buildTrainView', () => {
     expect(byId.get('recipe_eastbrook_arming_sword')?.state).toBe('known'); // no acquisition
     expect(byId.get('recipe_ironbound_warplate_helm')?.state).toBe('teachable');
     expect(byId.get('recipe_forgeguard_bulwark_gauntlets')?.state).toBe('locked');
+  });
+
+  it('the SAME row flips locked to teachable across the 24/25 boundary', () => {
+    // The tri-state test above splits the boundary across two different rows;
+    // this pins the unlock moment the visible ladder points at: one row, one
+    // skill point, locked becomes teachable.
+    const at = (skill: number) =>
+      buildTrainView(
+        'forgemistress_darva',
+        deps({ craftSkills: { armorcrafting: skill } }),
+      ).rows.find((row) => row.recipeId === 'recipe_ironbound_warplate_helm');
+    expect(at(24)?.state).toBe('locked');
+    expect(at(24)?.requirement).toEqual({ craft: 'armorcrafting', skill: 25 });
+    expect(at(25)?.state).toBe('teachable');
+    expect(at(25)?.requirement).toBeUndefined();
   });
 
   it('a learned trainer recipe reads known (the mirrored knownRecipes arm)', () => {
