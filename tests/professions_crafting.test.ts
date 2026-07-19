@@ -582,6 +582,9 @@ describe('combo recipes requiring an adjacent craft pair (#1132)', () => {
     sim.acceptArchetypeQuest('armorcrafting');
     setSkill(sim, pid, 'armorcrafting', 25);
     setSkill(sim, pid, 'weaponcrafting', 25);
+    // Phase 9 acquisition switch: combo recipes are trainer-taught, so the
+    // fresh test player learns this one explicitly before crafting it.
+    (sim as any).players.get(pid).knownRecipes.add(comboRecipe.id);
     grantItem(sim, 'bone_fragments', 4, pid);
     grantItem(sim, 'linen_scrap', 2, pid);
 
