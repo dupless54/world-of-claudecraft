@@ -8,11 +8,13 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { GUILD_TREND_LETTERS } from '../src/sim/content/letters';
+import { GUILD_TREND_LETTERS, type LetterDef } from '../src/sim/content/letters';
 import { ARCHETYPE_PAIR_TARGETS, craftsForPairTarget } from '../src/sim/professions/archetype';
+import { maybeSendGuildTrendLetter } from '../src/sim/professions/guild_letter';
 import { classifyCraftTrend, GUILD_LETTER_SKILL_THRESHOLD } from '../src/sim/professions/trend';
 import { TIER_SKILL_STEP } from '../src/sim/professions/wheel';
-import { Sim } from '../src/sim/sim';
+import { type PlayerMeta, Sim } from '../src/sim/sim';
+import type { SimContext } from '../src/sim/sim_context';
 import type { SimEvent } from '../src/sim/types';
 
 // The ten canonical adjacent-pair ids over the locked CRAFT_RING order,
@@ -119,6 +121,10 @@ describe('classifyCraftTrend: the pure leading-pair classifier', () => {
     expect(classifyCraftTrend(zero)).toBeNull();
     // Non-positive entries count as 0, so a lone negative is still null.
     expect(classifyCraftTrend({ engineering: -5 })).toBeNull();
+    // Malformed values never count either: only positive FINITE numbers score,
+    // so an Infinity or NaN entry can never classify a pair as crossed.
+    expect(classifyCraftTrend({ engineering: Number.POSITIVE_INFINITY })).toBeNull();
+    expect(classifyCraftTrend({ engineering: Number.NaN })).toBeNull();
   });
 
   it('is deterministic and never mutates its input', () => {
@@ -301,6 +307,166 @@ describe('the Guild letter through the real Sim', () => {
       expect(guildLetters(events, pid2)).toHaveLength(0);
     },
     GUILD_DELIVERY_TEST_TIMEOUT_MS,
+  );
+});
+
+// --- maybeSendGuildTrendLetter eligibility clauses (isolating negatives) ---
+
+// A synthetic PlayerMeta carrying exactly the fields the predicate reads, plus
+// a spy ctx. Each of the three eligibility clauses gets a negative where ONLY
+// that clause disqualifies, so deleting any single guard line in
+// maybeSendGuildTrendLetter fails exactly one test here (the attuned/amends
+// delivery tests above each flip two fields at once and cannot isolate them).
+function unitMeta(overrides: {
+  guildLetterSent?: boolean;
+  activeArchetype?: string | null;
+  attunedPairs?: string[];
+  craftSkills?: Record<string, number>;
+}): PlayerMeta {
+  return {
+    guildLetterSent: overrides.guildLetterSent ?? false,
+    archetype: {
+      activeArchetype: overrides.activeArchetype ?? null,
+      attunedPairs: overrides.attunedPairs ?? [],
+    },
+    craftSkills: overrides.craftSkills ?? { engineering: 15, alchemy: 15 },
+  } as unknown as PlayerMeta;
+}
+
+function spyCtx(): {
+  ctx: SimContext;
+  booked: { letter: LetterDef; flagAtCall: boolean }[];
+} {
+  const booked: { letter: LetterDef; flagAtCall: boolean }[] = [];
+  const ctx = {
+    mailAuthoredLetter: (meta: PlayerMeta, letter: LetterDef) => {
+      booked.push({ letter, flagAtCall: meta.guildLetterSent === true });
+    },
+  } as unknown as SimContext;
+  return { ctx, booked };
+}
+
+describe('maybeSendGuildTrendLetter eligibility clauses', () => {
+  it('books for a fully eligible character, one-shot flag flipped BEFORE the send', () => {
+    const meta = unitMeta({});
+    const { ctx, booked } = spyCtx();
+    expect(maybeSendGuildTrendLetter(meta, ctx)).toBe(true);
+    expect(booked).toHaveLength(1);
+    expect(booked[0].letter.letterId).toBe('guild_trend_engineering_alchemy');
+    // The re-entrant-save contract: the callback must already observe the flag.
+    expect(booked[0].flagAtCall).toBe(true);
+    expect(meta.guildLetterSent).toBe(true);
+  });
+
+  it('guildLetterSent alone disqualifies', () => {
+    const meta = unitMeta({ guildLetterSent: true });
+    const { ctx, booked } = spyCtx();
+    expect(maybeSendGuildTrendLetter(meta, ctx)).toBe(false);
+    expect(booked).toHaveLength(0);
+  });
+
+  it('a non-null activeArchetype alone disqualifies, attunedPairs empty', () => {
+    const meta = unitMeta({ activeArchetype: 'engineering' });
+    const { ctx, booked } = spyCtx();
+    expect(maybeSendGuildTrendLetter(meta, ctx)).toBe(false);
+    expect(booked).toHaveLength(0);
+    expect(meta.guildLetterSent).toBe(false);
+  });
+
+  it('non-empty attunedPairs alone disqualifies, activeArchetype null', () => {
+    const meta = unitMeta({ attunedPairs: ['engineering+alchemy'] });
+    const { ctx, booked } = spyCtx();
+    expect(maybeSendGuildTrendLetter(meta, ctx)).toBe(false);
+    expect(booked).toHaveLength(0);
+    expect(meta.guildLetterSent).toBe(false);
+  });
+
+  it('an uncrossed trend books nothing and never burns the one-shot flag', () => {
+    const meta = unitMeta({ craftSkills: { engineering: 12, alchemy: 12 } });
+    const { ctx, booked } = spyCtx();
+    expect(maybeSendGuildTrendLetter(meta, ctx)).toBe(false);
+    expect(booked).toHaveLength(0);
+    expect(meta.guildLetterSent).toBe(false);
+  });
+});
+
+// --- delivery hardening: kind, multi-player sweep, determinism ---
+
+describe('the Guild letter delivery contract', () => {
+  it(
+    'the booked mail is the system kind from The Crafting Guild on the mailbox surface',
+    () => {
+      const sim = makeWorld();
+      const pid = sim.addPlayer('warrior', 'Tinker');
+      sim.gainCraftSkill(pid, 'engineering', 15);
+      sim.gainCraftSkill(pid, 'alchemy', 15);
+      tickFor(sim, letterDelay('engineering+alchemy') + 5);
+      // Read the REAL mailbox window surface (proximity-gated): park the
+      // character at the Eastbrook raven pillar and stream mailInfo.
+      const e = sim.entities.get(pid);
+      if (!e) throw new Error('no entity');
+      e.pos.x = 7;
+      e.pos.z = -8;
+      sim.tick();
+      const info = sim.mailInfoFor(pid);
+      if (!info) throw new Error('expected mailInfo at the mailbox');
+      const guild = info.messages.find((m) => (m.letterId ?? '').startsWith('guild_trend_'));
+      expect(guild).toMatchObject({
+        kind: 'system',
+        letterId: 'guild_trend_engineering_alchemy',
+        senderName: 'The Crafting Guild',
+        subject: 'Your work in Engineering and Alchemy',
+        read: false,
+      });
+    },
+    GUILD_DELIVERY_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    'two players crossing in the same sweep each get exactly their own pair letter',
+    () => {
+      const sim = makeWorld();
+      const a = sim.addPlayer('warrior', 'Anvil');
+      const b = sim.addPlayer('mage', 'Loom');
+      sim.gainCraftSkill(a, 'weaponcrafting', 15);
+      sim.gainCraftSkill(a, 'armorcrafting', 15);
+      sim.gainCraftSkill(b, 'tailoring', 15);
+      sim.gainCraftSkill(b, 'inscription', 15);
+      const events = tickFor(sim, letterDelay('weaponcrafting+armorcrafting') + 5);
+      const la = guildLetters(events, a);
+      const lb = guildLetters(events, b);
+      expect(la).toHaveLength(1);
+      expect(la[0]).toMatchObject({ letterId: 'guild_trend_weaponcrafting_armorcrafting' });
+      expect(lb).toHaveLength(1);
+      expect(lb[0]).toMatchObject({ letterId: 'guild_trend_tailoring_inscription' });
+    },
+    GUILD_DELIVERY_TEST_TIMEOUT_MS,
+  );
+
+  it(
+    'same seed, same inputs: the letter arrives on the same tick with an identical event',
+    () => {
+      const run = () => {
+        const sim = makeWorld();
+        const pid = sim.addPlayer('warrior', 'Tinker');
+        sim.gainCraftSkill(pid, 'engineering', 15);
+        sim.gainCraftSkill(pid, 'alchemy', 15);
+        const arrivals: { tick: number; ev: SimEvent }[] = [];
+        const total = Math.ceil((letterDelay('engineering+alchemy') + 5) * 20);
+        for (let t = 0; t < total; t++) {
+          for (const ev of sim.tick()) {
+            if (ev.type === 'mailArrived' && (ev.letterId ?? '').startsWith('guild_trend_')) {
+              arrivals.push({ tick: t, ev });
+            }
+          }
+        }
+        return arrivals;
+      };
+      const first = run();
+      expect(first).toHaveLength(1);
+      expect(run()).toEqual(first);
+    },
+    2 * GUILD_DELIVERY_TEST_TIMEOUT_MS,
   );
 });
 
