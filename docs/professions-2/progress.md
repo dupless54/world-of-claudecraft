@@ -15,7 +15,7 @@ Update this file at the end of every implementation and QA session. Statuses:
 | 3 QA | Verify host-parity bug fixes | complete | 2026-07-17 | 2026-07-17 |
 | 4 | Node materials and pristine veins | complete | 2026-07-18 | 2026-07-18 |
 | 4 QA | Verify node materials and pristine veins | complete | 2026-07-18 | 2026-07-18 |
-| 5 | The professions wheel window | not started | | |
+| 5 | The professions wheel window | complete | 2026-07-18 | 2026-07-18 |
 | 5 QA | Verify the professions wheel window | not started | | |
 | 6 | Crafting window upgrades and celebrations | not started | | |
 | 6 QA | Verify crafting window upgrades | not started | | |
@@ -233,12 +233,46 @@ is overlay churn without user value), and the pre-existing unused
 instanceOrigin import in tests/parity/scenarios.ts.
 
 ### Phase 5: The professions wheel window
-- [ ] New window at deeds quality per DESIGN.md: view core (UI_PURE_CORES), painter, styles, i18n
-- [ ] Ring visualization, per-craft skill bars, tier pips, title/majors/hobby, live perks
-- [ ] Identity-view semantics preserved (role, ceiling, nudges, tutorial); next-unlock and switch-cost lines
-- [ ] Progressive disclosure: simplified unattuned / pre-first-tier state
-- [ ] Desktop + mobile responsive; screenshots captured for the PR
-- [ ] Launchers (minimap or window row + keybind) consistent with existing windows
+- [x] New window at deeds quality per DESIGN.md: view core (UI_PURE_CORES), painter, styles, i18n
+- [x] Ring visualization, per-craft skill bars, tier pips, title/majors/hobby, live perks
+- [x] Identity-view semantics preserved (role, ceiling, nudges, tutorial); next-unlock and switch-cost lines
+- [x] Progressive disclosure: simplified unattuned / pre-first-tier state
+- [x] Desktop + mobile responsive; screenshots captured for the PR
+- [x] Launchers (minimap or window row + keybind) consistent with existing windows
+
+Completed 2026-07-18 (phase-start HEAD c1b6c68f2, the release/v0.28.0 tip
+with Phase 4 QA aboard). Pure UI on post-2039 reads: no wire data, no sim
+behavior, no IWorld member. `src/ui/professions_view.ts` (UI_PURE_CORES)
+COMPOSES `profession_identity_view` rather than absorbing it (recorded
+decision: the crafting window and quest dialog keep consuming the card,
+and Phase 6 owns the crafting window), so role, ceiling, both nudges, and
+the tutorial state survive by construction; it adds the ring layout math
+(wrap-safe pair arc, hobby chord), bars and pips with core-derived fill,
+the perks readout from `PERK_THRESHOLDS`, the next-unlock union, the
+switch-cost line via `requiredAmendsProgress`, progressive disclosure,
+and the refresh signature. `src/ui/professions_window.ts` is a
+deeds-pattern cold painter; the ring renders as DOM nodes over one inline
+SVG styled entirely from `components.css` tokens (recorded decision over
+canvas: theme and language switches restyle with no token caching).
+Launchers: minimap micro-button, More-tray entry, and Shift+KeyP (bare
+KeyP is the spellbook). Icons: fourteen procedural recipes plus
+`professionIconUrl` over an empty committed WebP override set, the
+`assets:professions` converter scaffold, and a bijection test green on
+the empty set. i18n: the `hudChrome.professions` English block with five
+non-Latin M16 fills per wordy row. Validation: `tsc` clean and the
+13-file matrix green (architecture, the mobile guard trio, client_shell,
+S3, completeness, css corpus and validity, the three new suites,
+mobile_controls). frontend-seam-reviewer returned zero blocking; both
+should-fixes landed in-phase (the perk line now interpolates the craft
+name in one key instead of concatenating localized fragments, and the
+bar fill moved into the view core with pins). Screenshots under
+`docs/screenshots/professions-wheel-window/`. Notes: `CRAFT_MAX_SKILL`
+(300) lives in the view core as a presentational cap because content
+defines no craft-side maximum and sim craft skill is uncapped;
+`data-icon="target"` is the accepted launcher glyph until designer crest
+art arrives; the `gather_fishing` icon ships ahead of its Phase 11 read,
+and the painter's gathering name map gains the fishing row plus its
+catalog key in Phase 11.
 
 ### Phase 6: Crafting window upgrades and celebrations
 - [ ] Recipe rows show profession + required skill + skill-gain difficulty tint (#2037)

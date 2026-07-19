@@ -498,8 +498,31 @@ tables, i18n key namespaces, files created)
     churn without user value. finderName cannot smuggle the [[i:
     item-link token into the chat parser: validCharNameShape forbids
     brackets server-side.
-- Phase 5: (planned) professions window (.window id professions-window) +
-  view core + painter + hudChrome.professions.* keys.
+- Phase 5: (landed 2026-07-18) the professions window (.window id
+  professions-window): src/ui/professions_view.ts (UI_PURE_CORES pure
+  core; COMPOSES profession_identity_view, does not absorb it; exports
+  the ring layout math, skill-bar/pip model with core-derived
+  fillFraction, next-unlock union, switch cost via
+  requiredAmendsProgress, progressive disclosure, professionsRefreshSig;
+  CRAFT_MAX_SKILL 300 is a presentational cap local to the core, content
+  defines no craft-side maximum) and src/ui/professions_window.ts (cold
+  deeds-pattern painter; the ring is DOM nodes over one inline SVG
+  styled from components.css tokens; close is the only interactive
+  control, pinned). The hudChrome.professions.* key namespace (plus
+  hudChrome.mobile.professions; the perk line is one perkSpecializedLine
+  key interpolating {craft}, never a concat of localized fragments).
+  Icons: prof_<craftId> x10 + gather_* x4 procedural recipes (incl. the
+  Phase 11 forward slot gather_fishing), professionIconUrl over the
+  empty committed WebP set public/ui/professions/, the
+  scripts/convert_profession_icons_webp.mjs scaffold (assets:professions)
+  and tests/profession_icons.test.ts pinning the empty-set bijection.
+  Launchers: #mm-professions, #mobile-professions (More tray), keybind
+  Shift+KeyP via input.ts/mobile_controls.ts dispatch (main.ts kept to
+  switch cases + the handler-bag entry). The change-aware shot target
+  'professions' in scripts/pr_shot_targets.mjs stubs craftingIdentity +
+  professionsState with a representative attuned Smith (renown-board
+  precedent). Phase 11 touch point: the painter's GATHERING_NAME_KEYS
+  map gains the fishing row and its catalog key with the fishing read.
 - Phase 7: (planned) trend detection module; Guild letter content; S3 scan
   list gains src/sim/quests/quest_commands.ts.
 - Phase 8: (planned) station registry (typed stations, multi-zone); master
