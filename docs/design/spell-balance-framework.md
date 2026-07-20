@@ -14,6 +14,9 @@ This framework defines how class power is measured. The complexity and talent ru
 | `scripts/dummy_sim.mjs` | Empirical direct-cast checks against the real simulation | It does not select a specialization and resets resources, so it is not a Fury or finite-mana authority |
 | `tests/spell_balance.test.ts` | Proportionality and no-strict-dominance regression checks | It does not enforce the cross-spec DPS band |
 
+Run the direct comparisons with `npx tsx scripts/balance_report.mjs` and
+`npx tsx scripts/dummy_sim.mjs`; pass a class such as `mage` to the latter to limit its output.
+
 The existing scripts remain useful for identifying a direct spell that is strictly dominated by
 another direct spell. Their class-rotation rows must not be cited as Frost, Fury, or nine-class
 balance proof until the missing specialization and resource behavior is implemented.
@@ -67,8 +70,8 @@ player entity.
    legal role.
 3. One owner per output: each damage packet, proc, resource gain, and cooldown reduction names the
    slot or talent that owns its budget.
-4. Class parity: comparable damage specializations remain within a 10 to 15 percent sustained
-   single-target band at the level cap.
+4. Class parity: the highest comparable damage specialization remains no more than 10 to 15 percent
+   above the lowest in sustained single-target DPS at the level cap.
 5. Burst visibility: burst is reported separately and cannot hide behind an acceptable sustained
    average.
 6. Area payment: area strength comes from a lateral choice or target rule. It does not stack on

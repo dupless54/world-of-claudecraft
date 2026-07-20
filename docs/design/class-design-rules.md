@@ -105,9 +105,10 @@ If the answer to all six is no, remove the mechanic or fold its output into an e
 
 ## Power ceiling
 
-At the level cap, comparable damage specializations should remain within a 10 to 15 percent
-single-target DPS band with equivalent gear. Raid observations are evidence, but the enforced
-gate must normalize encounter, duration, target count, gear, and active buffs.
+At the level cap, the highest comparable damage specialization must remain no more than 10 to 15
+percent above the lowest in sustained single-target DPS with equivalent gear. Raid observations
+are evidence, but the enforced gate must normalize encounter, duration, target count, gear, and
+active buffs.
 
 Burst and area profiles are reported separately. An area specialist may lead an area profile,
 but that strength must be paid for by a lateral talent choice instead of stacking on top of the
